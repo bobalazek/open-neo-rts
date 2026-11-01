@@ -1,0 +1,16 @@
+{
+  "files": {
+    "photon-barrier-generator.glb": {
+      "author": "Borut Balazek",
+      "source": "source/photon-barrier-generator.bricks.json"
+    },
+    "photon-barrier-generator.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/photon-barrier-generator.bricks.json"
+    },
+    "photon-barrier-generator.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/photon-barrier-generator.bricks.json"
+    }
+  }
+}
