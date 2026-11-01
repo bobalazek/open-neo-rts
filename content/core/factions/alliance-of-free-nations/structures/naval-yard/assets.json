@@ -1,0 +1,16 @@
+{
+  "files": {
+    "naval-yard.glb": {
+      "author": "Borut Balazek",
+      "source": "source/naval-yard.bricks.json"
+    },
+    "naval-yard.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/naval-yard.bricks.json"
+    },
+    "naval-yard.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/naval-yard.bricks.json"
+    }
+  }
+}
