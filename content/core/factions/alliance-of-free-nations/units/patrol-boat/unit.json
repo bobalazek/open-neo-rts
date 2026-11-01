@@ -52,7 +52,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": ["socket_muzzle"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "patrol-boat.wreck.glb"
   }
 }

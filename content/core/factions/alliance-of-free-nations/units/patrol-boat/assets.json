@@ -1,0 +1,16 @@
+{
+  "files": {
+    "patrol-boat.glb": {
+      "author": "Borut Balazek",
+      "source": "source/patrol-boat.bricks.json"
+    },
+    "patrol-boat.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/patrol-boat.bricks.json"
+    },
+    "patrol-boat.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/patrol-boat.bricks.json"
+    }
+  }
+}
