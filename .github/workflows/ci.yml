@@ -55,6 +55,10 @@ jobs:
   browsers:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
       - name: Pull model-check fixtures
@@ -63,17 +67,24 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium firefox webkit
+      - run: bunx playwright install --with-deps ${{ matrix.browser }}
       - name: Provide software WebGL display
         run: sudo apt-get install -y xauth libgl1-mesa-dri
       - run: bunx tsc -p apps/web/e2e/tsconfig.json
-      - run: xvfb-run -a bun run test:browsers
+      - run: xvfb-run -a bun run test:browsers --project=${{ matrix.browser }}
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
       - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: key-capture-evidence-${{ matrix.browser }}
+          path: test-results/**/key-capture-*.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: determinism-traces
+          name: determinism-traces-${{ matrix.browser }}
           path: test-results/
           retention-days: 14
 
