@@ -1,0 +1,16 @@
+{
+  "files": {
+    "adobe-ruin.glb": {
+      "author": "Borut Balazek",
+      "source": "source/adobe-ruin.bricks.json"
+    },
+    "adobe-ruin.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/adobe-ruin.bricks.json"
+    },
+    "adobe-ruin.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/adobe-ruin.bricks.json"
+    }
+  }
+}

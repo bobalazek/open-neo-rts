@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:temperate/bush",
+  "name": "Bush",
+  "description": "A low berry bush. Decoration only.",
+  "footprint": [1, 1],
+  "blocks": "nothing",
+  "presentation": {
+    "model": "bush.glb",
+    "icon": "bush.icon.png",
+    "materials": {}
+  }
+}

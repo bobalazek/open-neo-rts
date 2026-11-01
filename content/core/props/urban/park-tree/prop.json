@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/park-tree",
+  "name": "Park Tree",
+  "description": "A small tree in a concrete planter. Cover: infantry walk through slowly and can't be seen inside.",
+  "footprint": [1, 1],
+  "blocks": "movement-and-vision",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 200,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "park-tree.glb",
+    "icon": "park-tree.icon.png",
+    "wreck": "park-tree.stump.glb",
+    "materials": {},
+    "animations": ["idle"]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "files": {
+    "wooden-fence.glb": {
+      "author": "Borut Balazek",
+      "source": "source/wooden-fence.bricks.json"
+    },
+    "wooden-fence.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/wooden-fence.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:temperate/dead-tree",
+  "name": "Dead Tree",
+  "description": "A bare, leafless trunk. Stops vehicles but hides nobody.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 150,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "dead-tree.glb",
+    "icon": "dead-tree.icon.png",
+    "wreck": "dead-tree.stump.glb",
+    "materials": {}
+  }
+}

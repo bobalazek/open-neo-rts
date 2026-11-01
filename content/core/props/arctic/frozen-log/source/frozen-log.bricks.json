@@ -1,0 +1,55 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "log",
+      "bricks": [
+        {
+          "at": [-7, 0, -1.25],
+          "size": [14, 2.5, 2.5],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-7.5, 0.25, -1],
+          "size": [0.5, 2, 2],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [7, 0.25, -1],
+          "size": [0.5, 2, 2],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-6, 2.4, -0.9],
+          "size": [12, 0.5, 1.8],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-2, 2.9, -0.6],
+          "size": [3, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [2, 1.5, 1],
+          "size": [0.75, 0.75, 1.5],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/collapsed-building",
+  "name": "Collapsed Building",
+  "description": "The shell of a two-storey building. Blocks movement and line of sight; can't be garrisoned.",
+  "footprint": [3, 3],
+  "blocks": "movement-and-vision",
+  "destructible": {
+    "health": 2000
+  },
+  "presentation": {
+    "model": "collapsed-building.glb",
+    "icon": "collapsed-building.icon.png",
+    "wreck": "collapsed-building.rubble.glb",
+    "materials": {}
+  }
+}

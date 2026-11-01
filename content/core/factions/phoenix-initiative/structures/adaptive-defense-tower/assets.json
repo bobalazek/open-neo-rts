@@ -1,0 +1,16 @@
+{
+  "files": {
+    "adaptive-defense-tower.glb": {
+      "author": "Borut Balazek",
+      "source": "source/adaptive-defense-tower.bricks.json"
+    },
+    "adaptive-defense-tower.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/adaptive-defense-tower.bricks.json"
+    },
+    "adaptive-defense-tower.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/adaptive-defense-tower.bricks.json"
+    }
+  }
+}

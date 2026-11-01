@@ -1,0 +1,12 @@
+{
+  "files": {
+    "drone-hunter.glb": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.bricks.json"
+    },
+    "drone-hunter.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.bricks.json"
+    }
+  }
+}

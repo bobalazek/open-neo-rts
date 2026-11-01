@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:desert/dry-shrub",
+  "name": "Dry Shrub",
+  "description": "A dry, twiggy desert shrub. Decoration only.",
+  "footprint": [1, 1],
+  "blocks": "nothing",
+  "presentation": {
+    "model": "dry-shrub.glb",
+    "icon": "dry-shrub.icon.png",
+    "materials": {}
+  }
+}

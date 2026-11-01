@@ -1,0 +1,12 @@
+{
+  "files": {
+    "dry-shrub.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dry-shrub.bricks.json"
+    },
+    "dry-shrub.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/dry-shrub.bricks.json"
+    }
+  }
+}

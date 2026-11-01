@@ -1,0 +1,16 @@
+{
+  "files": {
+    "nanite-wall.glb": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-wall.bricks.json"
+    },
+    "nanite-wall.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-wall.bricks.json"
+    },
+    "nanite-wall.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-wall.bricks.json"
+    }
+  }
+}

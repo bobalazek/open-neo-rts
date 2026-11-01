@@ -1,0 +1,16 @@
+{
+  "files": {
+    "anti-air-complex.glb": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.bricks.json"
+    },
+    "anti-air-complex.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.bricks.json"
+    },
+    "anti-air-complex.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.bricks.json"
+    }
+  }
+}

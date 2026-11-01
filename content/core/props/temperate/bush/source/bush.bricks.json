@@ -1,0 +1,45 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "bush",
+      "bricks": [
+        {
+          "at": [-2.5, 0, -2],
+          "size": [5, 1.5, 4],
+          "slot": "palette",
+          "color": "#4f8a35",
+          "studs": false
+        },
+        {
+          "at": [-2, 0, -2.5],
+          "size": [4, 1.5, 5],
+          "slot": "palette",
+          "color": "#4f8a35",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 1.5, -1.5],
+          "size": [3, 1, 3],
+          "slot": "palette",
+          "color": "#66a344",
+          "studs": true
+        },
+        {
+          "at": [1, 1.5, 1],
+          "size": [0.5, 0.5, 0.5],
+          "slot": "palette",
+          "color": "#b03a3a",
+          "studs": false
+        },
+        {
+          "at": [-1.9, 1.5, 1.6],
+          "size": [0.5, 0.5, 0.5],
+          "slot": "palette",
+          "color": "#b03a3a",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

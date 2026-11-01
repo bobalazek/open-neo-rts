@@ -1,0 +1,16 @@
+{
+  "files": {
+    "supply-depot.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-depot.bricks.json"
+    },
+    "supply-depot.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/supply-depot.bricks.json"
+    },
+    "supply-depot.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-depot.bricks.json"
+    }
+  }
+}

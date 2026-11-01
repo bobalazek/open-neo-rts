@@ -1,0 +1,12 @@
+{
+  "files": {
+    "concrete-barrier.glb": {
+      "author": "Borut Balazek",
+      "source": "source/concrete-barrier.bricks.json"
+    },
+    "concrete-barrier.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/concrete-barrier.bricks.json"
+    }
+  }
+}

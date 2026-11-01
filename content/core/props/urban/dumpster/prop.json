@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/dumpster",
+  "name": "Dumpster",
+  "description": "A steel waste container. Crushers flatten it.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 200,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "dumpster.glb",
+    "icon": "dumpster.icon.png",
+    "materials": {}
+  }
+}

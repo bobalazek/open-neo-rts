@@ -2,7 +2,7 @@
 
 Models, icons, textures and sounds. All of them are original work, live **in this repository** next to the definition that uses them, and are stored with Git LFS. The art style is in [art-and-audio.md](../design/art-and-audio.md).
 
-**Status:** no real art yet. The first finished reference model per faction is a [human task](../project/human-tasks.md); `bun neo make-placeholders` can generate temporary block models locally for testing, but they aren't committed.
+**Status:** first-pass brick models are being built for every unit and structure ([decision](../project/decisions/2026-11-01-first-pass-models.md)); the art direction sign-off, with one finished reference model per faction, is a [human task](../project/human-tasks.md). `bun neo make-placeholders` can still generate temporary block models locally, but they aren't committed.
 
 ## Where assets go
 
@@ -17,8 +17,30 @@ content/core/factions/eastern-collective/units/dragon-tank/
 ├── dragon-tank.fire.1.ogg        sounds: <name>.<event>[.<n>].ogg
 ├── assets.json                   author and source of every file in this folder
 └── source/
-    └── dragon-tank.blend         editable original
+    └── dragon-tank.bricks.json   editable original
 ```
+
+## Brick models
+
+First-pass models are written as brick sources, `source/<name>.bricks.json`, in the format defined in [apps/cli/src/models/bricks.ts](../../apps/cli/src/models/bricks.ts): named nodes with pivots, bricks of 0.25 m units with a material slot (and a vertex colour for `palette` bricks), slopes and cylinders, keyframed clips, and a rule for the destroyed model. The source names its `author`.
+
+`bun neo build-models <faction | folder | file>` turns each source into `<name>.glb`, the icon, the wreck (the same parts, burnt and chipped) or rubble (brick heaps on the footprint) named by `presentation.wreck`, and the `assets.json` entries. Rebuild after editing a source and commit both. Hand-made models from another tool (a `.blend`, say) follow the same conventions and need no brick source.
+
+**Rigs.** Brick models move by rigid nodes, one per moving piece, not skinned meshes; each clip rotates or offsets whole nodes around their pivots. Use the same node names everywhere so the renderer and every model agree:
+
+```text
+infantry                               vehicles
+body                                   hull
+└── hips                               ├── track_l, track_r (or wheels)
+    ├── leg_l, leg_r                   ├── turret              sim-driven: aims
+    └── torso                          │   └── barrel          sim-driven: elevates, recoils
+        ├── head                       │       └── socket_muzzle_0
+        ├── arm_l, arm_r               └── socket_exhaust_0
+        └── weapon
+            └── socket_muzzle_0
+```
+
+Aircraft add `rotor` nodes; structures add whatever their `active`, `open` and `close` clips move (doors, fans, radar dishes).
 
 Structures are the same, with `structure.json` and `<name>.rubble.glb`. Neutral structures live in `content/core/neutral/structures/<name>/`, and map props (trees, rocks, ruins) in `content/core/props/<biome>/<name>/` with a `prop.json`. A definition's `presentation` refers to its files by name only (`"model": "dragon-tank.glb"`).
 

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/oil-drums",
+  "name": "Oil Drums",
+  "description": "A cluster of steel drums. Crushers flatten them.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 80,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "oil-drums.glb",
+    "icon": "oil-drums.icon.png",
+    "materials": {}
+  }
+}

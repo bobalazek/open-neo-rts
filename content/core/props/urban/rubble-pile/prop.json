@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/rubble-pile",
+  "name": "Rubble Pile",
+  "description": "Broken concrete and rebar. Wheeled and hover vehicles go around; tracks and feet climb over.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "domains": ["wheeled", "hover"],
+  "presentation": {
+    "model": "rubble-pile.glb",
+    "icon": "rubble-pile.icon.png",
+    "materials": {}
+  }
+}

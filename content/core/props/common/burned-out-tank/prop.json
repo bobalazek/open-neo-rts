@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/burned-out-tank",
+  "name": "Burned-Out Tank",
+  "description": "The charred hull of a tank from an older war.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 800
+  },
+  "presentation": {
+    "model": "burned-out-tank.glb",
+    "icon": "burned-out-tank.icon.png",
+    "wreck": "burned-out-tank.rubble.glb",
+    "materials": {}
+  }
+}

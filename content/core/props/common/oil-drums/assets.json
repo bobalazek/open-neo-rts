@@ -1,0 +1,12 @@
+{
+  "files": {
+    "oil-drums.glb": {
+      "author": "Borut Balazek",
+      "source": "source/oil-drums.bricks.json"
+    },
+    "oil-drums.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/oil-drums.bricks.json"
+    }
+  }
+}

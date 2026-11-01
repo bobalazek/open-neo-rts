@@ -1,0 +1,12 @@
+{
+  "files": {
+    "cactus.glb": {
+      "author": "Borut Balazek",
+      "source": "source/cactus.bricks.json"
+    },
+    "cactus.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/cactus.bricks.json"
+    }
+  }
+}

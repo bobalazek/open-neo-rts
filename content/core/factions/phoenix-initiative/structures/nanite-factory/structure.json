@@ -40,6 +40,7 @@
     "icon": "nanite-factory.icon.png",
     "wreck": "nanite-factory.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["open", "close"]
   }
 }

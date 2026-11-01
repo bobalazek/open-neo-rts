@@ -1,0 +1,16 @@
+{
+  "files": {
+    "salvage-center.glb": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-center.bricks.json"
+    },
+    "salvage-center.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-center.bricks.json"
+    },
+    "salvage-center.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-center.bricks.json"
+    }
+  }
+}

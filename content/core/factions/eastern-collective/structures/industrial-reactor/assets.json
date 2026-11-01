@@ -1,0 +1,16 @@
+{
+  "files": {
+    "industrial-reactor.glb": {
+      "author": "Borut Balazek",
+      "source": "source/industrial-reactor.bricks.json"
+    },
+    "industrial-reactor.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/industrial-reactor.bricks.json"
+    },
+    "industrial-reactor.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/industrial-reactor.bricks.json"
+    }
+  }
+}

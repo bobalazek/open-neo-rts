@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:arctic/frozen-log",
+  "name": "Frozen Log",
+  "description": "A fallen trunk under snow, two cells long. Stops vehicles; crushers roll over it.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 200,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "frozen-log.glb",
+    "icon": "frozen-log.icon.png",
+    "materials": {}
+  }
+}

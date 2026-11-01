@@ -1,0 +1,12 @@
+{
+  "files": {
+    "material-node.glb": {
+      "author": "Borut Balazek",
+      "source": "source/material-node.bricks.json"
+    },
+    "material-node.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/material-node.bricks.json"
+    }
+  }
+}

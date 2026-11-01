@@ -1,0 +1,52 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "fence",
+      "bricks": [
+        {
+          "at": [-8, 0, -0.4],
+          "size": [0.8, 4, 0.8],
+          "slot": "palette",
+          "color": "#7a5a2e",
+          "studs": true
+        },
+        {
+          "at": [-2.8, 0, -0.4],
+          "size": [0.8, 4, 0.8],
+          "slot": "palette",
+          "color": "#7a5a2e",
+          "studs": true
+        },
+        {
+          "at": [2, 0, -0.4],
+          "size": [0.8, 4, 0.8],
+          "slot": "palette",
+          "color": "#7a5a2e",
+          "studs": true
+        },
+        {
+          "at": [7.2, 0, -0.4],
+          "size": [0.8, 4, 0.8],
+          "slot": "palette",
+          "color": "#7a5a2e",
+          "studs": true
+        },
+        {
+          "at": [-8, 1.2, -0.2],
+          "size": [16, 0.6, 0.4],
+          "slot": "palette",
+          "color": "#a0773f",
+          "studs": false
+        },
+        {
+          "at": [-8, 2.8, -0.2],
+          "size": [16, 0.6, 0.4],
+          "slot": "palette",
+          "color": "#a0773f",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

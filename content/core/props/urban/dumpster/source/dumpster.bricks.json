@@ -1,0 +1,49 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "dumpster",
+      "bricks": [
+        {
+          "at": [2, 0, -2],
+          "size": [1, 0.4, 1],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [2, 0, 1],
+          "size": [1, 0.4, 1],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-3.5, 0.4, -2.5],
+          "size": [7, 3.6, 5],
+          "slot": "palette",
+          "color": "#3f6b4a",
+          "studs": false
+        },
+        {
+          "at": [-3.6, 4, -2.6],
+          "size": [7.2, 0.5, 5.2],
+          "slot": "palette",
+          "color": "#3f6b4a",
+          "studs": false,
+          "shape": "slope-z"
+        },
+        {
+          "at": [3.5, 2.5, -1],
+          "size": [0.4, 0.4, 2],
+          "slot": "palette",
+          "color": "#5d6166",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    }
+  ]
+}

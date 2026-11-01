@@ -1,0 +1,12 @@
+{
+  "files": {
+    "rubble-pile.glb": {
+      "author": "Borut Balazek",
+      "source": "source/rubble-pile.bricks.json"
+    },
+    "rubble-pile.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/rubble-pile.bricks.json"
+    }
+  }
+}

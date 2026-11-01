@@ -1,0 +1,16 @@
+{
+  "files": {
+    "burned-out-tank.glb": {
+      "author": "Borut Balazek",
+      "source": "source/burned-out-tank.bricks.json"
+    },
+    "burned-out-tank.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/burned-out-tank.bricks.json"
+    },
+    "burned-out-tank.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/burned-out-tank.bricks.json"
+    }
+  }
+}

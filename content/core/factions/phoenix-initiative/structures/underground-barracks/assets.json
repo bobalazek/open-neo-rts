@@ -1,0 +1,16 @@
+{
+  "files": {
+    "underground-barracks.glb": {
+      "author": "Borut Balazek",
+      "source": "source/underground-barracks.bricks.json"
+    },
+    "underground-barracks.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/underground-barracks.bricks.json"
+    },
+    "underground-barracks.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/underground-barracks.bricks.json"
+    }
+  }
+}

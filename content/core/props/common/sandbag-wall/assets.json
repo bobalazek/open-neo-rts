@@ -1,0 +1,12 @@
+{
+  "files": {
+    "sandbag-wall.glb": {
+      "author": "Borut Balazek",
+      "source": "source/sandbag-wall.bricks.json"
+    },
+    "sandbag-wall.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/sandbag-wall.bricks.json"
+    }
+  }
+}

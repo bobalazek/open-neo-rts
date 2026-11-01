@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:temperate/wooden-fence",
+  "name": "Wooden Fence",
+  "description": "A farm fence, two cells long. Crushers flatten it.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 100,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "wooden-fence.glb",
+    "icon": "wooden-fence.icon.png",
+    "materials": {}
+  }
+}

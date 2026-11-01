@@ -1,0 +1,12 @@
+{
+  "files": {
+    "sandstone-outcrop.glb": {
+      "author": "Borut Balazek",
+      "source": "source/sandstone-outcrop.bricks.json"
+    },
+    "sandstone-outcrop.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/sandstone-outcrop.bricks.json"
+    }
+  }
+}

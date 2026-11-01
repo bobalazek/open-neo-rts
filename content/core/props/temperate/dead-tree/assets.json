@@ -1,0 +1,16 @@
+{
+  "files": {
+    "dead-tree.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dead-tree.bricks.json"
+    },
+    "dead-tree.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/dead-tree.bricks.json"
+    },
+    "dead-tree.stump.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dead-tree.bricks.json"
+    }
+  }
+}
