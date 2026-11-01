@@ -62,7 +62,7 @@
     "materials": {},
     "parts": ["hull", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "mobile-emp.wreck.glb"
   }
 }

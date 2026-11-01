@@ -1,0 +1,418 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hull",
+      "bricks": [
+        {
+          "at": [-3, 1, -5.5],
+          "size": [6, 1.4, 11],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-3.6, 2.4, -5.5],
+          "size": [7.2, 1, 10.5],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-2.8, 3.4, 2],
+          "size": [5.6, 1.8, 3],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-2.2, 4.2, 3.8],
+          "size": [4.4, 0.5, 0.1],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-3.8, 2.2, 5],
+          "size": [7.6, 0.6, 0.35],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        },
+        {
+          "at": [-3.5, 2.3, 5.36],
+          "size": [1, 0.4, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705",
+          "mirror": true
+        },
+        {
+          "at": [2.8, 3.4, -5],
+          "size": [0.6, 2, 0.6],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "track_l",
+      "bricks": [
+        {
+          "at": [-0.7, -1, -5],
+          "size": [1.4, 2, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        }
+      ],
+      "parent": "hull",
+      "at": [3.6, 1, 0]
+    },
+    {
+      "name": "track_r",
+      "bricks": [
+        {
+          "at": [-0.7, -1, -5],
+          "size": [1.4, 2, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        }
+      ],
+      "parent": "hull",
+      "at": [-3.6, 1, 0]
+    },
+    {
+      "name": "barrel",
+      "bricks": [
+        {
+          "at": [-2.4, -0.7, -2],
+          "size": [4.8, 1.4, 5],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-1.1, -1.1, 3],
+          "size": [2.2, 2.2, 0.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-z"
+        },
+        {
+          "at": [-0.8, -0.8, 3.6],
+          "size": [1.6, 1.6, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z"
+        },
+        {
+          "at": [-1.15, -1.15, 4.2],
+          "size": [2.3, 2.3, 0.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-z"
+        },
+        {
+          "at": [-0.5, -0.5, 5],
+          "size": [1, 1, 0.35],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [0, 5.2, -2],
+      "rotation": [-18, 0, 0]
+    },
+    {
+      "name": "socket_muzzle",
+      "parent": "barrel",
+      "at": [0, 0, 5.4]
+    },
+    {
+      "name": "socket_exhaust_0",
+      "parent": "hull",
+      "at": [3.1, 5.5, -4.7]
+    },
+    {
+      "name": "hub_l0",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.82, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_l",
+      "at": [0, 0, -3.8]
+    },
+    {
+      "name": "hub_l1",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.82, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_l",
+      "at": [0, 0, -1.3]
+    },
+    {
+      "name": "hub_l2",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.82, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_l",
+      "at": [0, 0, 1.3]
+    },
+    {
+      "name": "hub_l3",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.82, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_l",
+      "at": [0, 0, 3.8]
+    },
+    {
+      "name": "hub_r0",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.9, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_r",
+      "at": [0, 0, -3.8]
+    },
+    {
+      "name": "hub_r1",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.9, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_r",
+      "at": [0, 0, -1.3]
+    },
+    {
+      "name": "hub_r2",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.9, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_r",
+      "at": [0, 0, 1.3]
+    },
+    {
+      "name": "hub_r3",
+      "bricks": [
+        {
+          "at": [-0.8, -0.7, -0.7],
+          "size": [1.6, 1.4, 1.4],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.9, -0.15, 0.2],
+          "size": [0.08, 0.3, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "track_r",
+      "at": [0, 0, 3.8]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "barrel",
+          "rotation": [[0, [0, 0, 0]], [1.5, [-22, 0, 0]], [3, [0, 0, 0]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 0.8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "hub_l0",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_l1",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_l2",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_l3",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_r0",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_r1",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_r2",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hub_r3",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.2, [90.0, 0, 0]],
+            [0.4, [180.0, 0, 0]],
+            [0.6000000000000001, [270.0, 0, 0]],
+            [0.8, [360.0, 0, 0]]
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.5,
+      "tracks": [
+        {
+          "node": "barrel",
+          "translation": [[0, [0, 0, 0]], [0.08333333333333333, [0, 0, -0.8]], [0.5, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.65
+  }
+}

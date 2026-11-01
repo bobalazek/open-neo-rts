@@ -1,0 +1,16 @@
+{
+  "files": {
+    "mobile-emp.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-emp.bricks.json"
+    },
+    "mobile-emp.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-emp.bricks.json"
+    },
+    "mobile-emp.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-emp.bricks.json"
+    }
+  }
+}
