@@ -2,6 +2,12 @@
 
 `packages/render`, on Babylon.js. The renderer reads presentation snapshots from the sim and never writes to it. Art direction and graphics presets are in [art-and-audio.md](../design/art-and-audio.md).
 
+## Asset inspection
+
+`/debug?models=1` loads a local GLB into an isolated presentation scene. The first-party `@babylonjs/loaders` package is pinned to the same version as Babylon core: glTF parsing is infrastructure, so this uses Babylon's importer rather than a second model loader. Loaders register lazily. Each loaded asset owns its materials; recolouring one cannot affect another. `team_dark` and `team_light` apply the same sRGB tints as the brick builder, then convert to linear colour for PBR materials; `team_emissive` changes both albedo and emission.
+
+The preview plays named animation groups and restores authored node transforms when returning to rest. Replacing or disposing an asset releases its meshes, materials and clips. Requests superseded by another file selection are disposed. This single-model inspection path does not implement the match's thin-instance renderer or mutate simulation state.
+
 ## Frame loop
 
 - The sim ticks at a fixed 20 Hz (in a Web Worker offline, on the server online). The renderer draws at display rate and **interpolates** positions, rotations and turret angles between the last two ticks, without extrapolating.
