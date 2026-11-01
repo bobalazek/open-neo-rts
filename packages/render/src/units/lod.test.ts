@@ -256,3 +256,36 @@ test("ambiguous or overlapping LOD branches preserve authored appearance", () =>
     engine.dispose();
   }
 });
+
+test("crossed and nested LOD pairs keep authored visibility while unrelated pairs switch", () => {
+  const engine = new NullEngine();
+  const scene = new Scene(engine);
+  try {
+    for (const crossed of [true, false]) {
+      const high = MeshBuilder.CreateBox("A_LOD0", {}, scene);
+      const low = MeshBuilder.CreateBox("A_LOD1", {}, scene);
+      const innerHigh = MeshBuilder.CreateBox("B_LOD0", {}, scene);
+      const innerLow = MeshBuilder.CreateBox("B_LOD1", {}, scene);
+      innerHigh.parent = crossed ? low : high;
+      innerLow.parent = high;
+      innerHigh.isVisible = false;
+      const ambiguous = [high, low, innerHigh, innerLow];
+      const before = ambiguous.map((mesh) => mesh.isVisible);
+      const otherHigh = MeshBuilder.CreateBox("C_LOD0", {}, scene);
+      const otherLow = MeshBuilder.CreateBox("C_LOD1", {}, scene);
+      const meshes = [...ambiguous, otherHigh, otherLow];
+      const lod = createModelLod(crossed ? meshes : [...meshes].reverse(), meshes);
+      assert(lod);
+      for (const distant of [true, false]) {
+        lod.setDistant(distant);
+        expect(ambiguous.map((mesh) => mesh.isVisible)).toEqual(before);
+        expect(otherHigh.isVisible).toBe(!distant);
+        expect(otherLow.isVisible).toBe(distant);
+      }
+      for (const mesh of meshes) mesh.dispose();
+    }
+  } finally {
+    scene.dispose();
+    engine.dispose();
+  }
+});
