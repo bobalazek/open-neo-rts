@@ -52,7 +52,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": ["socket_muzzle"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "ghost-drone-swarm.wreck.glb"
   }
 }

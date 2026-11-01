@@ -1,0 +1,16 @@
+{
+  "files": {
+    "ghost-drone-swarm.glb": {
+      "author": "Borut Balazek",
+      "source": "source/ghost-drone-swarm.bricks.json"
+    },
+    "ghost-drone-swarm.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/ghost-drone-swarm.bricks.json"
+    },
+    "ghost-drone-swarm.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/ghost-drone-swarm.bricks.json"
+    }
+  }
+}
