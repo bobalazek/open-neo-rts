@@ -47,8 +47,8 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
         return;
       }
       shadows = new ShadowGenerator(quality === "medium" ? 1024 : 2048, sun);
-      // Medium's coarser shadow texels need larger offsets to avoid cliff self-shadow acne.
-      shadows.bias = quality === "medium" ? 0.002 : 0.001;
+      // Whole-map 1024px texels need extra depth clearance on grazing-angle cliff faces.
+      shadows.bias = quality === "medium" ? 0.004 : 0.001;
       shadows.normalBias = quality === "medium" ? 0.08 : 0.04;
       sun.autoCalcShadowZBounds = true;
       shadows.usePercentageCloserFiltering = quality === "ultra";
