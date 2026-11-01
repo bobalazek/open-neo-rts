@@ -1,5 +1,6 @@
 import { builtins } from "virtual:debug-builtins";
 import {
+  createDebugOverlays,
   createEntityPresentation,
   createMapPresentation,
   createRenderer,
@@ -16,6 +17,7 @@ import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "
 import { createInspector } from "./inspector";
 import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
+import { createOverlayControls } from "./overlays";
 import { createSpawnPalette, spawnAtCell } from "./palette";
 
 const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
@@ -144,6 +146,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     let entities: ReturnType<typeof createEntityPresentation> | undefined;
     let match: ReturnType<typeof createOfflineMatch> | undefined;
     let art: ReturnType<typeof createMapPresentation> | undefined;
+    let overlays: ReturnType<typeof createDebugOverlays> | undefined;
     let released = false;
     const clicks = new AbortController();
     const current = () => !disposed && generation === ticket && !released;
@@ -154,6 +157,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       match?.dispose();
       updateSelection = () => {};
       inspector.bind();
+      overlays?.dispose();
       entities?.dispose();
       art?.dispose();
       renderer?.dispose();
@@ -175,6 +179,8 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         return;
       }
       renderer = nextRenderer;
+      overlays = createDebugOverlays(renderer.scene);
+      const overlayControls = createOverlayControls(panel, overlays, clicks.signal);
       art = createMapPresentation(
         renderer.scene,
         grid,
@@ -207,6 +213,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         clock.update(performance.now(), state.paused, state.speed);
         presentation.setPlaybackRate(state.paused ? 0 : state.speed);
         inspector.update(state);
+        overlayControls.update(state);
         if (state.snapshot.tick <= modelTick) return;
         modelTick = state.snapshot.tick;
         const presentedTick = modelTick;
@@ -268,6 +275,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       });
       if (!current()) return;
       const activeMatch = match;
+      overlayControls.bind(activeMatch);
       const activeRenderer = renderer;
       let busy = false;
       const orders = bindOrderInput(

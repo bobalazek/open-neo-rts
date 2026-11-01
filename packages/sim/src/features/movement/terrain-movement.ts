@@ -386,6 +386,18 @@ export class TerrainMovement {
   }
 
   /** Explicit diagnostics/save preparation; ordinary checkpoint hashes do not allocate this. */
+  debugPaths() {
+    return [...this.routes]
+      .sort(([a], [b]) => a - b)
+      .map(([entity, route]) => ({
+        entity,
+        target: { ...route.target },
+        searching: route.searching,
+        path: route.path.map((point) => ({ ...point })),
+      }));
+  }
+
+  /** Explicit diagnostics/save preparation; ordinary checkpoint hashes do not allocate this. */
   snapshot() {
     return {
       routes: [...this.routes]
