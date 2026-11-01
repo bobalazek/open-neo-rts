@@ -1,0 +1,16 @@
+{
+  "files": {
+    "flame-tank.glb": {
+      "author": "Borut Balazek",
+      "source": "source/flame-tank.bricks.json"
+    },
+    "flame-tank.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/flame-tank.bricks.json"
+    },
+    "flame-tank.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/flame-tank.bricks.json"
+    }
+  }
+}
