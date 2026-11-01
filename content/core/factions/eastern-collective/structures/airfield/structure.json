@@ -20,6 +20,7 @@
     "icon": "airfield.icon.png",
     "wreck": "airfield.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["active", "open", "close"]
   }
 }
