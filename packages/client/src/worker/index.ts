@@ -1,6 +1,7 @@
 // Main-thread lifecycle only; gameplay imports belong exclusively in entry.ts.
 import type { DebugOverlayOptions, DebugSpawn } from "@open-neo-rts/sim";
 import {
+  isDebugSessionExport,
   isWorkerReply,
   type OfflineSetup,
   type OfflineState,
@@ -73,6 +74,11 @@ export function createOfflineMatch(
     placement: (spawn: DebugSpawn) => request({ type: "placement", spawn }),
     speed: (speed: number) => request({ type: "speed", speed }),
     exportLog: () => request({ type: "export" }),
+    exportSession: () =>
+      request({ type: "export-session" }).then((value) => {
+        if (!isDebugSessionExport(value)) throw new Error("Invalid debug session export");
+        return value;
+      }),
     overlays: (options: DebugOverlayOptions) => request({ type: "overlays", options }),
     dispose,
   };

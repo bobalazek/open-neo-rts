@@ -8,19 +8,25 @@ import {
 } from "@open-neo-rts/render";
 import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
-import { createOfflineMatch } from "../../worker";
+import { createOfflineMatch, type OfflineState } from "../../worker";
 import { bindSelectionInput } from "../match/input";
 import { bindOrderInput } from "../match/orders";
 import { catalogEntry, resolveEntityModel } from "./catalog";
 import { createPresentationClock } from "./clock";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
 import { createInspector } from "./inspector";
+import { type DebugLink, debugLink, parseDebugLink, validateInitialSpawns } from "./links";
 import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
 import { createOverlayControls } from "./overlays";
 import { createSpawnPalette, spawnAtCell } from "./palette";
+import { createReproductionControls } from "./reproduction";
 
 const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
+const linkMaps = MAPS.map(({ definition }) => ({
+  id: `core.${definition.id}`,
+  ...definition.size,
+}));
 
 /** Owns one rendered, worker-hosted session; replaced loads never regain ownership. */
 export function startDebugSession(canvas: HTMLCanvasElement) {
@@ -37,7 +43,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     </div>
     <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>
     <label>Controlled Force <select name="controlled" aria-label="Controlled Force"></select></label>
-    <p>Debug no-fog · Empty setup. Setup changes apply on reload.</p>
+    <p>Debug no-fog. Setup changes apply on reload.</p>
     <p role="status" aria-label="Session status" aria-live="polite">Loading session…</p>`;
   document.body.append(panel);
   document.body.classList.add("model-check-page");
@@ -60,20 +66,29 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   const inspector = createInspector(panel, catalog, signal.signal, (handles) =>
     updateSelection(handles),
   );
+  const reproduction = createReproductionControls(panel, inspector.perform, signal.signal);
   map.replaceChildren(
     ...MAPS.map(({ definition }) => new Option(definition.name, `core.${definition.id}`)),
   );
-  const initialMap = new URLSearchParams(location.search).get("map") ?? "core.map:sandbox-flat";
-  if (!MAPS.some(({ definition }) => `core.${definition.id}` === initialMap))
-    map.add(new Option("Unknown map", initialMap));
-  map.value = initialMap;
+  let initial: DebugLink;
+  let linkError: string | undefined;
+  try {
+    initial = parseDebugLink(location.search, linkMaps, catalog);
+  } catch (error) {
+    linkError = error instanceof Error ? error.message : "Invalid debug link";
+    initial = parseDebugLink("", linkMaps, catalog);
+  }
+  map.value = initial.map;
+  seed.value = String(initial.seed);
   const forces: DebugForce[] = [];
-  function appendForce() {
+  function appendForce(configured?: DebugForce) {
     if (forces.length >= 8) return;
     const index = forces.length;
     const faction = FACTIONS[index % FACTIONS.length];
     if (!faction) return;
-    const force: DebugForce = { index, faction: `core.${faction.id}`, color: faction.color };
+    const force: DebugForce = configured
+      ? { ...configured }
+      : { index, faction: `core.${faction.id}`, color: faction.color };
     forces.push(force);
     const row = document.createElement("div");
     row.className = "model-check-controls";
@@ -110,8 +125,9 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     controls.controlled.add(new Option(`Force ${index + 1}`, String(index)));
     controls.addForce.disabled = forces.length === 8;
   }
-  appendForce();
-  addForce.addEventListener("click", appendForce, { signal: signal.signal });
+  for (const force of initial.forces) appendForce(force);
+  controlled.value = String(initial.controlled);
+  addForce.addEventListener("click", () => appendForce(), { signal: signal.signal });
   let generation = 0;
   let disposed = false;
   let cleanup: (() => void) | undefined;
@@ -126,6 +142,9 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     try {
       selectedSeed = parseDebugSeed(seed?.value ?? "");
       validateDebugForces(selectedForces, selectedControlled);
+      const selectedMap = linkMaps.find((entry) => entry.id === map?.value);
+      if (!selectedMap) throw new Error(`Unknown map: ${map?.value}`);
+      validateInitialSpawns(initial.spawns, selectedMap, selectedForces, catalog);
     } catch (error) {
       status.textContent = error instanceof Error ? error.message : "Invalid setup";
       status.setAttribute("role", "alert");
@@ -136,6 +155,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     cleanup?.();
     cleanup = undefined;
     inspector.bind();
+    reproduction.bind();
     status.textContent = "Loading session…";
     status.setAttribute("role", "status");
     delete canvas.dataset.session;
@@ -157,6 +177,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       match?.dispose();
       updateSelection = () => {};
       inspector.bind();
+      reproduction.bind();
       overlays?.dispose();
       entities?.dispose();
       art?.dispose();
@@ -206,10 +227,13 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       );
       let modelTick = -1;
       let modelFailed = false;
-      match = createOfflineMatch((state) => {
+      let initialized = false;
+      let latestState: OfflineState | undefined;
+      const receive = (state: OfflineState) => {
         if (!current()) return;
-        status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · ${state.paused ? "Paused" : "Running"} · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
-        canvas.dataset.session = "ready";
+        latestState = state;
+        status.textContent = `${definition.name} · ${initialized ? "Ready" : "Initializing"} · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · ${state.paused ? "Paused" : "Running"} · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
+        canvas.dataset.session = initialized ? "ready" : "loading";
         clock.update(performance.now(), state.paused, state.speed);
         presentation.setPlaybackRate(state.paused ? 0 : state.speed);
         inspector.update(state);
@@ -235,8 +259,8 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
                 error instanceof Error ? error.message : "Model presentation failed";
             }
           });
-      }, fail);
-      inspector.bind(match);
+      };
+      match = createOfflineMatch(receive, fail);
       await match.init({
         setup: {
           map: {
@@ -275,6 +299,34 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       });
       if (!current()) return;
       const activeMatch = match;
+      if (initial.spawns.length) {
+        const commands = initial.spawns.map((spawn) => {
+          const entry = catalog.find((entry) => entry.definition.id === spawn.definition);
+          if (!entry) throw new Error(`Unknown initial spawn: ${spawn.definition}`);
+          return activeMatch.command(
+            "debug.spawn",
+            spawnAtCell(entry, spawn.force, spawn.x, spawn.y, spawn.rotation),
+          );
+        });
+        const [results] = await Promise.all([Promise.all(commands), activeMatch.step()]);
+        if (!current()) return;
+        const refused = results.findIndex((result) => result !== "accepted");
+        if (refused !== -1)
+          throw new Error(`Initial spawn ${refused + 1} refused: ${String(results[refused])}`);
+      }
+      initialized = true;
+      inspector.bind(activeMatch);
+      if (latestState) receive(latestState);
+      reproduction.bind(
+        activeMatch,
+        debugLink(location.href, {
+          map: mapId,
+          seed: selectedSeed,
+          forces: selectedForces,
+          controlled: selectedControlled,
+          spawns: initial.spawns,
+        }),
+      );
       overlayControls.bind(activeMatch);
       const activeRenderer = renderer;
       let busy = false;
@@ -379,7 +431,11 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     }
   }
   reload.addEventListener("click", () => void load(), { signal: signal.signal });
-  void load();
+  if (linkError) {
+    status.textContent = `Invalid debug link: ${linkError}. Edit the URL, or Reload session to start the setup shown.`;
+    status.setAttribute("role", "alert");
+    canvas.dataset.session = "error";
+  } else void load();
   return {
     dispose() {
       if (disposed) return;

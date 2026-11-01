@@ -170,8 +170,9 @@ port.onmessage = ({ data }) => {
         schedule();
         break;
       case "export":
+      case "export-session": {
         if (!setup.debug) throw new Error("Command-log export requires debug mode");
-        publish(id, {
+        const scenario = parseScenario({
           format: SCENARIO_FORMAT,
           simVersion: SIM_VERSION,
           setup,
@@ -179,7 +180,14 @@ port.onmessage = ({ data }) => {
             .filter((entry) => entry.result === "accepted")
             .map((entry) => entry.command),
         });
+        publish(
+          id,
+          data.type === "export-session"
+            ? { scenario, tick: kernel.tick, hash: checkpointHash(kernel) }
+            : scenario,
+        );
         return;
+      }
       default:
         throw new Error("Unknown worker request");
     }
