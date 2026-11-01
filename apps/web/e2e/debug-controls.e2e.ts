@@ -66,7 +66,7 @@ test("debug controls share the real worker, projected selection and granted orde
   await page.mouse.move(end.x, end.y, { steps: 3 });
   await page.mouse.up();
   await expect(count).toHaveText("2 selected");
-  await page.screenshot({ path: "/tmp/neo-art-completion/artifacts/debug-controls/selection.png" });
+  await page.screenshot({ path: test.info().outputPath("selection.png") });
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
   await page.mouse.move(end.x, end.y);
@@ -163,7 +163,7 @@ test("debug controls share the real worker, projected selection and granted orde
   await page.getByRole("button", { name: "Step one tick", exact: true }).scrollIntoViewIfNeeded();
   await expect(page.getByRole("button", { name: "Step one tick", exact: true })).toBeInViewport();
   await page.screenshot({
-    path: "/tmp/neo-art-completion/artifacts/debug-controls/controls-narrow.png",
+    path: test.info().outputPath("controls-narrow.png"),
   });
   const finalState = await state();
   expect(finalState.hash).toMatch(/^[a-f0-9]{16}$/);

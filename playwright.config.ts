@@ -7,6 +7,7 @@ export default defineConfig({
   outputDir: "test-results",
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
+  use: { baseURL: "http://localhost:4320" },
   webServer: {
     command: "bun --cwd apps/web ./dev.ts",
     url: "http://localhost:4320",

@@ -51,7 +51,7 @@ test("debug shell reloads, retries worker failure and keeps controls reachable",
     created: 4,
     terminated: 3,
   });
-  await page.screenshot({ path: "/tmp/neo-art-completion/artifacts/debug-client/27-shell.png" });
+  await page.screenshot({ path: test.info().outputPath("27-shell.png") });
   await page.getByRole("link", { name: "Terrain view" }).click();
   await expect(page.getByRole("region", { name: "Terrain view" })).toBeVisible();
   await page.goto("/debug?models=1");
@@ -132,7 +132,7 @@ for (const production of [false, true]) {
       expect(refused.snapshot.entities).toEqual(state.snapshot.entities);
       await spawnResult.scrollIntoViewIfNeeded();
       await page.screenshot({
-        path: `/tmp/neo-art-completion/artifacts/debug-client/29-spawns-${production ? "production" : "development"}.png`,
+        path: test.info().outputPath(`29-spawns-${production ? "production" : "development"}.png`),
       });
       await page.route("**/*", (route) =>
         route.request().resourceType() === "fetch" ? route.abort() : route.continue(),
@@ -191,6 +191,6 @@ test("debug configuration starts every authored map and reproduces reload", asyn
     expect(await page.evaluate(() => Reflect.get(window, "workerState"))).toEqual(before);
   }
   await page.screenshot({
-    path: "/tmp/neo-art-completion/artifacts/debug-client/28-configuration.png",
+    path: test.info().outputPath("28-configuration.png"),
   });
 });
