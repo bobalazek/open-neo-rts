@@ -1,6 +1,7 @@
 // Blocky terrain chunks, height levels, ramps, water. Phase 1b.
 
 import {
+  AbstractMesh,
   Color3,
   Mesh,
   type Scene,
@@ -9,6 +10,7 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
+import type { GraphicsQuality } from "../scene/quality";
 import { registerShadowCaster } from "../scene/shadows";
 import { buildTerrainGeometry, type Geometry } from "./mesh";
 import { createWaterMaterials } from "./water";
@@ -20,13 +22,14 @@ export { BORDER, CELL_SIZE, CHUNK_SIZE, LEVEL_HEIGHT, terrainHeight, waterHeight
 /**
  * Terrain meshes with shared animated water and wet-side shoreline foam, owned by one disposable root.
  */
-export function createTerrain(scene: Scene, grid: TerrainGrid): TransformNode {
+export function createTerrain(scene: Scene, grid: TerrainGrid) {
   const root = new TransformNode("terrain", scene);
   const ground = new StandardMaterial("terrain", scene);
   ground.specularColor = new Color3(0.06, 0.06, 0.06);
   let water: ReturnType<typeof createWaterMaterials> | undefined;
+  const levels: { near: Mesh; far: Mesh }[] = [];
 
-  const mesh = (name: string, geometry: Geometry, material: StandardMaterial) => {
+  const mesh = (name: string, geometry: Geometry, material: StandardMaterial, lod = false) => {
     const m = new Mesh(name, scene, root);
     const data = new VertexData();
     data.positions = geometry.positions;
@@ -37,13 +40,26 @@ export function createTerrain(scene: Scene, grid: TerrainGrid): TransformNode {
     data.applyToMesh(m);
     m.hasVertexAlpha = name.startsWith("shore foam");
     m.alphaIndex = m.hasVertexAlpha ? 1 : 0;
-    m.isPickable = !m.hasVertexAlpha;
+    m.isPickable = !m.hasVertexAlpha && !lod;
+    m.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
     m.material = material;
-    if (material === ground) registerShadowCaster(m);
+    if (material === ground) {
+      m.receiveShadows = true;
+      if (!lod) registerShadowCaster(m);
+    }
     m.freezeWorldMatrix();
+    return m;
   };
+  const distant = new Map(
+    buildTerrainGeometry(grid, true).map((chunk) => [`${chunk.cx},${chunk.cy}`, chunk.terrain]),
+  );
   for (const chunk of buildTerrainGeometry(grid)) {
-    mesh(`terrain ${chunk.cx},${chunk.cy}`, chunk.terrain, ground);
+    const near = mesh(`terrain ${chunk.cx},${chunk.cy}`, chunk.terrain, ground);
+    const geometry = distant.get(`${chunk.cx},${chunk.cy}`);
+    if (geometry && geometry.indices.length < chunk.terrain.indices.length) {
+      const far = mesh(`terrain distant ${chunk.cx},${chunk.cy}`, geometry, ground, true);
+      levels.push({ near, far });
+    }
     if (chunk.water) {
       water ??= createWaterMaterials(scene, root);
       mesh(`water ${chunk.cx},${chunk.cy}`, chunk.water, water.water);
@@ -52,5 +68,16 @@ export function createTerrain(scene: Scene, grid: TerrainGrid): TransformNode {
   }
   // Quality changes rebuild shadow, prepass and depth shader variants; keep materials unfrozen.
   root.onDisposeObservable.addOnce(() => ground.dispose());
-  return root;
+  const result = Object.assign(root, {
+    setQuality(quality: GraphicsQuality) {
+      // Provisional engineering distances, in metres: retain more detail on higher presets.
+      const distance = { low: 64, medium: 96, high: 128, ultra: 160 }[quality];
+      for (const { near, far } of levels) {
+        near.removeLODLevel(far);
+        near.addLODLevel(distance, far);
+      }
+    },
+  });
+  result.setQuality("medium");
+  return result;
 }
