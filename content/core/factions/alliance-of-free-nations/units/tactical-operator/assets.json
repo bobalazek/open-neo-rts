@@ -1,0 +1,12 @@
+{
+  "files": {
+    "tactical-operator.glb": {
+      "author": "Borut Balazek",
+      "source": "source/tactical-operator.bricks.json"
+    },
+    "tactical-operator.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/tactical-operator.bricks.json"
+    }
+  }
+}

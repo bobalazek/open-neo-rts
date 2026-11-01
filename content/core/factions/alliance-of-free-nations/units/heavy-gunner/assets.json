@@ -1,0 +1,12 @@
+{
+  "files": {
+    "heavy-gunner.glb": {
+      "author": "Borut Balazek",
+      "source": "source/heavy-gunner.bricks.json"
+    },
+    "heavy-gunner.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/heavy-gunner.bricks.json"
+    }
+  }
+}

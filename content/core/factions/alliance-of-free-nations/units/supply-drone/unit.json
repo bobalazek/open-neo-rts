@@ -28,9 +28,9 @@
     "model": "supply-drone.glb",
     "icon": "supply-drone.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "rotor_fl", "rotor_fr", "rotor_bl", "rotor_br"],
     "sockets": [],
-    "animations": [],
+    "animations": ["idle"],
     "wreck": "supply-drone.wreck.glb"
   }
 }

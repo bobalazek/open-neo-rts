@@ -1,0 +1,16 @@
+{
+  "files": {
+    "striker-ifv.glb": {
+      "author": "Borut Balazek",
+      "source": "source/striker-ifv.bricks.json"
+    },
+    "striker-ifv.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/striker-ifv.bricks.json"
+    },
+    "striker-ifv.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/striker-ifv.bricks.json"
+    }
+  }
+}

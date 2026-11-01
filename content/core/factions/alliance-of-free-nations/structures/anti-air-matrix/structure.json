@@ -62,6 +62,7 @@
     "icon": "anti-air-matrix.icon.png",
     "wreck": "anti-air-matrix.rubble.glb",
     "materials": {},
+    "parts": ["turret", "barrel"],
     "sockets": ["socket_smoke", "socket_muzzle"]
   }
 }

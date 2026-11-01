@@ -1,0 +1,16 @@
+{
+  "files": {
+    "supply-drone.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-drone.bricks.json"
+    },
+    "supply-drone.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/supply-drone.bricks.json"
+    },
+    "supply-drone.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-drone.bricks.json"
+    }
+  }
+}

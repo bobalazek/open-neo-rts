@@ -1,0 +1,16 @@
+{
+  "files": {
+    "smart-turret.glb": {
+      "author": "Borut Balazek",
+      "source": "source/smart-turret.bricks.json"
+    },
+    "smart-turret.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/smart-turret.bricks.json"
+    },
+    "smart-turret.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/smart-turret.bricks.json"
+    }
+  }
+}
