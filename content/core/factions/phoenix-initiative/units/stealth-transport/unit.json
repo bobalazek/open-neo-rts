@@ -47,7 +47,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": [],
-    "animations": [],
+    "animations": ["idle", "move", "open", "close"],
     "wreck": "stealth-transport.wreck.glb"
   }
 }
