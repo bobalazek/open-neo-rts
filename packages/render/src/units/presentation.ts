@@ -1,4 +1,15 @@
-import { type AssetContainer, Mesh, type Scene, TransformNode } from "@babylonjs/core";
+import {
+  type AbstractMesh,
+  type AssetContainer,
+  Color3,
+  Matrix,
+  Mesh,
+  MeshBuilder,
+  type Scene,
+  StandardMaterial,
+  TransformNode,
+  Vector3,
+} from "@babylonjs/core";
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
@@ -17,11 +28,13 @@ interface Entity {
   playback?: ReturnType<typeof createModelPlayback>;
   clip?: string;
   loading?: Promise<void>;
+  ring?: ReturnType<Mesh["createInstance"]>;
 }
 interface Template {
   force: number;
   movementDomain: (typeof DOMAINS)[number] | null;
   footprint?: readonly [number, number];
+  radiusSubcells?: number;
   visibility: Map<string, boolean>;
   model?: AssetContainer;
   loading: Promise<AssetContainer | undefined>;
@@ -38,19 +51,27 @@ export function createEntityPresentation(
     bytes: Uint8Array;
     movementDomain: (typeof DOMAINS)[number] | null;
     footprint?: readonly [number, number];
+    radiusSubcells?: number;
   }>,
 ) {
   const entities = new Map<string, Entity>();
   const templates = new Map<string, Template>();
   const colors = new Map<number, string>();
+  const meshHandles = new Map<AbstractMesh, string>();
+  let selected = new Set<string>();
+  let ringModel: Mesh | undefined;
+  let ringMaterial: StandardMaterial | undefined;
   let tick: number | undefined;
   let receivedAt = 0;
   let duration = 50;
   let frameAt = 0;
   let disposed = false;
+  let playbackRate = 1;
   let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
+    for (const mesh of entity.root?.getChildMeshes() ?? []) meshHandles.delete(mesh);
+    entity.ring?.dispose();
     const morphs = entity.root
       ?.getChildMeshes()
       .flatMap((mesh) => (mesh.morphTargetManager ? [mesh.morphTargetManager] : []));
@@ -69,7 +90,8 @@ export function createEntityPresentation(
       visibility: new Map(),
       loading: Promise.resolve()
         .then(async () => {
-          const { bytes, movementDomain, footprint } = await resolveModel(definition);
+          const { bytes, movementDomain, footprint, radiusSubcells } =
+            await resolveModel(definition);
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
           const model = await loadModelContainer(scene, bytes);
@@ -87,6 +109,7 @@ export function createEntityPresentation(
             }
             template.movementDomain = movementDomain;
             template.footprint = footprint;
+            template.radiusSubcells = radiusSubcells;
             template.model = model;
             return model;
           } catch (error) {
@@ -107,8 +130,9 @@ export function createEntityPresentation(
   function render(nowMs: number) {
     if (disposed) return;
     frameAt = nowMs;
-    const alpha = Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
-    for (const entity of entities.values()) {
+    const alpha =
+      playbackRate === 0 ? 1 : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
+    for (const [handle, entity] of entities) {
       if (!entity.root || !entity.playback) continue;
       const a = entity.previous;
       const b = entity.current;
@@ -127,6 +151,33 @@ export function createEntityPresentation(
           ? waterHeight(terrain, x, y)
           : terrainHeight(terrain, x, y);
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
+      if (selected.has(handle)) {
+        if (!ringModel) {
+          ringModel = MeshBuilder.CreateTorus(
+            "selection ring template",
+            { diameter: 2, thickness: 0.14, tessellation: 32 },
+            scene,
+          );
+          ringMaterial = new StandardMaterial("selection ring", scene);
+          ringMaterial.emissiveColor = Color3.FromHexString("#f5cf60");
+          ringMaterial.disableLighting = true;
+          ringModel.material = ringMaterial;
+          ringModel.isVisible = ringModel.isPickable = false;
+        }
+        if (!entity.ring) {
+          entity.ring = ringModel.createInstance("selected entity");
+          entity.ring.isVisible = true;
+          entity.ring.isPickable = false;
+        }
+        const size = template?.footprint
+          ? (Math.max(...template.footprint) * CELL_SIZE) / 2 + 0.2
+          : ((template?.radiusSubcells ?? 666) * CELL_SIZE) / 1024 + 0.2;
+        entity.ring.scaling.set(size, 1, size);
+        entity.ring.position.set(x * CELL_SIZE, height + 0.08, y * CELL_SIZE);
+      } else if (entity.ring) {
+        entity.ring.dispose();
+        entity.ring = undefined;
+      }
       // Sim 0 faces +x; authored glTF fronts face +Z, with +y on the map becoming +z.
       entity.root.rotation.y = Math.PI / 2 - ((a.facing + turn * alpha) * Math.PI * 2) / 65536;
       const clip =
@@ -139,6 +190,7 @@ export function createEntityPresentation(
         entity.playback.play(clip);
         entity.clip = clip;
       }
+      entity.playback.setRate(playbackRate);
     }
   }
 
@@ -200,8 +252,10 @@ export function createEntityPresentation(
                 .getDescendants()
                 .filter((node) => node instanceof TransformNode);
               const meshes = current.root.getChildMeshes();
-              for (const mesh of meshes)
+              for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
+                meshHandles.set(mesh, handle);
+              }
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,
@@ -233,6 +287,64 @@ export function createEntityPresentation(
       await accepted;
     },
     render,
+    select(handles: readonly string[]) {
+      selected = new Set(handles);
+      render(frameAt);
+    },
+    /** Picking is confined to currently projected, rendered entity geometry. */
+    pick(x: number, y: number): string | null {
+      const hits =
+        scene.multiPick(
+          x,
+          y,
+          (mesh) => meshHandles.has(mesh) && mesh.isVisible && mesh.isEnabled(),
+        ) ?? [];
+      hits.sort((a, b) => {
+        const left = a.pickedMesh ? (meshHandles.get(a.pickedMesh) ?? "") : "";
+        const right = b.pickedMesh ? (meshHandles.get(b.pickedMesh) ?? "") : "";
+        return a.distance - b.distance || (left < right ? -1 : left > right ? 1 : 0);
+      });
+      const mesh = hits[0]?.pickedMesh;
+      return mesh ? (meshHandles.get(mesh) ?? null) : null;
+    },
+    /** Screen-space centres from the same rendered poses used for rings and picking. */
+    inRectangle(left: number, top: number, right: number, bottom: number): string[] {
+      const camera = scene.activeCamera;
+      const canvas = scene.getEngine().getRenderingCanvas();
+      if (!camera || !canvas) return [];
+      const viewport = camera.viewport.toGlobal(canvas.clientWidth, canvas.clientHeight);
+      const handles: string[] = [];
+      for (const [handle, entity] of entities) {
+        if (
+          !entity.root
+            ?.getChildMeshes()
+            .some((mesh) => mesh.isVisible && mesh.isEnabled() && mesh.getTotalVertices() > 0)
+        )
+          continue;
+        const point = Vector3.Project(
+          entity.root.position,
+          Matrix.IdentityReadOnly,
+          scene.getTransformMatrix(),
+          viewport,
+        );
+        if (
+          point.z >= 0 &&
+          point.z <= 1 &&
+          point.x >= left &&
+          point.x <= right &&
+          point.y >= top &&
+          point.y <= bottom
+        )
+          handles.push(handle);
+      }
+      return handles;
+    },
+    setPlaybackRate(rate: number) {
+      if (!Number.isFinite(rate) || rate < 0) throw new RangeError("Invalid playback rate");
+      playbackRate = rate;
+      if (rate === 0) for (const entity of entities.values()) entity.previous = entity.current;
+      render(frameAt);
+    },
     setForceColor(force: number, hex: string) {
       setTeamColor([], hex);
       colors.set(force, hex);
@@ -245,6 +357,9 @@ export function createEntityPresentation(
       disposed = true;
       for (const entity of entities.values()) remove(entity);
       entities.clear();
+      meshHandles.clear();
+      ringModel?.dispose();
+      ringMaterial?.dispose();
       for (const template of templates.values()) template.model?.dispose();
       templates.clear();
     },

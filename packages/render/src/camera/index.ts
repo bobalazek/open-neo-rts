@@ -1,5 +1,4 @@
-// RTS camera: pan (WASD or arrows, right-drag, edge scroll), smooth zoom between limits (wheel), rotate (Q/E,
-// middle-drag), pitch tied to zoom, target kept inside the map. Phase 1b.
+// RTS camera: arrows/right-drag/edge pan, wheel zoom, middle-drag rotate; target stays inside the map.
 
 import { ArcRotateCamera, type Scene, Vector3 } from "@babylonjs/core";
 
@@ -18,7 +17,6 @@ const PITCH_NEAR = 1.0;
 const PITCH_FAR = 0.7;
 /** Pan speed in camera distances per second. */
 const PAN_SPEED = 1.1;
-const ROTATE_SPEED = 1.8;
 const DRAG_ROTATE = 0.006;
 const ZOOM_STEP = 0.0015;
 const ZOOM_SMOOTHING = 12;
@@ -26,13 +24,9 @@ const ZOOM_SMOOTHING = 12;
 const EDGE = 8;
 
 const PAN_KEYS: Record<string, [number, number]> = {
-  KeyW: [0, 1],
   ArrowUp: [0, 1],
-  KeyS: [0, -1],
   ArrowDown: [0, -1],
-  KeyA: [-1, 0],
   ArrowLeft: [-1, 0],
-  KeyD: [1, 0],
   ArrowRight: [1, 0],
 };
 
@@ -49,7 +43,8 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   let goal = camera.radius;
   const keys = new Set<string>();
   let pointer: { x: number; y: number } | null = null;
-  let drag: { button: number; x: number; y: number } | null = null;
+  let drag: { button: number; x: number; y: number; moved: boolean } | null = null;
+  let selecting = false;
 
   // right and forward in metres, relative to the view direction on the ground.
   const pan = (right: number, forward: number) => {
@@ -65,24 +60,40 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   window.addEventListener(
     "keydown",
     (e) => {
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
       if (
         e.target instanceof Element &&
-        e.target.closest("input, select, textarea, button, [contenteditable]")
+        e.target.closest("input, select, textarea, button, a, [contenteditable]")
       )
         return;
-      keys.add(e.code);
+      if (e.code === "Backspace") {
+        e.preventDefault();
+        camera.alpha = Math.PI / 2;
+      }
+      if (PAN_KEYS[e.code]) {
+        e.preventDefault();
+        keys.add(e.code);
+      }
     },
     { signal },
   );
   window.addEventListener("keyup", (e) => keys.delete(e.code), { signal });
   window.addEventListener("blur", () => keys.clear(), { signal });
+  window.addEventListener(
+    "focusin",
+    (event) => {
+      if (event.target !== canvas) keys.clear();
+    },
+    { signal },
+  );
   canvas.addEventListener("contextmenu", (e) => e.preventDefault(), { signal });
   canvas.addEventListener(
     "pointerdown",
     (e) => {
+      if (e.button === 0) selecting = true;
       if (e.button !== 1 && e.button !== 2) return;
       e.preventDefault();
-      drag = { button: e.button, x: e.clientX, y: e.clientY };
+      drag = { button: e.button, x: e.clientX, y: e.clientY, moved: false };
       canvas.setPointerCapture(e.pointerId);
     },
     { signal },
@@ -94,6 +105,8 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       if (!drag) return;
       const dx = e.clientX - drag.x;
       const dy = e.clientY - drag.y;
+      if (drag.button === 2 && !drag.moved && Math.hypot(dx, dy) <= 5) return;
+      drag.moved = true;
       drag.x = e.clientX;
       drag.y = e.clientY;
       if (drag.button === 1) {
@@ -106,8 +119,15 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     },
     { signal },
   );
-  canvas.addEventListener("pointerup", () => (drag = null), { signal });
-  canvas.addEventListener("pointercancel", () => (drag = null), { signal });
+  const release = () => {
+    drag = null;
+    selecting = false;
+  };
+  canvas.addEventListener("pointerup", release, { signal });
+  window.addEventListener("pointerup", release, { signal });
+  canvas.addEventListener("pointercancel", release, { signal });
+  canvas.addEventListener("lostpointercapture", release, { signal });
+  window.addEventListener("blur", release, { signal });
   canvas.addEventListener("pointerleave", () => (pointer = null), { signal });
   canvas.addEventListener(
     "wheel",
@@ -129,7 +149,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
         forward += v[1];
       }
     }
-    if (pointer && !drag) {
+    if (pointer && !drag && !selecting) {
       if (pointer.x < EDGE) right -= 1;
       if (pointer.x > canvas.clientWidth - EDGE) right += 1;
       if (pointer.y < EDGE) forward += 1;
@@ -137,7 +157,6 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     }
     const speed = camera.radius * PAN_SPEED * dt;
     if (right || forward) pan(Math.sign(right) * speed, Math.sign(forward) * speed);
-    camera.alpha += ((keys.has("KeyE") ? 1 : 0) - (keys.has("KeyQ") ? 1 : 0)) * ROTATE_SPEED * dt;
     camera.radius += (goal - camera.radius) * (1 - Math.exp(-ZOOM_SMOOTHING * dt));
     const t = (camera.radius - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
     camera.beta = PITCH_NEAR + (PITCH_FAR - PITCH_NEAR) * t;

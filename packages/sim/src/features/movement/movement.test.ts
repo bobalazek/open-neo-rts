@@ -195,9 +195,9 @@ describe("determinism", () => {
   test("golden hashes for a 300-tick scripted two-Force run", () => {
     const kernel = play(1);
     expect(kernel.checkpoints).toEqual([
-      { tick: 100, hash: "94dbef7a871aa388" },
-      { tick: 200, hash: "e70121f4bbe32b89" },
-      { tick: 300, hash: "1201bee70b5c9564" },
+      { tick: 100, hash: "8cff891f90db636d" },
+      { tick: 200, hash: "cab7bea3cbcacb3b" },
+      { tick: 300, hash: "b67353abffe4854c" },
     ]);
     expect(checkpointHash(kernel)).toBe(kernel.checkpoints[2]?.hash ?? "");
     expect(kernel.log.map((e) => e.result).filter((r) => r !== "accepted")).toEqual(["no_grant"]);

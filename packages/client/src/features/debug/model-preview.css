@@ -72,6 +72,20 @@
   margin: 12px 0 0;
   overflow-wrap: anywhere;
 }
+.debug-session pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.debug-session fieldset {
+  min-width: 0;
+}
+.selection-box {
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid #70ffa4;
+  background: #70ffa421;
+}
 .model-check-help {
   color: #c0ced9;
   font-size: 13px;

@@ -28,6 +28,7 @@ export function createSpawnPalette(
   const section = document.createElement("fieldset");
   section.innerHTML = `<legend>Spawn existing content</legend>
     <label>Search definitions <input type="search" /></label>
+    <label>Map action <select name="map-action" aria-label="Map action"><option value="spawn">Spawn</option><option value="select">Select</option></select></label>
     <label>Definition <select aria-label="Definition" size="5"></select></label>
     <div class="model-check-controls">
       <label>Spawn Force <select name="spawn-force" aria-label="Spawn Force"></select></label>
@@ -35,7 +36,7 @@ export function createSpawnPalette(
         <option value="0">0°</option><option value="1">90°</option><option value="2">180°</option><option value="3">270°</option>
       </select></label>
     </div>
-    <p>Pick a definition, then left-click the map. Each spawn advances one paused tick.</p>
+    <p>Spawn: pick a definition, then left-click the map. Select: click an entity; Shift adds, Ctrl/Cmd toggles. A paused spawn advances one tick.</p>
     <p role="status" aria-label="Spawn result">No spawn submitted.</p>
     <p role="status" aria-label="Model status">No entity models loaded.</p>`;
   panel.append(section);
@@ -43,9 +44,10 @@ export function createSpawnPalette(
   const definitions = section.querySelector<HTMLSelectElement>('[aria-label="Definition"]');
   const force = section.querySelector<HTMLSelectElement>('[name="spawn-force"]');
   const rotation = section.querySelector<HTMLSelectElement>('[name="rotation"]');
+  const action = section.querySelector<HTMLSelectElement>('[name="map-action"]');
   const result = section.querySelector<HTMLElement>('[aria-label="Spawn result"]');
   const models = section.querySelector<HTMLElement>('[aria-label="Model status"]');
-  if (!search || !definitions || !force || !rotation || !result || !models)
+  if (!search || !definitions || !force || !rotation || !action || !result || !models)
     throw new Error("Spawn controls missing");
   const controls = { search, definitions, force, rotation };
   function filter() {
@@ -71,6 +73,12 @@ export function createSpawnPalette(
   return {
     result,
     models,
+    spawning: () => action.value === "spawn",
+    cancel() {
+      if (action.value !== "spawn") return false;
+      action.value = "select";
+      return true;
+    },
     setForces(forces: readonly DebugForce[], controlled: number) {
       force.replaceChildren(
         ...forces.map((force) => new Option(`Force ${force.index + 1}`, String(force.index))),

@@ -38,6 +38,7 @@ test("registers entities before movement and gives movement the setup grants and
     "debug.setHealth",
     "debug.remove",
     "unit.move",
+    "unit.attackMove",
     "unit.stop",
   ]);
   expect(kernel.world.query(Template)).toEqual([]);

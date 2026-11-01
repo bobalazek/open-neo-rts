@@ -8,8 +8,12 @@ import {
 import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
+import { bindSelectionInput } from "../match/input";
+import { bindOrderInput } from "../match/orders";
 import { catalogEntry, resolveEntityModel } from "./catalog";
+import { createPresentationClock } from "./clock";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
+import { createInspector } from "./inspector";
 import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
 import { createSpawnPalette, spawnAtCell } from "./palette";
@@ -31,7 +35,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     </div>
     <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>
     <label>Controlled Force <select name="controlled" aria-label="Controlled Force"></select></label>
-    <p>Debug no-fog · Paused · Empty setup. Setup changes apply on reload.</p>
+    <p>Debug no-fog · Empty setup. Setup changes apply on reload.</p>
     <p role="status" aria-label="Session status" aria-live="polite">Loading session…</p>`;
   document.body.append(panel);
   document.body.classList.add("model-check-page");
@@ -50,6 +54,10 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   const controls = { forceRows, controlled, addForce };
   const signal = new AbortController();
   const palette = createSpawnPalette(panel, catalog, signal.signal);
+  let updateSelection: (handles: readonly string[]) => void = () => {};
+  const inspector = createInspector(panel, catalog, signal.signal, (handles) =>
+    updateSelection(handles),
+  );
   map.replaceChildren(
     ...MAPS.map(({ definition }) => new Option(definition.name, `core.${definition.id}`)),
   );
@@ -125,6 +133,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     const ticket = ++generation;
     cleanup?.();
     cleanup = undefined;
+    inspector.bind();
     status.textContent = "Loading session…";
     status.setAttribute("role", "status");
     delete canvas.dataset.session;
@@ -143,6 +152,8 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       released = true;
       clicks.abort();
       match?.dispose();
+      updateSelection = () => {};
+      inspector.bind();
       entities?.dispose();
       art?.dispose();
       renderer?.dispose();
@@ -181,21 +192,28 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         return resolveEntityModel(entry);
       });
       const presentation = entities;
+      updateSelection = (handles) => presentation.select(handles);
+      const clock = createPresentationClock();
       for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
-      renderer.scene.onBeforeRenderObservable.add(() => presentation.render(performance.now()));
+      renderer.scene.onBeforeRenderObservable.add(() =>
+        presentation.render(clock.now(performance.now())),
+      );
       let modelTick = -1;
       let modelFailed = false;
       match = createOfflineMatch((state) => {
         if (!current()) return;
-        status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · Paused · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
+        status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · ${state.paused ? "Paused" : "Running"} · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = "ready";
+        clock.update(performance.now(), state.paused, state.speed);
+        presentation.setPlaybackRate(state.paused ? 0 : state.speed);
+        inspector.update(state);
         if (state.snapshot.tick <= modelTick) return;
         modelTick = state.snapshot.tick;
         const presentedTick = modelTick;
         if (!modelFailed && state.snapshot.entities.length)
           palette.models.textContent = `Loading models · ${state.snapshot.entities.length} projected entities`;
         void presentation
-          .accept(state.snapshot, performance.now())
+          .accept(state.snapshot, clock.now(performance.now()))
           .then(() => {
             if (!current() || modelTick !== presentedTick) return;
             modelFailed = false;
@@ -211,6 +229,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
             }
           });
       }, fail);
+      inspector.bind(match);
       await match.init({
         setup: {
           map: {
@@ -251,10 +270,61 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const activeMatch = match;
       const activeRenderer = renderer;
       let busy = false;
+      const orders = bindOrderInput(
+        canvas,
+        panel,
+        {
+          ready: () => current() && !busy && !inspector.busy(),
+          selectMode: () => {
+            palette.cancel();
+          },
+          pickCell: (x, y) => activeRenderer.pickCell(x, y),
+          order: async (type, cell) => {
+            const handles = inspector.selected();
+            if (!handles.length) return "Select an entity first.";
+            let result = "Control busy.";
+            await inspector.perform(async (active, state) => {
+              const command = active.command(type, {
+                entities: handles,
+                ...(cell ? { x: cell.x * 1024 + 512, y: cell.y * 1024 + 512 } : {}),
+              });
+              if (state.paused) await active.step();
+              result = String(await command);
+              return result;
+            });
+            return result;
+          },
+        },
+        clicks.signal,
+      );
+      const selectionInput = bindSelectionInput(
+        canvas,
+        {
+          enabled: () =>
+            current() && !busy && !inspector.busy() && !palette.spawning() && !orders.targeting(),
+          selected: inspector.selected,
+          select: inspector.select,
+          pick: (x, y) => presentation.pick(x, y),
+          inRectangle: (left, top, right, bottom) =>
+            presentation.inRectangle(left, top, right, bottom),
+        },
+        clicks.signal,
+      );
+      canvas.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.code !== "Escape") return;
+          event.preventDefault();
+          if (selectionInput.cancel()) return;
+          if (!palette.cancel()) inspector.select([]);
+        },
+        { signal: clicks.signal },
+      );
       canvas.addEventListener(
         "click",
         async (event) => {
-          if (!current() || busy || event.button !== 0) return;
+          if (!current() || busy || inspector.busy() || event.button !== 0) return;
+          if (!palette.spawning() || orders.targeting()) return;
           const selection = palette.selection();
           const cell = activeRenderer.pickCell(event.clientX, event.clientY);
           if (!selection || !cell) {
@@ -271,22 +341,23 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
           );
           palette.result.textContent = `Submitting ${selection.entry.name} at ${cell.x}, ${cell.y}…`;
           try {
-            const [result] = await Promise.all([
-              activeMatch.command("debug.spawn", payload),
-              activeMatch.step(),
-            ]);
-            if (!current()) return;
-            if (result === "accepted")
-              palette.result.textContent = `Spawned ${selection.entry.name} · Force ${selection.force + 1} · Cell ${cell.x}, ${cell.y}`;
-            else if (result === "placement_failed") {
-              const placement = (await activeMatch.placement(payload)) as SpawnPlacement;
+            await inspector.perform(async (_match, state) => {
+              const command = activeMatch.command("debug.spawn", payload);
+              if (state.paused) await activeMatch.step();
+              const result = await command;
               if (!current()) return;
-              const reasons = new Set(
-                placement.cells?.flatMap((cell) => (cell.failure ? [cell.failure] : [])) ?? [],
-              );
-              palette.result.textContent = `Refused ${selection.entry.name}: ${result} · ${placement.failure ?? [...reasons].join(", ")}`;
-            } else
-              palette.result.textContent = `Refused ${selection.entry.name}: ${String(result)}`;
+              if (result === "accepted")
+                palette.result.textContent = `Spawned ${selection.entry.name} · Force ${selection.force + 1} · Cell ${cell.x}, ${cell.y}`;
+              else if (result === "placement_failed") {
+                const placement = (await activeMatch.placement(payload)) as SpawnPlacement;
+                if (!current()) return;
+                const reasons = new Set(
+                  placement.cells?.flatMap((cell) => (cell.failure ? [cell.failure] : [])) ?? [],
+                );
+                palette.result.textContent = `Refused ${selection.entry.name}: ${result} · ${placement.failure ?? [...reasons].join(", ")}`;
+              } else
+                palette.result.textContent = `Refused ${selection.entry.name}: ${String(result)}`;
+            });
           } catch (error) {
             fail(error);
           } finally {
