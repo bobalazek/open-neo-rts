@@ -1,0 +1,135 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "photon_barrier_generator",
+      "bricks": [
+        {
+          "at": [-7.7, 0, -7.7],
+          "size": [15.4, 0.6, 15.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-4, 0.6, -4],
+          "size": [8, 2.5, 8],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3.5, 3.1, -3.5],
+          "size": [7, 1, 7],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.5, 4.1, -1.5],
+          "size": [3, 4, 3],
+          "slot": "glass",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [4, 0.6, -1],
+          "size": [1.5, 6, 2],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2",
+          "mirror": true
+        },
+        {
+          "at": [3.5, 6.6, -1.5],
+          "size": [2.5, 0.6, 3],
+          "slot": "team",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-1, 0.6, 4],
+          "size": [2, 6, 1.5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1, 0.6, -5.5],
+          "size": [2, 6, 1.5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1.5, 6.6, 3.5],
+          "size": [3, 0.6, 2.5],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 6.6, -6],
+          "size": [3, 0.6, 2.5],
+          "slot": "team",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "emitter",
+      "parent": "photon_barrier_generator",
+      "at": [0, 8, 0],
+      "bricks": [
+        {
+          "at": [-3.5, -0.2, -0.4],
+          "size": [7, 0.4, 0.8],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.4, -0.2, -3.5],
+          "size": [0.8, 0.4, 7],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.8, -0.8, -0.8],
+          "size": [1.6, 1.6, 1.6],
+          "slot": "glass",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "photon_barrier_generator",
+      "at": [0, 4, 0]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 2,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "emitter",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.5, [0, 90, 0]],
+            [1.0, [0, 180, 0]],
+            [1.5, [0, 270, 0]],
+            [2.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "emitter",
+          "translation": [[0, [0, 0, 0]], [1, [0, 0.5, 0]], [2, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}
