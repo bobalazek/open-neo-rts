@@ -88,6 +88,7 @@ open-neo-rts/
 │   │   └── src/{loader,schemas,rules,locales,maps,assets}/
 │   ├── sim/                       the deterministic simulation
 │   │   └── src/
+│   │       ├── match.ts           setup, simulation version, fixed feature registration
 │   │       ├── kernel/            world, phase scheduler and hooks, tick
 │   │       ├── commands/          envelopes, canonical order, validation
 │   │       ├── ecs/               our ECS
@@ -126,6 +127,8 @@ open-neo-rts/
 
 Every folder named in the tree, and every feature under a `features/` folder, has an `index.ts` stating its purpose and phase; most are still empty. The exceptions are `content/src/rules/` (engine vocabulary: roles, armour classes, resources, terrain, match settings) and `content/src/assets/` (model checks), whose files the package index exports directly. The [roadmap](../project/roadmap.md#what-each-phase-builds) says which ones get filled when.
 
+The CLI's `bun neo run <scenario> [--seed N] [--ticks T]` reads a versioned command log, runs it twice in one process and prints checkpoint hashes. Parsing and execution are shared, runtime-independent exports of `packages/sim`; file I/O, options and output stay in `apps/cli`. See [testing.md](testing.md#2-determinism-harness).
+
 ### Why each package exists
 
 | Package         | Why it's separate                                                                                                                                                                                                           |
@@ -145,7 +148,7 @@ Every folder named in the tree, and every feature under a `features/` folder, ha
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `web`    | The static build for browsers. Also the build that the desktop and mobile shells wrap                                                                            |
 | `server` | A long-running process with its own deployment and scaling (§8). Players never download it                                                                       |
-| `cli`    | Developer and CI tools (`bun neo validate`, `generate-schemas`, `make-placeholders`, and later `run`, `replay`, `bench`, `ai-vs-ai`). Same packages, no graphics |
+| `cli`    | Developer and CI tools (`bun neo validate`, `generate-schemas`, `make-placeholders`, `run`, and later `replay`, `bench`, `ai-vs-ai`). Same packages, no graphics |
 
 ## 4. Module dependency direction
 
@@ -164,6 +167,8 @@ deterministic ◄── content ◄── sim ◄── ai
 Boundaries are enforced by declared dependencies (Bun's isolated installs reject undeclared imports) and by the TypeScript `lib` and `types` each package compiles with. Inside a package, each folder exports an `index.ts` with its public contract. ECS components stay next to the feature that owns them, not in one shared `components/` folder.
 
 ## 5. Determinism contract
+
+`SIM_VERSION` is exported from `packages/sim` and starts at 1. `MatchSetup` supplies the u32 seed, debug flag, declared Forces (index and faction ID), player/bot seat indices, grants and an ordered definition table in integer sim units. Seat 0 is reserved for system commands. `createMatch(setup)` always registers entities, then movement. There is no map in phase 1a; the world is a flat, empty plane.
 
 - Exactly one `step(world, validatedCommands)` per **fixed 50 ms tick (20 Hz)** initially. The tick counter is an integer; the rendering frame rate is independent of it.
 - Only sim commands change game state. A command envelope carries `matchId, playerId, seatId, requestId, requestedTick, sequence, payload`. The server chooses the canonical target tick and order; `requestedTick` is only a hint.

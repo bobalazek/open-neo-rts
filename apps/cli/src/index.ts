@@ -7,12 +7,14 @@ import { generateSchemas } from "./commands/generate-schemas";
 import { generateTextures } from "./commands/generate-textures";
 import { generateTrigTable } from "./commands/generate-trig-table";
 import { makePlaceholders } from "./commands/make-placeholders";
+import { run } from "./commands/run";
 import { validateAssets } from "./commands/validate-assets";
 import { validateContent } from "./commands/validate-content";
 
 type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
+  run: { summary: "Run a scenario twice and print checkpoint hashes [--seed N] [--ticks T]", run },
   validate: {
     summary: "Run every content and asset check (what CI runs)",
     run: async (args) => {
