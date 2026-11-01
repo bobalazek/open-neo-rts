@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 // open-neo-rts CLI: tools that run without graphics. Usage: bun neo <command> [args]
 
+import { bench } from "./commands/bench";
 import { buildModels } from "./commands/build-models";
 import { generateSandboxMaps } from "./commands/generate-sandbox-maps";
 import { generateSchemas } from "./commands/generate-schemas";
@@ -14,7 +15,12 @@ import { validateContent } from "./commands/validate-content";
 type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
-  run: { summary: "Run a scenario twice and print checkpoint hashes [--seed N] [--ticks T]", run },
+  bench: { summary: "Measure tick cost and ECS stores [--units N] [--ticks T]", run: bench },
+  run: {
+    summary:
+      "Run a scenario twice [--seed N] [--ticks T] [--trace file], or --compare trace-a trace-b",
+    run,
+  },
   validate: {
     summary: "Run every content and asset check (what CI runs)",
     run: async (args) => {

@@ -4,7 +4,7 @@ Work that can start now without a further decision, grouped by [roadmap](./roadm
 
 ## Now: phase 1a (engine foundations)
 
-- [ ] Scenario golden hashes: once `bun neo run` exists, check its checkpoint hashes in Bun and, through the Playwright helper in `apps/web/e2e/determinism.e2e.ts`, in Chromium, Firefox and WebKit. PR type: tooling.
+- [ ] Confirm CI for the implemented [two-Force scenario golden hashes](./phases/1a.md#1a-11--add-the-two-force-scenario-and-its-golden-hashes-in-bun-and-browsers), including Firefox. Bun, Chromium and WebKit pass locally; Firefox has a local profile launch failure. PR type: tooling.
 
 ## Next: phase 1b (debug mode)
 
