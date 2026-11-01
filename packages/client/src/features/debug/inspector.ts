@@ -54,7 +54,9 @@ export function createInspector(
   const inspected = () => state?.snapshot.entities.find(({ handle }) => handle === selected[0]);
   function draw() {
     section.disabled = !match || !state || pending;
-    pause.textContent = state?.paused ? "Run" : "Pause";
+    const pauseLabel = state?.paused ? "Run" : "Pause";
+    // Replacing a pressed button's text between pointer down/up can cancel WebKit's click.
+    if (pause.textContent !== pauseLabel) pause.textContent = pauseLabel;
     step.disabled = !state?.paused;
     if (state) {
       speed.value = String(state.speed);
