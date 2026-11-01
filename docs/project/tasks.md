@@ -17,7 +17,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 ## In progress or awaiting delivery
 
-- [ ] [1B-32 · Debug overlays](./phases/1b.md#1b-32--draw-debug-overlays-from-worker-diagnostics). PR type: engine; copied grid/height/nav/path diagnostics, with unavailable fog disabled.
 
 ## Delivered foundations
 
