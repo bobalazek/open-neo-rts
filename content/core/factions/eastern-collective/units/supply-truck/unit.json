@@ -52,9 +52,9 @@
     "model": "supply-truck.glb",
     "icon": "supply-truck.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "supply-truck.wreck.glb"
   }
 }
