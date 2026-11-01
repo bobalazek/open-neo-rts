@@ -112,9 +112,14 @@ export function createInspector(
     signal,
   });
   step.addEventListener("click", () => void act((active) => active.step()), { signal });
-  speed.addEventListener("change", () => void act((active) => active.speed(Number(speed.value))), {
-    signal,
-  });
+  speed.addEventListener(
+    "change",
+    () => {
+      const requested = Number(speed.value);
+      void act((active) => active.speed(requested));
+    },
+    { signal },
+  );
   picker.addEventListener("change", () => select(picker.value ? [picker.value] : []), { signal });
   setHealth.addEventListener(
     "click",
