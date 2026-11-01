@@ -1,31 +1,31 @@
 # Handoff
 
-State on 2026-11-01. The saved branch `feat/phase-1-models-and-props` was recovered and merged into `main` through PR #2. Its incomplete biome integration is repaired; the original assets were preserved.
+Snapshot on 2026-11-01. Merged work and accepted branches are distinguished below; branch acceptance is not a main-branch or CI claim. Current actionable work is in [tasks.md](./tasks.md), with detailed [phase 1a](./phases/1a.md) and [phase 1b](./phases/1b.md) plans.
 
-## Done (on main via PR #1, or committed on this branch)
+## Merged on main
 
-- Phase 0: content migrated (weapons, roles, builders at headquarters, Quantum Nexus), 0 validation errors.
-- Phase 1a: `packages/deterministic` (PRNG, integer math, trig, state hash, browser golden digests), sim ECS, commands, kernel, entities and movement features, structure placement rules.
-- Phase 1b: map terrain layers and validation, four sandbox maps, terrain renderer with RTS camera (`bun --port=4318 apps/web/index.html`), `bun neo build-models`, 42 tier-1 brick models (14 per faction), 37 props, resource visuals, generated textures.
-- Follow-up first-pass Eastern Collective art: Flame Tank (PR #4), animated Radar Tower (PR #6), and Infiltrator with idle, move, attack and death clips (PR #8). Each has editable brick source, model, icon and provenance; the vehicle and structure also have wreck and rubble models.
+Main at `25cce95` includes the recovery of `feat/phase-1-models-and-props` (PR #2) and subsequent work:
 
-The three follow-up models were inspected in Blender and independently reviewed. The Infiltrator's exported vertices were sampled through all clips to fix ground penetration. Content validation now checks 82 models and 551 asset files with zero errors; 156 missing-asset warnings remain.
+- Deterministic math, ECS, commands, kernel, entities and flat-world movement; pure footprint placement checks. The placement checker is not yet connected to map-aware spawning, build radius or clearance.
+- Terrain layers/validation, camera and chunk geometry for cliffs, ramps, water and biome colouring; initial sandbox maps and original props/resource artwork. Authored map loading/picker is merged in PR #49 (`b7b4520`), with [green CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41341685124), including Chromium's real six-map loader tests and Firefox/WebKit goldens. Full worker/debug controls and projected map entities remain future work.
+- Eastern Collective first-pass model follow-ups through PR #39 and the Quantum Nexus artwork (PR #9); Alliance of Free Nations Advanced Armory, Cyber Operations Center and Drone Assembly Plant in PR #50–52. Remaining Alliance of Free Nations and Phoenix Initiative completion work is tracked below. No asset-warning count is used as a completion claim.
+- Single-model browser inspection with team colours, animation playback and restored rest poses (PR #40). This is not map entity rendering or a sim client.
+- Headless scenario runner (PR #41), browser-safe sim testing fixtures (PR #42), targeted map generation/previews (PR #43), `sandbox-biomes` (PR #44) and Training Grounds height/ramp terrain (PR #45).
+- Two-Force 10,000-tick checkpoint goldens (PR #46, `6519ae8`). [CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41341002715) passed Bun verification and the scenario/numeric digests in Chromium, Firefox and WebKit. Phase 1a's exit is met; the earlier local Firefox profile error is not an outstanding CI gate.
+- Headless tick/ECS benchmark (PR #47, `f710103`), with a [first measurement](./learnings/2026-11-01-first-tick-benchmark.md) covering flat-world movement only, not pathfinding or browser frame rate; first-divergent-tick traces and comparison (PR #48, `d0fd2ca`).
+- Pure incremental A* over an explicit integer grid (PR #53, `3eb0b39`), without terrain compilation, Force budgets or movement integration. Flat-world worker/projection foundation (PR #54, `25cce95`), with per-seat handles, grant-restricted views and explicit debug-only no-fog; map setup and renderer binding remain follow-ups.
 
-## Remaining work
+## Accepted implementation awaiting merge
 
-The earlier handoff overstated saved progress: model rendering, motion-clip changes, pathfinding and the scenario runner have no implementation in the WIP commit. Their feature folders are placeholders, not suspended agents.
+- Remaining Alliance of Free Nations models: `art/alliance-model-completion`, `bdd1f19`; Phoenix Initiative models: `art/phoenix-model-completion`, `940eb2a`. Both source branches were independently reviewed. Publish remaining existing definition folders as individual art PRs, retaining source, required clips/remains, icons and provenance. They remain ongoing until merged and validated together.
+- Strict model presentation validation through `50230d8` is held until both art completion branches are integrated. Do not enable it against incomplete art or weaken it to get a green run.
 
-- The biome layer, validation and terrain colouring are implemented; `sandbox-biomes` and Training Grounds terrain remain.
-- Render models and props on the map.
-- Add motion clips and validation: vehicle movement, rotor and radar loops, exit doors.
-- Add pathfinding.
-- Add `bun neo run` and scenario golden hashes.
-- Finish per-phase task planning beyond [phase 1a](./phases/1a.md).
+## Continue phase 1b
 
-## Next
+The [plan](./phases/1b.md) breaks the former broad queue into map-aware setup/occupancy, navigation compiler, reachability, per-Force budgets, path following/invalidation, map projection and worker integration, renderer instances/animations, individual debug tools, selection/orders, e2e and measured performance tasks. The flat-world portions of 1B-25/26 are merged; map integration and rendering the worker's copied snapshots remain follow-ups. Baseline placeholders alone are not completed implementations.
 
-1. Continue first-pass artwork for existing definitions without models, one art PR per unit or structure, following the established faction styles. The owner requested this continuation after the recovery merge.
-2. Finish `bun neo run`, scenario goldens and the items above, one PR each ([decision](./decisions/2026-11-01-work-through-prs.md)).
-3. Then the rest of phase 1b: debug mode panels, sim worker and projection, selection, end-to-end tests. See [roadmap.md](./roadmap.md) and [tasks.md](./tasks.md).
+The owner's water-domain decision blocks terrain navigation semantics, not pure A* on explicit integer fixture grids. The existing water map's geometry is complete. Node-bound structure policy and concrete build-radius/clearance rules remain owner decisions. Final faction roster, balance and art-direction sign-offs remain pending as well; first-pass art work does not decide them.
 
-Pending owner decisions are in [human-tasks.md](./human-tasks.md). Working rules are in [AGENTS.md](../../AGENTS.md).
+Finish accepted delivery, then pick dependency-ready work from [tasks.md](./tasks.md), one focused PR at a time. Do not claim phase 1b from model previews or headless timings: its unchanged [exit](./roadmap.md#exit-criteria) requires the real projection-only debug client, all sandbox maps, placement, selection/orders, CI e2e and a measured 200-unit terrain workload at 60 fps on medium.
+
+Pending owner decisions: [human-tasks.md](./human-tasks.md). Working rules: [AGENTS.md](../../AGENTS.md).

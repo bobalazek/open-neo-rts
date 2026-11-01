@@ -1,6 +1,6 @@
 # Phase task details
 
-[tasks.md](../tasks.md) is the queue of actionable work. [1a.md](./1a.md) adds scope and acceptance criteria for the engine foundations. Other phases are still specified by the [roadmap](../roadmap.md); their detailed plans have not been written.
+[tasks.md](../tasks.md) is the queue of actionable work. [1a.md](./1a.md) details the engine foundations; [1b.md](./1b.md) details debug mode, maps, rendering and navigation. Later phases remain specified by the [roadmap](../roadmap.md); their detailed plans have not been written.
 
 Pick an unblocked task, use one branch and PR, and update its status when it lands. Do not treat an unfinished plan as implemented code.
 
