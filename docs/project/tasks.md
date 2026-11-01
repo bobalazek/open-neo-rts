@@ -8,14 +8,21 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 ## Now: phase 1b (debug mode)
 
-- [ ] [1B-27 · Debug session shell](./phases/1b.md#1b-27--mount-the-debug-session-shell), followed by [configuration](./phases/1b.md#1b-28--choose-maps-seed-and-forces-in-debug-mode) and the [spawn palette](./phases/1b.md#1b-29--spawn-existing-definitions-through-commands): renderer, worker and authoritative debug placement are implemented. PR type: engine, one task per PR.
+- [ ] [1B-11 · Terrain chunk LOD and culling](./phases/1b.md#1b-11--add-terrain-chunk-lod-and-culling). PR type: engine.
+- [ ] [1B-30 · Placement failure overlays](./phases/1b.md#1b-30--show-authoritative-placement-failures). PR type: engine.
+- [ ] [1B-33 · Scenario exports and session deep links](./phases/1b.md#1b-33--reproduce-sessions-with-scenario-exports-and-deep-links). PR type: engine.
+- [ ] [1B-38 · Model LOD and culling](./phases/1b.md#1b-38--animate-projected-models-and-choose-model-lod): idle/move animation and independent playback already work; finish available authored LOD selection and measure frame cost. PR type: engine.
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
+- [ ] [1B-48 · Navigation CLI benchmark](./phases/1b.md#1b-48--benchmark-navigation-in-the-existing-cli). PR type: tooling.
 
 ## In progress or awaiting delivery
 
-- [ ] [1B-15 · Alliance of Free Nations first-pass artwork](./phases/1b.md#1b-15--integrate-reviewed-alliance-of-free-nations-artwork): first three folders merged in PR #50–52; remaining accepted source is ongoing, one existing definition folder per art PR.
-- [ ] [1B-16 · Phoenix Initiative first-pass artwork](./phases/1b.md#1b-16--integrate-reviewed-phoenix-initiative-artwork): accepted source branch, not yet merged; deliver one existing definition folder per art PR.
+- [ ] [1B-32 · Debug overlays](./phases/1b.md#1b-32--draw-debug-overlays-from-worker-diagnostics). PR type: engine; copied grid/height/nav/path diagnostics, with unavailable fog disabled.
 
-The [A* core](./phases/1b.md#1b-21--add-incremental-integer-a-over-an-explicit-grid) is merged in PR #53 (`3eb0b39`). The flat-world [projection](./phases/1b.md#1b-25--define-the-per-seat-presentation-projection) and [worker](./phases/1b.md#1b-26--host-single-player-in-a-web-worker) foundation is merged in PR #54 (`25cce95`). Their terrain, movement and client integration follow the plan's dependencies; full fog remains phase 2.
+## Delivered foundations
 
-[Authored map terrain loading](./phases/1b.md#1b-08--load-authored-maps-in-the-terrain-client) is done on main through PR #49 (`b7b4520`), with [green CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41341685124). The [remaining dependency graph](./phases/1b.md#dependency-overview) covers terrain LOD, foundations, occupancy, navigation compilation, reachability, Force budgets, movement/repaths, debug panels, selection/orders, model rendering/animation, e2e and measured performance. Promote each task here when its prerequisites land. The [water-domain table](./decisions/2026-11-01-movement-water-table.md) is accepted; real node binding and placement-radius/clearance policy remain owner-blocked. Strict presentation enforcement stays held until the reviewed artwork lands. Phase 2 systems are not part of this queue.
+All existing 54 units, 45 structures and 37 props have first-pass model references. Remaining Alliance of Free Nations artwork merged in PR #70–89 and Phoenix Initiative artwork in PR #90–112, one definition folder per art PR. Strict animation/team-color validation follows the integrated art. Final art direction remains an owner decision.
+
+The map-aware worker/debug client includes authoritative placement, terrain navigation, reachability, shared path budgets, movement and occupancy repathing; model instances, team colors and idle/move playback; inspector/time controls, selection/box selection and distinct move/stop/attack-move commands. Graphics presets, structure foundations and animated water/shore foam complete the current renderer delivery batch. Combined repository/content/browser validation is run at the end of this batch; merged implementation alone is not a phase-exit claim.
+
+The [water-domain table](./decisions/2026-11-01-movement-water-table.md) and [debug placement exception](./decisions/2026-11-01-debug-spawn-placement.md) are accepted. Real node binding and normal-match placement-radius/clearance policy remain [owner-blocked](./human-tasks.md). Full fog, combat and economy remain phase 2. The [phase-1b exit](./roadmap.md#exit-criteria), including measured 200-unit medium frame rate, is still open.
