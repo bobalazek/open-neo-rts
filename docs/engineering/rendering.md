@@ -8,6 +8,20 @@ The terrain view at `/` or `/debug` loads the selected built-in map's authored d
 
 The built-in registry in `client/features/debug/maps.ts` is temporary until phase-2 pack loading. Binary layers use [Bun's asset imports](https://bun.sh/docs/bundler#assets), so both the HTML dev server and production build serve the original map bytes. The client also resolves original map decoration and resource GLBs; their static instances are separate from simulation entities.
 
+### Water and shoreline foam
+
+Water chunks share an original 64×64 procedural ripple texture. A second scrolling texture breaks up
+feathered foam strips on the wet side of dry cardinal neighbours. Shallow/deep transitions and the
+interior of a ford receive no shore foam. The 8-cell border repeats authored edge cells, so a sea
+continues across the map edge without an invented foam boundary. Texture coordinates use world
+positions across chunks. Water stays at the existing `waterHeight`; this is surface detail, not wave
+displacement or simulated flow.
+
+`createTerrain` creates the two textures and one render observer only when water exists. Disposing
+its returned root releases that observer, the textures and its materials as well as child meshes;
+replacing it with dry terrain leaves no water resources. Foam meshes do not participate in picking.
+Colours remain provisional with the existing biome palettes; this does not imply art-direction approval.
+
 ## Static map art
 
 `createMapPresentation(scene, grid, placements, resolveModel)` owns static art and its templates. Placements retain original definition references and authored centre coordinates in cells; one cell is 2 metres, quarter-turn rotations apply to the original model, and height follows the terrain/ramp plane at that centre. The client resolves only registered built-in GLBs. Each model loads once per map view and rigid instances share geometry/materials. Instances are not pickable. Dispose this layer before the scene; failed or superseded loads release their assets, and errors identify the model.

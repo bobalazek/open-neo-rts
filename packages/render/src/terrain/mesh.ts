@@ -81,6 +81,7 @@ export interface Geometry {
   normals: Float32Array;
   colors: Float32Array;
   indices: Uint32Array;
+  uvs?: Float32Array;
 }
 
 export interface ChunkGeometry {
@@ -89,6 +90,7 @@ export interface ChunkGeometry {
   cy: number;
   terrain: Geometry;
   water: Geometry | null;
+  foam: Geometry | null;
 }
 
 /** 32-bit integer hash of two integers. Render-only, but the same on every machine. */
@@ -151,7 +153,7 @@ class Builder {
    * A planar quad a b c d, counter-clockwise seen from the front. The normal is the cross of its diagonals, so a
    * quad with two coincident corners (a triangle) still gets one.
    */
-  quad(v: number[], color: RGB, shade: number) {
+  quad(v: number[], color: RGB, shade: number, alpha?: readonly number[]) {
     const [ax = 0, ay = 0, az = 0, bx = 0, by = 0, bz = 0, cx = 0, cy = 0, cz = 0] = v;
     const [dx = 0, dy = 0, dz = 0] = v.slice(9);
     const ux = cx - ax;
@@ -171,19 +173,30 @@ class Builder {
     for (let k = 0; k < 4; k++) {
       this.p.push(v[k * 3] ?? 0, v[k * 3 + 1] ?? 0, v[k * 3 + 2] ?? 0);
       this.n.push(nx, ny, nz);
-      this.c.push(color[0] * shade, color[1] * shade, color[2] * shade, 1);
+      this.c.push(color[0] * shade, color[1] * shade, color[2] * shade, alpha?.[k] ?? 1);
     }
     // Babylon's default front face is clockwise in index order, even in a right-handed scene.
     this.i.push(base, base + 2, base + 1, base, base + 3, base + 2);
   }
 
-  done(): Geometry | null {
+  done(textured = false): Geometry | null {
     if (this.i.length === 0) return null;
+    const uvs: number[] = [];
+    if (textured)
+      for (let i = 0; i < this.p.length; i += 3) {
+        const vertical = Math.abs(this.n[i + 1] ?? 0) < 0.5;
+        const xWall = Math.abs(this.n[i] ?? 0) > 0.5;
+        uvs.push(
+          (this.p[i + (vertical && xWall ? 1 : 0)] ?? 0) / CELL_SIZE,
+          (this.p[i + (vertical && !xWall ? 1 : 2)] ?? 0) / CELL_SIZE,
+        );
+      }
     return {
       positions: new Float32Array(this.p),
       normals: new Float32Array(this.n),
       colors: new Float32Array(this.c),
       indices: new Uint32Array(this.i),
+      ...(textured && { uvs: new Float32Array(uvs) }),
     };
   }
 }
@@ -215,6 +228,7 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
     for (let cx = first; cx * CHUNK_SIZE < g.width + BORDER; cx++) {
       const land = new Builder();
       const water = new Builder();
+      const foam = new Builder();
       const x1 = Math.min((cx + 1) * CHUNK_SIZE, g.width + BORDER);
       const y1 = Math.min((cy + 1) * CHUNK_SIZE, g.height + BORDER);
       for (let y = Math.max(cy * CHUNK_SIZE, -BORDER); y < y1; y++) {
@@ -276,6 +290,34 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
           }
 
           for (const e of EDGES) {
+            const neighbour = sample(g, x + e.dx, y + e.dy);
+            if (waterKind !== WATER.none && (g.water[neighbour] ?? WATER.none) === WATER.none) {
+              const px = (x + (CORNER_X[e.p] ?? 0)) * C;
+              const pz = (y + (CORNER_Y[e.p] ?? 0)) * C;
+              const qx = (x + (CORNER_X[e.q] ?? 0)) * C;
+              const qz = (y + (CORNER_Y[e.q] ?? 0)) * C;
+              const width = 0.32;
+              const height = surface + 0.015;
+              foam.quad(
+                [
+                  px,
+                  height,
+                  pz,
+                  qx,
+                  height,
+                  qz,
+                  qx - e.dx * width,
+                  height,
+                  qz - e.dy * width,
+                  px - e.dx * width,
+                  height,
+                  pz - e.dy * width,
+                ],
+                [1, 1, 1],
+                dark,
+                [0.75, 0.75, 0, 0],
+              );
+            }
             const ap = h[e.p] ?? 0;
             const aq = h[e.q] ?? 0;
             const bp = Math.min(ap, corner(x + e.dx, y + e.dy, e.np));
@@ -342,7 +384,7 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
         }
       }
       const terrain = land.done();
-      if (terrain) chunks.push({ cx, cy, terrain, water: water.done() });
+      if (terrain) chunks.push({ cx, cy, terrain, water: water.done(true), foam: foam.done(true) });
     }
   }
   return chunks;
