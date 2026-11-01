@@ -1,0 +1,425 @@
+{
+  "format": 1,
+  "simVersion": 1,
+  "setup": {
+    "seed": 305419896,
+    "debug": true,
+    "forces": [
+      {
+        "index": 0,
+        "faction": "faction:eastern-collective"
+      },
+      {
+        "index": 1,
+        "faction": "faction:eastern-collective"
+      }
+    ],
+    "seats": [1, 2],
+    "grants": [
+      {
+        "seat": 1,
+        "force": 0,
+        "scopes": ["unit.orders"],
+        "grantedAtTick": 0
+      },
+      {
+        "seat": 2,
+        "force": 1,
+        "scopes": ["unit.orders"],
+        "grantedAtTick": 0
+      }
+    ],
+    "definitions": [
+      {
+        "id": "unit:eastern-collective/collective-soldier",
+        "health": 100,
+        "speed": 77,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/dragon-tank",
+        "health": 900,
+        "speed": 92,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/drone-hunter",
+        "health": 100,
+        "speed": 72,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/field-technician",
+        "health": 100,
+        "speed": 77,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/metamorphic-apc",
+        "health": 600,
+        "speed": 133,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/rocket-trooper",
+        "health": 100,
+        "speed": 67,
+        "turnRate": 65536
+      },
+      {
+        "id": "unit:eastern-collective/supply-truck",
+        "health": 900,
+        "speed": 82,
+        "turnRate": 65536
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 0,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/collective-soldier",
+        "force": 0,
+        "x": 20000,
+        "y": 200000,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 1,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/dragon-tank",
+        "force": 0,
+        "x": 20000,
+        "y": 201024,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 2,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/drone-hunter",
+        "force": 0,
+        "x": 20000,
+        "y": 202048,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 3,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/field-technician",
+        "force": 0,
+        "x": 20000,
+        "y": 203072,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 4,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/metamorphic-apc",
+        "force": 0,
+        "x": 20000,
+        "y": 204096,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 5,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/rocket-trooper",
+        "force": 0,
+        "x": 20000,
+        "y": 205120,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 6,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/supply-truck",
+        "force": 0,
+        "x": 20000,
+        "y": 206144,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 7,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/collective-soldier",
+        "force": 1,
+        "x": 380000,
+        "y": 200000,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 8,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/dragon-tank",
+        "force": 1,
+        "x": 380000,
+        "y": 198976,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 9,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/drone-hunter",
+        "force": 1,
+        "x": 380000,
+        "y": 197952,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 10,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/field-technician",
+        "force": 1,
+        "x": 380000,
+        "y": 196928,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 11,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/metamorphic-apc",
+        "force": 1,
+        "x": 380000,
+        "y": 195904,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 12,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/rocket-trooper",
+        "force": 1,
+        "x": 380000,
+        "y": 194880,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 13,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/supply-truck",
+        "force": 1,
+        "x": 380000,
+        "y": 193856,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 1,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7],
+        "x": 380000,
+        "y": 300000
+      }
+    },
+    {
+      "tick": 1,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.move",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14],
+        "x": 20000,
+        "y": 100000
+      }
+    },
+    {
+      "tick": 1250,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [3, 1, 2]
+      }
+    },
+    {
+      "tick": 1250,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [14, 12, 13]
+      }
+    },
+    {
+      "tick": 1260,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": {
+        "entities": [3, 1, 2],
+        "x": 380000,
+        "y": 300000
+      }
+    },
+    {
+      "tick": 1260,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.move",
+      "payload": {
+        "entities": [14, 12, 13],
+        "x": 20000,
+        "y": 100000
+      }
+    },
+    {
+      "tick": 2500,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7],
+        "x": 100000,
+        "y": 380000
+      }
+    },
+    {
+      "tick": 2500,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.move",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14],
+        "x": 300000,
+        "y": 20000
+      }
+    },
+    {
+      "tick": 4999,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7]
+      }
+    },
+    {
+      "tick": 4999,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14]
+      }
+    },
+    {
+      "tick": 5000,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7],
+        "x": 20000,
+        "y": 100000
+      }
+    },
+    {
+      "tick": 5000,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.move",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14],
+        "x": 380000,
+        "y": 300000
+      }
+    },
+    {
+      "tick": 7500,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7],
+        "x": 300000,
+        "y": 20000
+      }
+    },
+    {
+      "tick": 7500,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.move",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14],
+        "x": 100000,
+        "y": 380000
+      }
+    },
+    {
+      "tick": 9999,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [1, 2, 3, 4, 5, 6, 7]
+      }
+    },
+    {
+      "tick": 9999,
+      "seat": 2,
+      "sequence": 1,
+      "type": "unit.stop",
+      "payload": {
+        "entities": [8, 9, 10, 11, 12, 13, 14]
+      }
+    }
+  ]
+}

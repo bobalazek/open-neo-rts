@@ -3,6 +3,9 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
 import { GOLDEN } from "../../../packages/deterministic/src/golden";
+import scenarioGolden from "../../cli/scenarios/__golden__/eastern-collective-two-forces.json" with {
+  type: "json",
+};
 
 /** Bundle a TypeScript module with Bun, import it into the page and return what its export `fn()` returns. */
 async function runInBrowser(page: Page, entry: string, fn: string): Promise<unknown> {
@@ -24,4 +27,14 @@ test("packages/deterministic matches its golden digests", async ({ page }) => {
   expect(
     await runInBrowser(page, "../../../packages/deterministic/src/golden.ts", "golden"),
   ).toEqual(GOLDEN);
+});
+
+test("the two-Force 10,000-tick scenario matches all goldens twice", async ({ page }) => {
+  expect(
+    await runInBrowser(
+      page,
+      "../../cli/scenarios/check-eastern-collective-two-forces.ts",
+      "scenarioGoldens",
+    ),
+  ).toEqual([scenarioGolden, scenarioGolden]);
 });
