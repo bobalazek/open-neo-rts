@@ -2,6 +2,12 @@
 
 `packages/render`, on Babylon.js. The renderer reads presentation snapshots from the sim and never writes to it. Art direction and graphics presets are in [art-and-audio.md](../design/art-and-audio.md).
 
+## Terrain inspection
+
+The terrain view at `/` or `/debug` loads the selected built-in map's authored dimensions and `.r8` layers. The Map picker links to `?map=core.map:sandbox-flat` and the other sandbox maps or Training Grounds. Layer downloads, lengths and terrain values are checked before rendering; a failed map keeps the picker available with an error. The renderer receives a parsed grid and owns no content loading or simulation state. Its returned `dispose()` releases the scene, engine, render loop and resize handler.
+
+The built-in registry in `client/features/debug/maps.ts` is temporary until phase-2 pack loading. Binary layers use [Bun's asset imports](https://bun.sh/docs/bundler#assets), so both the HTML dev server and production build serve the original map bytes. Resources and objects are not drawn by this terrain-only stage; spawning and model rendering remain separate debug-mode tasks.
+
 ## Asset inspection
 
 `/debug?models=1` loads a local GLB into an isolated presentation scene. The first-party `@babylonjs/loaders` package is pinned to the same version as Babylon core: glTF parsing is infrastructure, so this uses Babylon's importer rather than a second model loader. Loaders register lazily. Each loaded asset owns its materials; recolouring one cannot affect another. `team_dark` and `team_light` apply the same sRGB tints as the brick builder, then convert to linear colour for PBR materials; `team_emissive` changes both albedo and emission.

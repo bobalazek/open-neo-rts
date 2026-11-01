@@ -62,7 +62,18 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   const off = new AbortController();
   const signal = off.signal;
   scene.onDisposeObservable.addOnce(() => off.abort());
-  window.addEventListener("keydown", (e) => keys.add(e.code), { signal });
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (
+        e.target instanceof Element &&
+        e.target.closest("input, select, textarea, button, [contenteditable]")
+      )
+        return;
+      keys.add(e.code);
+    },
+    { signal },
+  );
   window.addEventListener("keyup", (e) => keys.delete(e.code), { signal });
   window.addEventListener("blur", () => keys.clear(), { signal });
   canvas.addEventListener("contextmenu", (e) => e.preventDefault(), { signal });
