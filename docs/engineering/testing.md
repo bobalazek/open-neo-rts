@@ -24,11 +24,26 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 - **Scenarios** are command logs plus setup (map, seed, Forces). They're written by hand, built with the `sim/testing` helpers, or exported from debug mode, so a bug found by clicking becomes a test.
 
-- `bun neo run <scenario> --seed N` produces a hash per checkpoint (e.g. every 100 ticks) and the final state hash.
+- `bun neo run <scenario> [--seed N] [--ticks T]` produces a `tick hash` line every 100 ticks and at the final state, without repeating a final checkpoint. It runs twice in one process and exits nonzero if the checkpoint sequences differ. `--seed` overrides the setup seed without changing the file. `--ticks` is the final tick (number of steps): a command at tick 199 requires at least 200 steps. Without it, execution ends after the last command; an empty log ends at tick 0. A tick-0 command requires one step. Truncating the log is rejected.
+- The minimal CLI fixture is `apps/cli/scenarios/smoke.json`. Its CLI tests exercise output and error handling. `parseScenario` and `runScenario`, exported from `@open-neo-rts/sim`, also work without Bun or browser APIs so later browser tests use the same runner.
 - Golden hashes live next to scenarios. A sim change that alters outcomes must update the goldens **and** bump the simulation version.
 - On mismatch, the harness reports the **first divergent tick** and diffs the canonical state at that tick, using the developer event log.
 - Replay compatibility: replays record the sim version and content hash; old replays either replay exactly or are rejected clearly.
 - Every determinism test runs the scenario twice in one process, too. That catches leaked global state between worlds.
+
+### Phase-1a command-log format
+
+The JSON envelope is `{ "format": 1, "simVersion": 1, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths.
+
+`setup` contains:
+
+- `seed`: u32 integer; `debug`: boolean.
+- `forces`: an array of `{ index, faction }`, using nonnegative int32 Force indices and content faction IDs such as `faction:eastern-collective`.
+- `seats`: unique positive int32 seat indices. System seat 0 is implicit.
+- `grants`: canonical `Grant` objects (`seat`, `force`, `scopes`, `grantedAtTick`, optional `revokedAtTick` and `expiresAtTick`) referencing declared seats and Forces.
+- `definitions`: an ordered array of `{ id, health, speed, turnRate }`, using unique spawnable IDs and integer sim units. Health is 1…2³¹−1, speed is 0…2³¹−1 subcells per tick, and turn rate is 0…65,536 angle units per tick. Array order determines template indices and is preserved.
+
+`commands` uses the canonical `{ tick, seat, sequence, type, payload }` shape. The parser reuses command validation, rejects duplicate `(tick, sequence)` keys and undeclared seats, spawn Forces or spawn definitions, and preserves supplied order; execution sorts a copy by `(tick, sequence)`. Live entity references, debug gating and grants are checked during execution and produce normal kernel rejection codes. Maps, content hashes, snapshots and migration are outside this format's phase-1a scope.
 
 ## 3. Invariants checked every tick in test builds
 
@@ -42,5 +57,5 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 - **Runner:** `bun test` for everything that runs in Bun. **Playwright** for browser runs; it's a test tool, not a game dependency. Its specs are `apps/web/e2e/*.e2e.ts` (named so `bun test` ignores them), configured by the root `playwright.config.ts` and run with `bun run test:browsers`.
 - **CI:** GitHub Actions running `bun run check`, `typecheck`, `test`, `build` and the determinism suite, with Turborepo caching, plus the `browsers` job for cross-engine determinism. Nightly jobs run fuzz, AI-vs-AI and benchmarks.
-- **Fixtures:** `@open-neo-rts/sim/testing` provides tiny maps, small Eastern Collective armies, command-log builders and scripted bots.
+- **Fixtures:** `@open-neo-rts/sim/testing` exports `easternCollectiveTier1Definitions()` (fresh definitions converted from the seven original tier-1 unit JSON files) and `createCommandLog()`. Each log has `move(tick, seat, entities, x, y)`, `stop(tick, seat, entities)`, `spawn(tick, seat, definition, force, x, y, facing = 0)` and `spawnArmy(tick, seat, count, definition, force, x, y, facing = 0)`. They return canonical commands, assigning sequences across seats and types from 0 per tick within that log; use one builder for each command log. Army spawning returns commands for N units at the same position, without changing the world. `scriptedController({ [issueTick]: commands })` returns a controller for `registerController`: it emits at the issue tick, and the kernel executes those commands on the following tick. Tiny terrain maps arrive in phase 1b.
 - No snapshot testing of rendered images until the art direction settles.

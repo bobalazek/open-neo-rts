@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "simVersion": 1,
+  "setup": {
+    "seed": 1,
+    "debug": true,
+    "forces": [{ "index": 2, "faction": "faction:eastern-collective" }],
+    "seats": [1],
+    "grants": [{ "seat": 1, "force": 2, "scopes": ["unit.orders"], "grantedAtTick": 0 }],
+    "definitions": [
+      { "id": "unit:eastern-collective/dragon-tank", "health": 900, "speed": 92, "turnRate": 728 }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "seat": 0,
+      "sequence": 0,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "unit:eastern-collective/dragon-tank",
+        "force": 2,
+        "x": 0,
+        "y": 0,
+        "facing": 0
+      }
+    },
+    {
+      "tick": 1,
+      "seat": 1,
+      "sequence": 0,
+      "type": "unit.move",
+      "payload": { "entities": [1], "x": 1024, "y": 0 }
+    },
+    { "tick": 199, "seat": 1, "sequence": 0, "type": "unit.stop", "payload": { "entities": [1] } }
+  ]
+}

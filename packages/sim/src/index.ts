@@ -5,3 +5,5 @@ export * from "./features/construction";
 export * from "./features/entities";
 export * from "./features/movement";
 export * from "./kernel";
+export * from "./match";
+export * from "./snapshots";
