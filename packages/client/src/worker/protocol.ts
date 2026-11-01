@@ -7,7 +7,70 @@ import type {
   ProjectionMode,
   Scenario,
   SeatSnapshot,
+  SpawnPlacement,
 } from "@open-neo-rts/sim";
+
+export interface PlacementDiagnostic extends SpawnPlacement {
+  /** Tick evaluated by the authoritative checker. */
+  tick: number;
+}
+
+/** Copied placement results cross the worker boundary independently of seat state. */
+export function isPlacementDiagnostic(value: unknown): value is PlacementDiagnostic {
+  if (
+    !isRecord(value) ||
+    !Number.isSafeInteger(value.tick) ||
+    Number(value.tick) < 0 ||
+    typeof value.ok !== "boolean"
+  )
+    return false;
+  if (
+    value.failure !== undefined &&
+    (typeof value.failure !== "string" ||
+      ![
+        "outside_map",
+        "missing_footprint",
+        "not_grid_aligned",
+        "not_quarter_turn",
+        "blocked",
+      ].includes(value.failure))
+  )
+    return false;
+  if (
+    value.cells !== undefined &&
+    (!Array.isArray(value.cells) ||
+      // Content footprints are bounded to 8×8 cells.
+      value.cells.length > 64 ||
+      ![...value.cells].every(
+        (cell: unknown) =>
+          isRecord(cell) &&
+          Number.isSafeInteger(cell.x) &&
+          Number(cell.x) >= 0 &&
+          Number.isSafeInteger(cell.y) &&
+          Number(cell.y) >= 0 &&
+          (cell.rule === undefined ||
+            ["land", "shore", "water", "node"].some((rule) => rule === cell.rule)) &&
+          (cell.failure === undefined ||
+            [
+              "edge",
+              "water",
+              "deep_water",
+              "not_deep_water",
+              "ramp",
+              "surface",
+              "node_undecided",
+              "not_node",
+              "level",
+              "blocked",
+            ].some((reason) => reason === cell.failure)),
+      ))
+  )
+    return false;
+  const failedCell = value.cells?.some((cell: { failure?: unknown }) => cell.failure !== undefined);
+  return value.ok
+    ? value.failure === undefined && !failedCell
+    : value.failure !== undefined || !!failedCell;
+}
 
 export interface OfflineSetup {
   setup: MatchSetup;

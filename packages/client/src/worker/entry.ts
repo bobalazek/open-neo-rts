@@ -116,10 +116,14 @@ port.onmessage = ({ data }) => {
         )[0];
         if (!validation?.accepted || validation.command.type !== "debug.spawn")
           throw new Error("Invalid placement request");
-        publish(
-          id,
-          debugSpawnPlacement(kernel, setup.definitions, validation.command.payload as DebugSpawn),
-        );
+        publish(id, {
+          ...debugSpawnPlacement(
+            kernel,
+            setup.definitions,
+            validation.command.payload as DebugSpawn,
+          ),
+          tick: kernel.tick,
+        });
         return;
       }
       case "command": {

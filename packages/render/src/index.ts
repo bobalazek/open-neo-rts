@@ -9,6 +9,7 @@ import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
+export { createPlacementOverlay } from "./overlays/placement";
 export type { GraphicsQuality } from "./scene/quality";
 export {
   createMapPresentation,
