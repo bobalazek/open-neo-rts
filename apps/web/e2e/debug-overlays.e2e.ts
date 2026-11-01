@@ -57,7 +57,7 @@ test("debug overlays show copied terrain, navigation and routes without changing
   await page.getByLabel("Nav domain", { exact: true }).selectOption("foot");
   await expect(status).toContainText("foot:");
   await expect(page.getByLabel("Fog (unavailable)", { exact: true })).toBeDisabled();
-  await page.screenshot({ path: "/tmp/neo-art-completion/artifacts/debug-overlays/terrain.png" });
+  await page.screenshot({ path: test.info().outputPath("terrain.png") });
   await page.getByLabel("Map", { exact: true }).selectOption("core.map:sandbox-flat");
   await page.getByRole("button", { name: "Reload session", exact: true }).click();
   await expect(canvas).toHaveAttribute("data-session", "ready");
@@ -92,7 +92,7 @@ test("debug overlays show copied terrain, navigation and routes without changing
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   expect(await packets()).toEqual(beforeRun);
   await page.screenshot({
-    path: "/tmp/neo-art-completion/artifacts/debug-overlays/paths-blocker.png",
+    path: test.info().outputPath("paths-blocker.png"),
   });
   const beforeOff = await state();
   await page.getByLabel("Navigation and costs", { exact: true }).uncheck();
