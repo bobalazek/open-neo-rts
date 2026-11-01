@@ -1,0 +1,12 @@
+{
+  "files": {
+    "cyber-specialist.glb": {
+      "author": "Borut Balazek",
+      "source": "source/cyber-specialist.bricks.json"
+    },
+    "cyber-specialist.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/cyber-specialist.bricks.json"
+    }
+  }
+}

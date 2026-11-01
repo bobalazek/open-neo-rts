@@ -1,0 +1,442 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "ghost_drone_swarm"
+    },
+    {
+      "name": "hull",
+      "parent": "ghost_drone_swarm",
+      "at": [0, 3, 0]
+    },
+    {
+      "name": "drone_0",
+      "parent": "hull",
+      "at": [-2.7, 0, -1.8],
+      "bricks": [
+        {
+          "at": [-1, 0, -1.3],
+          "size": [2, 0.8, 2.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1, 0.8, -1],
+          "size": [2, 0.25, 2],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.8, 0.3, -0.2],
+          "size": [3.6, 0.3, 0.4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.55, -0.3, 1],
+          "size": [1.1, 0.5, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gun_0",
+      "parent": "drone_0",
+      "at": [0, 0, 1.4],
+      "bricks": [
+        {
+          "at": [-0.15, -0.1, 0],
+          "size": [0.3, 0.3, 1.1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z"
+        }
+      ]
+    },
+    {
+      "name": "rotor_0l",
+      "parent": "drone_0",
+      "at": [1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "rotor_0r",
+      "parent": "drone_0",
+      "at": [-1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_muzzle_0",
+      "parent": "gun_0",
+      "at": [0, 0, 1.1]
+    },
+    {
+      "name": "drone_1",
+      "parent": "hull",
+      "at": [2.7, 0.5, -1.8],
+      "bricks": [
+        {
+          "at": [-1, 0, -1.3],
+          "size": [2, 0.8, 2.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1, 0.8, -1],
+          "size": [2, 0.25, 2],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.8, 0.3, -0.2],
+          "size": [3.6, 0.3, 0.4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.55, -0.3, 1],
+          "size": [1.1, 0.5, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gun_1",
+      "parent": "drone_1",
+      "at": [0, 0, 1.4],
+      "bricks": [
+        {
+          "at": [-0.15, -0.1, 0],
+          "size": [0.3, 0.3, 1.1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z"
+        }
+      ]
+    },
+    {
+      "name": "rotor_1l",
+      "parent": "drone_1",
+      "at": [1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "rotor_1r",
+      "parent": "drone_1",
+      "at": [-1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_muzzle_1",
+      "parent": "gun_1",
+      "at": [0, 0, 1.1]
+    },
+    {
+      "name": "drone_2",
+      "parent": "hull",
+      "at": [0, 1, 2.2],
+      "bricks": [
+        {
+          "at": [-1, 0, -1.3],
+          "size": [2, 0.8, 2.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1, 0.8, -1],
+          "size": [2, 0.25, 2],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.8, 0.3, -0.2],
+          "size": [3.6, 0.3, 0.4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.55, -0.3, 1],
+          "size": [1.1, 0.5, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gun_2",
+      "parent": "drone_2",
+      "at": [0, 0, 1.4],
+      "bricks": [
+        {
+          "at": [-0.15, -0.1, 0],
+          "size": [0.3, 0.3, 1.1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z"
+        }
+      ]
+    },
+    {
+      "name": "rotor_2l",
+      "parent": "drone_2",
+      "at": [1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "rotor_2r",
+      "parent": "drone_2",
+      "at": [-1.8, 0.7, 0],
+      "bricks": [
+        {
+          "at": [-1, 0, -0.15],
+          "size": [2, 0.12, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 0, -1],
+          "size": [0.3, 0.12, 2],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_muzzle_2",
+      "parent": "gun_2",
+      "at": [0, 0, 1.1]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 1,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "rotor_0l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_0r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_1l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_1r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_2l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_2r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "hull",
+          "translation": [[0, [0, 0, 0]], [0.5, [0, 0.3, 0]], [1, [0, 0, 0]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 1,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "rotor_0l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_0r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_1l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_1r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_2l",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "rotor_2r",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [0, 90, 0]],
+            [0.5, [0, 180, 0]],
+            [0.75, [0, 270, 0]],
+            [1.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "hull",
+          "rotation": [[0, [-10, 0, -3]], [0.5, [-10, 0, 3]], [1, [-10, 0, -3]]]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.5,
+      "tracks": [
+        {
+          "node": "gun_0",
+          "translation": [[0, [0, 0, 0]], [0.1, [0, 0, -0.4]], [0.5, [0, 0, 0]]]
+        },
+        {
+          "node": "gun_1",
+          "translation": [[0, [0, 0, 0]], [0.1, [0, 0, -0.4]], [0.5, [0, 0, 0]]]
+        },
+        {
+          "node": "gun_2",
+          "translation": [[0, [0, 0, 0]], [0.1, [0, 0, -0.4]], [0.5, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}

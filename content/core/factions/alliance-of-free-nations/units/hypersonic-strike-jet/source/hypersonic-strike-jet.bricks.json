@@ -1,0 +1,152 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hypersonic_strike_jet"
+    },
+    {
+      "name": "hull",
+      "parent": "hypersonic_strike_jet",
+      "at": [0, 2.5, 0.0],
+      "bricks": [
+        {
+          "at": [-1.5, 0, -5.76],
+          "size": [3, 1.2, 12.48],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-1.2, 0.2, 6.72],
+          "size": [2.4, 1, 3.84],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2",
+          "shape": "slope+z"
+        },
+        {
+          "at": [-1, 1.2, 1.92],
+          "size": [2, 0.8, 2.88],
+          "slot": "glass",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [1.5, 0.3, -4.8],
+          "size": [4.5, 0.5, 7.68],
+          "slot": "team",
+          "studs": false,
+          "shape": "slope+x",
+          "mirror": true
+        },
+        {
+          "at": [1, 0.3, -6.72],
+          "size": [2, 0.4, 1.92],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [1, 1, -5.76],
+          "size": [0.35, 2, 1.92],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope+z",
+          "mirror": true
+        },
+        {
+          "at": [-0.8, 0.1, -6.72],
+          "size": [1.6, 1, 0.96],
+          "slot": "metal",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "exhaust",
+      "parent": "hull",
+      "at": [0, 0.6, -6.72],
+      "bricks": [
+        {
+          "at": [-0.6, -0.3, -0.48],
+          "size": [1.2, 0.6, 0.48],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "bay_l",
+      "parent": "hull",
+      "at": [0, 0, -0.96],
+      "bricks": [
+        {
+          "at": [0, -0.2, -1.92],
+          "size": [1.3, 0.2, 4.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "bay_r",
+      "parent": "hull",
+      "at": [0, 0, -0.96],
+      "bricks": [
+        {
+          "at": [-1.3, -0.2, -1.92],
+          "size": [1.3, 0.2, 4.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_muzzle",
+      "parent": "hull",
+      "at": [0, -0.5, 0.0]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 2,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "exhaust",
+          "scale": [[0, [1, 1, 1]], [1, [1, 1, 1.5]], [2, [1, 1, 1]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 1,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "hull",
+          "rotation": [[0, [0, 0, -2]], [0.5, [0, 0, 2]], [1, [0, 0, -2]]]
+        },
+        {
+          "node": "exhaust",
+          "scale": [[0, [1, 1, 2]], [0.5, [1, 1, 3]], [1, [1, 1, 2]]]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 1,
+      "tracks": [
+        {
+          "node": "bay_l",
+          "rotation": [[0, [0, 0, 0]], [0.2, [0, 0, -80]], [0.7, [0, 0, -80]], [1, [0, 0, 0]]]
+        },
+        {
+          "node": "bay_r",
+          "rotation": [[0, [0, 0, 0]], [0.2, [0, 0, 80]], [0.7, [0, 0, 80]], [1, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}
