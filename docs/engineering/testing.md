@@ -47,6 +47,16 @@ The JSON envelope is `{ "format": 1, "simVersion": 1, "setup": { ... }, "command
 
 `commands` uses the canonical `{ tick, seat, sequence, type, payload }` shape. The parser reuses command validation, rejects duplicate `(tick, sequence)` keys and undeclared seats, spawn Forces or spawn definitions, and preserves supplied order; execution sorts a copy by `(tick, sequence)`. Live entity references, debug gating and grants are checked during execution and produce normal kernel rejection codes. Maps, content hashes, snapshots and migration are outside this format's phase-1a scope.
 
+### Phase-1a divergence traces
+
+`bun neo run <scenario> [--seed N] [--ticks T] --trace <file>` keeps the normal checkpoint output and writes a versioned JSON trace. `traceScenario`, exported from `@open-neo-rts/sim`, produces the same data in browsers without file I/O. The envelope is `{ format: 1, simVersion: 1, scenario, hashes, events }`. `scenario` embeds the full command log and effective setup, including an overridden seed; `hashes` contains `{ tick, hash }` for tick 0 and every completed step; `events` is the kernel developer event log, including command results. `parseTrace` rejects unsupported versions, unknown fields, malformed values, missing/reordered ticks, truncated scenarios and events that do not match their commands.
+
+`bun neo run --compare <trace-a> <trace-b>` exits 0 with `Traces match` when all hashes match. Otherwise it exits 1 and prints the first differing or missing tick, both recorded hashes, both event logs for the step that produced that state, and a per-entity/component/field diff of canonical ECS state after replay to that tick. State tick N means N steps have completed: its producing command events have tick N−1. Null diff values mean an entity/component/field is absent; `$entity` reports entity presence, `$present` component presence, and `$world.nextId` the ID allocator. An ended trace has a null recorded hash and replays only to its end.
+
+Replay uses the comparing engine. The report includes `replayHashes` so a browser-specific divergence that does not reproduce locally remains visible even when the local state diff is empty. Recorded hashes are validated structurally, rather than required to match the local engine, because cross-engine mismatches are what the tool diagnoses.
+
+On a browser scenario golden mismatch, Playwright attaches two browser traces and a Bun baseline trace under `test-results/`. CI's `browsers` job uploads that directory as `determinism-traces` on failure for 14 days. Download the JSON attachments and pass a browser trace and the Bun trace to `--compare`.
+
 ## 3. Invariants checked every tick in test builds
 
 - No negative resources; production refunds match costs.

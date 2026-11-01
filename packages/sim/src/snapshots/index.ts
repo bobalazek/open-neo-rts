@@ -5,17 +5,20 @@ import {
   type Issue,
   idOf,
   int,
-  obj,
   oneOf,
   opt,
-  type Schema,
   str,
   unknown,
   validate,
 } from "@open-neo-rts/content";
-import { type Command, REJECTIONS, SYSTEM_SEAT, sortCommands, validateCommands } from "../commands";
-import { checkpointHash, step } from "../kernel";
-import { createMatch, type MatchSetup, SIM_VERSION } from "../match";
+import { type Command, REJECTIONS, SYSTEM_SEAT, validateCommands } from "../commands";
+import { checkpointHash } from "../kernel";
+import { type MatchSetup, SIM_VERSION } from "../match";
+
+import { type RunOptions, replayScenario, scenarioTicks } from "./replay";
+import { strictObject } from "./schema";
+
+export * from "./trace";
 
 export const SCENARIO_FORMAT = 1;
 
@@ -28,23 +31,6 @@ export interface Scenario {
 
 const INT32_MAX = 0x7fffffff;
 const id = () => int(0, INT32_MAX);
-
-// The content DSL allows editor $schema annotations; the canonical log has no metadata fields.
-function strictObject(props: Record<string, Schema>): Schema {
-  const schema = obj(props);
-  return {
-    ...schema,
-    check(value, path, issues) {
-      schema.check(value, path, issues);
-      if (typeof value !== "object" || value === null || Array.isArray(value)) return;
-      for (const key of Object.keys(value)) {
-        const field = `${path}.${key}`;
-        if (!Object.hasOwn(props, key) && !issues.some((issue) => issue.path === field))
-          issues.push({ path: field, message: "unknown field" });
-      }
-    },
-  };
-}
 
 const scenarioSchema = strictObject({
   format: int(SCENARIO_FORMAT, SCENARIO_FORMAT),
@@ -166,25 +152,13 @@ export interface Checkpoint {
 }
 
 /** Runs all commands, returning automatic checkpoints and the final state exactly once. */
-export function runScenario(
-  scenario: Scenario,
-  options: { seed?: number; ticks?: number } = {},
-): Checkpoint[] {
-  const commands = sortCommands(scenario.commands);
-  const last = commands.at(-1);
-  const requiredTicks = last ? last.tick + 1 : 0;
-  const ticks = options.ticks ?? requiredTicks;
-  if (!Number.isInteger(ticks) || ticks < requiredTicks || ticks > INT32_MAX + 1)
-    throw new RangeError(
-      `ticks must be an integer from ${requiredTicks} to ${INT32_MAX + 1}; all logged commands must execute`,
-    );
-  const kernel = createMatch({ ...scenario.setup, seed: options.seed ?? scenario.setup.seed });
-  let cursor = 0;
-  while (kernel.tick < ticks) {
-    const start = cursor;
-    while (commands[cursor]?.tick === kernel.tick) cursor++;
-    step(kernel, commands.slice(start, cursor));
-  }
+export function runScenario(scenario: Scenario, options: RunOptions = {}): Checkpoint[] {
+  const ticks = scenarioTicks(scenario, options);
+  const effective = {
+    ...scenario,
+    setup: { ...scenario.setup, seed: options.seed ?? scenario.setup.seed },
+  };
+  const kernel = replayScenario(effective, ticks);
   const checkpoints = [...kernel.checkpoints];
   if (checkpoints.at(-1)?.tick !== kernel.tick)
     checkpoints.push({ tick: kernel.tick, hash: checkpointHash(kernel) });

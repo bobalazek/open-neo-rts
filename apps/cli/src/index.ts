@@ -16,7 +16,11 @@ type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
   bench: { summary: "Measure tick cost and ECS stores [--units N] [--ticks T]", run: bench },
-  run: { summary: "Run a scenario twice and print checkpoint hashes [--seed N] [--ticks T]", run },
+  run: {
+    summary:
+      "Run a scenario twice [--seed N] [--ticks T] [--trace file], or --compare trace-a trace-b",
+    run,
+  },
   validate: {
     summary: "Run every content and asset check (what CI runs)",
     run: async (args) => {

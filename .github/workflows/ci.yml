@@ -64,6 +64,12 @@ jobs:
       - run: bunx playwright install --with-deps chromium firefox webkit
       - run: bunx tsc -p apps/web/e2e/tsconfig.json
       - run: bun run test:browsers
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: determinism-traces
+          path: test-results/
+          retention-days: 14
 
   content:
     needs: changes
