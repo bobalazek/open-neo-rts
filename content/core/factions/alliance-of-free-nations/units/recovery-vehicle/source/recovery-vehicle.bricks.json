@@ -24,70 +24,6 @@
           "studs": false
         },
         {
-          "at": [4.2, 0.2, -4.6],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [-4.5, 0.2, -4.6],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [4.2, 0.2, -2.1],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [-4.5, 0.2, -2.1],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [4.2, 0.2, 0.4],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [-4.5, 0.2, 0.4],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [4.2, 0.2, 2.9],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
-          "at": [-4.5, 0.2, 2.9],
-          "size": [0.3, 1.2, 1.2],
-          "slot": "palette",
-          "color": "#9aa1aa",
-          "studs": false,
-          "shape": "cyl-x"
-        },
-        {
           "at": [-2.75, 0.5, -5.5],
           "size": [5.5, 1.5, 11],
           "slot": "palette",
@@ -290,9 +226,275 @@
       "name": "socket_exhaust",
       "parent": "hull",
       "at": [3.8, 5.1, 2.7]
+    },
+    {
+      "name": "wheel_2",
+      "parent": "hull",
+      "at": [4.3500000000000005, 0.8, -3.9999999999999996],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_3",
+      "parent": "hull",
+      "at": [-4.35, 0.8, -3.9999999999999996],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_4",
+      "parent": "hull",
+      "at": [4.3500000000000005, 0.8, -1.5],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_5",
+      "parent": "hull",
+      "at": [-4.35, 0.8, -1.5],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_6",
+      "parent": "hull",
+      "at": [4.3500000000000005, 0.8, 1.0],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_7",
+      "parent": "hull",
+      "at": [-4.35, 0.8, 1.0],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_8",
+      "parent": "hull",
+      "at": [4.3500000000000005, 0.8, 3.5],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_9",
+      "parent": "hull",
+      "at": [-4.35, 0.8, 3.5],
+      "bricks": [
+        {
+          "at": [-0.15, -0.6, -0.6],
+          "size": [0.3, 1.2, 1.2],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.18, -0.1, -0.4],
+          "size": [0.36, 0.2, 0.8],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
     }
   ],
   "destroyed": {
     "darken": 0.5
+  },
+  "animations": {
+    "idle": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "crane",
+          "rotation": [[0, [0, -4, 0]], [2, [0, 4, 0]], [4, [0, -4, 0]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 1,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "wheel_2",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_3",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_4",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_5",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_6",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_7",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_8",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "wheel_9",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.25, [90, 0, 0]],
+            [0.5, [180, 0, 0]],
+            [0.75, [270, 0, 0]],
+            [1.0, [360, 0, 0]]
+          ]
+        }
+      ]
+    }
   }
 }
