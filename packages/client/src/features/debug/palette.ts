@@ -39,6 +39,10 @@ export function createSpawnPalette(
     <p>Spawn: pick a definition, then left-click the map. Select: click an entity; Shift adds, Ctrl/Cmd toggles. A paused spawn advances one tick.</p>
     <p role="status" aria-label="Spawn result">No spawn submitted.</p>
     <p role="status" aria-label="Model status">No entity models loaded.</p>`;
+  section.insertAdjacentHTML(
+    "beforeend",
+    `<p role="status" aria-label="Placement preview">Hover the map in Spawn mode to preview placement.</p><details><summary>Placement cells · green allowed, red refused</summary><ul aria-label="Placement cells"></ul></details>`,
+  );
   panel.append(section);
   const search = section.querySelector("input");
   const definitions = section.querySelector<HTMLSelectElement>('[aria-label="Definition"]');
@@ -47,7 +51,19 @@ export function createSpawnPalette(
   const action = section.querySelector<HTMLSelectElement>('[name="map-action"]');
   const result = section.querySelector<HTMLElement>('[aria-label="Spawn result"]');
   const models = section.querySelector<HTMLElement>('[aria-label="Model status"]');
-  if (!search || !definitions || !force || !rotation || !action || !result || !models)
+  const preview = section.querySelector<HTMLElement>('[aria-label="Placement preview"]');
+  const previewCells = section.querySelector<HTMLUListElement>('[aria-label="Placement cells"]');
+  if (
+    !search ||
+    !definitions ||
+    !force ||
+    !rotation ||
+    !action ||
+    !result ||
+    !models ||
+    !preview ||
+    !previewCells
+  )
     throw new Error("Spawn controls missing");
   const controls = { search, definitions, force, rotation };
   function filter() {
@@ -73,6 +89,8 @@ export function createSpawnPalette(
   return {
     result,
     models,
+    preview,
+    previewCells,
     spawning: () => action.value === "spawn",
     cancel() {
       if (action.value !== "spawn") return false;

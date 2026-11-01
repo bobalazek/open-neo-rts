@@ -3,10 +3,10 @@ import {
   createDebugOverlays,
   createEntityPresentation,
   createMapPresentation,
+  createPlacementOverlay,
   createRenderer,
   resourceInstances,
 } from "@open-neo-rts/render";
-import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch, type OfflineState } from "../../worker";
 import { bindSelectionInput } from "../match/input";
@@ -20,6 +20,7 @@ import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
 import { createOverlayControls } from "./overlays";
 import { createSpawnPalette, spawnAtCell } from "./palette";
+import { bindPlacementPreview } from "./placement";
 import { createReproductionControls } from "./reproduction";
 
 const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
@@ -167,6 +168,8 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     let match: ReturnType<typeof createOfflineMatch> | undefined;
     let art: ReturnType<typeof createMapPresentation> | undefined;
     let overlays: ReturnType<typeof createDebugOverlays> | undefined;
+    let placementLayer: ReturnType<typeof createPlacementOverlay> | undefined;
+    let placementPreview: ReturnType<typeof bindPlacementPreview> | undefined;
     let released = false;
     const clicks = new AbortController();
     const current = () => !disposed && generation === ticket && !released;
@@ -179,6 +182,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       inspector.bind();
       reproduction.bind();
       overlays?.dispose();
+      placementLayer?.dispose();
       entities?.dispose();
       art?.dispose();
       renderer?.dispose();
@@ -200,6 +204,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         return;
       }
       renderer = nextRenderer;
+      placementLayer = createPlacementOverlay(renderer.scene, grid);
       overlays = createDebugOverlays(renderer.scene);
       const overlayControls = createOverlayControls(panel, overlays, clicks.signal);
       art = createMapPresentation(
@@ -222,9 +227,10 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       updateSelection = (handles) => presentation.select(handles);
       const clock = createPresentationClock();
       for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
-      renderer.scene.onBeforeRenderObservable.add(() =>
-        presentation.render(clock.now(performance.now())),
-      );
+      renderer.scene.onBeforeRenderObservable.add(() => {
+        presentation.render(clock.now(performance.now()));
+        placementPreview?.frame();
+      });
       let modelTick = -1;
       let modelFailed = false;
       let initialized = false;
@@ -232,6 +238,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const receive = (state: OfflineState) => {
         if (!current()) return;
         latestState = state;
+        placementPreview?.update(state.snapshot.tick);
         status.textContent = `${definition.name} · ${initialized ? "Ready" : "Initializing"} · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · ${state.paused ? "Paused" : "Running"} · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = initialized ? "ready" : "loading";
         clock.update(performance.now(), state.paused, state.speed);
@@ -370,6 +377,21 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         },
         clicks.signal,
       );
+      placementPreview = bindPlacementPreview(
+        canvas,
+        palette,
+        placementLayer,
+        {
+          enabled: () =>
+            current() && !busy && !inspector.busy() && palette.spawning() && !orders.targeting(),
+          pickCell: (x, y) => activeRenderer.pickCell(x, y),
+          viewKey: () =>
+            `${activeRenderer.camera.getViewMatrix().updateFlag}:${activeRenderer.camera.getProjectionMatrix().updateFlag}`,
+          query: activeMatch.placement,
+        },
+        clicks.signal,
+      );
+      placementPreview.update(latestState?.snapshot.tick ?? 0);
       canvas.addEventListener(
         "keydown",
         (event) => {
@@ -409,7 +431,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
               if (result === "accepted")
                 palette.result.textContent = `Spawned ${selection.entry.name} · Force ${selection.force + 1} · Cell ${cell.x}, ${cell.y}`;
               else if (result === "placement_failed") {
-                const placement = (await activeMatch.placement(payload)) as SpawnPlacement;
+                const placement = await activeMatch.placement(payload);
                 if (!current()) return;
                 const reasons = new Set(
                   placement.cells?.flatMap((cell) => (cell.failure ? [cell.failure] : [])) ?? [],
