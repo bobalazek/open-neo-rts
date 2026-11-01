@@ -1,0 +1,16 @@
+{
+  "files": {
+    "shipyard.glb": {
+      "author": "Borut Balazek",
+      "source": "source/shipyard.bricks.json"
+    },
+    "shipyard.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/shipyard.bricks.json"
+    },
+    "shipyard.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/shipyard.bricks.json"
+    }
+  }
+}
