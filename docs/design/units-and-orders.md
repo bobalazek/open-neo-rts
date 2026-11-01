@@ -67,7 +67,7 @@ Hold position is an order, not a stance, so it can sit in a queue.
 - **Crushing:** heavy tracked vehicles crush infantry and trees in their path (per definition).
 - **Formations:** see [pathfinding.md](../engineering/pathfinding.md#group-movement).
 - **Aircraft:** rotorcraft can hover anywhere; fixed-wing aircraft need pads to rearm and can't stop mid-air.
-- **Naval:** ships can't enter shallow water unless amphibious; submarines are stealthed while submerged and detected by sonar abilities.
+- **Naval:** the `naval` movement domain uses deep water only; `amphibious` uses land and both water depths ([accepted table](../project/decisions/2026-11-01-movement-water-table.md)). Submarines are stealthed while submerged and detected by sonar abilities.
 
 ## Non-happy paths
 

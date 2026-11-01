@@ -6,7 +6,7 @@ The 3D world is built from bricks, in the same visual language as the units. Ter
 
 - **Grid:** the map is a grid of cells (2 m per cell). Structures, props and resource nodes align to it. Typical sizes: small 96×96 (1v1), medium 160×160 (2v2), large 256×256 (FFA and 4v4).
 - **Height levels:** each cell sits on one of 8 discrete levels, each a few bricks tall. **Ramps** connect neighbouring levels; everything else between levels is a cliff. High ground gives a vision and firing advantage.
-- **Water:** shallow water is passable for infantry and hover units, slow for wheeled units, and blocked for tracked units. Deep water is for naval, hover and air units only.
+- **Water:** the [accepted domain table](../project/decisions/2026-11-01-movement-water-table.md) is authoritative. Foot uses land and shallow water; wheeled uses both with 50% speed in shallow water; tracked uses land only; naval uses deep water only; hover and amphibious use all three. Air crosses all three directly without a navigation grid.
 - **Surfaces:** grass, dirt, sand, rock, snow, ice, road and rubble. Each has a movement cost per domain and a buildability flag.
 - **Flat maps** use one height level and no cliffs. They're valid maps, not a special mode.
 
@@ -19,7 +19,7 @@ The 3D world is built from bricks, in the same visual language as the units. Ter
 ### Water bodies
 
 - **Lakes:** deep water enclosed by land, ringed by at least one cell of shallow shore.
-- **Rivers:** shallow water with **fords** (passable for most ground units, slowly) and deep sections that need a bridge ([neutrals-and-map-objects.md](neutrals-and-map-objects.md#bridges)).
+- **Rivers:** shallow water with **fords** (passable according to the water table above) and deep sections that need a bridge for land-only domains ([neutrals-and-map-objects.md](neutrals-and-map-objects.md#bridges)).
 - **Coasts and seas:** deep water along a map edge.
 - **Shore cells** are the shallow band between land and deep water. Shore structures need them ([structures.md](structures.md#placement)); amphibious units cross them. The band counts diagonal neighbours, so a diagonal shoreline needs two shallow cells.
 
