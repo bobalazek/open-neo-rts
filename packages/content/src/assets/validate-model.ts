@@ -16,6 +16,8 @@ export interface ModelRequirements {
   parts?: string[];
   sockets?: string[];
   animations?: string[];
+  /** Owned units and structures must carry a team material on geometry. */
+  teamColor?: boolean;
   /** Expected footprint in metres (structures: footprint cells; units: collision diameter). */
   size?: { width: number; depth: number };
 }
@@ -77,6 +79,20 @@ export function validateModel(
         `material "${name}" maps to unknown slot "${slot}" (${Object.keys(MATERIALS).join(", ")})`,
       );
     }
+  }
+
+  if (requires.teamColor) {
+    const usedMeshes = new Set(nodes.flatMap((n) => (n.mesh === undefined ? [] : [n.mesh])));
+    const hasTeamColor = [...usedMeshes].some((index) =>
+      gltf.meshes?.[index]?.primitives.some((p) => {
+        const name = p.material === undefined ? undefined : gltf.materials?.[p.material]?.name;
+        const slot = name && (requires.materials ? requires.materials[name] : name);
+        const vertices = gltf.accessors?.[p.attributes.POSITION ?? -1]?.count ?? 0;
+        return vertices >= 3 && (slot === "team" || slot?.startsWith("team_"));
+      }),
+    );
+    if (!hasTeamColor)
+      error("needs team colour on mesh geometry (team, team_dark, team_light or team_emissive)");
   }
 
   // Origin at ground centre: scene roots carry no offset.
@@ -173,7 +189,25 @@ export function validateModel(
     }
   }
   for (const clip of requires.animations ?? []) {
-    if (!clips.includes(clip)) error(`missing animation "${clip}"`);
+    const animation = gltf.animations?.find((a) => a.name === clip);
+    if (!animation) error(`missing animation "${clip}"`);
+    else if (
+      !animation.channels?.some((channel) => {
+        const sampler = animation.samplers?.[channel.sampler];
+        const input = sampler && gltf.accessors?.[sampler.input];
+        const output = sampler && gltf.accessors?.[sampler.output];
+        return (
+          channel.target.node !== undefined &&
+          nodes[channel.target.node] !== undefined &&
+          ["translation", "rotation", "scale"].includes(channel.target.path) &&
+          input !== undefined &&
+          input.count >= 2 &&
+          output?.count === input.count * (sampler?.interpolation === "CUBICSPLINE" ? 3 : 1) &&
+          (input.max?.[0] ?? 0) > (input.min?.[0] ?? 0)
+        );
+      })
+    )
+      error(`animation "${clip}" needs a keyed transform channel`);
   }
 
   return issues;
