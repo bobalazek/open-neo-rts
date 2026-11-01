@@ -57,7 +57,7 @@
     "materials": {},
     "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "striker-ifv.wreck.glb"
   }
 }
