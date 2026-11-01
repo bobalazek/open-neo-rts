@@ -1,0 +1,8 @@
+{
+  "files": {
+    "preview.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-sandbox-maps.ts"
+    }
+  }
+}

@@ -49,7 +49,7 @@ const commands: Record<string, Command> = {
     run: generateSchemas,
   },
   "generate-sandbox-maps": {
-    summary: "Write sandbox maps in content/core/maps (optional single map ID)",
+    summary: "Write sandbox maps (optional single map ID; training-grounds is explicit-only)",
     run: generateSandboxMaps,
   },
   "generate-textures": {

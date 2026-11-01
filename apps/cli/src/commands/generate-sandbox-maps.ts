@@ -1,8 +1,9 @@
 // bun neo generate-sandbox-maps [map-id]: writes the sandbox maps (docs/design/terrain-and-biomes.md#sandbox-maps) to
-// content/core/maps/sandbox-*/. This file is their source: edit the shapes here and rerun, never the output.
+// content/core/maps/sandbox-*/; training-grounds is an explicit-only target. This file is their terrain source.
 
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { parseTerrain, RAMP, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content";
+import trainingGrounds from "../../../../content/core/maps/training-grounds/map.json";
 import { png } from "../glb-writer";
 import { PALETTE } from "./generate-textures";
 
@@ -158,6 +159,36 @@ export const SANDBOX_MAPS: Record<string, () => SandboxMap> = {
   }),
 };
 
+/** Original terrain around Training Grounds' existing spawn/resource coordinates (symmetric about cell 64). */
+export function trainingGroundsTerrain(): TerrainGrid {
+  const t = grid(128);
+  for (const [x0, x1] of [
+    [8, 41],
+    [88, 121],
+  ] as const)
+    for (const [y0, y1] of [
+      [8, 41],
+      [88, 121],
+    ] as const)
+      box(t, "level", [x0, y0, x1, y1], 1);
+  // Each clear corner base has two nine-cell exits, so ground armies can use either side lane.
+  box(t, "ramp", [24, 41, 33, 42], RAMP.north);
+  box(t, "ramp", [41, 24, 42, 33], RAMP.west);
+  box(t, "ramp", [96, 41, 105, 42], RAMP.north);
+  box(t, "ramp", [87, 24, 88, 33], RAMP.east);
+  box(t, "ramp", [24, 87, 33, 88], RAMP.south);
+  box(t, "ramp", [41, 96, 42, 105], RAMP.west);
+  box(t, "ramp", [96, 87, 105, 88], RAMP.south);
+  box(t, "ramp", [87, 96, 88, 105], RAMP.east);
+  // The existing rich middle field has four equally wide approaches and open ground around the terrace.
+  box(t, "level", [52, 52, 77, 77], 1);
+  box(t, "ramp", [60, 51, 69, 52], RAMP.south);
+  box(t, "ramp", [77, 60, 78, 69], RAMP.west);
+  box(t, "ramp", [60, 77, 69, 78], RAMP.north);
+  box(t, "ramp", [51, 60, 52, 69], RAMP.east);
+  return t;
+}
+
 /** map.layers key → TerrainGrid field. */
 const LAYERS = [
   ["height", "level"],
@@ -210,14 +241,22 @@ export function mapPreview({ terrain: t, spawns, resources = [] }: SandboxMap): 
 
 export async function generateSandboxMaps(args: string[] = []): Promise<number> {
   const selectedId = args[0];
-  if (args.length > 1 || (selectedId !== undefined && !Object.hasOwn(SANDBOX_MAPS, selectedId))) {
+  if (
+    args.length > 1 ||
+    (selectedId !== undefined &&
+      selectedId !== "training-grounds" &&
+      !Object.hasOwn(SANDBOX_MAPS, selectedId))
+  ) {
     console.error(
-      `Usage: bun neo generate-sandbox-maps [map-id]\nMap IDs: ${Object.keys(SANDBOX_MAPS).join(", ")}`,
+      `Usage: bun neo generate-sandbox-maps [map-id]\nMap IDs: ${Object.keys(SANDBOX_MAPS).join(", ")}, training-grounds`,
     );
     return 1;
   }
   for (const id of selectedId ? [selectedId] : Object.keys(SANDBOX_MAPS)) {
-    const built = SANDBOX_MAPS[id]?.();
+    const built =
+      id === "training-grounds"
+        ? ({ ...trainingGrounds, terrain: trainingGroundsTerrain() } as unknown as SandboxMap)
+        : SANDBOX_MAPS[id]?.();
     if (!built) continue;
     const { name, description, terrain: t, spawns, resources = [] } = built;
     const dir = `${DIR}/${id}`;
@@ -230,20 +269,23 @@ export async function generateSandboxMaps(args: string[] = []): Promise<number> 
         layers[key] = file;
       } else rmSync(`${dir}/${file}`, { force: true }); // all zeros is the default; drop a stale file
     }
-    const map = {
-      $schema: "../../../schemas/map.schema.json",
-      id: `map:${id}`,
-      name,
-      description,
-      size: { width: t.width, height: t.height },
-      biome: "temperate",
-      players: { min: 1, max: 2 },
-      spawns,
-      start: "empty",
-      resources,
-      objects: [],
-      ...(Object.keys(layers).length > 0 ? { layers } : {}),
-    };
+    const map =
+      id === "training-grounds"
+        ? { ...trainingGrounds, layers }
+        : {
+            $schema: "../../../schemas/map.schema.json",
+            id: `map:${id}`,
+            name,
+            description,
+            size: { width: t.width, height: t.height },
+            biome: "temperate",
+            players: { min: 1, max: 2 },
+            spawns,
+            start: "empty",
+            resources,
+            objects: [],
+            ...(Object.keys(layers).length > 0 ? { layers } : {}),
+          };
     // Biome keeps [x, y] pairs on one line; JSON.stringify splits them.
     const json = JSON.stringify(map, null, 2).replace(
       /\[\s+([-\d.]+),\s+([-\d.]+)\s+\]/g,
