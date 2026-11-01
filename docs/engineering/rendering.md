@@ -74,7 +74,19 @@ Hundreds of units and thousands of props only work with instancing.
 
 ## Culling and LOD
 
-- Terrain chunks and instance groups are frustum-culled. Up to 2 LODs per model, chosen by camera distance with an LOD bias setting.
+- Terrain chunks use Babylon's native bounds/frustum culling and distance-selected mesh LOD. Only the
+  chosen terrain mesh is drawn; offscreen colour chunks can still cast into the visible shadow map.
+  Water and foam retain their original meshes and world-space texture continuity.
+- Distant terrain merges 2×2 dry flat patches only when their level, surface, biome and one-cell halo
+  match. Chunk perimeter cells, the map border, ramps, cliffs, shorelines and material transitions retain
+  their original geometry. Merged patches retain the original boundary bevel height, so adjacent chunks
+  can choose different levels without holes. Per-cell colour variation is averaged within a merged patch.
+- **Addition — provisional engineering distances:** Low switches at 64 metres from the camera to the
+  chunk centre, Medium at 96, High at 128 and Ultra at 160. `renderer.setQuality` updates both effects and
+  terrain thresholds; a standalone terrain root also exposes `setQuality`. These are initial detail
+  thresholds, not an art-direction or performance sign-off.
+- Both near and distant geometry stay resident. This reduces submitted triangles, not chunk draw calls,
+  startup work or memory. Model LOD selection remains with the entity presentation task.
 - Entities in fog aren't sent to the client at all ([fog-of-war.md](../design/fog-of-war.md)), so they cost nothing.
 
 ## Construction and destruction
