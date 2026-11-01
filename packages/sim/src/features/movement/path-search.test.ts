@@ -129,6 +129,29 @@ describe("PathSearch", () => {
     expect(new PathSearch(nav, 0, 2).step(3).cost).toBe(1310700);
   });
 
+  test("JSON search state preserves heap order and continuation, including terminal states", () => {
+    for (let fixture = 0; fixture < 10; fixture++) {
+      const nav = grid(
+        8,
+        8,
+        Array.from({ length: 64 }, (_, cell) => (cell === 0 ? 1 : (cell * 17 + fixture * 13) % 7)),
+      );
+      const search = new PathSearch(nav, 0, 63);
+      for (let step = 0; step < 12; step++) {
+        const serialized = JSON.stringify(search.snapshot());
+        const restored = PathSearch.restore(nav, JSON.parse(serialized));
+        expect(JSON.stringify(restored.snapshot())).toBe(serialized);
+        expect(restored.result()).toEqual(search.result());
+        expect(restored.step(7)).toEqual(search.step(7));
+        expect(restored.snapshot()).toEqual(search.snapshot());
+      }
+    }
+    const nav = grid(1, 1);
+    const found = new PathSearch(nav, 0, 0);
+    found.advance(1);
+    expect(PathSearch.restore(nav, found.snapshot()).step(10)).toEqual(found.step(10));
+  });
+
   test("weighted routes match an independent exhaustive shortest-cost search", () => {
     for (let fixture = 0; fixture < 20; fixture++) {
       const nav = grid(

@@ -42,6 +42,10 @@ reachability labels and movement integration are still pending; existing simulat
 
 Each Force has its own path request queue, ordered canonically by (tick issued, entity ID), with player orders ahead of automatic repaths. Each tick processes a fixed number of **node expansions**, shared **round-robin between Forces**, so one player's huge group move can't starve everyone else's units. A request that runs out continues next tick, while the unit starts moving toward the best partial result. The budget is counted in work units, never milliseconds, so results never depend on CPU speed.
 
+The standalone `PathScheduler` implements this quota over one caller-supplied `NavGrid`. Submit each tick's requests before calling `tick()`; resolve multiple commands for the same entity in canonical command order first. `submit()` replaces prior work for that entity, including after a Force transfer; `cancel()` removes it for stop/death/removal. A new player order can preempt an automatic repath while retaining that repath's search. The next Force cursor persists across ticks, including when the quota is smaller than the number of Forces. Results contain a partial/final path once per served request, and integer expansion/completion/queue counters per tick and Force. A zero quota performs no work.
+
+`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**. The grid stays caller-owned and is not included in this state. This scheduler is not registered in a match yet; movement, terrain compilation and tick-boundary invalidation remain separate tasks. Registration must include this entire state in canonical match hashing and apply the simulation-version/golden outcome rule. Current match outcomes and `SIM_VERSION` are unchanged.
+
 ## Group movement
 
 - **Formations:** a group order computes formation slots around the destination. Units are assigned to slots deterministically (sorted by ID, then nearest slot). Right-drag sets facing and width.

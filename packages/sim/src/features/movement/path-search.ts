@@ -29,6 +29,18 @@ export interface PathResult {
   expansions: number;
 }
 
+/** Plain integer state, including the heap order; the grid is supplied separately on restore. */
+export interface PathSearchState {
+  start: number;
+  goal: number;
+  cost: readonly number[];
+  parent: readonly number[];
+  closed: readonly number[];
+  heap: readonly number[];
+  best: number;
+  status: PathResult["status"];
+}
+
 /**
  * Incremental A* for one request, separate from kernel state. Keep the supplied grid unchanged until
  * completion. Best partial / unreachable endpoint: lowest octile distance, then path cost, then index.
@@ -44,9 +56,37 @@ export class PathSearch {
 
   constructor(
     private readonly grid: NavGrid,
-    start: number,
+    private readonly start: number,
     private readonly goal: number,
   ) {
+    PathSearch.check(grid, start, goal);
+    const cells = grid.width * grid.height;
+    this.cost = new Array<number>(cells).fill(-1);
+    this.parent = new Int32Array(cells).fill(-1);
+    this.position = new Int32Array(cells).fill(-1);
+    this.closed = new Uint8Array(cells);
+    this.cost[start] = 0;
+    this.best = start;
+    this.pushOrRaise(start);
+  }
+
+  /** Validate queued requests without allocating their search arrays yet. */
+  static check(grid: NavGrid, start: number, goal: number): void {
+    PathSearch.checkGrid(grid);
+    const cells = grid.width * grid.height;
+    if (
+      !Number.isInteger(start) ||
+      !Number.isInteger(goal) ||
+      start < 0 ||
+      goal < 0 ||
+      start >= cells ||
+      goal >= cells ||
+      grid.cost[start] === 0
+    )
+      throw new RangeError("Path endpoints must be cell indices and the start must be passable");
+  }
+
+  static checkGrid(grid: NavGrid): void {
     const { width, height, cost, connections } = grid;
     if (
       !Number.isInteger(width) ||
@@ -58,28 +98,22 @@ export class PathSearch {
     )
       throw new RangeError("Nav grid dimensions must be integers in [1, 512]");
     const cells = width * height;
-    if (cost.length !== cells || connections.length !== cells)
-      throw new RangeError("Nav grid layers must contain width × height cells");
     if (
-      !Number.isInteger(start) ||
-      !Number.isInteger(goal) ||
-      start < 0 ||
-      goal < 0 ||
-      start >= cells ||
-      goal >= cells ||
-      cost[start] === 0
+      !(cost instanceof Uint16Array) ||
+      !(connections instanceof Uint8Array) ||
+      cost.length !== cells ||
+      connections.length !== cells
     )
-      throw new RangeError("Path endpoints must be cell indices and the start must be passable");
-    this.cost = new Array<number>(cells).fill(-1);
-    this.parent = new Int32Array(cells).fill(-1);
-    this.position = new Int32Array(cells).fill(-1);
-    this.closed = new Uint8Array(cells);
-    this.cost[start] = 0;
-    this.best = start;
-    this.pushOrRaise(start);
+      throw new RangeError("Nav grid layers must contain width × height cells");
   }
 
   step(budget: number): PathResult {
+    const expansions = this.advance(budget);
+    return { ...this.result(), expansions };
+  }
+
+  /** Expand without reconstructing a partial path at every round-robin turn. */
+  advance(budget: number): number {
     if (!Number.isSafeInteger(budget) || budget < 0)
       throw new RangeError("Path budget must be a nonnegative safe integer");
     let expansions = 0;
@@ -133,10 +167,106 @@ export class PathSearch {
       }
       if (this.heap.length === 0) this.status = "unreachable";
     }
+    return expansions;
+  }
+
+  /** Observes the current partial/final path without expanding any nodes. */
+  result(): PathResult {
     const path: number[] = [];
     for (let cell = this.best; cell !== -1; cell = this.parent[cell] as number) path.push(cell);
     path.reverse();
-    return { status: this.status, path, cost: this.cost[this.best] as number, expansions };
+    return { status: this.status, path, cost: this.cost[this.best] as number, expansions: 0 };
+  }
+
+  get finished(): boolean {
+    return this.status !== "searching";
+  }
+
+  snapshot(): PathSearchState {
+    return {
+      start: this.start,
+      goal: this.goal,
+      cost: [...this.cost],
+      parent: [...this.parent],
+      closed: [...this.closed],
+      heap: [...this.heap],
+      best: this.best,
+      status: this.status,
+    };
+  }
+
+  /** Restore a snapshot against the same immutable grid. Reject malformed internal links. */
+  static restore(grid: NavGrid, state: PathSearchState): PathSearch {
+    const search = new PathSearch(grid, state.start, state.goal);
+    const cells = grid.width * grid.height;
+    const index = (value: number) => Number.isInteger(value) && value >= 0 && value < cells;
+    if (
+      !Array.isArray(state.cost) ||
+      !Array.isArray(state.parent) ||
+      !Array.isArray(state.closed) ||
+      !Array.isArray(state.heap) ||
+      state.cost.length !== cells ||
+      state.parent.length !== cells ||
+      state.closed.length !== cells ||
+      !index(state.best) ||
+      state.cost[state.start] !== 0 ||
+      state.parent[state.start] !== -1 ||
+      state.cost[state.best] === -1 ||
+      !["searching", "found", "unreachable"].includes(state.status)
+    )
+      throw new RangeError("Invalid path search state");
+    search.position.fill(-1);
+    for (let cell = 0; cell < cells; cell++) {
+      const cost = state.cost[cell] as number;
+      const parent = state.parent[cell] as number;
+      const closed = state.closed[cell] as number;
+      if (
+        !Number.isSafeInteger(cost) ||
+        cost < -1 ||
+        cost > cells * 14 * 65535 ||
+        (closed !== 0 && closed !== 1) ||
+        (cost === -1 && (parent !== -1 || closed !== 0)) ||
+        (cost !== -1 &&
+          cell !== state.start &&
+          (!index(parent) ||
+            (state.cost[parent] as number) < 0 ||
+            (state.cost[parent] as number) >= cost))
+      )
+        throw new RangeError("Invalid path search node");
+      search.cost[cell] = cost;
+      search.parent[cell] = parent;
+      search.closed[cell] = closed;
+    }
+    search.heap.length = 0;
+    for (const cell of state.heap) {
+      if (
+        !index(cell) ||
+        search.position[cell] !== -1 ||
+        search.cost[cell] === -1 ||
+        search.closed[cell]
+      )
+        throw new RangeError("Invalid path search heap");
+      const position = search.heap.length;
+      if (
+        position > 0 &&
+        search.before(cell, search.heap[Math.floor((position - 1) / 2)] as number)
+      )
+        throw new RangeError("Invalid path search heap order");
+      search.position[cell] = position;
+      search.heap.push(cell);
+    }
+    for (let cell = 0; cell < cells; cell++)
+      if (search.cost[cell] !== -1 && !search.closed[cell] && search.position[cell] === -1)
+        throw new RangeError("Missing open path search node");
+    if (
+      (state.status === "searching" && search.heap.length === 0) ||
+      (state.status === "unreachable" && search.heap.length !== 0) ||
+      (state.status === "found" && (state.best !== state.goal || !search.closed[state.goal]))
+    )
+      throw new RangeError("Invalid path search status");
+    search.best = state.best;
+    search.status = state.status;
+    return search;
   }
 
   private canCross(from: number, to: number, direction: number): boolean {
