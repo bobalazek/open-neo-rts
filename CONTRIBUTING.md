@@ -12,20 +12,20 @@ bun install
 bun run dev              # web client
 ```
 
-| Command                                                        | What                                                                                                            |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `bun run check` / `bun run fix`                                | Biome lint and format (check only / apply fixes)                                                                |
-| `bun run typecheck`                                            | TypeScript across all packages                                                                                  |
-| `bun run test`                                                 | All tests in Bun                                                                                                |
-| `bun run test:browsers`                                        | Playwright tests in Chromium, Firefox and WebKit                                                                |
-| `bun run build`                                                | Production build                                                                                                |
-| `bun neo validate`                                             | Every content and asset check (what CI runs)                                                                    |
-| `bun neo make-placeholders [pack]`                             | Block-model GLBs, wrecks and icons for definitions without art (default pack: `core`)                           |
-| `bun neo generate-schemas`                                     | Regenerate `content/schemas` after changing content types (`--check` fails if stale)                            |
-| `bun neo`                                                      | List all CLI commands                                                                                           |
-| `bun neo run <scenario> [--seed N] [--ticks T] [--trace file]` | Run a versioned command log twice, print hashes and optionally save a per-tick trace                            |
-| `bun neo run --compare <trace-a> <trace-b>`                    | Report the first divergent tick, event logs and canonical state diff                                            |
-| `bun neo bench [--units N] [--ticks T]`                        | Measure moving-unit tick cost and compare ECS operations with a sparse set (defaults: 1,000 units, 1,000 ticks) |
+| Command                                                        | What                                                                                                                                               |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check` / `bun run fix`                                | Biome lint and format (check only / apply fixes)                                                                                                   |
+| `bun run typecheck`                                            | TypeScript across all packages                                                                                                                     |
+| `bun run test`                                                 | All tests in Bun                                                                                                                                   |
+| `bun run test:browsers`                                        | Playwright tests in Chromium, Firefox and WebKit                                                                                                   |
+| `bun run build`                                                | Production build                                                                                                                                   |
+| `bun neo validate`                                             | Every content and asset check (what CI runs)                                                                                                       |
+| `bun neo make-placeholders [pack]`                             | Block-model GLBs, wrecks and icons for definitions without art (default pack: `core`)                                                              |
+| `bun neo generate-schemas`                                     | Regenerate `content/schemas` after changing content types (`--check` fails if stale)                                                               |
+| `bun neo`                                                      | List all CLI commands                                                                                                                              |
+| `bun neo run <scenario> [--seed N] [--ticks T] [--trace file]` | Run a versioned command log twice, print hashes and optionally save a per-tick trace                                                               |
+| `bun neo run --compare <trace-a> <trace-b>`                    | Report the first divergent tick, event logs and canonical state diff                                                                               |
+| `bun neo bench [--workload NAME] [--units N] [--ticks T]`      | `flat`: full-sim/ECS (default 1,000 units); `navigation`: 256×256 compiler/search/scheduler (default 300 unit request slots); 1,000 measured ticks |
 
 The repo layout is described in [docs/engineering/architecture.md](docs/engineering/architecture.md#3-monorepo-layout).
 
