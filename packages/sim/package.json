@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./definitions": "./src/features/entities/definitions.ts",
     "./maps": "./src/match-map.ts",
     "./testing": "./src/testing/index.ts"
   },

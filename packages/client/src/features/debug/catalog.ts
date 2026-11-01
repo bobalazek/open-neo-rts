@@ -1,5 +1,5 @@
 import { type DOMAINS, SCHEMAS, validate } from "@open-neo-rts/content";
-import { toDefinition } from "@open-neo-rts/sim";
+import { toDefinition } from "@open-neo-rts/sim/definitions";
 
 interface RawDefinition {
   id: string;
