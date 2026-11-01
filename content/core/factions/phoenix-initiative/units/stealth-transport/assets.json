@@ -1,0 +1,16 @@
+{
+  "files": {
+    "stealth-transport.glb": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-transport.bricks.json"
+    },
+    "stealth-transport.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-transport.bricks.json"
+    },
+    "stealth-transport.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-transport.bricks.json"
+    }
+  }
+}
