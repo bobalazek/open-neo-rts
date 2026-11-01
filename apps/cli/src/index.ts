@@ -15,7 +15,11 @@ import { validateContent } from "./commands/validate-content";
 type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
-  bench: { summary: "Measure tick cost and ECS stores [--units N] [--ticks T]", run: bench },
+  bench: {
+    summary:
+      "Measure flat sim/ECS or navigation [--workload flat|navigation] [--units N] [--ticks T]",
+    run: bench,
+  },
   run: {
     summary:
       "Run a scenario twice [--seed N] [--ticks T] [--trace file], or --compare trace-a trace-b",

@@ -27,6 +27,29 @@ for (const units of [1, 8001])
     expect(execute(["--units", String(units), "--ticks", "1"]).status).toBe(0);
   });
 
+test("navigation benchmark validates routes and repeats fixed-work counters and checksum", () => {
+  const args = ["--workload", "navigation", "--ticks", "2"];
+  const first = execute(args);
+  const second = execute(args);
+  expect(first.status).toBe(0);
+  expect(second.status).toBe(0);
+  expect(first.error).toBe("");
+  expect(second.error).toBe("");
+  expect(first.out).toContain("300 unit request slots, 8 Forces, 2 ticks (100 warmup ticks)");
+  expect(first.out).toContain("seed 1 | map:bench-river-256 256x256");
+  expect(first.out).toContain("quota 4096 nodes/tick");
+  expect(first.out).toMatch(/Cold compile: \d+\.\d+ ms/);
+  expect(first.out).toMatch(/mean \d+\.\d+ ms \| p95 \d+\.\d+ ms \| max \d+\.\d+ ms/);
+  const receipt = (out: string) =>
+    out.split("\n").filter((line) => /^(Requests|Expansions):/.test(line));
+  expect(receipt(first.out)).toHaveLength(2);
+  expect(receipt(first.out)).toEqual(receipt(second.out));
+  expect(first.out).toContain("Expansions: 8192 (4096.000/tick) | max 4096/tick | checksum");
+  const invalid = execute(["--workload", "other"]);
+  expect(invalid.status).toBe(1);
+  expect(invalid.error).toContain("--workload requires flat or navigation");
+});
+
 for (const args of [
   ["--other", "1"],
   ["--units"],
