@@ -1,0 +1,34 @@
+{
+  "$schema": "../../../schemas/map.schema.json",
+  "id": "map:sandbox-biomes",
+  "name": "Sandbox: Biomes",
+  "description": "Four equal quadrants: temperate grass in the north-west, desert sand in the north-east, arctic snow in the south-west and urban road in the south-east.",
+  "size": {
+    "width": 128,
+    "height": 128
+  },
+  "biome": "temperate",
+  "players": {
+    "min": 1,
+    "max": 2
+  },
+  "spawns": [
+    {
+      "id": "north-west",
+      "position": [24, 24],
+      "facing": 135
+    },
+    {
+      "id": "south-east",
+      "position": [104, 104],
+      "facing": 315
+    }
+  ],
+  "start": "empty",
+  "resources": [],
+  "objects": [],
+  "layers": {
+    "surface": "surface.r8",
+    "biome": "biome.r8"
+  }
+}

@@ -155,6 +155,7 @@
       "props/urban/wrecked-car/prop.json"
     ],
     "maps": [
+      "maps/sandbox-biomes/map.json",
       "maps/sandbox-flat/map.json",
       "maps/sandbox-resources/map.json",
       "maps/sandbox-terrain/map.json",

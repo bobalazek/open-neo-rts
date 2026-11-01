@@ -28,7 +28,7 @@ function grid(size: number): TerrainGrid {
   return parseTerrain(size, size, {});
 }
 
-type Layer = "level" | "ramp" | "water";
+type Layer = "level" | "ramp" | "surface" | "water" | "biome";
 
 /** Sets `layer` to `value` on cells x0 ≤ x < x1, y0 ≤ y < y1 (clipped to the map) where `inside` holds. */
 function box(
@@ -114,6 +114,26 @@ export const SANDBOX_MAPS: Record<string, () => SandboxMap> = {
       spawns: [
         { id: "north-west", position: [16, 16], facing: 135 },
         { id: "south", position: [64, 88], facing: 315 },
+      ],
+    };
+  },
+
+  "sandbox-biomes": () => {
+    const t = grid(128);
+    for (const [i, surface] of (["grass", "sand", "snow", "road"] as const).entries()) {
+      const x = (i % 2) * 64;
+      const y = Math.floor(i / 2) * 64;
+      box(t, "biome", [x, y, x + 64, y + 64], i);
+      box(t, "surface", [x, y, x + 64, y + 64], SURFACES.indexOf(surface));
+    }
+    return {
+      name: "Sandbox: Biomes",
+      description:
+        "Four equal quadrants: temperate grass in the north-west, desert sand in the north-east, arctic snow in the south-west and urban road in the south-east.",
+      terrain: t,
+      spawns: [
+        { id: "north-west", position: [24, 24], facing: 135 },
+        { id: "south-east", position: [104, 104], facing: 315 },
       ],
     };
   },
