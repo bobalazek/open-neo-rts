@@ -133,21 +133,7 @@ export class PathSearch {
         const ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= this.grid.width || ny >= this.grid.height) continue;
         const next = ny * this.grid.width + nx;
-        if (this.closed[next] || !this.canCross(cell, next, direction)) continue;
-        if (dx !== 0 && dy !== 0) {
-          const horizontal = cell + dx;
-          const vertical = cell + dy * this.grid.width;
-          const eastWest = dx < 0 ? 3 : 4;
-          const northSouth = dy < 0 ? 1 : 6;
-          // Both routes round a diagonal must be clear, including their cliff edges.
-          if (
-            !this.canCross(cell, horizontal, eastWest) ||
-            !this.canCross(cell, vertical, northSouth) ||
-            !this.canCross(horizontal, next, northSouth) ||
-            !this.canCross(vertical, next, eastWest)
-          )
-            continue;
-        }
+        if (this.closed[next] || !this.canMove(cell, next, direction)) continue;
         const cost =
           (this.cost[cell] as number) +
           (dx !== 0 && dy !== 0 ? 14 : 10) * (this.grid.cost[next] as number);
@@ -233,6 +219,20 @@ export class PathSearch {
             (state.cost[parent] as number) >= cost))
       )
         throw new RangeError("Invalid path search node");
+      if (cost !== -1 && cell !== state.start) {
+        const dx = (cell % grid.width) - (parent % grid.width);
+        const dy = Math.floor(cell / grid.width) - Math.floor(parent / grid.width);
+        const direction = NAV_DIRECTIONS.findIndex(([x, y]) => x === dx && y === dy);
+        if (
+          direction === -1 ||
+          state.closed[parent] !== 1 ||
+          !search.canMove(parent, cell, direction) ||
+          cost !==
+            (state.cost[parent] as number) +
+              (dx !== 0 && dy !== 0 ? 14 : 10) * (grid.cost[cell] as number)
+        )
+          throw new RangeError("Invalid path search parent edge");
+      }
       search.cost[cell] = cost;
       search.parent[cell] = parent;
       search.closed[cell] = closed;
@@ -272,6 +272,23 @@ export class PathSearch {
   private canCross(from: number, to: number, direction: number): boolean {
     return (
       this.grid.cost[to] !== 0 && ((this.grid.connections[from] as number) & (1 << direction)) !== 0
+    );
+  }
+
+  private canMove(from: number, to: number, direction: number): boolean {
+    if (!this.canCross(from, to, direction)) return false;
+    const [dx, dy] = NAV_DIRECTIONS[direction] as (typeof NAV_DIRECTIONS)[number];
+    if (dx === 0 || dy === 0) return true;
+    const horizontal = from + dx;
+    const vertical = from + dy * this.grid.width;
+    const eastWest = dx < 0 ? 3 : 4;
+    const northSouth = dy < 0 ? 1 : 6;
+    // Both routes round a diagonal must be clear, including their cliff edges.
+    return (
+      this.canCross(from, horizontal, eastWest) &&
+      this.canCross(from, vertical, northSouth) &&
+      this.canCross(horizontal, to, northSouth) &&
+      this.canCross(vertical, to, eastWest)
     );
   }
 
