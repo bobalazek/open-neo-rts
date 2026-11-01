@@ -1,0 +1,142 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "quantum_research_lab",
+      "bricks": [
+        {
+          "at": [-11.7, 0, -11.7],
+          "size": [23.4, 0.6, 23.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-9, 0.6, -9],
+          "size": [18, 2.5, 18],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-9, 3.1, -9],
+          "size": [18, 0.5, 18],
+          "slot": "team",
+          "studs": true
+        },
+        {
+          "at": [-6.5, 3.6, -6.5],
+          "size": [1, 6, 13],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2",
+          "mirror": true
+        },
+        {
+          "at": [-6.5, 9.6, -6.5],
+          "size": [13, 0.5, 13],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-3, 10.1, -3],
+          "size": [6, 0.5, 6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-10, 0.6, 7.5],
+          "size": [20, 0.2, 1],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-6, 3.6, -6],
+          "size": [12, 5, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-6, 3.6, -6],
+          "size": [0.2, 5, 12],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [5.8, 3.6, -6],
+          "size": [0.2, 5, 12],
+          "slot": "glass",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "quantum_core",
+      "parent": "quantum_research_lab",
+      "at": [0, 6, 0],
+      "bricks": [
+        {
+          "at": [-1.5, -1.5, -1.5],
+          "size": [3, 3, 3],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-3, -0.2, -3],
+          "size": [6, 0.4, 0.4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-3, -0.2, 2.6],
+          "size": [6, 0.4, 0.4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-3, -0.2, -2.6],
+          "size": [0.4, 0.4, 5.2],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [2.6, -0.2, -2.6],
+          "size": [0.4, 0.4, 5.2],
+          "slot": "team",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "quantum_research_lab",
+      "at": [0, 10, 0]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "quantum_core",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [1.0, [0, 90, 0]],
+            [2.0, [0, 180, 0]],
+            [3.0, [0, 270, 0]],
+            [4.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "quantum_core",
+          "translation": [[0, [0, 0, 0]], [2, [0, 0.8, 0]], [4, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}

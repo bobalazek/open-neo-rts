@@ -20,6 +20,7 @@
     "icon": "naval-yard.icon.png",
     "wreck": "naval-yard.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["active", "open", "close"]
   }
 }

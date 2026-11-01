@@ -1,0 +1,188 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "naval_yard",
+      "bricks": [
+        {
+          "at": [-15.7, 0, -15.7],
+          "size": [31.4, 0.8, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-15.7, 0, -5.7],
+          "size": [7.7, 0.8, 21.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [8, 0, -5.7],
+          "size": [7.7, 0.8, 21.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-14, 0.8, -14],
+          "size": [28, 4, 7],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-14, 4.8, -14],
+          "size": [28, 0.6, 7],
+          "slot": "team",
+          "studs": true
+        },
+        {
+          "at": [-11, 5.4, -12],
+          "size": [2, 9, 2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [9, 5.4, -12],
+          "size": [2, 9, 2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-11, 14.4, -12],
+          "size": [22, 1, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-14, 1, 8],
+          "size": [4, 1, 5],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [10, 1, 8],
+          "size": [4, 1, 5],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-8.5, 0.8, -5],
+          "size": [0.5, 0.3, 18],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [8, 0.8, -5],
+          "size": [0.5, 0.3, 18],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gantry",
+      "parent": "naval_yard",
+      "at": [0, 14, -11],
+      "bricks": [
+        {
+          "at": [-1, -1, -1],
+          "size": [2, 1, 2],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-0.15, -7, -0.15],
+          "size": [0.3, 6, 0.3],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.7, -7.5, -0.7],
+          "size": [1.4, 0.5, 1.4],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gate_l",
+      "parent": "naval_yard",
+      "at": [-8, 0.8, 12],
+      "bricks": [
+        {
+          "at": [0, 0, -0.25],
+          "size": [8, 1.5, 0.5],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "gate_r",
+      "parent": "naval_yard",
+      "at": [8, 0.8, 12],
+      "bricks": [
+        {
+          "at": [-8, 0, -0.25],
+          "size": [8, 1.5, 0.5],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "naval_yard",
+      "at": [0, 6, -10]
+    },
+    {
+      "name": "socket_exit",
+      "parent": "naval_yard",
+      "at": [0, 0, 15]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "gantry",
+          "translation": [[0, [-7, 0, 0]], [2, [7, 0, 0]], [4, [-7, 0, 0]]]
+        }
+      ]
+    },
+    "open": {
+      "duration": 1,
+      "tracks": [
+        {
+          "node": "gate_l",
+          "rotation": [[0, [0, 0, 0]], [1, [0, -90, 0]]]
+        },
+        {
+          "node": "gate_r",
+          "rotation": [[0, [0, 0, 0]], [1, [0, 90, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 1,
+      "tracks": [
+        {
+          "node": "gate_l",
+          "rotation": [[0, [0, -90, 0]], [1, [0, 0, 0]]]
+        },
+        {
+          "node": "gate_r",
+          "rotation": [[0, [0, 90, 0]], [1, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}

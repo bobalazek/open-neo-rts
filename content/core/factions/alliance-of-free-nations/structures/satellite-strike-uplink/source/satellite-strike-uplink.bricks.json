@@ -1,0 +1,147 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "satellite_strike_uplink",
+      "bricks": [
+        {
+          "at": [-11.7, 0, -11.7],
+          "size": [23.4, 0.6, 23.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-8, 0.6, -8],
+          "size": [16, 3, 16],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-8, 3.6, -8],
+          "size": [16, 0.5, 16],
+          "slot": "team",
+          "studs": true
+        },
+        {
+          "at": [-4, 4.1, -4],
+          "size": [8, 3, 8],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2, 7.1, -2],
+          "size": [4, 3, 4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [8, 0.6, -7],
+          "size": [2, 4, 14],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-10, 0.6, -7],
+          "size": [2, 4, 14],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-6, 0.7, 8.5],
+          "size": [12, 0.2, 1],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "mount",
+      "parent": "satellite_strike_uplink",
+      "at": [0, 10, 0]
+    },
+    {
+      "name": "dish",
+      "parent": "mount",
+      "at": [0, 0, 0],
+      "bricks": [
+        {
+          "at": [-5, -0.4, -4],
+          "size": [10, 0.8, 8],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-6, 0.4, -5],
+          "size": [1, 1, 10],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [5, 0.4, -5],
+          "size": [1, 1, 10],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-5, 0.4, -5],
+          "size": [10, 1, 1],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-5, 0.4, 4],
+          "size": [10, 1, 1],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-0.3, 0.4, -0.3],
+          "size": [0.6, 4, 0.6],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-1, 4, -1],
+          "size": [2, 0.8, 2],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-4, 0.4, -3],
+          "size": [8, 0.2, 6],
+          "slot": "glass",
+          "studs": false
+        }
+      ],
+      "rotation": [-25, 0, 0]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "satellite_strike_uplink",
+      "at": [0, 4, 0]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "mount",
+          "rotation": [[0, [0, -35, 0]], [4, [0, 35, 0]], [8, [0, -35, 0]]]
+        },
+        {
+          "node": "dish",
+          "rotation": [[0, [-25, 0, 0]], [4, [-40, 0, 0]], [8, [-25, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "quantum-research-lab.glb": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-research-lab.bricks.json"
+    },
+    "quantum-research-lab.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-research-lab.bricks.json"
+    },
+    "quantum-research-lab.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-research-lab.bricks.json"
+    }
+  }
+}
