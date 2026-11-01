@@ -7,6 +7,7 @@ import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 
+export * from "./path-scheduler";
 export * from "./path-search";
 
 /** Where a unit is moving, in subcells. Present only while it has a move order. */
