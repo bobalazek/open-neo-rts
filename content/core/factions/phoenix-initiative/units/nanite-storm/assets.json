@@ -1,0 +1,16 @@
+{
+  "files": {
+    "nanite-storm.glb": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-storm.bricks.json"
+    },
+    "nanite-storm.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-storm.bricks.json"
+    },
+    "nanite-storm.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-storm.bricks.json"
+    }
+  }
+}
