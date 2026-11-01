@@ -313,18 +313,24 @@ test("hover and amphibious models float over both water depths and follow dry la
     movementDomain: definition === "hover" ? "hover" : "amphibious",
   }));
   try {
-    await layer.accept(snapshot(0, [
-      ...["hover", "amphibious"].flatMap((definition) => [1, 2, 3].map((x) =>
-        entity(`${definition}-${x}`, { definition, x: x * 1024 + 512, y: 1536 }),
-      )),
-    ]), 0);
+    await layer.accept(
+      snapshot(0, [
+        ...["hover", "amphibious"].flatMap((definition) =>
+          [1, 2, 3].map((x) =>
+            entity(`${definition}-${x}`, { definition, x: x * 1024 + 512, y: 1536 }),
+          ),
+        ),
+      ]),
+      0,
+    );
     for (const definition of ["hover", "amphibious"]) {
       expect(root(f.scene, `${definition}-1`).position.y).toBeCloseTo(1.6);
       expect(root(f.scene, `${definition}-2`).position.y).toBeCloseTo(1.6);
       expect(root(f.scene, `${definition}-3`).position.y).toBeCloseTo(1.8);
     }
   } finally {
-    layer.dispose(); f.dispose();
+    layer.dispose();
+    f.dispose();
   }
 });
 
