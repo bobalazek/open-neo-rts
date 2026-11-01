@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { OfflineState } from "../../../packages/client/src/worker";
 
-async function openDebug(page: Page) {
+async function openDebug(page: Page, forces: 1 | 2 = 1) {
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
     window.Worker = class extends OriginalWorker {
@@ -13,17 +13,14 @@ async function openDebug(page: Page) {
       }
     };
   });
-  await page.goto(
-    new URL("/debug", test.info().project.use.baseURL ?? "http://localhost:4320").href,
-  );
+  const url = new URL("/debug", test.info().project.use.baseURL ?? "http://localhost:4320");
+  if (forces === 2) url.searchParams.set("force", "alliance-of-free-nations;eastern-collective");
+  await page.goto(url.href);
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   const state = () => page.evaluate(() => Reflect.get(window, "debugControlState") as OfflineState);
   const definitions = page.getByRole("listbox", { name: "Definition" });
   expect(await definitions.locator("option").count()).toBe(136);
-  await page.getByRole("button", { name: "Add Force" }).click();
-  await page.getByRole("button", { name: "Reload session" }).click();
-  await expect(canvas).toHaveAttribute("data-session", "ready");
   const bounds = await canvas.boundingBox();
   if (!bounds) throw new Error("Canvas missing");
   const point = (x: number, y: number) => ({
@@ -168,16 +165,15 @@ test("debug time controls pace the worker and remain reachable on narrow screens
   await expect(time).toContainText(finalState.hash ?? "missing hash");
 });
 
-test("debug inspector mutates through commands and orders enforce Force grants", async ({
+test("debug inspector edits destructible health and removes indestructible props", async ({
   page,
 }) => {
   const { state, definitions, click, spawnResult, count, inspected } = await openDebug(page);
   await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
   await click(0.4, 0.55);
   await expect(spawnResult).toContainText("Spawned");
-  await click(0.6, 0.55);
   await expect(page.getByRole("status", { name: "Model status" })).toContainText(
-    "Models ready · 2",
+    "Models ready · 1",
   );
   const selected = (await state()).snapshot.entities[0];
   if (!selected) throw new Error("Missing entity");
@@ -200,6 +196,10 @@ test("debug inspector mutates through commands and orders enforce Force grants",
   await expect(page.getByRole("button", { name: "Kill", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Remove", exact: true }).click();
   await expect(count).toHaveText("0 selected");
+});
+
+test("debug orders reject entities without the controlled Force grant", async ({ page }) => {
+  const { state, definitions, click, spawnResult } = await openDebug(page, 2);
   await page.getByLabel("Spawn Force", { exact: true }).selectOption("1");
   await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
   await click(0.35, 0.65);
