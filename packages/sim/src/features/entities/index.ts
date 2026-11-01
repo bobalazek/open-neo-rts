@@ -23,13 +23,17 @@ export const Transform = defineComponent("Transform", { x: "i32", y: "i32", faci
 export const Health = defineComponent("Health", { current: "u32" });
 
 /** Spawning and removal for a match created with `definitions`. */
-export function entitiesFeature(definitions: readonly Definition[]): Feature {
+export function entitiesFeature(
+  definitions: readonly Definition[],
+  forces?: readonly number[],
+): Feature {
   return {
     components: [Template, OwnerForce, Transform, Health],
     handlers: {
       "debug.spawn": (kernel, { payload }) => {
         const { world } = kernel;
         const { definition, force, x, y, facing } = payload;
+        if (forces && !forces.includes(force)) return "bad_payload";
         const index = definitions.findIndex((d) => d.id === definition);
         const found = definitions[index];
         if (!found) return "bad_payload";

@@ -65,6 +65,8 @@ export interface PathSearchState {
  * completion. Best partial / unreachable endpoint: lowest octile distance, then path cost, then index.
  */
 export class PathSearch {
+  private readonly minimumCost: number;
+  private readonly visited = new Set<number>();
   private readonly cost: number[];
   private readonly parent: Int32Array;
   private readonly position: Int32Array;
@@ -79,12 +81,16 @@ export class PathSearch {
     private readonly goal: number,
   ) {
     PathSearch.check(grid, start, goal);
+    this.minimumCost = 65535;
+    for (const cost of grid.cost)
+      if (cost !== 0) this.minimumCost = Math.min(this.minimumCost, cost);
     const cells = grid.width * grid.height;
     this.cost = new Array<number>(cells).fill(-1);
     this.parent = new Int32Array(cells).fill(-1);
     this.position = new Int32Array(cells).fill(-1);
     this.closed = new Uint8Array(cells);
     this.cost[start] = 0;
+    this.visited.add(start);
     this.best = start;
     this.pushOrRaise(start);
   }
@@ -158,6 +164,7 @@ export class PathSearch {
           (dx !== 0 && dy !== 0 ? 14 : 10) * (this.grid.cost[next] as number);
         if (this.cost[next] !== -1 && cost >= (this.cost[next] as number)) continue;
         this.cost[next] = cost;
+        this.visited.add(next);
         this.parent[next] = cell;
         this.pushOrRaise(next);
         const h = this.heuristic(next);
@@ -198,6 +205,23 @@ export class PathSearch {
       best: this.best,
       status: this.status,
     };
+  }
+
+  /** Hash directly: checkpoint publication does not allocate full search snapshots. */
+  hashInto(h: Hasher): void {
+    for (const n of [this.start, this.goal, this.best]) addU32(h, n);
+    addString(h, this.status);
+    addU32(h, this.cost.length);
+    // Unvisited entries have fixed defaults. Only discovered nodes need hash words.
+    addU32(h, this.visited.size);
+    for (const i of [...this.visited].sort((a, b) => a - b)) {
+      addU32(h, i);
+      addInt(h, this.cost[i] as number);
+      addU32(h, this.parent[i] as number);
+      addU32(h, this.closed[i] as number);
+    }
+    addU32(h, this.heap.length);
+    for (const cell of this.heap) addU32(h, cell);
   }
 
   /** Restore a snapshot against the same immutable grid. Reject malformed internal links. */
@@ -253,6 +277,7 @@ export class PathSearch {
           throw new RangeError("Invalid path search parent edge");
       }
       search.cost[cell] = cost;
+      if (cost !== -1) search.visited.add(cell);
       search.parent[cell] = parent;
       search.closed[cell] = closed;
     }
@@ -292,7 +317,7 @@ export class PathSearch {
     const width = this.grid.width;
     const dx = Math.abs((cell % width) - (this.goal % width));
     const dy = Math.abs(Math.floor(cell / width) - Math.floor(this.goal / width));
-    return 10 * Math.max(dx, dy) + 4 * Math.min(dx, dy);
+    return (10 * Math.max(dx, dy) + 4 * Math.min(dx, dy)) * this.minimumCost;
   }
 
   private before(a: number, b: number): boolean {
@@ -345,3 +370,5 @@ export class PathSearch {
     return first;
   }
 }
+
+import { addInt, addString, addU32, type Hasher } from "@open-neo-rts/deterministic";

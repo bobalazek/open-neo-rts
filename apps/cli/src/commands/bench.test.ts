@@ -20,9 +20,12 @@ test("bench runs moving units and prints tick statistics and both ECS stores", (
   expect(result.out).toContain("operation | ECS ms | sparse-set ms");
   for (const operation of ["create", "add", "query", "iterate"])
     expect(result.out).toMatch(new RegExp(`\\n${operation} \\| \\d+\\.\\d+ \\| \\d+\\.\\d+`));
-  expect(execute(["--units", "1", "--ticks", "1"]).status).toBe(0);
-  expect(execute(["--units", "8001", "--ticks", "1"]).status).toBe(0);
 });
+
+for (const units of [1, 8001])
+  test(`bench accepts ${units} units`, () => {
+    expect(execute(["--units", String(units), "--ticks", "1"]).status).toBe(0);
+  });
 
 for (const args of [
   ["--other", "1"],

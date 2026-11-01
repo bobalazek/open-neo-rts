@@ -7,6 +7,7 @@ import {
   entitiesFeature,
 } from "./features/entities";
 import { movementFeature } from "./features/movement";
+import { TerrainMovement } from "./features/movement/terrain-movement";
 import { createKernel, type Kernel, register } from "./kernel";
 import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
 
@@ -18,7 +19,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 3;
+export const SIM_VERSION = 4;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -52,9 +53,21 @@ export function createMatch(setup: MatchSetup): Kernel {
         footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
       }),
       ...(definition.cells && { cells: Object.freeze([...definition.cells]) }),
+      ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
     }),
   );
-  register(kernel, entitiesFeature(definitions));
+  register(
+    kernel,
+    entitiesFeature(
+      definitions,
+      setup.forces.map((force) => force.index),
+    ),
+  );
+  kernel.movement = new TerrainMovement(
+    kernel,
+    definitions,
+    setup.forces.map((f) => f.index),
+  );
   register(kernel, movementFeature({ ...setup, definitions }));
   return kernel;
 }

@@ -25,6 +25,8 @@ export interface NavigationDefinition {
 export type NavigationObject = MatchMap["objects"][number];
 
 export interface NavigationGrid extends NavGrid {
+  /** Exact static obstruction geometry; derived from the immutable map, not simulation state. */
+  barriers: readonly (readonly [number, number, number, number])[];
   domain: GroundDomain;
   radiusSubcells: number;
   /** Largest circular radius at each cell centre, capped at the content maximum (8 cells). */
@@ -166,6 +168,7 @@ export function compileNavigation(
   }
 
   const centre = new Uint32Array(cells);
+  const barriers: [number, number, number, number][] = [];
   const east = new Uint32Array(cells);
   const south = new Uint32Array(cells);
   for (let y = 0; y < rows; y++)
@@ -186,6 +189,7 @@ export function compileNavigation(
     }
   // Distance to an axis-aligned obstacle rectangle (cliffs have zero width or depth).
   const barrier = (x0: number, y0: number, x1: number, y1: number) => {
+    barriers.push([x0, y0, x1, y1]);
     const left = Math.max(0, Math.floor((x0 - MAX_RADIUS - HALF - CELL) / CELL));
     const top = Math.max(0, Math.floor((y0 - MAX_RADIUS - HALF - CELL) / CELL));
     const right = Math.min(width - 1, Math.floor((x1 + MAX_RADIUS - HALF) / CELL));
@@ -231,6 +235,7 @@ export function compileNavigation(
     if (!cost[i]) speedPercent[i] = 0;
   }
   const grid: NavigationGrid = {
+    barriers,
     width,
     height: rows,
     domain,

@@ -1,9 +1,15 @@
+import { strict as assert } from "node:assert";
 import {
+  createMatch,
+  MoveIntent,
   parseScenario,
   runScenario,
   SCENARIO_FORMAT,
   type Scenario,
   SIM_VERSION,
+  step,
+  Template,
+  Transform,
 } from "@open-neo-rts/sim";
 import {
   createCommandLog,
@@ -11,7 +17,7 @@ import {
   terrainMap,
 } from "@open-neo-rts/sim/testing";
 
-/** Version 3: the phase-1a movement script scaled into a tiny terrain-input fixture. */
+/** Current-version map movement script over the original tier-1 movement profiles. */
 export function easternCollectiveTwoForces(): Scenario {
   const definitions = easternCollectiveTier1Definitions();
   const log = createCommandLog();
@@ -23,7 +29,7 @@ export function easternCollectiveTwoForces(): Scenario {
     setup: {
       map: {
         ...terrainMap(),
-        spawns: [{ id: "west", position: [312, 3125], facing: 0x8000 }],
+        spawns: [{ id: "west", position: [1536, 3584], facing: 0x8000 }],
         objects: [
           {
             definition: "unit:eastern-collective/collective-soldier",
@@ -47,8 +53,8 @@ export function easternCollectiveTwoForces(): Scenario {
       definitions,
     },
     commands: [
-      ...definitions.map(({ id }, i) => log.spawn(0, 0, id, 0, 312, 3125 + i * 16, 0x8000)),
-      ...definitions.map(({ id }, i) => log.spawn(0, 0, id, 1, 5937, 3125 - i * 16, 0)),
+      ...definitions.map(({ id }, i) => log.spawn(0, 0, id, 0, 1536, 3584 + i * 16, 0x8000)),
+      ...definitions.map(({ id }, i) => log.spawn(0, 0, id, 1, 6656, 1536 + i * 16, 0)),
       log.move(1, 1, first, 5937, 4687),
       log.move(1, 2, second, 312, 1562),
       log.stop(1250, 1, [3, 1, 2]),
@@ -72,6 +78,31 @@ export function easternCollectiveTwoForces(): Scenario {
 
 if (import.meta.main) {
   const scenario = parseScenario(easternCollectiveTwoForces());
+  const kernel = createMatch(scenario.setup);
+  step(
+    kernel,
+    scenario.commands.filter((command) => command.tick === 0),
+  );
+  const ids = kernel.world.query(Template);
+  assert.equal(ids.length, scenario.setup.definitions.length * 2);
+  const before = ids.map((id) => [
+    kernel.world.get(id, Transform, "x"),
+    kernel.world.get(id, Transform, "y"),
+  ]);
+  step(
+    kernel,
+    scenario.commands.filter((command) => command.tick === 1),
+  );
+  assert(kernel.log.every((entry) => entry.result === "accepted"));
+  assert.equal(kernel.world.query(MoveIntent).length, ids.length);
+  assert(
+    ids.every(
+      (id, index) =>
+        kernel.world.get(id, Transform, "x") !== before[index]?.[0] ||
+        kernel.world.get(id, Transform, "y") !== before[index]?.[1],
+    ),
+    "Every original roster unit must start moving",
+  );
   await Bun.write(
     new URL("./eastern-collective-two-forces.json", import.meta.url),
     `${JSON.stringify(scenario, null, 2)}\n`,

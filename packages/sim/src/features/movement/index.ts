@@ -31,11 +31,12 @@ export function movementFeature(match: {
 
   /** Replaces each unit's orders with a move to `target`, or drops them. All or nothing on grants. */
   function order(
-    { world, tick }: Kernel,
+    kernel: Kernel,
     seat: number,
     entities: readonly number[],
     target?: { x: number; y: number },
   ): Rejection | undefined {
+    const { world, tick } = kernel;
     // Units may have died since the order was issued; IDs are never reused, so skip them.
     const ids = entities.filter((id) => world.isAlive(id) && world.has(id, Template));
     const force = (id: number) => world.get(id, OwnerForce, "force");
@@ -43,13 +44,22 @@ export function movementFeature(match: {
       return "no_grant";
     for (const id of ids) {
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);
-      if (target && speedOf(world, id) > 0) world.add(id, MoveIntent, target);
+      kernel.movement?.cancel(id);
+      if (target && speedOf(world, id) > 0) {
+        if (kernel.movement) kernel.movement.order(id, target);
+        else world.add(id, MoveIntent, target);
+      }
     }
   }
 
   return {
     components: [Template, OwnerForce, Transform, MoveIntent],
-    systems: { movement: [({ world }) => movementSystem(world, definitions)] },
+    systems: {
+      movement: [
+        (kernel) =>
+          kernel.movement ? kernel.movement.tick() : movementSystem(kernel.world, definitions),
+      ],
+    },
     handlers: {
       "unit.move": (kernel, { seat, payload: { entities, x, y } }) =>
         order(kernel, seat, entities, { x, y }),
