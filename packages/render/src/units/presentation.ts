@@ -48,6 +48,7 @@ export function createEntityPresentation(
   let duration = 50;
   let frameAt = 0;
   let disposed = false;
+  let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
     const morphs = entity.root
@@ -144,7 +145,7 @@ export function createEntityPresentation(
   return {
     async accept(snapshot: SeatSnapshot, nowMs: number): Promise<void> {
       if (disposed) throw new Error("Entity presentation is disposed");
-      if (tick !== undefined && snapshot.tick <= tick) return;
+      if (tick !== undefined && snapshot.tick <= tick) return accepted;
       duration = tick === undefined ? 50 : (snapshot.tick - tick) * 50;
       tick = snapshot.tick;
       receivedAt = nowMs;
@@ -228,7 +229,8 @@ export function createEntityPresentation(
         }
       }
       render(nowMs);
-      await Promise.all(pending);
+      accepted = Promise.all(pending).then(() => undefined);
+      await accepted;
     },
     render,
     setForceColor(force: number, hex: string) {

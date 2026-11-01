@@ -306,6 +306,34 @@ test("removed, replaced and disposed async loads never resurrect stale entities"
   }
 });
 
+test("duplicate snapshots retain the pending model load and its failure", async () => {
+  const f = fixture();
+  let rejectModel: ((error: Error) => void) | undefined;
+  const model = new Promise<never>((_resolve, reject) => {
+    rejectModel = reject;
+  });
+  let loads = 0;
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => {
+    loads++;
+    return model;
+  });
+  try {
+    const first = layer.accept(snapshot(0, [entity("held")]), 0);
+    const duplicate = layer.accept(snapshot(0, [entity("held")]), 0);
+    const settled = Promise.allSettled([first, duplicate]);
+    if (!rejectModel) throw new Error("Missing model rejection control");
+    rejectModel(new Error("held missing model"));
+    expect((await settled).map((result) => result.status)).toEqual(["rejected", "rejected"]);
+    await expect(layer.accept(snapshot(0, [entity("held")]), 0)).rejects.toThrow(
+      "held missing model",
+    );
+    expect(loads).toBe(1);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
 test("a resolver failure is reported and the next snapshot can retry", async () => {
   const f = fixture();
   let attempt = 0;

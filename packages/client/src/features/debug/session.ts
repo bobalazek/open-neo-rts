@@ -183,20 +183,32 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const presentation = entities;
       for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
       renderer.scene.onBeforeRenderObservable.add(() => presentation.render(performance.now()));
+      let modelTick = -1;
+      let modelFailed = false;
       match = createOfflineMatch((state) => {
         if (!current()) return;
         status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · Paused · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = "ready";
+        if (state.snapshot.tick <= modelTick) return;
+        modelTick = state.snapshot.tick;
+        const presentedTick = modelTick;
+        if (!modelFailed && state.snapshot.entities.length)
+          palette.models.textContent = `Loading models · ${state.snapshot.entities.length} projected entities`;
         void presentation
           .accept(state.snapshot, performance.now())
           .then(() => {
-            if (current() && state.snapshot.entities.length)
-              palette.models.textContent = `Models ready · ${state.snapshot.entities.length} projected entities`;
+            if (!current() || modelTick !== presentedTick) return;
+            modelFailed = false;
+            palette.models.textContent = state.snapshot.entities.length
+              ? `Models ready · ${state.snapshot.entities.length} projected entities`
+              : "No entity models loaded.";
           })
           .catch((error: unknown) => {
-            if (current())
+            if (current() && modelTick === presentedTick) {
+              modelFailed = true;
               palette.models.textContent =
                 error instanceof Error ? error.message : "Model presentation failed";
+            }
           });
       }, fail);
       await match.init({
