@@ -30,7 +30,7 @@
     "materials": {},
     "parts": ["hull", "rotor_fl", "rotor_fr", "rotor_bl", "rotor_br"],
     "sockets": [],
-    "animations": ["idle"],
+    "animations": ["idle", "move"],
     "wreck": "supply-drone.wreck.glb"
   }
 }
