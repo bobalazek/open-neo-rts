@@ -1,23 +1,21 @@
 // Babylon renderer: scene, RTS camera and terrain. Reads sim presentation, never writes sim state.
 
-import { BIOMES, type Biome, type TerrainGrid } from "@open-neo-rts/content";
+import type { TerrainGrid } from "@open-neo-rts/content";
 import { createRtsCamera } from "./camera";
 import { createEngine, createScene } from "./scene";
-import { CELL_SIZE, createDemoGrid, createTerrain } from "./terrain";
+import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
 export { createModelPreview } from "./units/preview";
 
 export interface RendererOptions {
-  terrain?: TerrainGrid;
-  biome?: Biome;
+  terrain: TerrainGrid;
 }
 
-export async function createRenderer(canvas: HTMLCanvasElement, options: RendererOptions = {}) {
+export async function createRenderer(canvas: HTMLCanvasElement, options: RendererOptions) {
   const engine = await createEngine(canvas);
   const scene = createScene(engine);
-  // shortcut: demo grid and ?biome= stand in until the client passes a loaded map and its biome.
-  const grid = options.terrain ?? createDemoGrid(options.biome ?? demoBiome());
+  const grid = options.terrain;
   const terrain = createTerrain(scene, grid);
   const camera = createRtsCamera(scene, canvas, {
     minX: 0,
@@ -26,12 +24,20 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     maxZ: grid.height * CELL_SIZE,
   });
 
-  engine.runRenderLoop(() => scene.render());
-  addEventListener("resize", () => engine.resize());
-  return { engine, scene, camera, terrain };
-}
-
-function demoBiome(): Biome {
-  const name = new URLSearchParams(location.search).get("biome") ?? "";
-  return BIOMES.find((biome) => biome === name) ?? "temperate";
+  const render = () => scene.render();
+  const resize = () => engine.resize();
+  engine.runRenderLoop(render);
+  addEventListener("resize", resize);
+  return {
+    engine,
+    scene,
+    camera,
+    terrain,
+    dispose() {
+      removeEventListener("resize", resize);
+      engine.stopRenderLoop(render);
+      scene.dispose();
+      engine.dispose();
+    },
+  };
 }
