@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   createCommandLog,
   easternCollectiveTier1Definitions,
+  flatMap,
   scriptedController,
 } from "@open-neo-rts/sim/testing";
 import { SYSTEM_SEAT, sortCommands, validateCommands } from "../commands";
@@ -12,6 +13,7 @@ import { createMatch } from "../match";
 
 function match() {
   return createMatch({
+    map: flatMap(),
     seed: 1,
     debug: true,
     forces: [{ index: 2, faction: "faction:eastern-collective" }],

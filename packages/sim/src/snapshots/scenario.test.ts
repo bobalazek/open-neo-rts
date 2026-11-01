@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { step } from "../kernel";
 import { createMatch, SIM_VERSION } from "../match";
+import { flatMap } from "../testing";
 import { parseScenario, runScenario, SCENARIO_FORMAT, type Scenario } from ".";
 
 function scenario(): Scenario {
@@ -8,6 +9,7 @@ function scenario(): Scenario {
     format: SCENARIO_FORMAT,
     simVersion: SIM_VERSION,
     setup: {
+      map: flatMap(),
       seed: 1,
       debug: true,
       forces: [{ index: 2, faction: "faction:eastern-collective" }],
@@ -60,8 +62,8 @@ describe("parseScenario", () => {
   });
 
   for (const [path, value, error] of [
-    ["format", 2, "$.format"],
-    ["simVersion", 2, "$.simVersion"],
+    ["format", 1, "$.format"],
+    ["simVersion", 1, "$.simVersion"],
     ["format", "1", "$.format"],
     ["setup.seed", -1, "$.setup.seed"],
     ["setup.seed", 0x100000000, "$.setup.seed"],

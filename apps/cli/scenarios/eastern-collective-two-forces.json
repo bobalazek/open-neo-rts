@@ -1,7 +1,54 @@
 {
-  "format": 1,
-  "simVersion": 1,
+  "format": 2,
+  "simVersion": 2,
   "setup": {
+    "map": {
+      "id": "map:fixture-terrain",
+      "terrain": {
+        "width": 8,
+        "height": 8,
+        "level": [
+          0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+          1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        "ramp": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        "surface": [
+          0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5,
+          6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3,
+          4, 5, 6, 7
+        ],
+        "water": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 0, 0,
+          0, 1, 2, 2
+        ],
+        "biome": [
+          0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+          1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2,
+          3, 3, 3, 3
+        ]
+      },
+      "spawns": [
+        {
+          "id": "west",
+          "position": [312, 3125],
+          "facing": 32768
+        }
+      ],
+      "objects": [
+        {
+          "definition": "unit:eastern-collective/collective-soldier",
+          "position": [1024, 1024],
+          "rotation": 90,
+          "owner": "west"
+        }
+      ]
+    },
     "seed": 305419896,
     "debug": true,
     "forces": [
@@ -83,8 +130,8 @@
       "payload": {
         "definition": "unit:eastern-collective/collective-soldier",
         "force": 0,
-        "x": 20000,
-        "y": 200000,
+        "x": 312,
+        "y": 3125,
         "facing": 32768
       }
     },
@@ -96,8 +143,8 @@
       "payload": {
         "definition": "unit:eastern-collective/dragon-tank",
         "force": 0,
-        "x": 20000,
-        "y": 201024,
+        "x": 312,
+        "y": 3141,
         "facing": 32768
       }
     },
@@ -109,8 +156,8 @@
       "payload": {
         "definition": "unit:eastern-collective/drone-hunter",
         "force": 0,
-        "x": 20000,
-        "y": 202048,
+        "x": 312,
+        "y": 3157,
         "facing": 32768
       }
     },
@@ -122,8 +169,8 @@
       "payload": {
         "definition": "unit:eastern-collective/field-technician",
         "force": 0,
-        "x": 20000,
-        "y": 203072,
+        "x": 312,
+        "y": 3173,
         "facing": 32768
       }
     },
@@ -135,8 +182,8 @@
       "payload": {
         "definition": "unit:eastern-collective/metamorphic-apc",
         "force": 0,
-        "x": 20000,
-        "y": 204096,
+        "x": 312,
+        "y": 3189,
         "facing": 32768
       }
     },
@@ -148,8 +195,8 @@
       "payload": {
         "definition": "unit:eastern-collective/rocket-trooper",
         "force": 0,
-        "x": 20000,
-        "y": 205120,
+        "x": 312,
+        "y": 3205,
         "facing": 32768
       }
     },
@@ -161,8 +208,8 @@
       "payload": {
         "definition": "unit:eastern-collective/supply-truck",
         "force": 0,
-        "x": 20000,
-        "y": 206144,
+        "x": 312,
+        "y": 3221,
         "facing": 32768
       }
     },
@@ -174,8 +221,8 @@
       "payload": {
         "definition": "unit:eastern-collective/collective-soldier",
         "force": 1,
-        "x": 380000,
-        "y": 200000,
+        "x": 5937,
+        "y": 3125,
         "facing": 0
       }
     },
@@ -187,8 +234,8 @@
       "payload": {
         "definition": "unit:eastern-collective/dragon-tank",
         "force": 1,
-        "x": 380000,
-        "y": 198976,
+        "x": 5937,
+        "y": 3109,
         "facing": 0
       }
     },
@@ -200,8 +247,8 @@
       "payload": {
         "definition": "unit:eastern-collective/drone-hunter",
         "force": 1,
-        "x": 380000,
-        "y": 197952,
+        "x": 5937,
+        "y": 3093,
         "facing": 0
       }
     },
@@ -213,8 +260,8 @@
       "payload": {
         "definition": "unit:eastern-collective/field-technician",
         "force": 1,
-        "x": 380000,
-        "y": 196928,
+        "x": 5937,
+        "y": 3077,
         "facing": 0
       }
     },
@@ -226,8 +273,8 @@
       "payload": {
         "definition": "unit:eastern-collective/metamorphic-apc",
         "force": 1,
-        "x": 380000,
-        "y": 195904,
+        "x": 5937,
+        "y": 3061,
         "facing": 0
       }
     },
@@ -239,8 +286,8 @@
       "payload": {
         "definition": "unit:eastern-collective/rocket-trooper",
         "force": 1,
-        "x": 380000,
-        "y": 194880,
+        "x": 5937,
+        "y": 3045,
         "facing": 0
       }
     },
@@ -252,8 +299,8 @@
       "payload": {
         "definition": "unit:eastern-collective/supply-truck",
         "force": 1,
-        "x": 380000,
-        "y": 193856,
+        "x": 5937,
+        "y": 3029,
         "facing": 0
       }
     },
@@ -264,8 +311,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [1, 2, 3, 4, 5, 6, 7],
-        "x": 380000,
-        "y": 300000
+        "x": 5937,
+        "y": 4687
       }
     },
     {
@@ -275,8 +322,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [8, 9, 10, 11, 12, 13, 14],
-        "x": 20000,
-        "y": 100000
+        "x": 312,
+        "y": 1562
       }
     },
     {
@@ -304,8 +351,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [3, 1, 2],
-        "x": 380000,
-        "y": 300000
+        "x": 5937,
+        "y": 4687
       }
     },
     {
@@ -315,8 +362,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [14, 12, 13],
-        "x": 20000,
-        "y": 100000
+        "x": 312,
+        "y": 1562
       }
     },
     {
@@ -326,8 +373,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [1, 2, 3, 4, 5, 6, 7],
-        "x": 100000,
-        "y": 380000
+        "x": 1562,
+        "y": 5937
       }
     },
     {
@@ -337,8 +384,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [8, 9, 10, 11, 12, 13, 14],
-        "x": 300000,
-        "y": 20000
+        "x": 4687,
+        "y": 312
       }
     },
     {
@@ -366,8 +413,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [1, 2, 3, 4, 5, 6, 7],
-        "x": 20000,
-        "y": 100000
+        "x": 312,
+        "y": 1562
       }
     },
     {
@@ -377,8 +424,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [8, 9, 10, 11, 12, 13, 14],
-        "x": 380000,
-        "y": 300000
+        "x": 5937,
+        "y": 4687
       }
     },
     {
@@ -388,8 +435,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [1, 2, 3, 4, 5, 6, 7],
-        "x": 300000,
-        "y": 20000
+        "x": 4687,
+        "y": 312
       }
     },
     {
@@ -399,8 +446,8 @@
       "type": "unit.move",
       "payload": {
         "entities": [8, 9, 10, 11, 12, 13, 14],
-        "x": 100000,
-        "y": 380000
+        "x": 1562,
+        "y": 5937
       }
     },
     {

@@ -7,7 +7,11 @@ import {
   step,
   World,
 } from "@open-neo-rts/sim";
-import { createCommandLog, easternCollectiveTier1Definitions } from "@open-neo-rts/sim/testing";
+import {
+  createCommandLog,
+  easternCollectiveTier1Definitions,
+  flatMap,
+} from "@open-neo-rts/sim/testing";
 
 const WARMUP_TICKS = 100;
 
@@ -37,6 +41,7 @@ export async function bench(args: string[]): Promise<number> {
       faction: "faction:eastern-collective",
     }));
     const kernel = createMatch({
+      map: flatMap(),
       seed: 1,
       debug: true,
       definitions,
