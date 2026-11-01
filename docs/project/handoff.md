@@ -1,6 +1,6 @@
 # Handoff
 
-Snapshot on 2026-11-01. The [task queue](./tasks.md) and [phase-1b plan](./phases/1b.md) distinguish remaining work from delivered foundations. The owner requests implementation in coherent batches, with full validation at the end of each batch.
+Snapshot on 2026-11-02. The [task queue](./tasks.md) and [phase-1b plan](./phases/1b.md) distinguish remaining work from delivered foundations. The owner requests implementation in coherent batches, with full validation at the end of each batch.
 
 ## Delivered foundations
 
@@ -16,12 +16,14 @@ Snapshot on 2026-11-01. The [task queue](./tasks.md) and [phase-1b plan](./phase
 
 The current delivery batch has independent source review and scoped author checks. Repository, content and three-browser CI run together on the final assembled main commit. Do not treat a merged intermediate commit or source-review gate as a final CI receipt.
 
+At `7b8475b`, [CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41359306216) passed repository verification, full content validation, all 32 Chromium cases and 28 Firefox cases (four older visual-only cases skipped there). WebKit passed 27 cases, skipped the same four and found a lost Pause-click bug; the reproduced fix merged in PR #141. The next assembled run must verify that repair and the new performance/movement evidence. All three key probes passed and retained separate reports; native accelerator capture remains unverified.
+
 Measured navigation on a 128×128 map with 200 units starts every open-map order on the first tick. With an obstructing structure, all units begin moving by tick 23 (1.15 seconds); measured movement p95 was about 14.17 ms, hash p95 1.58 ms and cold compilation peaked near 89 ms. These are CPU/response measurements, not a 60 fps proof. The [phase-1b exit](./roadmap.md#exit-criteria) remains open.
 
 ## Continue phase 1b
 
-Copied worker grid/height/navigation/path overlays are in progress. The queue also contains terrain/model LOD and culling, cell-level placement overlays, reproducible scenario exports/deep links, browser key-capture evidence, complete spawn/move/hash CI proof, browser performance counters and the navigation benchmark. Implement the dependency-ready tasks, one focused PR each; run validation once per coherent batch.
+Copied worker grid/height/navigation/path overlays, terrain/model LOD and culling, cell-level placement previews, reproducible scenario exports/deep links and the navigation benchmark are merged through PR #137. Browser key capture has a synthetic event/capability probe in PR #135; native browser/OS accelerator behavior remains unverified. Browser performance counters and the repeatable 200-unit scene are merged in PR #139; projected UI movement/stop assertions follow in PR #140. Complete the remaining CI/performance proof, one focused PR per task; run validation once per coherent batch.
 
-The owner accepted the [water-domain table](./decisions/2026-11-01-movement-water-table.md) and [debug build-radius exception](./decisions/2026-11-01-debug-spawn-placement.md). Normal construction radius/first-structure/clearance rules, real node-bound content, combat structure targeting and first-playable scope remain [owner decisions](./human-tasks.md). Do not silently choose values or invent roster entries to unblock them.
+The owner accepted the [water-domain table](./decisions/2026-11-01-movement-water-table.md), [debug build-radius exception](./decisions/2026-11-01-debug-spawn-placement.md) and [shared neutral extractor direction](./decisions/2026-11-01-neutral-extractor.md). The requested [extractor fit proposal](./neutral-extractor-plan.md) is merged in PR #138; operating details and node implementation await a settled contract. Normal construction radius/first-structure/clearance rules, combat structure targeting and first-playable scope remain [owner decisions](./human-tasks.md). Do not silently choose values or invent roster entries to unblock them.
 
 Working rules: [AGENTS.md](../../AGENTS.md). Phase 2 adds the first playable economy, construction, combat and bot; online play follows the roadmap. No phase-completion claim is made here.
