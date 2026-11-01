@@ -1,0 +1,16 @@
+{
+  "files": {
+    "technology-center.glb": {
+      "author": "Borut Balazek",
+      "source": "source/technology-center.bricks.json"
+    },
+    "technology-center.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/technology-center.bricks.json"
+    },
+    "technology-center.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/technology-center.bricks.json"
+    }
+  }
+}

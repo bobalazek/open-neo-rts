@@ -60,6 +60,7 @@
     "icon": "technology-center.icon.png",
     "wreck": "technology-center.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
