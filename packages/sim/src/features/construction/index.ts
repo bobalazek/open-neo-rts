@@ -1,14 +1,16 @@
 // Placement on the grid: footprint cell rules against terrain. Phase 1b. Build progress, sell and repair: phase 2.
-// Build radius and clearance come from the world through `isBlocked` until construction lands in phase 2.
+// Radius and unit clearance remain owner-gated; this checker implements static footprint rules only.
 
-import {
-  BUILDABLE,
-  EDGE_MARGIN,
-  RAMP,
-  SURFACES,
-  type TerrainGrid,
-  WATER,
-} from "@open-neo-rts/content";
+import { BUILDABLE, EDGE_MARGIN, RAMP, SURFACES, WATER } from "@open-neo-rts/content";
+
+export interface PlacementTerrain {
+  width: number;
+  height: number;
+  level: ArrayLike<number>;
+  ramp: ArrayLike<number>;
+  surface: ArrayLike<number>;
+  water: ArrayLike<number>;
+}
 
 /** Footprint cell rules, by their letter in a structure's `cells` rows (structures.md#placement). */
 export const CELL_RULES = { l: "land", s: "shore", w: "water", n: "node" } as const;
@@ -25,7 +27,7 @@ export const PLACEMENT_FAILURES = {
   node_undecided: "Node placement isn't decided yet (docs/project/human-tasks.md).",
   not_node: "A node cell isn't on a node of the structure's kind.",
   level: "Not on the footprint's height level: a structure doesn't span a cliff.",
-  blocked: "Taken by a structure, blocking prop, resource field or unit.",
+  blocked: "Taken by a structure, blocking prop or resource field.",
 } as const;
 export type PlacementFailure = keyof typeof PLACEMENT_FAILURES;
 
@@ -50,7 +52,7 @@ export interface PlacementWorld {
  * `cells` has one row per depth, back (row 0) to front, one rule letter per width cell, and without it every
  * cell is land. At rotation 0 the front faces south (+y), so row r, column c is cell (x + c, y + r). Each
  * rotation turns the footprint a quarter clockwise seen from above (north up): the front faces south, west,
- * north, east at rotations 0 to 3, i.e. facing 180° + 90° × rotation. (x, y) is always the north-west corner
+ * north, east at rotations 0 to 3, i.e. facing 90° + 90° × rotation. (x, y) is always the north-west corner
  * of the turned footprint, which spans width × depth cells at rotations 0 and 2 and depth × width at 1 and 3.
  *
  * Returns every footprint cell in row-major order (y, then x) with the first rule it breaks: edge, its cell
@@ -58,7 +60,7 @@ export interface PlacementWorld {
  * cells on other levels are the ones marked. `isBlocked` and `isNode` are called only for cells on the map.
  */
 export function checkPlacement(
-  t: TerrainGrid,
+  t: PlacementTerrain,
   {
     footprint: [w = 1, d = 1],
     cells: letters,
@@ -104,7 +106,7 @@ export function checkPlacement(
 }
 
 function check(
-  t: TerrainGrid,
+  t: PlacementTerrain,
   { x, y, rule }: PlacedCell,
   level: number,
   world: PlacementWorld,

@@ -11,7 +11,7 @@ import {
   terrainMap,
 } from "@open-neo-rts/sim/testing";
 
-/** Version 2: the phase-1a movement script scaled into a tiny terrain-input fixture. */
+/** Version 3: the phase-1a movement script scaled into a tiny terrain-input fixture. */
 export function easternCollectiveTwoForces(): Scenario {
   const definitions = easternCollectiveTier1Definitions();
   const log = createCommandLog();

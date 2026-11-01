@@ -12,6 +12,7 @@ import {
   validate,
 } from "@open-neo-rts/content";
 import { type Command, REJECTIONS, SYSTEM_SEAT, validateCommands } from "../commands";
+import { checkDefinitions, definitionSchema } from "../features/entities";
 import { checkpointHash } from "../kernel";
 import { type MatchSetup, SIM_VERSION } from "../match";
 import { checkMatchMap, matchMapSchema } from "../match-map";
@@ -66,14 +67,7 @@ const scenarioSchema = strictObject({
         expiresAtTick: opt(id()),
       }),
     ),
-    definitions: arr(
-      strictObject({
-        id: str(/^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/),
-        health: int(1, INT32_MAX),
-        speed: int(0, INT32_MAX),
-        turnRate: int(0, 0x10000),
-      }),
-    ),
+    definitions: arr(definitionSchema),
   }),
   commands: arr(
     strictObject({ tick: id(), seat: id(), sequence: id(), type: str(), payload: unknown() }),
@@ -87,6 +81,7 @@ export function parseScenario(value: unknown): Scenario {
   const scenario = value as Scenario;
   const { forces, seats, definitions, grants } = scenario.setup;
   checkMatchMap(scenario.setup.map, definitions, issues);
+  checkDefinitions(definitions, issues);
   const forceIds = unique(
     forces.map((force) => force.index),
     "$.setup.forces",
