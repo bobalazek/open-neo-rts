@@ -68,9 +68,9 @@
     "model": "metamorphic-apc.glb",
     "icon": "metamorphic-apc.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "metamorphic-apc.wreck.glb"
   }
 }
