@@ -36,6 +36,7 @@
     "icon": "satellite-strike-uplink.icon.png",
     "wreck": "satellite-strike-uplink.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
