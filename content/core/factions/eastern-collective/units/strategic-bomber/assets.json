@@ -1,0 +1,16 @@
+{
+  "files": {
+    "strategic-bomber.glb": {
+      "author": "Borut Balazek",
+      "source": "source/strategic-bomber.bricks.json"
+    },
+    "strategic-bomber.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/strategic-bomber.bricks.json"
+    },
+    "strategic-bomber.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/strategic-bomber.bricks.json"
+    }
+  }
+}
