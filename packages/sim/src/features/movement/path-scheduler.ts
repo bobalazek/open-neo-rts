@@ -1,4 +1,7 @@
+import { addInt, addU32, type Hasher } from "@open-neo-rts/deterministic";
 import { type NavGrid, type PathResult, PathSearch, type PathSearchState } from "./path-search";
+
+type RequestGrid = NavGrid | ((request: PathRequest) => NavGrid);
 
 export interface PathRequest {
   force: number;
@@ -55,11 +58,11 @@ export class PathScheduler {
   private cursor = 0;
 
   constructor(
-    private readonly grid: NavGrid,
+    private readonly grid: RequestGrid,
     forces: readonly number[],
     private readonly budget: number,
   ) {
-    PathSearch.checkGrid(grid);
+    if (typeof grid !== "function") PathSearch.checkGrid(grid);
     if (!Number.isSafeInteger(budget) || budget < 0)
       throw new RangeError("Path budget must be a nonnegative safe integer");
     if ([...forces].some((force) => !isId(force)) || new Set(forces).size !== forces.length)
@@ -84,7 +87,7 @@ export class PathScheduler {
         entities.has(request.entity)
       )
         throw new RangeError("Invalid or duplicate path request");
-      PathSearch.check(this.grid, request.start, request.goal);
+      PathSearch.check(this.gridFor(request), request.start, request.goal);
       entities.add(request.entity);
     }
     for (const request of requests) {
@@ -120,7 +123,7 @@ export class PathScheduler {
       }
       idle = 0;
       const { start, goal } = pending.request;
-      pending.search ??= new PathSearch(this.grid, start, goal);
+      pending.search ??= new PathSearch(this.gridFor(pending.request), start, goal);
       const work = pending.search.advance(1);
       served.set(pending, (served.get(pending) ?? 0) + work);
       expansions += work;
@@ -161,7 +164,29 @@ export class PathScheduler {
     };
   }
 
-  static restore(grid: NavGrid, state: PathSchedulerState): PathScheduler {
+  hashInto(h: Hasher): void {
+    addInt(h, this.budget);
+    addU32(h, this.cursor);
+    addU32(h, this.forces.length);
+    for (const [index, force] of this.forces.entries()) {
+      addU32(h, force);
+      const queue = this.queues[index] as PendingPath[];
+      addU32(h, queue.length);
+      for (const { request, search } of queue) {
+        for (const n of [request.entity, request.issueTick, request.start, request.goal])
+          addU32(h, n);
+        addU32(h, request.kind === "order" ? 0 : 1);
+        addU32(h, search ? 1 : 0);
+        search?.hashInto(h);
+      }
+    }
+  }
+
+  private gridFor(request: PathRequest): NavGrid {
+    return typeof this.grid === "function" ? this.grid(request) : this.grid;
+  }
+
+  static restore(grid: RequestGrid, state: PathSchedulerState): PathScheduler {
     const scheduler = new PathScheduler(grid, state.forces, state.budget);
     if (
       !Number.isInteger(state.cursor) ||
@@ -188,7 +213,7 @@ export class PathScheduler {
             pending.search.goal !== pending.request.goal
           )
             throw new RangeError("Path search does not match request");
-          const search = PathSearch.restore(grid, pending.search);
+          const search = PathSearch.restore(scheduler.gridFor(pending.request), pending.search);
           if (search.finished) throw new RangeError("Completed searches cannot remain queued");
           (target[position] as PendingPath).search = search;
         }

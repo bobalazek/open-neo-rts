@@ -14,7 +14,12 @@ const prop = toDefinition({
   destructible: { health: 10 },
 });
 const decoration = toDefinition({ id: "prop:test/reeds", footprint: [1, 1], blocks: "nothing" });
-const unit = toDefinition({ id: "unit:test/soldier", health: 10, movement: { speed: 1 } });
+const unit = toDefinition({
+  id: "unit:test/soldier",
+  health: 10,
+  movement: { speed: 1, domain: "foot" },
+  radius: 0,
+});
 function setup(): MatchSetup {
   const terrain = parseTerrain(32, 32, {});
   return {

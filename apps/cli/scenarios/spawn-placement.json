@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 3,
+  "simVersion": 5,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -40,7 +40,9 @@
         "id": "unit:eastern-collective/collective-soldier",
         "health": 100,
         "speed": 77,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "foot",
+        "radiusSubcells": 256
       },
       {
         "id": "prop:urban/concrete-barrier",

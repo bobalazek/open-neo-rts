@@ -139,6 +139,15 @@ export function checkMatchMap(
   issues: Issue[],
   path = "$.setup.map",
 ): void {
+  for (const [index, definition] of definitions.entries()) {
+    if (definition.id.split(":")[0]?.split(".").at(-1) !== "unit") continue;
+    for (const field of ["domain", "radiusSubcells"] as const)
+      if (definition[field] === undefined)
+        issues.push({
+          path: `$.setup.definitions[${index}].${field}`,
+          message: "map units require original movement domain and collision radius",
+        });
+  }
   const { terrain, spawns, objects } = map;
   const { width, height } = terrain;
   let complete = true;

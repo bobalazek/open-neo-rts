@@ -1,4 +1,13 @@
-import { arr, type Issue, int, oneOf, opt, str } from "@open-neo-rts/content";
+import {
+  arr,
+  DOMAINS,
+  type Issue,
+  int,
+  type MovementDomain,
+  oneOf,
+  opt,
+  str,
+} from "@open-neo-rts/content";
 import { strictObject } from "../../snapshots/schema";
 
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
@@ -9,6 +18,9 @@ export interface Definition {
   speed: number;
   /** Binary angle units per tick. */
   turnRate: number;
+  domain?: MovementDomain;
+  radiusSubcells?: number;
+  domains?: readonly MovementDomain[];
   footprint?: readonly [number, number];
   cells?: readonly string[];
   blocks?: "nothing" | "movement" | "movement-and-vision";
@@ -20,6 +32,9 @@ export const definitionSchema = strictObject({
   health: int(0, INT32_MAX),
   speed: int(0, INT32_MAX),
   turnRate: int(0, 0x10000),
+  domain: opt(oneOf(DOMAINS)),
+  radiusSubcells: opt(int(0, 8192)),
+  domains: opt(arr(oneOf(DOMAINS), 1)),
   footprint: opt(arr(int(1, 8), 2, 2)),
   cells: opt(arr(str(/^[lswn]+$/), 1, 8)),
   blocks: opt(oneOf(["nothing", "movement", "movement-and-vision"])),
@@ -44,6 +59,13 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     if (kind !== "unit" && definition.speed !== 0)
       issues.push({ path: `${path}.speed`, message: "static objects cannot move" });
     if (
+      kind !== "unit" &&
+      (definition.domain !== undefined || definition.radiusSubcells !== undefined)
+    )
+      issues.push({ path, message: "only units declare movement domain and radius" });
+    if (kind !== "prop" && definition.domains !== undefined)
+      issues.push({ path: `${path}.domains`, message: "only props restrict blocked domains" });
+    if (
       definition.cells &&
       (!definition.footprint ||
         definition.cells.length !== definition.footprint[1] ||
@@ -58,7 +80,9 @@ export function toDefinition(content: {
   id: string;
   health?: number;
   destructible?: { health: number };
-  movement?: { speed: number; turnRate?: number };
+  movement?: { speed: number; turnRate?: number; domain?: string };
+  radius?: number;
+  domains?: readonly string[];
   footprint?: readonly number[];
   cells?: readonly string[];
   blocks?: string;
@@ -71,6 +95,9 @@ export function toDefinition(content: {
     health: content.health ?? content.destructible?.health ?? 0,
     speed: Math.round((speed * 1024) / 20),
     turnRate: Math.round((turnRate * 0x10000) / 7200),
+    ...(content.movement?.domain !== undefined && { domain: content.movement.domain }),
+    ...(content.radius !== undefined && { radiusSubcells: Math.round(content.radius * 1024) }),
+    ...(content.domains && { domains: [...content.domains] }),
     ...(content.footprint && { footprint: [...content.footprint] }),
     ...(content.cells && { cells: [...content.cells] }),
     ...(content.blocks !== undefined && { blocks: content.blocks }),

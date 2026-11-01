@@ -11,6 +11,14 @@ function grid(width: number, height: number, costs?: number[]): NavGrid {
 }
 
 describe("PathSearch", () => {
+  test("minimum positive entry cost scales the admissible heuristic and restores coherently", () => {
+    const nav = grid(128, 128, Array(128 * 128).fill(2));
+    const search = new PathSearch(nav, 0, 128 * 128 - 1);
+    expect(search.step(64).status).toBe("searching");
+    const restored = PathSearch.restore(nav, search.snapshot());
+    expect(restored.step(64)).toEqual(search.step(64));
+    expect(search.result().status).toBe("found");
+  });
   test("golden open and weighted routes use 10/14 entry costs and canonical ties", () => {
     expect(new PathSearch(grid(5, 5), 0, 24).step(25)).toEqual({
       status: "found",

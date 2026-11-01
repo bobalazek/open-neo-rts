@@ -19,6 +19,7 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
+import type { TerrainMovement } from "../features/movement/terrain-movement";
 import { copyMatchMap, type MatchMap } from "../match-map";
 
 const MAP_SERIALIZATION = Symbol("mapSerialization");
@@ -91,6 +92,8 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  /** Map movement owns its routes and incremental search state. */
+  movement?: TerrainMovement;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
@@ -218,6 +221,7 @@ export function checkpointHash(kernel: Kernel): string {
     );
   const map = kernel[MAP_SERIALIZATION];
   if (map !== undefined) addString(h, map);
+  kernel.movement?.hashInto(h);
   return digest(h).hex;
 }
 
