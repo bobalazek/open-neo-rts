@@ -26,6 +26,8 @@ bun run dev              # web client
 
 The repo layout is described in [docs/engineering/architecture.md](docs/engineering/architecture.md#3-monorepo-layout).
 
+For model checks, run `bun run dev` and open `/debug?models=1`. Choose a GLB to inspect team colours and animation clips; the file stays in the browser. The normal `/` route shows terrain.
+
 ## What to read first
 
 | You want to…                                   | Read                                                                                                                       |
