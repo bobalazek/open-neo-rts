@@ -41,7 +41,7 @@ How aircraft and ships work, how they interact with ground forces, fog and struc
 
 **Water and movement**
 
-- **Deep water** is for ships, hover and amphibious units. **Shallow water** is for infantry (slowly), hover, amphibious and light boats. Ships can't enter shallow water unless marked amphibious ([terrain-and-biomes.md](terrain-and-biomes.md#shape-of-the-world)).
+- The [accepted movement-domain table](../project/decisions/2026-11-01-movement-water-table.md) applies: naval uses deep water only; hover and amphibious use land and both water depths; foot uses land and shallow; wheeled uses land and shallow with 50% speed there; tracked uses land only. Air crosses all three directly, without a grid. There is no separate light-boat shallow-water exception.
 - Naval structures sit on the coast with mixed footprint cells ([structures.md](structures.md#placement)). A map without enough deep water and coastline disables naval production; the lobby shows "naval: no" on such maps.
 
 **Ship classes**

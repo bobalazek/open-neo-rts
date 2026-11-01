@@ -7,6 +7,7 @@ import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 
+export * from "./navigation";
 export * from "./path-scheduler";
 export * from "./path-search";
 
