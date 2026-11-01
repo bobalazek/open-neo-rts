@@ -1,0 +1,16 @@
+{
+  "files": {
+    "phoenix-gunship.glb": {
+      "author": "Borut Balazek",
+      "source": "source/phoenix-gunship.bricks.json"
+    },
+    "phoenix-gunship.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/phoenix-gunship.bricks.json"
+    },
+    "phoenix-gunship.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/phoenix-gunship.bricks.json"
+    }
+  }
+}
