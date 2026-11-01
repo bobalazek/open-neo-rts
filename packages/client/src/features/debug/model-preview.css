@@ -79,6 +79,10 @@
 .debug-session fieldset {
   min-width: 0;
 }
+.debug-session input[name="initial-link"] {
+  width: 100%;
+  box-sizing: border-box;
+}
 .debug-overlays .model-check-controls label {
   display: flex;
   align-items: center;

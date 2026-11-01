@@ -5,6 +5,7 @@ import type {
   DebugSpawn,
   MatchSetup,
   ProjectionMode,
+  Scenario,
   SeatSnapshot,
 } from "@open-neo-rts/sim";
 
@@ -21,6 +22,25 @@ export interface OfflineState {
   hash?: string;
   overlays?: DebugOverlayData;
 }
+export interface DebugSessionExport {
+  scenario: Scenario;
+  tick: number;
+  hash: string;
+}
+export function isDebugSessionExport(value: unknown): value is DebugSessionExport {
+  return (
+    isRecord(value) &&
+    Number.isSafeInteger(value.tick) &&
+    Number(value.tick) >= 0 &&
+    typeof value.hash === "string" &&
+    /^[a-f0-9]{16}$/.test(value.hash) &&
+    isRecord(value.scenario) &&
+    value.scenario.format === 2 &&
+    Number.isSafeInteger(value.scenario.simVersion) &&
+    isRecord(value.scenario.setup) &&
+    Array.isArray(value.scenario.commands)
+  );
+}
 export type WorkerRequest =
   | { type: "init"; options: OfflineSetup }
   | { type: "command"; command: { type: string; payload: unknown } }
@@ -28,7 +48,7 @@ export type WorkerRequest =
   | { type: "speed"; speed: number }
   | { type: "placement"; spawn: DebugSpawn }
   | { type: "overlays"; options: DebugOverlayOptions }
-  | { type: "step" | "export" };
+  | { type: "step" | "export" | "export-session" };
 
 export interface WorkerReply {
   id: number;
