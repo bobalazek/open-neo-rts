@@ -6,8 +6,8 @@ Our own implementation, inside the deterministic sim (`packages/sim/src/features
 
 The standalone `PathSearch` core accepts a caller-supplied `NavGrid`: row-major integer entry costs
 (zero blocks a cell) and outgoing neighbour connection bits in `NAV_DIRECTIONS` order. Dimensions
-are 1–512 cells per axis, matching the map limit. Terrain-to-domain compilation remains separate;
-the owner must resolve the water table in [human-tasks.md](../project/human-tasks.md) first.
+are 1–512 cells per axis, matching the map limit. The standalone `compileNavigation` compiler now
+implements the [accepted water table](../project/decisions/2026-11-01-movement-water-table.md).
 
 Each request owns its search arrays and heap. Keep its supplied grid unchanged until completion.
 `step(budget)` expands at most that many nodes and returns a path including the start. Partial and
@@ -16,16 +16,43 @@ path cost, then lowest cell index. A blocked start is invalid; a blocked goal us
 Diagonal moves require both orthogonal routes around the corner, including their edge connections,
 to be passable. Costs stay exact integers even at the largest grid and cell cost.
 
-This core is not registered with the movement feature. Per-Force queues, tick budgets, nav compilation,
-reachability labels and movement integration are still pending; existing simulation outcomes are unchanged.
+The search, scheduler and compiler are not registered with the movement feature. Reachability labels and
+movement integration are still pending; existing simulation outcomes are unchanged.
 
 ## Navigation data
 
 - The map compiles into one **nav grid per movement domain**. The domains are a fixed list used everywhere (content `movement.domain`, map masks, overlays): `foot`, `wheeled`, `tracked`, `hover`, `amphibious`, `naval` and `air`. Air units don't use a grid.
-- Each cell stores passability and an **integer cost**, from the surface (road cheap, rubble and forest expensive or blocked per domain), occupancy (structures, blocking props), and clearance (large units need wider gaps).
+- Each cell stores passability and an **integer cost**, from the surface (road cheap, rubble expensive), occupancy (structures, blocking props), and clearance (large units need wider gaps). Trees use their original prop block/domain fields; there is no forest surface or forest cost in the compiler.
 - **Height levels:** cells on different levels connect only through ramp cells. Cliffs are impassable edges.
 - **Connected components** are labelled per domain, so "is this reachable?" is a constant-time lookup. Orders to unreachable spots go to the nearest reachable cell.
 - **Dynamic changes** (a building placed or destroyed, a bridge down, a forest cleared) update the affected cells and sectors at a tick boundary, and mark paths through them for repathing.
+
+### Standalone compiler (1B-19)
+
+`compileNavigation(map, definitions, { domain, radiusSubcells }, liveObjects?)` accepts the resolved
+`MatchMap`, original content projected to `NavigationDefinition` (`id`, `footprint`, `blocks`, `domains`),
+and one explicit ground domain/radius. It returns a caller-owned `NavigationGrid`, compatible with
+`PathSearch`, plus cell-centre `clearanceSubcells` and physical `speedPercent`. Inputs are validated;
+the compiler never reads or changes the world. `liveObjects` adds static blockers to `map.objects` using
+the same NW anchor, subcell positions and degree rotations. Units and resource fields do not block routes.
+To remove an authored blocker, supply a map snapshot whose objects reflect its removal. No invalidation,
+scheduler integration or persistent definition/state fields are introduced here.
+
+Clearance uses circular radii in integer subcells (0–8,192, the original content limit). It measures exact
+squared distance to blocked cell rectangles, discontinuous ramp/cliff edges and the map boundary, then
+rounds the reported distance down with integer square root. Touching a boundary is allowed; overlapping
+it is blocked. Clearance is capped at 8,192. Cardinal connections also check the entire swept segment
+between cell centres. Diagonals reuse the search's shared rule requiring both orthogonal routes, including
+their swept clearance and edge connections. A ramp edge connects only when both endpoints of the shared
+edge match the neighbouring plane, so parallel ramps join and raised ramp sides do not connect to flat cells.
+
+**Addition — first-pass engineering route weights:** road 1, ordinary surfaces 2, rubble 3, for every
+ground domain. Wheeled shallow-water entry doubles that surface weight. These are route preferences,
+not approved final terrain balance. Physical speed is a separate 100% layer except wheeled shallow water
+at the owner's 50%; blocked cells carry 0%. No other physical speed modifier is chosen here.
+The use of terrain-specific locomotor costs follows [OpenRA's locomotor terrain entries](https://docs.openra.net/en/release/traits/#locomotor);
+radius-based obstruction clearance follows the approach described in [0 A.D.'s pathfinder design](https://svn.wildfiregames.com/nightly-build/trunk/docs/pathfinder.pdf).
+Those sources support the engineering separation, not these numerical balance values.
 
 ## Finding a path
 
@@ -44,7 +71,7 @@ Each Force has its own path request queue, ordered canonically by (tick issued, 
 
 The standalone `PathScheduler` implements this quota over one caller-supplied `NavGrid`. Submit each tick's requests before calling `tick()`; resolve multiple commands for the same entity in canonical command order first. `submit()` replaces prior work for that entity, including after a Force transfer; `cancel()` removes it for stop/death/removal. A new player order can preempt an automatic repath while retaining that repath's search. The next Force cursor persists across ticks, including when the quota is smaller than the number of Forces. Results contain a partial/final path once per served request, and integer expansion/completion/queue counters per tick and Force. A zero quota performs no work.
 
-`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**. The grid stays caller-owned and is not included in this state. This scheduler is not registered in a match yet; movement, terrain compilation and tick-boundary invalidation remain separate tasks. Registration must include this entire state in canonical match hashing and apply the simulation-version/golden outcome rule. Current match outcomes and `SIM_VERSION` are unchanged.
+`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**. The grid stays caller-owned and is not included in this state. This scheduler is not registered in a match yet; movement registration and tick-boundary invalidation remain separate tasks. Registration must include this entire state in canonical match hashing and apply the simulation-version/golden outcome rule. Current match outcomes and `SIM_VERSION` are unchanged.
 
 ## Group movement
 

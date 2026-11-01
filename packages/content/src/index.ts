@@ -4,6 +4,7 @@ export * from "./assets/validate-model";
 export * from "./loader/check-packs";
 export * from "./maps";
 export * from "./rules/combat";
+export * from "./rules/navigation";
 export * from "./rules/resources";
 export * from "./rules/roles";
 export * from "./rules/settings";

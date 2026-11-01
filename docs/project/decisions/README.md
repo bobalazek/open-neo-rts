@@ -22,6 +22,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-01 — Movement domains and water](./2026-11-01-movement-water-table.md) — One accepted water table; wheeled shallow movement is 50% speed and air uses no grid.
+
 - [2026-11-01 — Debug spawning skips build radius](./2026-11-01-debug-spawn-placement.md) — Terrain, bounds and occupied cells remain authoritative; normal construction policy stays owner-gated.
 
 - [2026-11-01 — Agent-made assets are credited to the owner](./2026-11-01-agent-made-asset-author.md) — Models, props and textures made by a coding agent at the owner's direction name Borut Balazek as author.

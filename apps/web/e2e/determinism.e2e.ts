@@ -4,6 +4,7 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
 import { GOLDEN } from "../../../packages/deterministic/src/golden";
+import { navigationProof } from "../../../packages/sim/src/testing/navigation";
 import scenarioGolden from "../../cli/scenarios/__golden__/eastern-collective-two-forces.json" with {
   type: "json",
 };
@@ -69,4 +70,16 @@ test("static spawn placement matches Bun outcomes and goldens twice", async ({ p
     expect(
       await runInBrowser(page, "../../cli/scenarios/generate-spawn-placement.ts", "placementProof"),
     ).toEqual(placementGolden);
+});
+
+test("navigation compiler integer layers match Bun bytes twice", async ({ page }) => {
+  const expected = navigationProof();
+  for (let i = 0; i < 2; i++)
+    expect(
+      await runInBrowser(
+        page,
+        "../../../packages/sim/src/testing/navigation.ts",
+        "navigationProof",
+      ),
+    ).toEqual(expected);
 });
