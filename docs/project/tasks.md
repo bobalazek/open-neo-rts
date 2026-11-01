@@ -10,8 +10,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
 
-[1B-49 · Shadow-fit reuse](./phases/1b.md#1b-49--reuse-directional-shadow-bounds-during-receiver-rendering) is implemented for issue #143; independent review and owning-PR CI remain pending. The measured 1B-46 phase-exit gate stays open.
-
 ## In design review
 
 - [ ] [1B-41 · Shared neutral extractor and node placement](./phases/1b.md#1b-41--bind-node-placement-to-the-accepted-content-rule). Shared neutral availability is [decided](./decisions/2026-11-01-neutral-extractor.md); the owner requested the [contextual fit proposal](./neutral-extractor-plan.md) before schema, geometry and content choices. PR type: engine after the design contract is settled.
