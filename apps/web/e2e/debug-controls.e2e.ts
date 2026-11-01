@@ -114,12 +114,19 @@ test("debug orders use selection handles and preserve right-drag camera input", 
   expect((await state()).snapshot.entities.every((entity) => entity.order?.type === "move")).toBe(
     true,
   );
+  expect(
+    (await state()).snapshot.entities.every((entity, index) => {
+      const before = beforeOrders.snapshot.entities[index];
+      return before && (entity.x !== before.x || entity.y !== before.y);
+    }),
+  ).toBe(true);
   await canvas.focus();
   await page.keyboard.press("s");
   await expect(page.getByRole("status", { name: "Order mode" })).toContainText(
     "unit.stop: accepted",
   );
   expect((await state()).snapshot.entities.every((entity) => entity.order === null)).toBe(true);
+  const beforeAttack = await state();
   await page.keyboard.press("a");
   await click(0.5, 0.3);
   await expect(page.getByRole("status", { name: "Order mode" })).toContainText(
@@ -128,7 +135,23 @@ test("debug orders use selection handles and preserve right-drag camera input", 
   expect(
     (await state()).snapshot.entities.every((entity) => entity.order?.type === "attackMove"),
   ).toBe(true);
+  expect(
+    (await state()).snapshot.entities.every((entity, index) => {
+      const before = beforeAttack.snapshot.entities[index];
+      return before && (entity.x !== before.x || entity.y !== before.y);
+    }),
+  ).toBe(true);
   await page.getByRole("button", { name: "Stop (S)", exact: true }).click();
+  await expect(page.getByRole("status", { name: "Order mode" })).toContainText(
+    "unit.stop: accepted",
+  );
+  const stopped = await state();
+  expect(stopped.snapshot.entities.every((entity) => entity.order === null)).toBe(true);
+  await page.getByRole("button", { name: "Step one tick", exact: true }).click();
+  await expect.poll(async () => (await state()).snapshot.tick).toBe(stopped.snapshot.tick + 1);
+  expect((await state()).snapshot.entities.map(({ x, y }) => [x, y])).toEqual(
+    stopped.snapshot.entities.map(({ x, y }) => [x, y]),
+  );
 });
 
 test("debug time controls pace the worker and remain reachable on narrow screens", async ({

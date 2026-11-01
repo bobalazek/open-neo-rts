@@ -20,6 +20,8 @@ import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
 import { createOverlayControls } from "./overlays";
 import { createSpawnPalette, spawnAtCell } from "./palette";
+import { createPerformanceOverlay } from "./performance";
+import { oppositeBase } from "./performance-scene";
 import { bindPlacementPreview } from "./placement";
 import { createReproductionControls } from "./reproduction";
 
@@ -41,6 +43,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       <label>Seed <input name="seed" type="text" inputmode="numeric" value="1" /></label>
       <button type="button" name="reload">Reload session</button>
       <a href="/">Terrain view</a><a href="/debug?models=1">Model check</a>
+      <a href="/debug?scene=terrain-200">Load 200-unit terrain scene</a>
     </div>
     <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>
     <label>Controlled Force <select name="controlled" aria-label="Controlled Force"></select></label>
@@ -128,6 +131,18 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   }
   for (const force of initial.forces) appendForce(force);
   controlled.value = String(initial.controlled);
+  if (initial.scene) {
+    for (const input of panel.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      "input, select",
+    ))
+      if (input === seed || input === map || input === controlled || forceRows.contains(input))
+        input.disabled = true;
+    addForce.disabled = true;
+    const note = document.createElement("p");
+    note.textContent =
+      "Fixed scene: Training Grounds 128×128, seed 1, Medium, 200 Dragon Tanks crossing opposite base ramps. Run to start; reload repeats the setup. Counters are observations, not a performance pass.";
+    panel.append(note);
+  }
   addForce.addEventListener("click", () => appendForce(), { signal: signal.signal });
   let generation = 0;
   let disposed = false;
@@ -170,6 +185,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     let overlays: ReturnType<typeof createDebugOverlays> | undefined;
     let placementLayer: ReturnType<typeof createPlacementOverlay> | undefined;
     let placementPreview: ReturnType<typeof bindPlacementPreview> | undefined;
+    let performanceOverlay: ReturnType<typeof createPerformanceOverlay> | undefined;
     let released = false;
     const clicks = new AbortController();
     const current = () => !disposed && generation === ticket && !released;
@@ -183,6 +199,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       reproduction.bind();
       overlays?.dispose();
       placementLayer?.dispose();
+      performanceOverlay?.dispose();
       entities?.dispose();
       art?.dispose();
       renderer?.dispose();
@@ -198,13 +215,14 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     try {
       const { definition, grid } = await loadMap(mapId);
       if (!current()) return;
-      const nextRenderer = await createRenderer(canvas, { terrain: grid });
+      const nextRenderer = await createRenderer(canvas, { terrain: grid, quality: "medium" });
       if (!current()) {
         nextRenderer.dispose();
         return;
       }
       renderer = nextRenderer;
       placementLayer = createPlacementOverlay(renderer.scene, grid);
+      performanceOverlay = createPerformanceOverlay(panel, renderer);
       overlays = createDebugOverlays(renderer.scene);
       const overlayControls = createOverlayControls(panel, overlays, clicks.signal);
       art = createMapPresentation(
@@ -239,6 +257,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         if (!current()) return;
         latestState = state;
         placementPreview?.update(state.snapshot.tick);
+        performanceOverlay?.update(state);
         status.textContent = `${definition.name} · ${initialized ? "Ready" : "Initializing"} · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · ${state.paused ? "Paused" : "Running"} · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = initialized ? "ready" : "loading";
         clock.update(performance.now(), state.paused, state.speed);
@@ -321,6 +340,23 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         if (refused !== -1)
           throw new Error(`Initial spawn ${refused + 1} refused: ${String(results[refused])}`);
       }
+      if (initial.scene) {
+        const snapshot = latestState?.snapshot;
+        if (snapshot?.entities.length !== 200)
+          throw new Error("Performance scene requires 200 projected tanks");
+        const commands = snapshot.entities.map((entity) =>
+          activeMatch.command("unit.move", {
+            entities: [entity.handle],
+            ...oppositeBase(Math.floor(entity.x / 1024), Math.floor(entity.y / 1024)),
+          }),
+        );
+        const [results] = await Promise.all([Promise.all(commands), activeMatch.step()]);
+        if (results.some((result) => result !== "accepted"))
+          throw new Error("Performance scene move refused");
+        if (latestState)
+          await presentation.accept(latestState.snapshot, clock.now(performance.now()));
+        if (!current()) return;
+      }
       initialized = true;
       inspector.bind(activeMatch);
       if (latestState) receive(latestState);
@@ -332,6 +368,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
           forces: selectedForces,
           controlled: selectedControlled,
           spawns: initial.spawns,
+          ...(initial.scene ? { scene: initial.scene } : {}),
         }),
       );
       overlayControls.bind(activeMatch);
