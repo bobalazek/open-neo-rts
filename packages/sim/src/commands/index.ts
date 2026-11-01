@@ -21,7 +21,7 @@ export interface DebugSpawn {
   facing: number;
 }
 
-/** Health 0 kills (leaves a wreck); `debug.remove` deletes without one. */
+/** Health 0 currently removes a destructible entity; wreck gameplay arrives with combat. */
 export interface DebugSetHealth {
   entity: number;
   health: number;
@@ -52,6 +52,7 @@ export interface Payloads {
   "debug.setHealth": DebugSetHealth;
   "debug.remove": DebugRemove;
   "unit.move": UnitMove;
+  "unit.attackMove": UnitMove;
   "unit.stop": UnitStop;
 }
 
@@ -109,6 +110,7 @@ const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } 
   "debug.setHealth": { entity: ID, health: [0, INT32_MAX] },
   "debug.remove": { entity: ID },
   "unit.move": { entities: IDS, x: POSITION, y: POSITION },
+  "unit.attackMove": { entities: IDS, x: POSITION, y: POSITION },
   "unit.stop": { entities: IDS },
 };
 
