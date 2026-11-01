@@ -1,6 +1,20 @@
 import { execFileSync, spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+
+async function observeWorker(page: Page) {
+  await page.addInitScript(() => {
+    const OriginalWorker = window.Worker;
+    window.Worker = class extends OriginalWorker {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        this.addEventListener("message", ({ data }) => {
+          if (data.state) Object.assign(window, { workerState: data.state });
+        });
+      }
+    };
+  });
+}
 
 test("debug shell reloads, retries worker failure and keeps controls reachable", async ({
   page,
@@ -134,39 +148,14 @@ for (const production of [false, true]) {
       await page.screenshot({
         path: test.info().outputPath(`29-spawns-${production ? "production" : "development"}.png`),
       });
-      await page.route("**/*", (route) =>
-        route.request().resourceType() === "fetch" ? route.abort() : route.continue(),
-      );
-      await page.getByRole("button", { name: "Reload session" }).click();
-      await expect(canvas).toHaveAttribute("data-session", "ready");
-      await definitions.selectOption("core.unit:eastern-collective/flame-tank");
-      await click(0.5, 0.5);
-      await expect(spawnResult).toContainText("Spawned");
-      await expect(models).toContainText("Model unavailable: Flame Tank");
-      await expect(canvas).toHaveAttribute("data-session", "ready");
-      await page.unroute("**/*");
-      await page.getByRole("button", { name: "Reload session" }).click();
-      await expect(canvas).toHaveAttribute("data-session", "ready");
-      await click(0.5, 0.5);
-      await expect(models).toContainText("Models ready");
     } finally {
       server?.kill();
     }
   });
 }
 
-test("debug configuration starts every authored map and reproduces reload", async ({ page }) => {
-  await page.addInitScript(() => {
-    const OriginalWorker = window.Worker;
-    window.Worker = class extends OriginalWorker {
-      constructor(url: string | URL, options?: WorkerOptions) {
-        super(url, options);
-        this.addEventListener("message", ({ data }) => {
-          if (data.state) Object.assign(window, { workerState: data.state });
-        });
-      }
-    };
-  });
+test("debug setup validates seed and applies declared Forces", async ({ page }) => {
+  await observeWorker(page);
   await page.goto("/debug");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
@@ -177,20 +166,57 @@ test("debug configuration starts every authored map and reproduces reload", asyn
   await page.getByRole("button", { name: "Add Force" }).click();
   await page.getByLabel("Force 1 faction").selectOption("core.faction:phoenix-initiative");
   await page.getByLabel("Controlled Force", { exact: true }).selectOption("1");
-  for (const map of ["flat", "terrain", "water", "resources", "biomes", "training-grounds"]) {
+  await page.getByLabel("Map", { exact: true }).selectOption("core.map:sandbox-water");
+  await page.getByRole("button", { name: "Reload session" }).click();
+  await expect(canvas).toHaveAttribute("data-session", "ready");
+  await expect(page.getByRole("status", { name: "Session status" })).toContainText(
+    "Seed 4294967295 · Controlled Force 2",
+  );
+  const before = await page.evaluate(() => Reflect.get(window, "workerState"));
+  await page.getByRole("button", { name: "Reload session" }).click();
+  await expect(canvas).toHaveAttribute("data-session", "ready");
+  expect(await page.evaluate(() => Reflect.get(window, "workerState"))).toEqual(before);
+  await page.screenshot({ path: test.info().outputPath("28-configuration.png") });
+});
+
+for (const map of ["flat", "terrain", "water", "resources", "biomes", "training-grounds"]) {
+  test(`debug map ${map} reproduces its worker state after reload`, async ({ page }) => {
+    await observeWorker(page);
     const id = map === "training-grounds" ? `core.map:${map}` : `core.map:sandbox-${map}`;
-    await page.getByLabel("Map", { exact: true }).selectOption(id);
-    await page.getByRole("button", { name: "Reload session" }).click();
+    await page.goto(`/debug?map=${id}`);
+    const canvas = page.locator("#game");
     await expect(canvas).toHaveAttribute("data-session", "ready");
-    await expect(page.getByRole("status", { name: "Session status" })).toContainText(
-      "Seed 4294967295 · Controlled Force 2",
-    );
+    await expect(page.getByLabel("Map", { exact: true })).toHaveValue(id);
     const before = await page.evaluate(() => Reflect.get(window, "workerState"));
     await page.getByRole("button", { name: "Reload session" }).click();
     await expect(canvas).toHaveAttribute("data-session", "ready");
     expect(await page.evaluate(() => Reflect.get(window, "workerState"))).toEqual(before);
-  }
-  await page.screenshot({
-    path: test.info().outputPath("28-configuration.png"),
   });
+}
+
+test("debug model request failure stays visible and reload recovers", async ({ page }) => {
+  await page.goto("/debug");
+  const canvas = page.locator("#game");
+  await expect(canvas).toHaveAttribute("data-session", "ready");
+  const definitions = page.getByRole("listbox", { name: "Definition" });
+  const spawnResult = page.getByRole("status", { name: "Spawn result" });
+  const models = page.getByRole("status", { name: "Model status" });
+  const click = async () => {
+    const bounds = await canvas.boundingBox();
+    if (!bounds) throw new Error("Canvas missing");
+    await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  };
+  await page.route("**/*", (route) =>
+    route.request().resourceType() === "fetch" ? route.abort() : route.continue(),
+  );
+  await definitions.selectOption("core.unit:eastern-collective/flame-tank");
+  await click();
+  await expect(spawnResult).toContainText("Spawned");
+  await expect(models).toContainText("Model unavailable: Flame Tank");
+  await expect(canvas).toHaveAttribute("data-session", "ready");
+  await page.unroute("**/*");
+  await page.getByRole("button", { name: "Reload session" }).click();
+  await expect(canvas).toHaveAttribute("data-session", "ready");
+  await click();
+  await expect(models).toContainText("Models ready");
 });

@@ -64,8 +64,12 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium firefox webkit
+      - name: Provide software WebGL display
+        run: sudo apt-get install -y xauth libgl1-mesa-dri
       - run: bunx tsc -p apps/web/e2e/tsconfig.json
-      - run: bun run test:browsers
+      - run: xvfb-run -a bun run test:browsers
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

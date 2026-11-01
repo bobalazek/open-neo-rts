@@ -14,7 +14,14 @@ export default defineConfig({
   },
   projects: [
     { name: "chromium", use: { browserName: "chromium" } },
-    { name: "firefox", use: { browserName: "firefox" } },
+    {
+      name: "firefox",
+      use: {
+        browserName: "firefox",
+        // Linux headless Firefox has no WebGL display; CI supplies Xvfb and Mesa.
+        headless: process.env.CI && process.platform === "linux" ? false : undefined,
+      },
+    },
     { name: "webkit", use: { browserName: "webkit" } },
   ],
 });
