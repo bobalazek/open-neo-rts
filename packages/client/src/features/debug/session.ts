@@ -286,7 +286,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         (event) => {
           if (event.code !== "Escape") return;
           event.preventDefault();
-          selectionInput.cancel();
+          if (selectionInput.cancel()) return;
           if (!palette.cancel()) inspector.select([]);
         },
         { signal: clicks.signal },

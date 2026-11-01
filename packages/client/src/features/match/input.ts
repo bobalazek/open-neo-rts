@@ -25,6 +25,7 @@ export function bindSelectionInput(
     rectangle.hidden = true;
     if (captured && canvas.hasPointerCapture(captured.id))
       canvas.releasePointerCapture(captured.id);
+    return captured !== undefined;
   }
   function region(x: number, y: number) {
     const bounds = canvas.getBoundingClientRect();
@@ -93,13 +94,6 @@ export function bindSelectionInput(
   );
   canvas.addEventListener("pointercancel", cancel, { signal });
   canvas.addEventListener("lostpointercapture", cancel, { signal });
-  canvas.addEventListener(
-    "keydown",
-    (event) => {
-      if (event.code === "Escape") cancel();
-    },
-    { signal },
-  );
   window.addEventListener("blur", cancel, { signal });
   signal.addEventListener(
     "abort",
