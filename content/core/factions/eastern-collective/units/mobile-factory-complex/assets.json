@@ -1,0 +1,16 @@
+{
+  "files": {
+    "mobile-factory-complex.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-factory-complex.bricks.json"
+    },
+    "mobile-factory-complex.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-factory-complex.bricks.json"
+    },
+    "mobile-factory-complex.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-factory-complex.bricks.json"
+    }
+  }
+}
