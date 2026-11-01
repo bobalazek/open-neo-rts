@@ -1,0 +1,164 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-7.8, 0, -7.8],
+          "size": [15.6, 0.7, 15.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-6.8, 0.7, -6],
+          "size": [13.6, 4.4, 12],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-7, 5.1, -6.2],
+          "size": [14, 0.6, 12.4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-4.2, 1.5, 6.01],
+          "size": [8.4, 1.8, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 0.7, 6.2],
+          "size": [3, 2.7, 0.2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-1.8, 3.5, 6.2],
+          "size": [3.6, 0.5, 0.2],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-2.1, 5.7, -4.4],
+          "size": [4.2, 2.4, 8.8],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-1.7, 6.4, -3.8],
+          "size": [3.4, 1, 7.6],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [4, 5.7, -3],
+          "size": [1.2, 6, 1.2],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y",
+          "mirror": true
+        },
+        {
+          "at": [3.5, 6.7, -3.5],
+          "size": [2.2, 0.5, 2.2],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y",
+          "mirror": true
+        },
+        {
+          "at": [3.5, 8, -3.5],
+          "size": [2.2, 0.5, 2.2],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y",
+          "mirror": true
+        },
+        {
+          "at": [3.5, 9.3, -3.5],
+          "size": [2.2, 0.5, 2.2],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y",
+          "mirror": true
+        },
+        {
+          "at": [3.5, 10.6, -3.5],
+          "size": [2.2, 0.5, 2.2],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "electrode_l",
+      "bricks": [
+        {
+          "at": [-1, -0.35, -1],
+          "size": [2, 0.7, 2],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.2, 0.35, -0.2],
+          "size": [0.4, 1.1, 0.4],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [4.6, 12, -2.4]
+    },
+    {
+      "name": "electrode_r",
+      "bricks": [
+        {
+          "at": [-1, -0.35, -1],
+          "size": [2, 0.7, 2],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.2, 0.35, -0.2],
+          "size": [0.4, 1.1, 0.4],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [-4.6, 12, -2.4]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [0, 8, -4]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "electrode_l",
+          "translation": [[0, [0, 0, 0]], [1.5, [0, 0.4, 0]], [3, [0, 0, 0]]]
+        },
+        {
+          "node": "electrode_r",
+          "translation": [[0, [0, 0.4, 0]], [1.5, [0, 0, 0]], [3, [0, 0.4, 0]]]
+        }
+      ]
+    }
+  }
+}

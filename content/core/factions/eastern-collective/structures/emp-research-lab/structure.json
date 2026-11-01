@@ -37,6 +37,7 @@
     "icon": "emp-research-lab.icon.png",
     "wreck": "emp-research-lab.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

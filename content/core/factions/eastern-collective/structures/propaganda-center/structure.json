@@ -37,6 +37,7 @@
     "icon": "propaganda-center.icon.png",
     "wreck": "propaganda-center.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

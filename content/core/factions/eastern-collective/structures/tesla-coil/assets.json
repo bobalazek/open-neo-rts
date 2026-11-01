@@ -1,0 +1,16 @@
+{
+  "files": {
+    "tesla-coil.glb": {
+      "author": "Borut Balazek",
+      "source": "source/tesla-coil.bricks.json"
+    },
+    "tesla-coil.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/tesla-coil.bricks.json"
+    },
+    "tesla-coil.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/tesla-coil.bricks.json"
+    }
+  }
+}

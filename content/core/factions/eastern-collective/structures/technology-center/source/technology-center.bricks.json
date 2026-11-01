@@ -1,0 +1,191 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-11.8, 0, -11.8],
+          "size": [23.6, 0.7, 23.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-10, 0.7, -8],
+          "size": [20, 3.4, 16],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-10.5, 4.1, -8.5],
+          "size": [21, 0.6, 17],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-5, 4.7, -5],
+          "size": [10, 5, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-5.5, 9.7, -5.5],
+          "size": [11, 0.7, 11],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [4.8, 4.7, -7],
+          "size": [4.7, 3.3, 14],
+          "slot": "team",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [5.1, 6, -7.05],
+          "size": [4.1, 1.2, 0.12],
+          "slot": "glass",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-4, 1, 8.01],
+          "size": [8, 2.4, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-2, 0.7, 8.2],
+          "size": [4, 2.8, 0.25],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-2.4, 3.6, 8.2],
+          "size": [4.8, 0.5, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [8.7, 4.7, 5.7],
+          "size": [0.7, 3, 0.7],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "scanner",
+      "bricks": [
+        {
+          "at": [-3, -0.4, -0.5],
+          "size": [6, 0.8, 1],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-2.6, -0.15, 0.51],
+          "size": [5.2, 0.3, 0.1],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.4, -1.4, -0.4],
+          "size": [0.8, 1.4, 0.8],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [0, 12, 0]
+    },
+    {
+      "name": "fan_l",
+      "bricks": [
+        {
+          "at": [-0.2, -1.1, -0.08],
+          "size": [0.4, 2.2, 0.16],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-1.1, -0.2, -0.08],
+          "size": [2.2, 0.4, 0.16],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [7.4, 6.1, 7.1]
+    },
+    {
+      "name": "fan_r",
+      "bricks": [
+        {
+          "at": [-0.2, -1.1, -0.08],
+          "size": [0.4, 2.2, 0.16],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-1.1, -0.2, -0.08],
+          "size": [2.2, 0.4, 0.16],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [-7.4, 6.1, 7.1]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [9, 8.2, 6]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "scanner",
+          "rotation": [
+            [0.0, [0, 0.0, 0]],
+            [1.0, [0, 90.0, 0]],
+            [2.0, [0, 180.0, 0]],
+            [3.0, [0, 270.0, 0]],
+            [4.0, [0, 360.0, 0]]
+          ]
+        },
+        {
+          "node": "fan_l",
+          "rotation": [
+            [0.0, [0, 0, 0.0]],
+            [1.0, [0, 0, 180.0]],
+            [2.0, [0, 0, 360.0]],
+            [3.0, [0, 0, 540.0]],
+            [4.0, [0, 0, 720.0]]
+          ]
+        },
+        {
+          "node": "fan_r",
+          "rotation": [
+            [0.0, [0, 0, 0.0]],
+            [1.0, [0, 0, -180.0]],
+            [2.0, [0, 0, -360.0]],
+            [3.0, [0, 0, -540.0]],
+            [4.0, [0, 0, -720.0]]
+          ]
+        }
+      ]
+    }
+  }
+}

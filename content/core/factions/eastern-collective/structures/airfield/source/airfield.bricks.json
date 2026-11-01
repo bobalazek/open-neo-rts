@@ -1,0 +1,212 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-15.8, 0, -11.8],
+          "size": [31.6, 0.5, 23.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-14.8, 0.5, -9.5],
+          "size": [0.6, 5.8, 16],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-2, 0.5, -9.5],
+          "size": [0.6, 5.8, 16],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-14.2, 0.5, -9.5],
+          "size": [12.2, 5.8, 0.6],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-15.2, 6.3, -9.9],
+          "size": [14.2, 0.7, 16.8],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-14.2, 5.1, 6.6],
+          "size": [12.2, 0.6, 0.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-13, 0.5, 7],
+          "size": [10, 0.25, 3.5],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [1, 0.5, -10.8],
+          "size": [13.8, 0.1, 21.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        },
+        {
+          "at": [2, 0.6, -10],
+          "size": [1, 0.05, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#d8d8d0"
+        },
+        {
+          "at": [2, 0.6, -4],
+          "size": [1, 0.05, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#d8d8d0"
+        },
+        {
+          "at": [2, 0.6, 2],
+          "size": [1, 0.05, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#d8d8d0"
+        },
+        {
+          "at": [2, 0.6, 8],
+          "size": [1, 0.05, 2.5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#d8d8d0"
+        },
+        {
+          "at": [12.8, 0.6, -10],
+          "size": [0.6, 0.1, 20],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.1, 0.6, -10],
+          "size": [0.6, 0.1, 20],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-13, 7, -8],
+          "size": [5, 4, 5],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-12.7, 9, -2.99],
+          "size": [4.4, 1.2, 0.15],
+          "slot": "glass",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "bricks": [
+        {
+          "at": [-5.5, 0, 0],
+          "size": [11, 4.4, 0.3],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-5, 0.4, 0.31],
+          "size": [1, 0.4, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-1, 0.4, 0.31],
+          "size": [1, 0.4, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [3, 0.4, 0.31],
+          "size": [1, 0.4, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "base",
+      "at": [-8.1, 0.6, 6.8]
+    },
+    {
+      "name": "radar",
+      "bricks": [
+        {
+          "at": [-2, -0.2, -0.4],
+          "size": [4, 0.8, 0.8],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-0.3, -1.7, -0.3],
+          "size": [0.6, 1.7, 0.6],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "base",
+      "at": [-10.5, 12.5, -5.5]
+    },
+    {
+      "name": "socket_exit",
+      "parent": "base",
+      "at": [8, 0.7, 11.5]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [-10.5, 11, -6]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "radar",
+          "rotation": [
+            [0.0, [0, 0.0, 0]],
+            [1.0, [0, 90.0, 0]],
+            [2.0, [0, 180.0, 0]],
+            [3.0, [0, 270.0, 0]],
+            [4.0, [0, 360.0, 0]]
+          ]
+        }
+      ]
+    },
+    "open": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "node": "door",
+          "translation": [[0, [0, 0, 0]], [1.2, [0, 4.5, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "node": "door",
+          "translation": [[0, [0, 4.5, 0]], [1.2, [0, 0, 0]]]
+        }
+      ]
+    }
+  }
+}
