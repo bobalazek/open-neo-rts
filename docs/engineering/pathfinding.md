@@ -16,8 +16,11 @@ path cost, then lowest cell index. A blocked start is invalid; a blocked goal us
 Diagonal moves require both orthogonal routes around the corner, including their edge connections,
 to be passable. Costs stay exact integers even at the largest grid and cell cost.
 
-The search, scheduler and compiler are not registered with the movement feature. Reachability labels and
-movement integration are still pending; existing simulation outcomes are unchanged.
+`labelReachability` labels reciprocal compiled grids with the search's exact edge/corner rules.
+`nearestReachable` resolves blocked, disconnected or off-map target cell coordinates within the start's
+component, using octile distance then row-major cell index. A blocked start has no destination. Labels
+and fallback scans are bounded by the grid size; ordinary same-component targets use constant time.
+Movement integration is still pending; existing simulation outcomes are unchanged.
 
 ## Navigation data
 
