@@ -34,6 +34,10 @@ The lint guards (Biome `noRestrictedGlobals` plus the GritQL plugin in `tools/bi
 - **Trig:** `sin` and `cos` come from a **lookup table** of 16,384 entries for a quarter turn, scaled by 2^14 and committed to the repo as data. It's generated once offline, so no engine computes it at runtime. `atan2` uses integer CORDIC with a fixed iteration count.
 - **Distance comparisons** use squared distances; only call `isqrt` when a real distance is needed.
 
+## Content units
+
+Content files use human units (cells, seconds, degrees, decimals allowed) so they stay readable ([content-format.md](../contributing/content-format.md#units-of-measure)). The loader converts each value **once, at load**: multiply by the unit's scale (1,024 subcells per cell, 20 ticks per second, 65,536 / 360 binary angle units per degree) and round with `Math.round`. This is exact on every engine: JSON number parsing and IEEE multiplication are correctly rounded by specification, so every client gets the same integers. The sim never sees the decimals.
+
 ## Random numbers
 
 - The generator is **sfc32** (32-bit, with `Math.imul` and shifts only), seeded per stream via **splitmix32** from the match seed and a stream name (`combat`, `ai:<seat>`, `crates`, …).

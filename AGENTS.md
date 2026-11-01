@@ -16,13 +16,5 @@ Rules for coding agents (Claude Code, Codex, etc.) working in this repo. Humans:
 4. **Content is data.** Units, structures, weapons, abilities and techs are JSON definitions, never classes or special cases.
 5. **Assets.** Original work only, never downloaded or third-party. Never invent authorship. Binaries go through Git LFS.
 6. **Outcome changes** to the sim require updating golden hashes and bumping the simulation version.
-7. **Feature folders.** Code is split by feature; components live with the feature that owns them. Don't create empty scaffolding.
-
-## Skills
-
-Step-by-step procedures live in [`.claude/skills/`](.claude/skills/). Claude Code loads them automatically; other agents should read the matching `SKILL.md` before the task.
-
-| Skill             | Use for                                               |
-| ----------------- | ----------------------------------------------------- |
-| `add-content`     | New unit, structure, weapon, ability, tech or faction |
-| `add-sim-feature` | New simulation feature or system in `packages/sim`    |
+7. **Feature folders.** Code is split by feature; components live with the feature that owns them. Every folder in the [documented layout](docs/engineering/architecture.md#3-monorepo-layout) already exists with an `index.ts`; fill those, and don't invent new top-level folders without updating that layout. Apps stay thin: logic goes in packages.
+8. **Phase scope.** Build only what the current phase lists in [roadmap.md](docs/roadmap.md#what-each-phase-builds). The other docs describe the whole game; they are reference, not a to-do list.

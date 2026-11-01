@@ -2,11 +2,11 @@
 
 **Status:** target workflow. The content schemas and validators don't exist yet; the steps and file layout below are what they'll implement. Update this guide when they land.
 
-Content is **declarative data**: JSON files validated against schemas, plus assets. Adding a unit, structure, weapon, ability or tech should never require engine code. If it does, the engine is missing a capability. Open an issue for that capability instead of special-casing the unit.
+Content is **declarative data**: JSON files validated against schemas, plus assets. You can write the JSON by hand, or use the [content editor](../design/screens/content-editor.md) (`/tools/content`), which edits the same files through a form with a live 3D preview. Adding a unit, structure, weapon, ability or tech should never require engine code. If it does, the engine is missing a capability. Open an issue for that capability instead of special-casing the unit.
 
 ## Adding a unit
 
-1. **Definition:** `content/packs/<pack>/units/<id>.json`, with a `$schema` reference so your editor autocompletes fields. A unit is a composition of components (see [content-and-eras.md](../design/content-and-eras.md#5-unit-families-and-composable-prefabs)):
+1. **Definition:** `content/packs/<pack>/units/<name>.json` (layout and IDs: [content-format.md](content-format.md)), with a `$schema` reference so your editor autocompletes fields. A unit is a composition of components (see [content-and-eras.md](../design/content-and-eras.md#5-unit-families-and-composable-prefabs)):
 
    ```json
    {
@@ -30,7 +30,7 @@ Content is **declarative data**: JSON files validated against schemas, plus asse
 
    Gameplay numbers are integers in sim units (ticks, cells, fixed-point). The schema documents each unit of measure.
 2. **Weapons and abilities** it uses: `weapons/<id>.json`, `abilities/<id>.json`, unless it reuses existing ones.
-3. **Assets** under `assets/units/<id>/`, with provenance. See [assets.md](assets.md). Check the model in the [model viewer](../design/screens/model-viewer.md) (`/tools/models`): sockets, team colours, damage states, destruction.
+3. **Assets** under `assets/units/<id>/`, with provenance. See [assets.md](assets.md). Check the model in the [content editor](../design/screens/content-editor.md) (`/tools/content`): sockets, team colours, damage states, destruction.
 4. **Strings:** name and description in `locales/en.json`.
 5. **Wire it in:** add the unit to its production structure's list and its faction's tech tree.
 6. **Validate:** `bun run validate-content` and `bun run validate-assets` (planned) check the schema, references, cycles, eras, GLB structure and stale files; see [content-pipeline.md](../engineering/content-pipeline.md).
@@ -44,19 +44,15 @@ Same steps, in `structures/<id>.json`. Structures also define a footprint, place
 
 ## Other content
 
-| Content               | Location            | Notes                                                                     |
-| --------------------- | ------------------- | ------------------------------------------------------------------------- |
-| Weapon                | `weapons/`          | Projectile type, damage per armor class, range, reload, in ticks          |
-| Ability               | `abilities/`        | Built from typed effects only; no scripting                               |
-| Tech                  | `research/`         | Requirements graph; validated for cycles and unreachable nodes            |
-| Faction               | `factions/<id>/`    | Bonuses, starting units, tech overrides, AI personality weights           |
-| Map                   | `content/maps/`     | Made in the map editor; see [map-editor.md](../engineering/map-editor.md) |
-| Ruleset / mode preset | `content/rulesets/` | See [modes.md](../design/modes.md)                                        |
+| Content         | Location                              | Notes                                                                     |
+| --------------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| Weapon          | `weapons/`                            | Projectile type, damage per armor class, range, reload, in ticks          |
+| Ability         | `abilities/`                          | Built from typed effects only; no scripting                               |
+| Tech            | `research/`                           | Requirements graph; validated for cycles and unreachable nodes            |
+| Faction         | `factions/<id>/`                      | Bonuses, starting units, tech overrides, AI personality weights           |
+| Map             | `<pack>/maps/<name>/`                 | Made in the map editor; see [map-editor.md](../engineering/map-editor.md) |
+| Profile, preset | `<pack>/profiles/`, `<pack>/presets/` | See [modes.md](../design/modes.md)                                        |
 
 ## Balance changes
 
 Changing numbers is a gameplay change. Say why in the PR. Once AI-vs-AI runs exist, attach the before and after win-rate report from `bun neo ai-vs-ai`.
-
-## Agent skills
-
-Coding agents follow the same workflow through the repo skills in [`.claude/skills/`](../../.claude/skills/) (`add-content`, `add-sim-feature`). Keep them in sync with this guide.

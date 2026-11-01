@@ -26,36 +26,32 @@ bun neo            # project CLI: lists commands (e.g. bun neo validate-assets)
 
 ## Repository layout
 
+Logic lives in packages; apps are thin shells that wire packages to a runtime.
+
 ```text
 open-neo-rts/
 ├── apps/
-│   ├── web/                  browser client: menus, match, map editor, model viewer
-│   ├── server/               match server (Bun + Colyseus)
-│   └── cli/                  `bun neo <command>`: asset validation now; scenario runs,
+│   ├── web/                  browser page: mounts packages/client
+│   ├── server/               server process: starts packages/server
+│   └── cli/                  `bun neo <command>`: validation now; scenario runs,
 │                             replays, benchmarks and AI-vs-AI next
 ├── packages/
-│   ├── deterministic/        seeded PRNG, fixed-point math, trig tables, hashing
-│   ├── sim/                  deterministic simulation
-│   │   └── src/
-│   │       ├── ecs/          our entity component system
-│   │       ├── physics/      collision, line traces, projectiles (integer math)
-│   │       └── projection/   what each player is allowed to see (fog of war)
+│   ├── deterministic/        integer math, trig tables, seeded PRNG, hashing
+│   ├── content/              content types, pack loader, locales, maps, validators
+│   ├── sim/                  deterministic simulation (ECS, physics, fog projection inside)
 │   ├── ai/                   bot players
-│   ├── content/              definition and map types, pack loading, validators
-│   ├── net/                  wire protocol, encoding, client and server transport
-│   └── render/               Babylon.js renderer (reads sim state, never writes it)
-├── content/                  game data: no code
+│   ├── net/                  wire protocol and transport
+│   ├── render/               Babylon.js renderer (reads sim state, never writes it)
+│   ├── client/               game client: screens, HUD, input, editors
+│   └── server/               match server: rooms, lobby, match hosting
+├── content/                  game data, no code (see docs/contributing/content-format.md)
 │   ├── schemas/              JSON schemas generated from packages/content
-│   ├── profiles/             game profiles (ruleset + packs + defaults)
-│   ├── rulesets/presets/     lobby presets
-│   ├── packs/
-│   │   ├── official-2035/    factions, units, structures, weapons, research, locales, assets
-│   │   └── example-mod/      reference mod
-│   ├── maps/                 official and example maps
-│   └── campaigns/            campaigns and missions (later)
-├── docs/                     design, engineering and contributing docs
+│   └── packs/
+│       ├── core/             rules every game needs, UI strings, the test faction
+│       └── neo-2035/         AFN, EC, PI, their maps, campaigns and profile
 ├── tools/biome/              lint plugin enforcing the determinism rules
-├── .claude/skills/           step-by-step skills for coding agents
+├── docs/                     design, engineering and contributing docs
+├── .github/                  PR template, CI workflow
 ├── AGENTS.md                 rules for coding agents
 └── CONTRIBUTING.md           how to contribute
 ```

@@ -6,13 +6,13 @@ Everything here is data. A campaign mission and a skirmish setup are the same si
 
 ## Concepts
 
-| Thing               | What it is                                                                    | Lives in                                               |
-| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **Map**             | Terrain, props, spawns, resources                                             | `content/maps/<id>/`                                   |
-| **Scenario**        | A map plus pre-placed Forces, objectives and triggers                         | inside a mission, or `content/maps/<id>/scenario.json` |
-| **Mission**         | A scenario plus briefing, dialogue, difficulty settings and campaign metadata | `content/campaigns/<campaign>/missions/<id>/`          |
-| **Campaign**        | A graph of missions with unlocks and carry-over                               | `content/campaigns/<campaign>/campaign.json`           |
-| **Skirmish preset** | A lobby template: Force slots, teams, rules, victory                          | `content/rulesets/presets/<id>.json`                   |
+| Thing               | What it is                                                                    | Lives in                                                |
+| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Map**             | Terrain, props, spawns, resources                                             | `<pack>/maps/<name>/`                                   |
+| **Scenario**        | A map plus pre-placed Forces, objectives and triggers                         | inside a mission, or `<pack>/maps/<name>/scenario.json` |
+| **Mission**         | A scenario plus briefing, dialogue, difficulty settings and campaign metadata | `<pack>/campaigns/<campaign>/missions/<name>/`          |
+| **Campaign**        | A graph of missions with unlocks and carry-over                               | `<pack>/campaigns/<campaign>/campaign.json`             |
+| **Skirmish preset** | A lobby template: Force slots, teams, rules, victory                          | `<pack>/presets/<name>.json`                            |
 
 ## Building a mission
 
@@ -29,7 +29,7 @@ Everything here is data. A campaign mission and a skirmish setup are the same si
 {
   "$schema": "../../../../schemas/mission.schema.json",
   "id": "mission:afn-04-cold-front",
-  "map": "map:official.cold-front",
+  "map": "map:cold-front",
   "profile": "profile:neo-2035",
   "forces": [
     { "id": "player", "faction": "faction:afn", "seat": "human", "start": "region:player-base" },

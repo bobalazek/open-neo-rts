@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../schemas/weapon.schema.json",
+  "id": "weapon:rifle",
+  "damageType": "smallArms",
+  "damage": 10,
+  "range": [0, 5],
+  "reload": 1,
+  "projectile": {
+    "kind": "hitscan"
+  },
+  "targets": ["ground"]
+}

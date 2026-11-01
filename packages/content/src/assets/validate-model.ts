@@ -11,6 +11,8 @@ export interface ModelIssue {
 
 /** What a definition requires from its model. Empty until content schemas land. */
 export interface ModelRequirements {
+  /** Model material name -> material slot. Without it, model materials must be named after slots. */
+  materials?: Record<string, string>;
   parts?: string[];
   sockets?: string[];
   animations?: string[];
@@ -64,8 +66,14 @@ export function validateModel(
   });
 
   for (const m of gltf.materials ?? []) {
-    if (!(m.name && m.name in MATERIALS)) {
-      error(`material "${m.name}" is not a known slot (${Object.keys(MATERIALS).join(", ")})`);
+    const name = m.name ?? "";
+    const slot = requires.materials ? requires.materials[name] : name;
+    if (requires.materials && slot === undefined) {
+      error(`material "${name}" has no slot in the definition's material map`);
+    } else if (!(slot && slot in MATERIALS)) {
+      error(
+        `material "${name}" maps to unknown slot "${slot}" (${Object.keys(MATERIALS).join(", ")})`,
+      );
     }
   }
 

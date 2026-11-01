@@ -1,5 +1,5 @@
 {
-  "name": "@open-neo-rts/web",
+  "name": "@open-neo-rts/app-web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,6 @@
     "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {
-    "@open-neo-rts/net": "workspace:*",
-    "@open-neo-rts/render": "workspace:*"
+    "@open-neo-rts/client": "workspace:*"
   }
 }

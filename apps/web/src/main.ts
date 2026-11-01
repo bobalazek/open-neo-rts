@@ -1,6 +1,6 @@
-import { createRenderer } from "@open-neo-rts/render";
+import { startClient } from "@open-neo-rts/client";
 
 const canvas = document.getElementById("game");
 if (!(canvas instanceof HTMLCanvasElement)) throw new Error("#game canvas missing");
 
-await createRenderer(canvas);
+await startClient(canvas);

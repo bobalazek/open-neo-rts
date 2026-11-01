@@ -1,23 +1,13 @@
 # Content
 
-Game data: everything here is JSON definitions plus assets, validated by `packages/content`. No code.
+Game data: JSON definitions plus assets, grouped in **packs**. No code. What a pack is, why, and a template for every file: [docs/contributing/content-format.md](../docs/contributing/content-format.md).
 
 ```text
 content/
-├── schemas/                  JSON schemas generated from packages/content (don't edit by hand)
-├── profiles/<id>/            game profiles: ruleset + packs + economy + eras + lobby defaults
-├── rulesets/presets/         lobby presets (1v1, Hybrid 2v2, FFA diplomacy, Survival…)
-├── packs/
-│   ├── official-2035/        the first game pack
-│   │   ├── factions/  units/  structures/  weapons/  abilities/  research/
-│   │   ├── locales/          strings per language
-│   │   ├── assets/           runtime files (GLB, textures, audio) + assets.json per folder
-│   │   └── source/           editable originals (Blender, layered images)
-│   └── example-mod/          reference mod, validated in CI
-├── maps/
-│   ├── official/
-│   └── examples/
-└── campaigns/                campaign graphs and missions (later)
+├── schemas/              JSON schemas generated from packages/content (never edited by hand)
+└── packs/
+    ├── core/             resources, damage types, match settings, the test faction, presets
+    └── neo-2035/         the world of 2035: AFN, EC, PI, maps, campaigns, profile
 ```
 
-Check assets with `bun neo validate-assets`. How to add content: [docs/contributing/adding-content.md](../docs/contributing/adding-content.md). Asset rules: [docs/contributing/assets.md](../docs/contributing/assets.md).
+Add content: [adding-content.md](../docs/contributing/adding-content.md). Asset rules: [assets.md](../docs/contributing/assets.md). Check assets with `bun neo validate-assets`.

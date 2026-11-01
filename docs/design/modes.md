@@ -22,7 +22,7 @@ Single-player skirmish and multiplayer use the same setup screen and rules; mult
 
 ## Multiplayer
 
-Skirmish with other people: PvP, co-op against bots, Shared Command, FFA with diplomacy, Survival waves. Setups are **lobby presets**, which are data in `content/rulesets/presets/`. See [multiplayer.md](multiplayer.md) and the [lobby screen](screens/lobby.md).
+Skirmish with other people: PvP, co-op against bots, Shared Command, FFA with diplomacy, Survival waves. Setups are **lobby presets**, which are data in each pack's `presets/` folder. See [multiplayer.md](multiplayer.md) and the [lobby screen](screens/lobby.md).
 
 ## Campaign (later)
 
@@ -43,7 +43,7 @@ Playtest tools are ordinary sim commands (`playtest.*`), accepted only in editor
 **Content preview:** playtest is also how contributors and reviewers try new content. Deep links open it ready to go:
 
 ```text
-/editor/playtest?map=examples.flat-test&spawn=unit:panther&vs=unit:rifle-squad
+/editor/playtest?map=core.map:flat-test&spawn=neo-2035.unit:panther&vs=neo-2035.unit:tactical-operator
 ```
 
-For a single model, the [model viewer](screens/model-viewer.md) shows sockets, damage states, team colours and destruction without a match. PR preview builds post these links for every changed definition; see [CONTRIBUTING.md](../../CONTRIBUTING.md#previews). Screens: [map-editor.md](screens/map-editor.md).
+For a single model, the [content editor](screens/content-editor.md) shows sockets, damage states, team colours and destruction without a match. PR preview builds post these links for every changed definition; see [CONTRIBUTING.md](../../CONTRIBUTING.md#previews). Screens: [map-editor.md](screens/map-editor.md).

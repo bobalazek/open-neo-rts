@@ -12,7 +12,7 @@
       },
     },
     "apps/cli": {
-      "name": "@open-neo-rts/cli",
+      "name": "@open-neo-rts/app-cli",
       "version": "0.0.0",
       "bin": {
         "neo": "./src/index.ts",
@@ -25,21 +25,17 @@
       },
     },
     "apps/server": {
-      "name": "@open-neo-rts/server",
+      "name": "@open-neo-rts/app-server",
       "version": "0.0.0",
       "dependencies": {
-        "@open-neo-rts/ai": "workspace:*",
-        "@open-neo-rts/content": "workspace:*",
-        "@open-neo-rts/net": "workspace:*",
-        "@open-neo-rts/sim": "workspace:*",
+        "@open-neo-rts/server": "workspace:*",
       },
     },
     "apps/web": {
-      "name": "@open-neo-rts/web",
+      "name": "@open-neo-rts/app-web",
       "version": "0.0.0",
       "dependencies": {
-        "@open-neo-rts/net": "workspace:*",
-        "@open-neo-rts/render": "workspace:*",
+        "@open-neo-rts/client": "workspace:*",
       },
     },
     "packages/ai": {
@@ -47,6 +43,18 @@
       "version": "0.0.0",
       "dependencies": {
         "@open-neo-rts/deterministic": "workspace:*",
+        "@open-neo-rts/sim": "workspace:*",
+      },
+    },
+    "packages/client": {
+      "name": "@open-neo-rts/client",
+      "version": "0.0.0",
+      "dependencies": {
+        "@open-neo-rts/ai": "workspace:*",
+        "@open-neo-rts/content": "workspace:*",
+        "@open-neo-rts/deterministic": "workspace:*",
+        "@open-neo-rts/net": "workspace:*",
+        "@open-neo-rts/render": "workspace:*",
         "@open-neo-rts/sim": "workspace:*",
       },
     },
@@ -73,6 +81,16 @@
       "version": "0.0.0",
       "dependencies": {
         "@babylonjs/core": "9.33.1",
+        "@open-neo-rts/sim": "workspace:*",
+      },
+    },
+    "packages/server": {
+      "name": "@open-neo-rts/server",
+      "version": "0.0.0",
+      "dependencies": {
+        "@open-neo-rts/ai": "workspace:*",
+        "@open-neo-rts/content": "workspace:*",
+        "@open-neo-rts/net": "workspace:*",
         "@open-neo-rts/sim": "workspace:*",
       },
     },
@@ -112,7 +130,13 @@
 
     "@open-neo-rts/ai": ["@open-neo-rts/ai@workspace:packages/ai"],
 
-    "@open-neo-rts/cli": ["@open-neo-rts/cli@workspace:apps/cli"],
+    "@open-neo-rts/app-cli": ["@open-neo-rts/app-cli@workspace:apps/cli"],
+
+    "@open-neo-rts/app-server": ["@open-neo-rts/app-server@workspace:apps/server"],
+
+    "@open-neo-rts/app-web": ["@open-neo-rts/app-web@workspace:apps/web"],
+
+    "@open-neo-rts/client": ["@open-neo-rts/client@workspace:packages/client"],
 
     "@open-neo-rts/content": ["@open-neo-rts/content@workspace:packages/content"],
 
@@ -122,11 +146,9 @@
 
     "@open-neo-rts/render": ["@open-neo-rts/render@workspace:packages/render"],
 
-    "@open-neo-rts/server": ["@open-neo-rts/server@workspace:apps/server"],
+    "@open-neo-rts/server": ["@open-neo-rts/server@workspace:packages/server"],
 
     "@open-neo-rts/sim": ["@open-neo-rts/sim@workspace:packages/sim"],
-
-    "@open-neo-rts/web": ["@open-neo-rts/web@workspace:apps/web"],
 
     "@turbo/darwin-64": ["@turbo/darwin-64@2.11.10", "", { "os": "darwin", "cpu": "x64" }, "sha512-By4idRap5+nLnMuRzLB4qkOPRlvNdyY1ne4VJYDyUoUB11H94k7uif9mbe3JT8JSNXs1D68uMcBj6hJ/jMQRvA=="],
 

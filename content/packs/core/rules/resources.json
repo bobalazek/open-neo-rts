@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../schemas/resources.schema.json",
+  "resources": [
+    {
+      "id": "resource:credits",
+      "kind": "stock",
+      "name": "resource.credits"
+    },
+    {
+      "id": "resource:materials",
+      "kind": "stock",
+      "name": "resource.materials"
+    },
+    {
+      "id": "resource:power",
+      "kind": "capacity",
+      "name": "resource.power"
+    }
+  ]
+}

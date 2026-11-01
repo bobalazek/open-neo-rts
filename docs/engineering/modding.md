@@ -42,4 +42,4 @@ A mod registry: browse, rate, subscribe and update mods in-game, backed by a sim
 ## Tooling
 
 - `packages/mod-sdk`: schema exports, a `create-mod` template, and a CLI to validate and package a mod.
-- `content/packs/example-mod/` in this repo is the reference mod and is validated in CI.
+- A reference mod (`content/packs/example-mod/`) is added with the modding SDK in phase 5, and validated in CI from then on.

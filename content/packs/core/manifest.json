@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/manifest.schema.json",
+  "id": "core",
+  "version": "0.1.0",
+  "engine": ">=0.1.0",
+  "name": "pack.core.name",
+  "description": "pack.core.description",
+  "dependencies": {}
+}

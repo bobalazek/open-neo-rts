@@ -17,7 +17,7 @@ A runtime game must not depend on the editor's current unsaved brush state. Map 
 ## 3. Editable map schema
 
 ```yaml
-id: official.test-valley
+id: map:test-valley
 version: 1
 formatVersion: 1
 profileCompatibility: [neo-2035]

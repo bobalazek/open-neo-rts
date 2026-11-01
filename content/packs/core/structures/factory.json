@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../schemas/structure.schema.json",
+  "id": "structure:factory",
+  "faction": "faction:test",
+  "name": "structure.factory.name",
+  "description": "structure.factory.description",
+  "health": 2000,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -30,
+  "vision": 6,
+  "cost": {
+    "resource:credits": 2000
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:hq"],
+  "presentation": {
+    "model": "assets/structures/factory/factory.glb",
+    "icon": "assets/structures/factory/factory.icon.webp",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

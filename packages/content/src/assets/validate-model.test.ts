@@ -58,8 +58,17 @@ describe("validateModel", () => {
   });
   test("rejects foreign materials", () => {
     expect(errors({ ...tank, materials: [{ name: "chrome" }] })[0]).toContain(
-      'material "chrome" is not a known slot',
+      'material "chrome" maps to unknown slot "chrome"',
     );
+  });
+  test("maps artist material names to slots through the definition", () => {
+    const materials = [{ name: "Body" }, { name: "Trim" }, { name: "Visor" }];
+    const map = { Body: "team", Trim: "team_dark", Visor: "glass" };
+    expect(errors({ ...tank, materials }, "unit", { materials: map })).toEqual([]);
+    expect(errors({ ...tank, materials }, "unit", { materials: { Body: "team" } })).toEqual([
+      'material "Trim" has no slot in the definition\'s material map',
+      'material "Visor" has no slot in the definition\'s material map',
+    ]);
   });
   test("rejects sockets with geometry", () => {
     const nodes = [...(tank.nodes ?? []), { name: "socket_exhaust", mesh: 0 }];

@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../schemas/profile.schema.json",
+  "id": "profile:neo-2035",
+  "name": "profile.neo-2035.name",
+  "packs": ["core", "neo-2035"],
+  "factions": ["faction:afn", "faction:ec", "faction:pi"],
+  "resources": [
+    "core.resource:credits",
+    "core.resource:materials",
+    "core.resource:power",
+    "resource:quantum-processing",
+    "resource:industrial-capacity",
+    "resource:salvage-points"
+  ],
+  "rules": {
+    "modules": ["weather"],
+    "settings": {}
+  },
+  "presets": ["core.preset:1v1", "core.preset:2v2-shared-command"]
+}

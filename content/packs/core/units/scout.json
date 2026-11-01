@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/unit.schema.json",
+  "id": "unit:scout",
+  "faction": "faction:test",
+  "name": "unit.scout.name",
+  "description": "unit.scout.description",
+  "family": "vehicle",
+  "cost": {
+    "resource:credits": 400
+  },
+  "buildTime": 8,
+  "producedBy": ["structure:factory"],
+  "health": 200,
+  "armor": "light",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 4.0
+  },
+  "vision": 10,
+  "pop": 2,
+  "weapons": ["weapon:scout-gun"],
+  "presentation": {
+    "model": "assets/units/scout/scout.glb",
+    "icon": "assets/units/scout/scout.icon.webp",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": []
+  }
+}

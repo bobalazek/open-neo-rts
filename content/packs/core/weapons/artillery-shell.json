@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../schemas/weapon.schema.json",
+  "id": "weapon:artillery-shell",
+  "damageType": "explosive",
+  "damage": 80,
+  "range": [4, 14],
+  "reload": 5,
+  "projectile": {
+    "kind": "ballistic",
+    "speed": 10
+  },
+  "targets": ["ground"],
+  "splash": {
+    "radius": 1.5,
+    "edgePercent": 25
+  }
+}

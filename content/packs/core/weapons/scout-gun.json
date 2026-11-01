@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../schemas/weapon.schema.json",
+  "id": "weapon:scout-gun",
+  "damageType": "smallArms",
+  "damage": 8,
+  "range": [0, 5],
+  "reload": 0.5,
+  "projectile": {
+    "kind": "hitscan"
+  },
+  "targets": ["ground"]
+}

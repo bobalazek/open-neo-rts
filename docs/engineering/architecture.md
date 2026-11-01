@@ -31,10 +31,20 @@ Single-player runs the same simulation locally in a Web Worker. Offline play nee
 | ECS                                            | Our own (`packages/sim/src/ecs`)                                                                                          |
 | Physics                                        | Our own deterministic gameplay physics (`packages/sim/src/physics`); visual-only effects may use Babylon's physics plugin |
 | Pathfinding                                    | Our own, inside the sim (§7)                                                                                              |
-| UI                                             | React (menus, HUD, lobby, editor panels)                                                                                  |
+| UI                                             | React 19 + wouter (router, ~2 KB) + Zustand (UI state); no meta-framework (§2.1)                                          |
 | Assets                                         | glTF / GLB, authored in Blender                                                                                           |
 | Multiplayer sessions                           | Colyseus (rooms, lobby, matchmaking, reconnect) over WebSocket; match state uses our own protocol (§8)                    |
 | Desktop                                        | Tauri 2 shell around the same web build                                                                                   |
+
+### 2.1 Why no Next.js, Remix or similar
+
+The client is a **single-page game**: a full-screen canvas with a React overlay. It needs no server rendering, no SEO, and no server-side data loading. Content packs are static files, and live data arrives over WebSocket from the separate match server.
+
+- A meta-framework (Next.js, Remix/React Router framework mode) adds a server runtime, server rendering and routing conventions for pages and data. We'd use none of it, and fight it, because the canvas and the sim worker are client-only.
+- The Tauri desktop shell (and a later mobile shell) needs a **static build**. A plain SPA gives that for free.
+- The match server is a long-running Bun process holding game rooms over WebSocket (Colyseus). That's a different job from a web framework's request/response server, and it stays separate.
+
+So the client is React 19 for screens and HUD, **wouter** for the handful of routes (deep links like `/lobby/:code` and `/editor/playtest`), **Zustand** for UI state, and Bun's built-in bundler and dev server. If a public website (news, wiki) is ever needed, it's a separate static site, not part of the game client.
 
 ### Build vs. use
 
@@ -61,73 +71,96 @@ Packages are source-only TypeScript (`exports` points to `src/index.ts`), so onl
 
 ## 3. Monorepo layout
 
-**Apps are separate deployables:** `web` (static client), `server` (match server) and later `desktop` and `mobile` shells. Apps share packages but never import each other. The map editor is a feature of `web`, not its own app.
-
-`[now]` marks folders that exist today (most packages are still empty stubs with their dependencies declared); everything else is the target layout. Folders inside a package are created when their first code lands.
+**Principle: logic lives in packages; apps are thin shells.** An app only wires packages to a runtime: a browser page, a server process, a command line, and later a desktop or mobile window. That way, the web, desktop and mobile builds share one client, and every piece of logic can be tested without its app.
 
 ```text
 open-neo-rts/
-├── apps/
-│   ├── web/                         [now] game client: menus, match, map editor (`/editor`)
-│   │   └── src/
-│   │       ├── app/                   router, feature composition, providers
-│   │       ├── features/
-│   │       │   ├── main-menu/  single-player/  skirmish/  campaign/
-│   │       │   ├── multiplayer/{lobby,matchmaking,reconnect}/
-│   │       │   ├── match/{hud,controls,selection,camera,presentation}/
-│   │       │   └── replays/  settings/  mods/
-│   │       └── shared/                only truly cross-feature UI primitives
-│   ├── cli/                         [now] `bun neo <command>`: validate-assets now; run, replay, bench, ai-vs-ai next
-│   ├── server/                      [now] dedicated match server (Colyseus): identity, lobbies, matches, reconnect
-│   ├── desktop/                       Tauri 2 shell around the web build              [later]
-│   └── mobile/                        mobile shell                                     [later]
+├── apps/                          thin shells: wiring only, no game logic
+│   ├── web/                       browser page: mounts packages/client
+│   ├── server/                    server process: starts packages/server
+│   ├── cli/                       `bun neo <command>`: dev and CI tools
+│   ├── desktop/                   Tauri 2 shell around the web build (planned)
+│   └── mobile/                    mobile shell (planned)
 ├── packages/
-│   ├── deterministic/               [now] PRNG streams, fixed-point math, trig tables, stable sort, hashing
-│   ├── sim/                         [now] deterministic headless simulation, no DOM/GPU
+│   ├── deterministic/             integer math, trig tables, PRNG, hashing
+│   │   └── src/{random,math,trig,hash}/
+│   ├── content/                   content types, pack loader, locales, maps, validators
+│   │   └── src/{loader,schemas,locales,maps,assets}/
+│   ├── sim/                       the deterministic simulation
 │   │   └── src/
-│   │       ├── ecs/                 [now] our ECS: stable IDs, typed-array storage, queries, isolated worlds
-│   │       ├── physics/             [now] collision, line traces, projectile integrators (integer math)
-│   │       ├── projection/          [now] per-seat visibility projection (server and single player)
-│   │       ├── kernel/                world, phase scheduler and hooks, tick
-│   │       ├── commands/              canonical queue, validation
-│   │       ├── features/              one folder per feature, components live with their feature
-│   │       │   ├── entities/  movement/  combat/  projectiles/  construction/
-│   │       │   ├── production/  economy/  research/  vision/  abilities/
-│   │       │   ├── control/  diplomacy/  victory/  scenarios/  events/  salvage/
-│   │       │   └── territory/                     optional rule module
-│   │       ├── snapshots/             full state, migrations, replay checkpoints
-│   │       └── testing/               fixtures and scripted bots, exported as @open-neo-rts/sim/testing
-│   ├── ai/                          [now] bot players; registers into the sim's controller hook; see ai.md
-│   ├── content/                     [now] definition types, schemas, pack loader, validators
-│   │   └── src/maps/                [now] map format, compiler (nav, height levels), map validators
-│   ├── net/                         [now] wire protocol, binary encoding, client and server transport
-│   ├── render/                      [now] Babylon adapter: terrain, units, buildings, vfx, selection
-│   └── mod-sdk/                       safe declarative authoring helpers                 [later]
-├── content/                         [now] data only; see content/README.md
-│   ├── schemas/                     [now] generated from packages/content
-│   ├── profiles/{neo-2035,ancient-kingdoms,epoch-wars}/
-│   ├── rulesets/{base-building,territorial-control,era-progression}/
-│   ├── packs/official-2035/{factions,units,structures,weapons,abilities,research,locales,assets,source}/
-│   ├── packs/example-mod/
-│   ├── maps/{official,examples}/
-│   └── campaigns/
-├── docs/{design,engineering,contributing}/  [now]
-├── .claude/skills/                  [now] agent skills (add-content, add-sim-feature)
-├── .github/                         [now] PR template; CI and preview workflows later
-├── AGENTS.md  CLAUDE.md             [now] agent rules
-└── CONTRIBUTING.md                  [now]
+│   │       ├── kernel/            world, phase scheduler and hooks, tick
+│   │       ├── commands/          envelopes, canonical order, validation
+│   │       ├── ecs/               our ECS
+│   │       ├── physics/           collision, line traces, projectiles
+│   │       ├── projection/        what each seat may see
+│   │       ├── snapshots/         serialization, migrations, checkpoints
+│   │       ├── testing/           fixtures (@open-neo-rts/sim/testing)
+│   │       └── features/          entities, movement, combat, projectiles, construction,
+│   │                              production, economy, vision, victory, control, research,
+│   │                              abilities, salvage, events, scenarios, diplomacy, territory
+│   ├── ai/                        bot players
+│   │   └── src/features/          economy, production, combat, scouting, expansion,
+│   │                              diplomacy, path-planning
+│   ├── net/                       wire protocol and transport
+│   │   └── src/{protocol,encoding,client,server}/
+│   ├── render/                    Babylon.js renderer
+│   │   └── src/{scene,camera,terrain,units,structures,effects,fog,overlays}/
+│   ├── client/                    the game client: screens, HUD, input, editors
+│   │   └── src/
+│   │       ├── app/               router, screen composition, UI state
+│   │       ├── worker/            single-player sim host (Web Worker)
+│   │       ├── shared/            UI primitives
+│   │       └── features/          main-menu, skirmish, match, in-game-menu, post-match,
+│   │                              settings, load-game, replays, content-editor, field-manual,
+│   │                              multiplayer, lobby, campaign, map-editor, onboarding
+│   └── server/                    the match server: rooms, lobby, match hosting
+│       └── src/{rooms,match-host,matchmaking,presence,voice}/
+├── content/                       game data in packs (see content-format.md)
+│   ├── schemas/                   generated from packages/content
+│   └── packs/{core,neo-2035}/
+├── tools/biome/                   lint plugin enforcing the determinism rules
+├── docs/                          design, engineering, contributing
+└── .github/                       PR template and CI workflow
 ```
 
-`ancient-kingdoms` and `epoch-wars` are future profiles, not v1 commitments. Assets live in this repo under `content/packs/*/assets/`, stored with Git LFS, all original work; see [assets.md](../contributing/assets.md).
+Every folder under `src/` has an `index.ts` stating its purpose and phase; most are still empty. The [roadmap](../roadmap.md#what-each-phase-builds) says which ones get filled when.
+
+### Why each package exists
+
+| Package         | Why it's separate                                                                                                                                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deterministic` | Everything that must give identical results on every engine, in one small, heavily tested place. Used by `content` (exact unit conversion), `sim` and `ai`                                                                  |
+| `content`       | Loading and validating packs is needed by the client, the server, the CLI and the editors. It must not depend on the sim, so tools can validate content without running a match                                             |
+| `sim`           | The game rules. It runs on the server, in the browser worker and in the CLI, so it can't touch the DOM, the network or the renderer. The ECS, physics and projection live inside it because nothing else uses them directly |
+| `ai`            | Bots are a big, separate concern that only talks to the sim through commands and observations. Being a package makes "the AI can't cheat" a dependency rule, not a promise. Its version is part of the sim version          |
+| `net`           | The wire protocol is shared by the client and the server and must match on both sides                                                                                                                                       |
+| `render`        | Babylon.js stays out of everything else. The renderer reads the sim's projection and never writes it, which the dependency direction enforces                                                                               |
+| `client`        | The whole game client (screens, HUD, input, single-player worker, editors) in one place, so web, desktop and mobile shells reuse it unchanged                                                                               |
+| `server`        | The match server's logic (rooms, lobby, match hosting, presence), testable without starting a process                                                                                                                       |
+
+### Why the apps are separate
+
+| App      | Why                                                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `web`    | The static build for browsers. Also the build that the desktop and mobile shells wrap                                          |
+| `server` | A long-running process with its own deployment and scaling (§8). Players never download it                                     |
+| `cli`    | Developer and CI tools (`bun neo validate-assets`, and later `run`, `replay`, `bench`, `ai-vs-ai`). Same packages, no graphics |
 
 ## 4. Module dependency direction
 
-`deterministic` is the leaf package. Six packages in total: each has more than one consumer or a boundary worth enforcing (`ai` and `render` can't write sim state). Code with a single consumer lives inside that consumer as a folder (the ECS, physics and projection in `sim`; maps in `content`; UI components and editor logic in `apps/web`) and is extracted only when a second consumer appears.
+```text
+deterministic ◄── content ◄── sim ◄── ai
+                                ▲  ◄── net ◄──┐
+                                ▲  ◄── render ◄┤
+                                └──────────── client ◄── apps/web
+                    sim, ai, content, net ◄── server ◄── apps/server
+                      sim, ai, content ◄──────────────── apps/cli
+```
 
-- **Allowed:** `content → deterministic`, `sim → deterministic + content`, `ai → sim`, `net → sim`, `render → sim`, `apps/web → render + net`, `apps/server → sim + ai + content + net`, `apps/cli → sim + ai + content`.
-- **Forbidden:** `sim → Babylon / React / WebSocket / Date / DOM`, `content → arbitrary installed plug-ins`, `render → mutating authoritative ECS`, `ai → server networking internals`.
+- **Allowed:** `content → deterministic`; `sim → deterministic + content`; `ai → sim + deterministic`; `net → sim`; `render → sim`; `client → render + sim + net + content + ai + deterministic`; `server → sim + net + content + ai`; each app → the packages it wires.
+- **Forbidden:** `sim → Babylon / React / WebSocket / Date / DOM`; `content → sim`; `render → mutating sim state`; `ai → net or server`; any package → an app; apps → each other.
 
-Enforce boundaries with package exports and lint rules. Each feature exports an `index.ts` with its public contract. ECS components stay next to the feature that owns them, not in one shared `components/` folder. Shared kernel primitives exist only when something actually reuses them.
+Boundaries are enforced by declared dependencies (Bun's isolated installs reject undeclared imports) and by the TypeScript `lib` and `types` each package compiles with. Inside a package, each folder exports an `index.ts` with its public contract. ECS components stay next to the feature that owns them, not in one shared `components/` folder.
 
 ## 5. Determinism contract
 

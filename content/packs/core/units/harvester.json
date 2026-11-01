@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/unit.schema.json",
+  "id": "unit:harvester",
+  "faction": "faction:test",
+  "name": "unit.harvester.name",
+  "description": "unit.harvester.description",
+  "family": "vehicle",
+  "cost": {
+    "resource:credits": 1200
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:factory"],
+  "health": 800,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 1.5
+  },
+  "vision": 6,
+  "pop": 0,
+  "weapons": [],
+  "presentation": {
+    "model": "assets/units/harvester/harvester.glb",
+    "icon": "assets/units/harvester/harvester.icon.webp",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": [],
+    "animations": []
+  },
+  "harvest": {
+    "capacity": 500
+  }
+}

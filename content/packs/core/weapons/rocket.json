@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/weapon.schema.json",
+  "id": "weapon:rocket",
+  "damageType": "armorPiercing",
+  "damage": 50,
+  "range": [0, 6],
+  "reload": 3,
+  "projectile": {
+    "kind": "direct",
+    "speed": 12
+  },
+  "targets": ["ground"]
+}

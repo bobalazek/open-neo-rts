@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/profile.schema.json",
+  "id": "profile:core-skirmish",
+  "name": "profile.core-skirmish.name",
+  "packs": ["core"],
+  "factions": ["faction:test"],
+  "resources": ["resource:credits", "resource:power"],
+  "rules": {
+    "modules": [],
+    "settings": {}
+  },
+  "presets": ["preset:1v1", "preset:2v2-shared-command"]
+}

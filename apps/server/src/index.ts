@@ -1,2 +1,2 @@
-// Dedicated match server (Bun + Colyseus): rooms, lobby, authoritative sim, visibility projection.
+// Starts the match server from packages/server. Configuration comes from the environment.
 export {};

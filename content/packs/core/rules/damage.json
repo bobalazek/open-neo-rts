@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../schemas/damage.schema.json",
+  "armorClasses": ["infantry", "light", "medium", "heavy", "aircraft", "naval", "structure"],
+  "damageTypes": {
+    "smallArms": {
+      "infantry": 100,
+      "light": 60,
+      "medium": 25,
+      "heavy": 10,
+      "aircraft": 50,
+      "naval": 25,
+      "structure": 10
+    },
+    "armorPiercing": {
+      "infantry": 25,
+      "light": 100,
+      "medium": 100,
+      "heavy": 100,
+      "aircraft": 50,
+      "naval": 75,
+      "structure": 50
+    },
+    "explosive": {
+      "infantry": 125,
+      "light": 80,
+      "medium": 60,
+      "heavy": 40,
+      "aircraft": 0,
+      "naval": 75,
+      "structure": 100
+    },
+    "fire": {
+      "infantry": 150,
+      "light": 60,
+      "medium": 30,
+      "heavy": 15,
+      "aircraft": 0,
+      "naval": 25,
+      "structure": 75
+    },
+    "antiAir": {
+      "infantry": 25,
+      "light": 25,
+      "medium": 10,
+      "heavy": 10,
+      "aircraft": 150,
+      "naval": 0,
+      "structure": 0
+    },
+    "emp": {
+      "infantry": 0,
+      "light": 50,
+      "medium": 50,
+      "heavy": 50,
+      "aircraft": 100,
+      "naval": 50,
+      "structure": 25
+    }
+  }
+}

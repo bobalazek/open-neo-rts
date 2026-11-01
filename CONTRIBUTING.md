@@ -49,21 +49,21 @@ The repo layout is described in [docs/engineering/architecture.md](docs/engineer
 
 ## Pull request checks
 
-CI must pass before review: `check`, `typecheck`, `test`, `build`, the determinism suite, and the content and asset validation when `content/` changes. _(CI is planned; run these locally until then.)_
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) must pass before review: `check`, `typecheck`, `test`, `build` and `bun neo validate-assets`. The determinism suite, browser tests and content validation join as they're built. Reviewers follow [review-checklists.md](docs/contributing/review-checklists.md).
 
 ## Previews
 
 _(Planned.)_ Every PR gets a preview build of the web client at its own URL. A bot comment on the PR lists:
 
 - the preview URL;
-- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=examples.flat-test&spawn=unit:panther&vs=unit:rifle-squad`;
+- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=core.map:flat-test&spawn=neo-2035.unit:panther&vs=neo-2035.unit:tactical-operator`;
 - the content validation report and, later, rendered turntable thumbnails of new models.
 
 Reviewers use these links to try new content without checking out the branch. The hosting provider is still open; it needs per-PR preview URLs.
 
 ## Using coding agents
 
-Agents are welcome. [AGENTS.md](AGENTS.md) holds the repo rules for them, and [`.claude/skills/`](.claude/skills/) holds step-by-step skills for common tasks. You're responsible for what you submit: review agent output like your own code, and make sure assets are original.
+Agents are welcome. [AGENTS.md](AGENTS.md) holds the repo rules for them. Step-by-step contributor tooling for agents (adding a unit, adding a sim feature) will ship as a plugin once the content schemas and the first sim features exist. You're responsible for what you submit: review agent output like your own code, and make sure assets are original.
 
 ## Licence
 

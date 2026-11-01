@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../schemas/preset.schema.json",
+  "id": "preset:2v2-shared-command",
+  "name": "preset.2v2-shared-command.name",
+  "forces": [
+    {
+      "team": "A",
+      "seats": ["human", "human"]
+    },
+    {
+      "team": "B",
+      "seats": ["bot"]
+    }
+  ],
+  "settings": {
+    "victory": "conquest",
+    "elimination": "annihilation"
+  }
+}

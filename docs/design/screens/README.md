@@ -38,7 +38,7 @@ Single player   Multiplayer    Map editor     Replays    Field      Settings   C
 | Settings                                      | `/settings`, and as an overlay in a match | [settings.md](settings.md)                     |
 | Replays and replay viewer                     | `/replays`, `/replay/:id`                 | [replays.md](replays.md)                       |
 | Map editor and playtest                       | `/editor`, `/editor/playtest`             | [map-editor.md](map-editor.md)                 |
-| Model viewer                                  | `/tools/models`                           | [model-viewer.md](model-viewer.md)             |
+| Content editor and model viewer               | `/tools/content`                          | [content-editor.md](content-editor.md)         |
 
 Routes are real URLs in the web build, so screens can be deep-linked (e.g. PR previews link straight into `/editor/playtest?spawn=unit:panther`).
 

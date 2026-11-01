@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/unit.schema.json",
+  "id": "unit:tank",
+  "faction": "faction:test",
+  "name": "unit.tank.name",
+  "description": "unit.tank.description",
+  "family": "vehicle",
+  "cost": {
+    "resource:credits": 800
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:factory"],
+  "health": 600,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2.0
+  },
+  "vision": 8,
+  "pop": 3,
+  "weapons": ["weapon:tank-cannon"],
+  "presentation": {
+    "model": "assets/units/tank/tank.glb",
+    "icon": "assets/units/tank/tank.icon.webp",
+    "materials": {},
+    "parts": ["hull", "turret", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": []
+  },
+  "turret": {
+    "turnRate": 90
+  }
+}

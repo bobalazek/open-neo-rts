@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schemas/manifest.schema.json",
+  "id": "neo-2035",
+  "version": "0.1.0",
+  "engine": ">=0.1.0",
+  "name": "pack.neo-2035.name",
+  "description": "pack.neo-2035.description",
+  "dependencies": {
+    "core": "^0.1.0"
+  }
+}

@@ -2,7 +2,7 @@
 
 > **Status: draft.** Nothing here is final; expect heavy edits.
 
-Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md).
+Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md) and [conventions.md](contributing/conventions.md). What to build now: [roadmap.md](roadmap.md#what-each-phase-builds).
 
 ### Design: what the game is
 
@@ -12,6 +12,7 @@ Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING
 | [game-design.md](design/game-design.md)                           | Overview and entry point to everything below                                                                                                                               |
 | [factions/](design/factions/README.md)                            | Resources, structure roles, grid placement, adjacency bonuses, tech tiers; [AFN](design/factions/afn.md), [EC](design/factions/ec.md), [PI](design/factions/pi.md)         |
 | [world-2035.md](design/factions/world-2035.md)                    | World, story, campaigns and signature roster (source of truth for names)                                                                                                   |
+| [test-faction.md](design/factions/test-faction.md)                | The mirrored test faction for the first playable, with stats                                                                                                               |
 | [combat-and-balance.md](design/combat-and-balance.md)             | Weapons, damage vs. armour, targeting, projectiles, wrecks, balancing process                                                                                              |
 | [units-and-orders.md](design/units-and-orders.md)                 | Orders, queues and waypoints, stances, auto-behaviour, transports and garrisons                                                                                            |
 | [economy.md](design/economy.md)                                   | Harvesting, spending and refunds, power, sharing, pacing targets                                                                                                           |
@@ -35,6 +36,7 @@ Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING
 | Doc                                                                      | Covers                                                                                                   |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | [architecture.md](engineering/architecture.md)                           | Stack, build vs. use, apps and packages, determinism contract, ECS, nav and physics, server, performance |
+| [numerics.md](engineering/numerics.md)                                   | Integer-only sim math: units, rounding, trig tables, PRNG, hashing, content unit conversion              |
 | [rendering.md](engineering/rendering.md)                                 | Interpolation, instancing, culling and LOD, construction and destruction animations, health bars         |
 | [pathfinding.md](engineering/pathfinding.md)                             | Nav grids, A* and hierarchical paths, budgets, formations, avoidance, air movement                       |
 | [ai.md](engineering/ai.md)                                               | Bot rules, layered decisions, roles, debugging, first bot                                                |
@@ -48,11 +50,14 @@ Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING
 
 ### Contributing: how to add to it
 
-| Doc                                                           | Covers                                                         |
-| ------------------------------------------------------------- | -------------------------------------------------------------- |
-| [adding-content.md](contributing/adding-content.md)           | Adding units, structures, weapons, techs, factions; previews   |
-| [authoring-scenarios.md](contributing/authoring-scenarios.md) | Campaigns, missions, objectives and triggers, skirmish presets |
-| [assets.md](contributing/assets.md)                           | Where assets live, Git LFS, authorship, formats and budgets    |
+| Doc                                                           | Covers                                                                     |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [adding-content.md](contributing/adding-content.md)           | Adding units, structures, weapons, techs, factions; previews               |
+| [conventions.md](contributing/conventions.md)                 | Naming for files, IDs, assets, code, tests, commits; coding rules          |
+| [content-format.md](contributing/content-format.md)           | Packs, profiles, presets, IDs, units of measure, a template for every file |
+| [review-checklists.md](contributing/review-checklists.md)     | What reviewers check on code, content and docs PRs                         |
+| [authoring-scenarios.md](contributing/authoring-scenarios.md) | Campaigns, missions, objectives and triggers, skirmish presets             |
+| [assets.md](contributing/assets.md)                           | Where assets live, Git LFS, authorship, formats and budgets                |
 
 ### Planning
 
