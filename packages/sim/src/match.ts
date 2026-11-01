@@ -1,14 +1,24 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
-import { type Definition, entitiesFeature } from "./features/entities";
+import {
+  checkDefinitions,
+  type Definition,
+  definitionSchema,
+  entitiesFeature,
+} from "./features/entities";
 import { movementFeature } from "./features/movement";
 import { createKernel, type Kernel, register } from "./kernel";
 import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
 
-export { type MatchMap, serializeMatchMap } from "./match-map";
+export {
+  type MatchMap,
+  type MatchResource,
+  serializeMatchMap,
+  toMatchResources,
+} from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 2;
+export const SIM_VERSION = 3;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -25,6 +35,9 @@ export interface MatchSetup {
 /** Validates/copies static map input, then registers features in their fixed order. */
 export function createMatch(setup: MatchSetup): Kernel {
   const issues: Issue[] = [];
+  for (const [i, definition] of setup.definitions.entries())
+    definitionSchema.check(definition, `$.setup.definitions[${i}]`, issues);
+  if (!issues.length) checkDefinitions(setup.definitions, issues);
   matchMapSchema.check(setup.map, "$.setup.map", issues);
   if (!issues.length) checkMatchMap(setup.map, setup.definitions, issues);
   if (issues.length)
@@ -32,7 +45,16 @@ export function createMatch(setup: MatchSetup): Kernel {
       `Invalid match map:\n${issues.map(({ path, message }) => `${path}: ${message}`).join("\n")}`,
     );
   const kernel = createKernel(setup);
-  register(kernel, entitiesFeature(setup.definitions));
-  register(kernel, movementFeature(setup));
+  const definitions = setup.definitions.map((definition) =>
+    Object.freeze({
+      ...definition,
+      ...(definition.footprint && {
+        footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
+      }),
+      ...(definition.cells && { cells: Object.freeze([...definition.cells]) }),
+    }),
+  );
+  register(kernel, entitiesFeature(definitions));
+  register(kernel, movementFeature({ ...setup, definitions }));
   return kernel;
 }

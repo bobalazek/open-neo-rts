@@ -2,7 +2,10 @@ import { afterAll, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import placementGolden from "../../scenarios/__golden__/spawn-placement.json";
+import { placementProof, spawnPlacementScenario } from "../../scenarios/generate-spawn-placement";
 import fixture from "../../scenarios/smoke.json";
+import placementFixture from "../../scenarios/spawn-placement.json";
 
 const cli = new URL("../index.ts", import.meta.url).pathname;
 const scenario = new URL("../../scenarios/smoke.json", import.meta.url).pathname;
@@ -155,3 +158,15 @@ for (const args of [
     expect(execute(["run", ...args]).status).toBe(1);
   });
 }
+
+test("static spawn placement matches the checked-in scenario, Bun outcomes and CLI goldens", () => {
+  expect<unknown>(spawnPlacementScenario()).toEqual(placementFixture);
+  expect<unknown>(placementProof()).toEqual(placementGolden);
+  expect(
+    execute(["run", new URL("../../scenarios/spawn-placement.json", import.meta.url).pathname]),
+  ).toEqual({
+    status: 0,
+    out: placementGolden.hashes.map(({ tick, hash }) => `${tick} ${hash}\n`).join(""),
+    error: "",
+  });
+});

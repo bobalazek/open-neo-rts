@@ -4,39 +4,16 @@
 import { defineComponent } from "../../ecs";
 import type { Feature } from "../../kernel";
 
-const SUBCELLS_PER_CELL = 1024;
-const TICKS_PER_SECOND = 20;
-const TURN = 0x10000;
+import type { Definition } from "./definitions";
+import { checkSpawnPlacement } from "./placement";
 
-/** A spawnable definition in sim units. A match is created with a table of them. */
-export interface Definition {
-  /** As `debug.spawn` names it: `unit:eastern-collective/dragon-tank`, `core.structure:…`. */
-  id: string;
-  health: number;
-  /** Subcells per tick; 0 can't move. */
-  speed: number;
-  /** Binary angle units per tick. */
-  turnRate: number;
-}
-
-/**
- * Converts a unit or structure from content units (cells and degrees per second) to sim units, once, at match
- * setup (numerics.md#content-units). Without a turn rate a unit turns any amount within a tick.
- */
-// ponytail: here until the content loader converts units (phase 2); then the loader builds the table.
-export function toDefinition(content: {
-  id: string;
-  health: number;
-  movement?: { speed: number; turnRate?: number };
-}): Definition {
-  const { speed = 0, turnRate = 360 * TICKS_PER_SECOND } = content.movement ?? {};
-  return {
-    id: content.id,
-    health: content.health,
-    speed: Math.round((speed * SUBCELLS_PER_CELL) / TICKS_PER_SECOND),
-    turnRate: Math.round((turnRate * TURN) / (360 * TICKS_PER_SECOND)),
-  };
-}
+export * from "./definitions";
+export {
+  debugSpawnPlacement,
+  type SpawnCell,
+  type SpawnPlacement,
+  type SpawnPlacementFailure,
+} from "./placement";
 
 /** Index of the entity's definition in the match's table. */
 export const Template = defineComponent("Template", { definition: "u32" });
@@ -50,11 +27,14 @@ export function entitiesFeature(definitions: readonly Definition[]): Feature {
   return {
     components: [Template, OwnerForce, Transform, Health],
     handlers: {
-      "debug.spawn": ({ world }, { payload: { definition, force, x, y, facing } }) => {
+      "debug.spawn": (kernel, { payload }) => {
+        const { world } = kernel;
+        const { definition, force, x, y, facing } = payload;
         const index = definitions.findIndex((d) => d.id === definition);
         const found = definitions[index];
         if (!found) return "bad_payload";
-        // ponytail: no placement rules on the flat grid; check construction's checkPlacement once maps load.
+        if (kernel.map && !checkSpawnPlacement(kernel, definitions, payload).ok)
+          return "placement_failed";
         const id = world.create();
         world.add(id, Template, { definition: index });
         world.add(id, OwnerForce, { force });
@@ -63,6 +43,8 @@ export function entitiesFeature(definitions: readonly Definition[]): Feature {
       },
       "debug.setHealth": ({ world }, { payload: { entity, health } }) => {
         if (!world.isAlive(entity) || !world.has(entity, Health)) return "bad_payload";
+        const definition = definitions[world.get(entity, Template, "definition")];
+        if (definition?.health === 0) return "bad_payload";
         // ponytail: health 0 deletes until salvage (phase 3) leaves wrecks.
         if (health === 0) world.destroy(entity);
         else world.set(entity, Health, "current", health);

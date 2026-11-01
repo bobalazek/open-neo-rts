@@ -41,7 +41,7 @@ export async function bench(args: string[]): Promise<number> {
       faction: "faction:eastern-collective",
     }));
     const kernel = createMatch({
-      map: flatMap(),
+      map: flatMap(512),
       seed: 1,
       debug: true,
       definitions,

@@ -8,6 +8,10 @@ import scenarioGolden from "../../cli/scenarios/__golden__/eastern-collective-tw
   type: "json",
 };
 
+import placementGolden from "../../cli/scenarios/__golden__/spawn-placement.json" with {
+  type: "json",
+};
+
 /** Bundle a TypeScript module with Bun, import it into the page and return what its export `fn()` returns. */
 async function runInBrowser(page: Page, entry: string, fn: string): Promise<unknown> {
   const path = fileURLToPath(new URL(entry, import.meta.url));
@@ -58,4 +62,11 @@ test("the two-Force 10,000-tick scenario matches all goldens twice", async ({ pa
     await testInfo.attach("bun.trace.json", { path: baseline, contentType: "application/json" });
   }
   expect(actual).toEqual(expected);
+});
+
+test("static spawn placement matches Bun outcomes and goldens twice", async ({ page }) => {
+  for (let i = 0; i < 2; i++)
+    expect(
+      await runInBrowser(page, "../../cli/scenarios/generate-spawn-placement.ts", "placementProof"),
+    ).toEqual(placementGolden);
 });

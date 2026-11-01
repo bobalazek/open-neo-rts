@@ -58,7 +58,7 @@ The file is read in the browser. Team slots change while palette, metal and glas
 
 ## How it stays honest
 
-- **Debug actions are sim commands**, accepted only when the match was started with `debug: true` (otherwise rejected as `debug_only`). That flag is their only gate: they skip grant checks, because debug mode acts for any Force. They go through the command log like any order, so a session replays exactly. Payloads ([commands](../../../packages/sim/src/commands/index.ts)):
+- **Debug actions are sim commands**, accepted only when the match was started with `debug: true` (otherwise rejected as `debug_only`). That flag gates debug access: they skip grant checks, because debug mode acts for any Force. Spawning still enforces terrain, bounds and occupied cells, but [skips build radius](../../project/decisions/2026-11-01-debug-spawn-placement.md). Occupied unit cells fail immediately without moving units. They go through the command log like any order, so a session replays exactly. Payloads ([commands](../../../packages/sim/src/commands/index.ts)):
   - `debug.spawn { definition, force, x, y, facing }`: a unit, structure or prop ID, the Force, a position in subcells and a facing in binary angle units ([numerics.md](../../engineering/numerics.md#units));
   - `debug.setHealth { entity, health }`: health 0 kills it and leaves a wreck;
   - `debug.remove { entity }`: deletes it without a wreck.
