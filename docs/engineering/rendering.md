@@ -14,6 +14,11 @@ The built-in registry in `client/features/debug/maps.ts` is temporary until phas
 
 Low renders at 75% of the normal canvas resolution, with flat per-model blob shadows and no postprocessing. Medium uses a 1024-pixel directional sun shadow map and mild contrast grading. High uses 2048-pixel sun shadows, half-resolution SSAO2 (8 samples), grading and bloom. Ultra keeps 100% resolution, adds filtered soft sun shadows, full-resolution SSAO2 (16 samples and expensive blur), and the optional depth of field. SSAO is omitted on engines without Babylon's SSAO2 support. Particle density settings await the effects system; these presets do not claim to implement particles.
 
+Medium's whole-map projection uses depth bias 0.004 and normal bias 0.08, calibrated against the
+authored Sandbox Terrain and Training Grounds cliffs. The extra depth clearance removes grazing-angle
+self-shadow triangles at 1024 pixels; it trades some contact precision for stability. High and Ultra
+retain bias 0.001 and normal bias 0.04. All three retain terrain and visible-model cast shadows.
+
 Terrain and visible model instances explicitly register as casters/receivers. Hidden shared GLB templates, water and selection overlays never enter the shadow render list. Babylon instances receive shadows through their shared source mesh but cast through their visible instances. Registration follows asynchronous model creation and disposal. Low's blobs follow model roots on a flat local plane; they are a cheap fallback rather than projected terrain shadows. Terrain materials remain unfrozen so shadow, prepass and depth shader variants can change safely. Preset replacement releases shadow maps, postprocess pipelines, AO prepass and optional depth-renderer resources. The isolated model preview retains its neutral scene and does not use match presets.
 ### Water and shoreline foam
 
