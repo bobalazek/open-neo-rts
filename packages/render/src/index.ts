@@ -40,7 +40,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
   const sun = scene.getLightByName("sun");
   if (!(sun instanceof DirectionalLight)) throw new Error("Scene has no directional sun");
   const quality = createQuality(scene, camera, sun);
-  quality.setQuality(options.quality ?? "medium", options.tiltShift);
+  const setQuality = (next: GraphicsQuality, tiltShift = false) => {
+    terrain.setQuality(next);
+    quality.setQuality(next, tiltShift);
+  };
+  setQuality(options.quality ?? "medium", options.tiltShift);
 
   const render = () => scene.render();
   const resize = () => engine.resize();
@@ -51,14 +55,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     scene,
     camera,
     terrain,
-    setQuality: quality.setQuality,
+    setQuality,
     /** Pick only authored ground/water, never a model that covers the intended cell. */
     pickCell(clientX: number, clientY: number) {
       const bounds = canvas.getBoundingClientRect();
       const hit = scene.pick(
         clientX - bounds.left,
         clientY - bounds.top,
-        (mesh) => mesh.parent === terrain,
+        (mesh) => mesh.parent === terrain && mesh.isPickable,
       );
       const point = hit?.pickedPoint;
       if (!point) return null;

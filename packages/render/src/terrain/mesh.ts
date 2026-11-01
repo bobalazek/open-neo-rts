@@ -208,8 +208,8 @@ const colours = (p: Palette) => ({
   deep: rgb(p.deep),
 });
 
-/** Builds every chunk of the map plus its border, each cell in its biome's palette. Empty chunks are skipped. */
-export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
+/** Full chunks, or distant dry-flat patches with original joins; water/foam use the full-detail output. */
+export function buildTerrainGeometry(g: TerrainGrid, distant = false): ChunkGeometry[] {
   const corners = cornerHeights(g);
   const ew = g.width + 2 * BORDER;
   const eh = g.height + 2 * BORDER;
@@ -229,21 +229,48 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
       const land = new Builder();
       const water = new Builder();
       const foam = new Builder();
+      const merged = new Set<number>();
       const x1 = Math.min((cx + 1) * CHUNK_SIZE, g.width + BORDER);
       const y1 = Math.min((cy + 1) * CHUNK_SIZE, g.height + BORDER);
       for (let y = Math.max(cy * CHUNK_SIZE, -BORDER); y < y1; y++) {
         for (let x = Math.max(cx * CHUNK_SIZE, -BORDER); x < x1; x++) {
           const i = sample(g, x, y);
+          if (merged.has(i)) continue;
+          // A matching halo keeps every cliff, ramp, shore and material join at full detail.
+          const merge =
+            distant &&
+            (x - cx * CHUNK_SIZE) % 2 === 1 &&
+            (y - cy * CHUNK_SIZE) % 2 === 1 &&
+            x > Math.max(0, cx * CHUNK_SIZE) &&
+            y > Math.max(0, cy * CHUNK_SIZE) &&
+            x + 2 < Math.min(g.width, x1) &&
+            y + 2 < Math.min(g.height, y1) &&
+            [-1, 0, 1, 2].every((dy) =>
+              [-1, 0, 1, 2].every((dx) => {
+                const next = sample(g, x + dx, y + dy);
+                return (
+                  g.level[next] === g.level[i] &&
+                  g.surface[next] === g.surface[i] &&
+                  g.biome[next] === g.biome[i] &&
+                  g.ramp[next] === RAMP.none &&
+                  g.water[next] === WATER.none
+                );
+              }),
+            );
+          if (merge) for (const next of [i + 1, i + g.width, i + g.width + 1]) merged.add(next);
           const dark = x >= 0 && y >= 0 && x < g.width && y < g.height ? 1 : BORDER_SHADE;
           const { surfaces, cliff, shallow, deep } = palettes[g.biome[i] ?? 0] ?? fallback;
           const color = surfaces[g.surface[i] ?? 0] ?? surfaces[0] ?? cliff;
-          const shade = (SHADES[hash2(x, y) % SHADES.length] ?? 1) * dark;
+          const tone = (dx: number, dy: number) =>
+            SHADES[hash2(x + dx, y + dy) % SHADES.length] ?? 1;
+          const shade =
+            (merge ? (tone(0, 0) + tone(1, 0) + tone(0, 1) + tone(1, 1)) / 4 : tone(0, 0)) * dark;
           const h = [0, 1, 2, 3].map((k) => corner(x, y, k));
           const [hnw = 0, hne = 0, hse = 0, hsw = 0] = h;
           const x0 = x * C;
           const z0 = y * C;
-          const xe = x0 + C;
-          const ze = z0 + C;
+          const xe = x0 + C * (merge ? 2 : 1);
+          const ze = z0 + C * (merge ? 2 : 1);
           const isRamp = (g.ramp[i] ?? 0) !== RAMP.none;
 
           if (isRamp) {
@@ -280,7 +307,7 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
 
           const waterKind = isRamp ? WATER.none : (g.water[i] ?? WATER.none);
           const surface = waterHeight(g, x, y);
-          if (waterKind !== WATER.none) {
+          if (!distant && waterKind !== WATER.none) {
             const tint = waterKind === WATER.deep ? deep : shallow;
             water.quad(
               [x0, surface, z0, x0, surface, ze, xe, surface, ze, xe, surface, z0],
@@ -291,7 +318,11 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
 
           for (const e of EDGES) {
             const neighbour = sample(g, x + e.dx, y + e.dy);
-            if (waterKind !== WATER.none && (g.water[neighbour] ?? WATER.none) === WATER.none) {
+            if (
+              !distant &&
+              waterKind !== WATER.none &&
+              (g.water[neighbour] ?? WATER.none) === WATER.none
+            ) {
               const px = (x + (CORNER_X[e.p] ?? 0)) * C;
               const pz = (y + (CORNER_Y[e.p] ?? 0)) * C;
               const qx = (x + (CORNER_X[e.q] ?? 0)) * C;
@@ -348,7 +379,7 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
               pz + (qz - pz) * t0,
             ];
             // Water at the outer skirt: close the gap between the bed wall and the water surface.
-            if (waterKind !== WATER.none && corner(x + e.dx, y + e.dy, e.np) === BASE) {
+            if (!distant && waterKind !== WATER.none && corner(x + e.dx, y + e.dy, e.np) === BASE) {
               const tint = waterKind === WATER.deep ? deep : shallow;
               water.quad(wall(0, 1, ap, aq, surface, surface), tint, dark);
             }
