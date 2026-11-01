@@ -1,5 +1,6 @@
 /// <reference path="../../assets.d.ts" />
 import { checkTerrain, parseTerrain, type TerrainLayers } from "@open-neo-rts/content";
+import type { MapDecoration, MapResource } from "@open-neo-rts/render";
 import biomeLayer from "../../../../../content/core/maps/sandbox-biomes/biome.r8";
 import biomes from "../../../../../content/core/maps/sandbox-biomes/map.json";
 import biomeSurface from "../../../../../content/core/maps/sandbox-biomes/surface.r8";
@@ -20,6 +21,8 @@ interface MapEntry {
     name: string;
     biome: string;
     size: { width: number; height: number };
+    objects: readonly MapDecoration[];
+    resources: readonly MapResource[];
   };
   layers: Partial<Record<keyof TerrainLayers, string>>;
 }
