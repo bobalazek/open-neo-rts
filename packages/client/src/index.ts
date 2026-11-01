@@ -5,6 +5,10 @@ export async function startClient(canvas: HTMLCanvasElement) {
     const { startModelCheck } = await import("./features/debug");
     return startModelCheck(canvas);
   }
+  if (location.pathname === "/debug") {
+    const { startDebugSession } = await import("./features/debug/session");
+    return startDebugSession(canvas);
+  }
   const { startTerrainView } = await import("./features/debug/terrain");
   return startTerrainView(canvas);
 }

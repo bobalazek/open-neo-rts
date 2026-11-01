@@ -34,7 +34,8 @@
   font-weight: 600;
 }
 .model-check input,
-.model-check select {
+.model-check select,
+.model-check button {
   min-height: 38px;
   max-width: 100%;
   color: #f1f4f6;
@@ -43,6 +44,10 @@
   border-radius: 3px;
   font: inherit;
   padding: 4px 8px;
+}
+.debug-session {
+  max-height: 55dvh;
+  overflow: auto;
 }
 .model-check input[type="color"] {
   width: 90px;
