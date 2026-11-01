@@ -389,9 +389,23 @@
           "color": "#4a4f57",
           "studs": false
         },
-        { "at": [-10.5, 0.6, 3], "size": [6, 5, 6], "slot": "team_dark", "studs": false },
-        { "at": [-9.8, 3.4, 8.975], "size": [4.6, 1.4, 0.15], "slot": "glass", "studs": false },
-        { "at": [-10.7, 5.6, 2.8], "size": [6.4, 0.4, 6.4], "slot": "team" },
+        {
+          "at": [-10.5, 0.6, 3],
+          "size": [6, 5, 6],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-9.8, 3.4, 8.975],
+          "size": [4.6, 1.4, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-10.7, 5.6, 2.8],
+          "size": [6.4, 0.4, 6.4],
+          "slot": "team"
+        },
         {
           "at": [-9.8, 6, 3.6],
           "size": [1.2, 3.5, 1.2],
@@ -460,14 +474,27 @@
         }
       ]
     },
-    { "name": "socket_dock_0", "parent": "base", "at": [3, 0.8, 7] },
-    { "name": "socket_smoke_0", "parent": "base", "at": [-9.2, 10.2, 4.2] }
+    {
+      "name": "socket_dock_0",
+      "parent": "base",
+      "at": [3, 0.8, 7]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [-9.2, 10.2, 4.2]
+    }
   ],
   "animations": {
     "active": {
       "duration": 2.4,
       "loop": true,
-      "tracks": [{ "node": "crate", "translation": [[0, [0, 0, 0]], [2.4, [0, 7.5, -5.7]]] }]
+      "tracks": [
+        {
+          "node": "crate",
+          "translation": [[0, [0, 0, 0]], [1.2, [0, 7.5, -5.7]], [2.4, [0, 0, 0]]]
+        }
+      ]
     }
   }
 }
