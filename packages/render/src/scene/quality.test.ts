@@ -49,6 +49,8 @@ test("presets replace resources and track async GLB instances without water, rin
     expect(engine.getHardwareScalingLevel()).toBe(1);
     const first = (sun.getShadowGenerator() as ShadowGenerator).getShadowMap();
     expect(first?.getSize().width).toBe(1024);
+    expect((sun.getShadowGenerator() as ShadowGenerator).bias).toBe(0.004);
+    expect((sun.getShadowGenerator() as ShadowGenerator).normalBias).toBe(0.08);
     await props.ready;
     await units.accept(
       {
@@ -87,6 +89,15 @@ test("presets replace resources and track async GLB instances without water, rin
       2048,
     );
     expect(scene.meshes.some((mesh) => mesh.name === "blob shadow")).toBe(false);
+    expect((sun.getShadowGenerator() as ShadowGenerator).bias).toBe(0.001);
+    expect((sun.getShadowGenerator() as ShadowGenerator).normalBias).toBe(0.04);
+    expect(casters().filter((mesh) => mesh instanceof InstancedMesh)).toHaveLength(
+      instances.length,
+    );
+    const high = (sun.getShadowGenerator() as ShadowGenerator).getShadowMap();
+    quality.setQuality("ultra", true);
+    expect(high?.getInternalTexture()).toBeNull();
+    expect((sun.getShadowGenerator() as ShadowGenerator).mapSize).toBe(2048);
     expect(casters().filter((mesh) => mesh instanceof InstancedMesh)).toHaveLength(
       instances.length,
     );
