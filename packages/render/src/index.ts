@@ -6,6 +6,13 @@ import { createEngine, createScene } from "./scene";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
+export {
+  createMapPresentation,
+  type MapDecoration,
+  type MapResource,
+  resourceInstances,
+  type StaticMapInstance,
+} from "./terrain/objects";
 export { createEntityPresentation } from "./units";
 export { createModelPreview } from "./units/preview";
 

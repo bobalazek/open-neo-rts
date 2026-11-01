@@ -6,7 +6,15 @@
 
 The terrain view at `/` or `/debug` loads the selected built-in map's authored dimensions and `.r8` layers. The Map picker links to `?map=core.map:sandbox-flat` and the other sandbox maps or Training Grounds. Layer downloads, lengths and terrain values are checked before rendering; a failed map keeps the picker available with an error. The renderer receives a parsed grid and owns no content loading or simulation state. Its returned `dispose()` releases the scene, engine, render loop and resize handler.
 
-The built-in registry in `client/features/debug/maps.ts` is temporary until phase-2 pack loading. Binary layers use [Bun's asset imports](https://bun.sh/docs/bundler#assets), so both the HTML dev server and production build serve the original map bytes. Resources and objects are not drawn by this terrain-only stage; spawning and model rendering remain separate debug-mode tasks.
+The built-in registry in `client/features/debug/maps.ts` is temporary until phase-2 pack loading. Binary layers use [Bun's asset imports](https://bun.sh/docs/bundler#assets), so both the HTML dev server and production build serve the original map bytes. The client also resolves original map decoration and resource GLBs; their static instances are separate from simulation entities.
+
+## Static map art
+
+`createMapPresentation(scene, grid, placements, resolveModel)` owns static art and its templates. Placements retain original definition references and authored centre coordinates in cells; one cell is 2 metres, quarter-turn rotations apply to the original model, and height follows the terrain/ramp plane at that centre. The client resolves only registered built-in GLBs. Each model loads once per map view and rigid instances share geometry/materials. Instances are not pickable. Dispose this layer before the scene; failed or superseded loads release their assets, and errors identify the model.
+
+The terrain client draws only props with `blocks: nothing`. Blocking props and non-prop map objects are reserved for authoritative entity projection, so this static path cannot duplicate them. Unknown prop references fail visibly. All current built-in maps have empty `objects` arrays; Sandbox: Resources and Training Grounds visibly demonstrate their existing fields.
+
+`resourceInstances` turns an authored ore radius into a visual disc: integer cell indices within the radius receive one original ore-cell model at their cell centre, matching the existing map-preview rasterization, clipped to map bounds and deduplicated where fields overlap. An omitted radius defaults to one cell, matching the preview; an explicit zero marks the containing cell. Quarter-turn variation is a stable hash of map identity, visual seed (zero in the terrain view) and cell coordinates. Material markers retain their exact authored centre and 2×2 footprint. Only `stage_full` is enabled; field amounts do not imply depletion or per-cell caps. The existing schema authors ore/materials only, so the original oil-well asset remains unused until the owner resolves node policy. No harvesting, collision, destruction, node-bound structures, simulation changes or art-direction approval is implied.
 
 ## Asset inspection
 
