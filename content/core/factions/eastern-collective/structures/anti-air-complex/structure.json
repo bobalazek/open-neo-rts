@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/anti-air-complex",
   "name": "Anti-Air Complex",
   "description": "Missile and gun anti-air defence.",
+  "role": "defense",
   "cost": {
     "credits": 900
   },
   "buildTime": 12,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "health": 1500,
   "armor": "structure",
   "footprint": [2, 2],
@@ -16,31 +16,48 @@
   "weapons": [
     {
       "id": "flak",
-      "damageType": "antiAir",
-      "damage": 15,
+      "targets": ["air"],
       "range": [0, 7],
       "reload": 0.5,
       "projectile": {
-        "kind": "direct",
+        "kind": "bullet",
         "speed": 30
       },
-      "targets": ["air"],
-      "splash": {
-        "radius": 1,
-        "edgePercent": 50
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 15,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          },
+          "radius": 1,
+          "falloff": [100, 50]
+        }
+      ]
     },
     {
       "id": "aa-missile",
-      "damageType": "antiAir",
-      "damage": 40,
+      "targets": ["air"],
       "range": [0, 8],
       "reload": 2,
       "projectile": {
-        "kind": "homing",
-        "speed": 25
+        "kind": "missile",
+        "speed": 25,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
       },
-      "targets": ["air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 40,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     }
   ],
   "presentation": {

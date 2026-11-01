@@ -1,7 +1,10 @@
 #!/usr/bin/env bun
 // open-neo-rts CLI: tools that run without graphics. Usage: bun neo <command> [args]
 
+import { buildModels } from "./commands/build-models";
+import { generateSandboxMaps } from "./commands/generate-sandbox-maps";
 import { generateSchemas } from "./commands/generate-schemas";
+import { generateTrigTable } from "./commands/generate-trig-table";
 import { makePlaceholders } from "./commands/make-placeholders";
 import { validateAssets } from "./commands/validate-assets";
 import { validateContent } from "./commands/validate-content";
@@ -30,12 +33,26 @@ const commands: Record<string, Command> = {
   },
   "make-placeholders": {
     summary:
-      "Generate block-model GLBs, wrecks and icons for definitions without art (default pack: dev)",
+      "Generate block-model GLBs, wrecks and icons for definitions without art (default pack: core)",
     run: makePlaceholders,
+  },
+  "build-models": {
+    summary:
+      "Build brick-model sources (source/*.bricks.json) into GLBs, wrecks, icons, assets.json",
+    run: buildModels,
   },
   "generate-schemas": {
     summary: "Write content/schemas from packages/content (--check: fail if stale)",
     run: generateSchemas,
+  },
+  "generate-sandbox-maps": {
+    summary: "Write the sandbox maps in content/core/maps from their source in the CLI",
+    run: generateSandboxMaps,
+  },
+  "generate-trig-table": {
+    summary:
+      "Write the sine and CORDIC tables in packages/deterministic (run once; output is committed)",
+    run: generateTrigTable,
   },
 };
 

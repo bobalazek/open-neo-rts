@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/advanced-armory",
   "name": "Advanced Armory",
   "description": "Weapons and equipment upgrades.",
+  "role": "research",
   "cost": {
     "credits": 1200
   },
   "buildTime": 15,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
   "health": 1300,
   "armor": "structure",

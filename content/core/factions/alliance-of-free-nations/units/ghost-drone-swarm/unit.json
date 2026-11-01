@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/ghost-drone-swarm",
   "name": "Ghost Drone Swarm",
   "description": "AI-controlled attack drones; immune to EMP after Ghost Protocol.",
+  "role": "combat",
   "family": "aircraft",
   "tags": ["drone"],
   "cost": {
@@ -23,14 +24,26 @@
   "weapons": [
     {
       "id": "drone-gun",
-      "damageType": "smallArms",
-      "damage": 6,
+      "targets": ["ground"],
       "range": [0, 4],
       "reload": 0.4,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 6,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

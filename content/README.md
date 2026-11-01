@@ -11,8 +11,14 @@ content/
     │   ├── alliance-of-free-nations/
     │   ├── eastern-collective/
     │   └── phoenix-initiative/     each: faction.json, units/<name>/, structures/<name>/
+    ├── neutral/
+    │   └── structures/
+    │       └── quantum-nexus/      the wonder
     └── maps/
-        └── training-grounds/
+        ├── training-grounds/
+        └── sandbox-<feature>/      flat, resources, terrain, water: one terrain feature each
 ```
+
+Mods are more packs next to `core` (`content/<mod>/`), with the same layout.
 
 Add content: [adding-content.md](../docs/contributing/adding-content.md). Assets: [assets.md](../docs/contributing/assets.md). Check everything with `bun neo validate`.

@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/tactical-operator",
   "name": "Tactical Operator",
   "description": "Basic infantry with smart-linked weapons.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -22,14 +23,26 @@
   "weapons": [
     {
       "id": "smart-rifle",
-      "damageType": "smallArms",
-      "damage": 13,
+      "targets": ["ground"],
       "range": [0, 5.5],
       "reload": 1,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 13,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

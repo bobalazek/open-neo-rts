@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/recon-drone",
   "name": "Recon Drone",
   "description": "Stealth surveillance drone with long vision.",
+  "role": "scout",
   "family": "aircraft",
   "tags": ["drone"],
   "cost": {
@@ -14,7 +15,7 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 5.0
+    "speed": 5
   },
   "radius": 0.4,
   "vision": 14,

@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/saboteur",
   "name": "Saboteur",
   "description": "Stealth demolitions specialist.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -24,14 +25,28 @@
   "weapons": [
     {
       "id": "demolition-charge",
-      "damageType": "explosive",
-      "damage": 300,
+      "targets": ["structure"],
       "range": [0, 1],
       "reload": 20,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["structure"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 300,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "tags": ["explosive"]
+        }
+      ]
     }
   ],
   "abilities": [

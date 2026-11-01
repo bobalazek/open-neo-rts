@@ -3,16 +3,16 @@
   "id": "structure:eastern-collective/shipyard",
   "name": "Shipyard",
   "description": "Builds naval units. Coastal: land at the back, deep water at the front. (Addition.)",
+  "role": "production",
   "cost": {
     "credits": 1500
   },
   "buildTime": 18,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/radar-tower"],
   "health": 2000,
   "armor": "structure",
-  "footprint": [4, 3],
-  "cells": ["llll", "ssss", "wwww"],
+  "footprint": [4, 4],
+  "cells": ["llll", "ssss", "ssss", "wwww"],
   "power": -30,
   "vision": 6,
   "presentation": {

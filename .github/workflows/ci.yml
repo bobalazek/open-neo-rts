@@ -46,6 +46,20 @@ jobs:
       - run: bun run build
       - run: bun neo generate-schemas --check
 
+  # Cross-engine determinism: the same golden digests in Chromium, Firefox and WebKit as in Bun.
+  browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium firefox webkit
+      - run: bunx tsc -p apps/web/e2e/tsconfig.json
+      - run: bun run test:browsers
+
   content:
     needs: changes
     if: needs.changes.outputs.content == 'true' || github.event_name == 'push'

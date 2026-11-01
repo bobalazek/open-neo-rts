@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/aegis-frigate",
   "name": "Aegis Frigate",
   "description": "Missile frigate: anti-ship and anti-air. (Addition.)",
+  "role": "combat",
   "family": "naval",
   "tags": ["naval"],
   "cost": {
@@ -23,28 +24,55 @@
   "weapons": [
     {
       "id": "missiles",
-      "damageType": "armorPiercing",
-      "damage": 40,
+      "targets": ["ground", "air"],
       "range": [0, 7],
       "reload": 1.5,
-      "projectile": {
-        "kind": "homing",
-        "speed": 20
+      "burst": {
+        "count": 2,
+        "delay": 0.2
       },
-      "targets": ["ground", "air"],
-      "burst": 2
+      "projectile": {
+        "kind": "missile",
+        "speed": 20,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 40,
+          "versus": {
+            "default": 100,
+            "infantry": 25,
+            "aircraft": 60,
+            "structure": 50
+          }
+        }
+      ]
     },
     {
       "id": "aa-missile",
-      "damageType": "antiAir",
-      "damage": 40,
+      "targets": ["air"],
       "range": [0, 8],
       "reload": 2,
       "projectile": {
-        "kind": "homing",
-        "speed": 25
+        "kind": "missile",
+        "speed": 25,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
       },
-      "targets": ["air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 40,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     }
   ],
   "presentation": {

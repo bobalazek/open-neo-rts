@@ -8,11 +8,11 @@ Separate `HumanIdentity`, `Connection`, `PlayerSeat`, `Force`, `Team`, `Faction`
 
 ```text
 Human A ── Seat A ──┐
-                    ├── controls Force 1 [AFN; units, resources, tech]
+                    ├── controls Force 1 [Alliance of Free Nations; units, resources, tech]
 Human B ── Seat B ──┘                 │
                                      └── belongs to Team Red
-Bot C ─── Seat C ───── controls Force 2 [EC; own units/resources] ── Team Red
-Human D ─ Seat D ───── controls Force 3 [PI; own units/resources] ── Team Blue
+Bot C ─── Seat C ───── controls Force 2 [Eastern Collective; own units/resources] ── Team Red
+Human D ─ Seat D ───── controls Force 3 [Phoenix Initiative; own units/resources] ── Team Blue
 ```
 
 Teams determine initial joint victory and friendly-fire policy; treaties create additional, possibly temporary, relationships between Forces or Teams.
@@ -32,9 +32,9 @@ Teams determine initial joint victory and friendly-fire policy; treaties create 
 | Last Stand             | Eliminated controller joins surviving ally force               | Friendly comeback mechanic             |
 | Observe                | Spectator seat, no commands, visibility policy                 | Watch/replay                           |
 
-Templates are built-in lobby shortcuts, not content files: they fill seats and teams from the map's spawns. The lobby exposes a number of human/AI seats, force slots, team assignments, factions, optional starting eras, resource presets, map, allowed treaties, friendly-fire, victory type and eliminated-player policy. The host chooses whether teams are locked, dynamic diplomacy is enabled, and whether helping a surviving ally is possible. Lobby validates map spawn capacity, faction/ruleset compatibility and content hash before ready-state is accepted.
+Templates are built-in lobby shortcuts, not content files: they fill seats and teams from the map's spawns. The lobby exposes a number of human/AI seats, force slots, team assignments, factions, optional starting eras, starting resources, map, allowed treaties, friendly-fire, victory type and eliminated-player policy. The host chooses whether teams are locked, dynamic diplomacy is enabled, and whether helping a surviving ally is possible. Lobby validates map spawn capacity, faction/ruleset compatibility and content hash before ready-state is accepted.
 
-**Default friendly match:** Private room code, guest display name, one force per player initially, allow explicit Shared Command seats, fixed teams, post-defeat request-assist, team-only fog. **Default competitive preset:** locked teams, post-defeat team-limited spectator, no control transfers not predeclared, no omniscient observer during live play.
+**Default friendly match:** Private room code, guest display name, one force per player initially, allow explicit Shared Command seats, fixed teams, post-defeat request-assist, team-only fog. **Default competitive match:** locked teams, post-defeat team-limited spectator, no control transfers not predeclared, no omniscient observer during live play.
 
 ## 3. Command permissions and conflicts
 
@@ -56,7 +56,7 @@ Distinguish:
 
 **Information-integrity invariant:** A player who has been shown all-enemies omniscient spectator state is **never promoted** to an active Force in that match. Team spectators may see only a subset equivalent to their potential ally's visibility if assistance remains possible. Delayed omniscient replay/observer is safe only after permanent nonparticipation. A reconnect to the original seat does not override elimination status.
 
-**Host controls:** `postDefeatMode = disabled | spectateOnly | requestAllyAssist | preauthorizedAutoAssist`, `assistEligibleTeams`, `allowedScopes`, `autoGrantOnElimination`, `spectatorVision = team | delayedAll | allAfterGame`, and `allowReconnect`. Ranked preset locks these; custom lobbies show warnings for omniscient spectating or dynamic team switches.
+**Host controls:** `postDefeatMode = disabled | spectateOnly | requestAllyAssist | preauthorizedAutoAssist`, `assistEligibleTeams`, `allowedScopes`, `autoGrantOnElimination`, `spectatorVision = team | delayedAll | allAfterGame`, and `allowReconnect`. Ranked play locks these; custom lobbies show warnings for omniscient spectating or dynamic team switches.
 
 ## 5. Diplomacy
 

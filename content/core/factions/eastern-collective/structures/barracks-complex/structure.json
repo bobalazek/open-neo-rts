@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/barracks-complex",
   "name": "Barracks Complex",
   "description": "Large-scale infantry training: trains two at a time.",
+  "role": "production",
   "cost": {
     "credits": 500
   },
   "buildTime": 10,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "health": 1400,
   "armor": "structure",
   "footprint": [3, 2],

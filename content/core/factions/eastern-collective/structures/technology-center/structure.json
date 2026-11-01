@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/technology-center",
   "name": "Technology Center",
   "description": "Research and development. Unlocks tier 3.",
+  "role": "research",
   "cost": {
     "credits": 2400
   },
   "buildTime": 30,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/radar-tower"],
   "health": 1800,
   "armor": "structure",

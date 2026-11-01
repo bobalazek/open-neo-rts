@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/quantum-research-lab",
   "name": "Quantum Research Lab",
   "description": "Tech tree advancement and special ability research. Provides quantum processing, which every AFN research needs. Unlocks tier 3.",
+  "role": "research",
   "cost": {
     "credits": 2500
   },
   "buildTime": 30,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
   "health": 1500,
   "armor": "structure",

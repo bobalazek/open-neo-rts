@@ -8,19 +8,21 @@ How campaigns and missions are built is in [authoring-scenarios.md](../../contri
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│ ◂ Back                    CAMPAIGNS                                 │
+│ ◂ Back                    CAMPAIGNS                                │
 │                                                                    │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐            │
-│  │  [AFN art]   │   │  [EC art]    │   │  [PI art]    │            │
-│  │  AFN         │   │  EC          │   │  PI          │            │
-│  │  4/12 ★★☆    │   │  locked 🔒   │   │  0/12        │            │
-│  └──────────────┘   └──────────────┘   └──────────────┘            │
+│  ┌────────────────┐   ┌────────────────┐   ┌────────────────┐      │
+│  │ [faction art]  │   │ [faction art]  │   │ [faction art]  │      │
+│  │ Ghost Protocol │   │ Iron Dynasty   │   │ Phoenix Rising │      │
+│  │ Alliance of    │   │ Eastern        │   │ Phoenix        │      │
+│  │ Free Nations   │   │ Collective     │   │ Initiative     │      │
+│  │ 4/12 ★★☆       │   │ locked 🔒      │   │ 0/12           │      │
+│  └────────────────┘   └────────────────┘   └────────────────┘      │
 │                                                                    │
-│  Tutorial: Basic Training  ▸                 Difficulty [Normal ▾] │
+│ Tutorial: Basic Training  ▸                 Difficulty [Normal ▾]  │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-Each card shows the faction's progress and medals. Locked campaigns say what unlocks them. The tutorial campaign is always available.
+Each card is one faction's campaign ([story.md](../story.md#campaigns)), with its progress and medals. Locked campaigns say what unlocks them. The tutorial campaign is always available.
 
 ## Mission map
 
@@ -28,13 +30,14 @@ Each card shows the faction's progress and medals. Locked campaigns say what unl
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│ ◂ Campaigns          AFN · OPERATION GLASS SKY                      │
+│ ◂ Campaigns     GHOST PROTOCOL · Alliance of Free Nations          │
 │ ┌──────────────────────────────────────┐ ┌───────────────────────┐ │
-│ │   (stylized brick-built world map)    │ │ Mission 4: Cold Front │ │
-│ │                                       │ │ ★★☆  best 18:42       │ │
-│ │   ●1 ── ●2 ── ●3 ──◉4 ── ○5           │ │                       │ │
-│ │                 └── ○3b (optional)    │ │ Secure the dam before │ │
-│ │                                       │ │ EC reinforcements…    │ │
+│ │   (stylized brick-built world map)   │ │ Mission 4: Cold Front │ │
+│ │                                      │ │ ★★☆  best 18:42       │ │
+│ │   ●1 ── ●2 ── ●3 ──◉4 ── ○5          │ │                       │ │
+│ │                 └── ○3b (optional)   │ │ Secure the dam before │ │
+│ │                                      │ │ Eastern Collective    │ │
+│ │                                      │ │ reinforcements…       │ │
 │ └──────────────────────────────────────┘ │ [  Briefing ▸  ]      │ │
 │                                          └───────────────────────┘ │
 └────────────────────────────────────────────────────────────────────┘
@@ -50,15 +53,15 @@ Each card shows the faction's progress and medals. Locked campaigns say what unl
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│ ◂ Mission map            MISSION 4: COLD FRONT                      │
+│ ◂ Mission map            MISSION 4: COLD FRONT                     │
 │ ┌──────────────────────────┐  ┌──────────────────────────────────┐ │
-│ │ (animated briefing map:  │  │ [portrait] Cmdr. Vale:           │ │
+│ │ (animated briefing map:  │  │ [portrait] General Sarah Chen:   │ │
 │ │  camera pans, markers    │  │ "The dam is the only crossing…"  │ │
 │ │  appear as voice plays)  │  │                                  │ │
 │ └──────────────────────────┘  │ PRIMARY                          │ │
-│                               │ ◻ Capture the dam control room    │ │
-│                               │ ◻ Keep the convoy alive           │ │
-│                               │ SECONDARY                         │ │
+│                               │ ◻ Capture the dam control room   │ │
+│                               │ ◻ Keep the convoy alive          │ │
+│                               │ SECONDARY                        │ │
 │                               │ ◻ Destroy the radar in 10 min    │ │
 │                               └──────────────────────────────────┘ │
 │  Difficulty [Normal ▾]    Available units: [icons]   [ Start ▸ ]   │

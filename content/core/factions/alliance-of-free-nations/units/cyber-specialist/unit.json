@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/cyber-specialist",
   "name": "Cyber Specialist",
   "description": "Hacks enemy systems and reveals the battlefield.",
+  "role": "support",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {

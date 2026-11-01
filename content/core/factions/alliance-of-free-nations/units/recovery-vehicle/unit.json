@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/recovery-vehicle",
   "name": "Recovery Vehicle",
   "description": "Field repairs and wreck salvage.",
+  "role": "support",
   "family": "vehicle",
   "tags": ["vehicle", "engineer"],
   "cost": {

@@ -20,18 +20,19 @@ Weapons are defined **inline** in the unit or structure that carries them. A wea
 
 ## Weapon (the launcher)
 
-| Field        | Meaning                                                                                                                       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | Local name within the unit (`cannon`, `aa-missiles`)                                                                          |
-| `targets`    | What it may shoot: `ground`, `air`, `naval`, `structure`, `projectile` (point defence)                                        |
-| `range`      | Minimum and maximum range in cells (artillery has a minimum)                                                                  |
-| `reload`     | Seconds between shots or bursts                                                                                               |
-| `burst`      | Shots per burst and the delay between them (a three-round burst, a missile salvo)                                             |
-| `accuracy`   | Scatter radius in cells at maximum range, scaling down linearly when closer. 0 is perfect                                     |
-| `aim`        | `turret` (independent aim, needs a turret part), `forward` (the unit must face the target, with an arc in degrees), or `omni` |
-| `socket`     | Muzzle socket on the model it fires from (default `socket_muzzle`); alternating sockets for twin guns                         |
-| `projectile` | How the shot travels (below)                                                                                                  |
-| `warheads`   | What happens on impact (below)                                                                                                |
+| Field        | Meaning                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `id`         | Local name within the unit (`cannon`, `aa-missiles`)                                                                |
+| `targets`    | What it may shoot: `ground`, `air`, `naval`, `structure`, `projectile` (point defence)                              |
+| `range`      | Minimum and maximum range in cells (artillery has a minimum)                                                        |
+| `reload`     | Seconds between shots or bursts                                                                                     |
+| `burst`      | Shots per burst and the delay between them (a three-round burst, a missile salvo)                                   |
+| `accuracy`   | Scatter radius in cells at maximum range, scaling down linearly when closer. 0 is perfect                           |
+| `aim`        | `turret` (independent aim, needs a turret part), `forward` (the unit must face the target, within `arc`), or `omni` |
+| `arc`        | For `forward` aim: how many degrees the unit may be off-facing and still fire                                       |
+| `socket`     | Muzzle socket on the model it fires from (default `socket_muzzle`); alternating sockets for twin guns               |
+| `projectile` | How the shot travels (below)                                                                                        |
+| `warheads`   | What happens on impact (below)                                                                                      |
 
 ## Projectile (how the shot travels)
 
@@ -45,14 +46,14 @@ Weapons are defined **inline** in the unit or structure that carries them. A wea
 | `beam`    | Continuous while held on target; damage per tick                                                        | No                                                       | Flamethrowers, tesla arcs, nanite beams     |
 | `dropped` | Falls from an aircraft onto the point below                                                             | Yes                                                      | Bombs, airstrikes                           |
 
-| Field                    | Meaning                                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `speed`                  | Cells per second (not for `instant` and `beam`)                                                                   |
-| `gravity`                | For `arc` and `grenade`: how high the arc goes                                                                    |
-| `turnRate`, `flightTime` | For `missile`: steering in degrees per second, and seconds before it self-destructs                               |
-| `fuse`                   | For `grenade` (and optional for others): seconds between impact and detonation                                    |
-| `blockedBy`              | `terrain` (cliffs, high ground), `structures`, `units`; arcing and dropped projectiles ignore blockers on the way |
-| `interceptable`          | Whether point defence can shoot it down (missiles and shells usually)                                             |
+| Field                    | Meaning                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `speed`                  | Cells per second (not for `instant` and `beam`)                                                                               |
+| `gravity`                | For `arc` and `grenade`: how high the arc goes                                                                                |
+| `turnRate`, `flightTime` | For `missile`: steering in degrees per second, and seconds before it self-destructs                                           |
+| `fuse`                   | For `grenade` (and optional for others): seconds between impact and detonation                                                |
+| `blockedBy`              | `terrain` (cliffs, high ground), `structures`, `units`; `arc`, `grenade` and `dropped` projectiles ignore blockers on the way |
+| `interceptable`          | Whether point defence can shoot it down (missiles and shells usually)                                                         |
 
 Projectiles are sim entities with integer position and velocity, integrated every tick; `instant` and `beam` shots are not entities. Hits use deterministic line traces in `sim/src/physics`.
 
@@ -68,6 +69,8 @@ A weapon has one or more warheads, applied in order when the projectile detonate
 | `slow`    | Reduces movement speed                                                 | `percent`, `duration`, `radius`                                  |
 | `reveal`  | Reveals the area (flares, sensor rounds)                               | `radius`, `duration`                                             |
 | `spawn`   | Leaves something behind (a mine field, a nanite cloud)                 | `unit`, `count`                                                  |
+
+Any warhead can carry `tags` (`explosive`, `fire`, `emp`, `energy`, `nanite`), which targets can resist ([below](#per-definition-resistances)).
 
 ### Single target or area
 
@@ -118,15 +121,15 @@ Health bands match: infantry 80–260, light vehicles 200–500, tanks 600–1,8
 
 The definition holds **base values** (damage, health, speed, reload, range). Everything else is a **modifier** applied on top:
 
-| Source                       | Example                                                  | Scope                        |
-| ---------------------------- | -------------------------------------------------------- | ---------------------------- |
-| Research                     | Smart Munitions: +10% damage for infantry and vehicles   | The Force, filtered by tags  |
-| Unit and structure abilities | Rally Broadcast: +15% damage within 8 cells for 20 s     | An area, a duration          |
-| Auras                        | Command APC: +10% damage within 5 cells                  | An area, while active        |
-| Commander powers             | A team-wide +20% damage for 30 s                         | The Force, or the whole team |
-| Veterancy                    | +10% damage and health per rank                          | That unit                    |
-| Adjacency                    | +10% power output per adjacent reactor                   | That structure               |
-| Situation                    | Armour facing (side 125%, rear 150%), cover, high ground | That hit                     |
+| Source                       | Example                                                        | Scope                        |
+| ---------------------------- | -------------------------------------------------------------- | ---------------------------- |
+| Research                     | Smart Munitions: +10% damage for infantry and vehicles         | The Force, filtered by tags  |
+| Unit and structure abilities | Rally Broadcast: +15% damage and speed within 8 cells for 20 s | An area, a duration          |
+| Auras                        | Command APC: +10% damage within 5 cells                        | An area, while active        |
+| Commander powers             | A team-wide +20% damage for 30 s                               | The Force, or the whole team |
+| Veterancy                    | +10% damage and health per rank                                | That unit                    |
+| Adjacency                    | +10% power output per adjacent reactor                         | That structure               |
+| Situation                    | Armour facing (side 125%, rear 150%), cover, high ground       | That hit                     |
 
 **Stacking rules** (deterministic, integer per-mille):
 
@@ -156,7 +159,7 @@ damage = floor( amount
 - **Tooltips and the Field Manual** show base values, the current modified values, and a breakdown on hover (base 60, research +10%, Rally Broadcast +15%, = 75).
 - The **balance report** lists the same pre-computed tables for every unit, plus time-to-kill against every other unit.
 
-**Friendly fire.** Off for direct hits; splash follows the match setting ([match-rules.md](match-rules.md)).
+**Friendly fire.** Off for direct hits. Splash follows the match setting ([match-rules.md](match-rules.md)), unless the warhead sets `friendlyFire`, which overrides it.
 
 ## Example
 

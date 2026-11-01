@@ -1,10 +1,10 @@
 # Modding
 
-A mod is a **content pack**: the same JSON definitions, assets, maps and locales the official game uses ([content-pipeline.md](content-pipeline.md)). There is no mod scripting; anything a mod can do, the official content does the same way.
+A mod is a **content pack**: the same JSON definitions, assets, maps and translations the official game uses ([content-pipeline.md](content-pipeline.md)). There is no mod scripting; anything a mod can do, the official content does the same way.
 
 ## What a mod can do
 
-- Add units, structures, weapons, abilities, techs, factions, maps, campaigns, biomes and languages.
+- Add units and structures (with their weapons, abilities and research inline), factions, maps, campaigns, biomes and languages.
 - Change existing definitions through **overrides**: a mod declares which base definitions it patches and how (field-level patches, validated like everything else).
 - Add new eras built on the same rule modules.
 
@@ -13,15 +13,23 @@ What it can't do: run code, change engine behaviour, or override UI strings and 
 ## Pack structure
 
 ```text
-my-mod/
-├── manifest.json        id, name, version, authors, licence, engine range, dependencies
-├── factions/<faction>/{faction.json, units/<name>/, structures/<name>/}
-├── maps/   campaigns/   locales/
-└── assets/              with assets.json per folder
+content/my-mod/
+├── manifest.json                  id, name, version, authors, licence, engine range, dependencies
+├── factions/<faction>/
+│   ├── faction.json
+│   ├── units/<name>/              unit.json, its assets and assets.json
+│   └── structures/<name>/         structure.json, its assets and assets.json
+├── neutral/structures/<name>/     faction-agnostic structures
+├── props/<biome>/<name>/          map objects: prop.json and its model
+├── maps/<name>/
+├── campaigns/<name>/
+└── locales/<lang>.json            translations only
 ```
 
+Assets sit next to the definition that uses them, as in `core` ([content-format.md](../contributing/content-format.md#layout)).
+
 - `manifest.json` declares the **engine version range** and **dependencies** (other packs with version ranges). Load order is resolved deterministically from dependencies, then by ID.
-- IDs are namespaced by pack (`mymod.unit:hovertank`) so mods can't collide.
+- IDs are namespaced by pack (`my-mod.unit:<faction>/hovertank`) so mods can't collide.
 
 ## Loading
 

@@ -4,18 +4,18 @@ Every match answers three questions: what are the players trying to do, when is 
 
 ## Game modes
 
-| Mode                      | Win by                                                                           | Notes                                                                       |
-| ------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Last Man Standing**     | Eliminating every opposing team (conquest)                                       | The default skirmish and multiplayer mode                                   |
-| **Wonder Race**           | Being the first team to complete a wonder and keep it standing for the countdown | Conquest still wins too. See [Wonders](#wonders)                            |
-| **Territorial Control**   | Holding the map's quantum computing facilities for a set time                    | Facilities are neutral structures captured by builders; the map places them |
-| **Economic Dominance**    | Controlling 70% of the map's resource nodes for a set time                       | Nodes are captured by builders and lost when an enemy recaptures them       |
-| **Technical Superiority** | Researching every tier-4 technology of your faction and firing your superweapon  | Superweapons must be enabled                                                |
-| **Score**                 | Highest score when the time limit ends                                           | Score counts destruction, economy and objectives                            |
-| **Survival**              | Surviving a set number of waves against attacking bots                           | Co-op against bots                                                          |
-| **Mission**               | Completing a campaign or scenario's primary objectives                           | Campaigns and custom scenarios                                              |
+| Mode                      | Win by                                                                           | Notes                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Last Man Standing**     | Eliminating every opposing team                                                  | The default skirmish and multiplayer mode                                                                                  |
+| **Wonder Race**           | Being the first team to complete a wonder and keep it standing for the countdown | Eliminating every opponent still wins too. See [Wonders](#wonders)                                                         |
+| **Territorial Control**   | Holding the map's quantum computing facilities for a set time                    | Facilities are neutral structures captured by builders; the map places them                                                |
+| **Economic Dominance**    | Controlling 70% of the map's resource nodes for a set time                       | A node counts while you own the structure on it ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)) |
+| **Technical Superiority** | Researching every tier-4 technology of your faction and firing your superweapon  | Superweapons must be enabled                                                                                               |
+| **Score**                 | Highest score when the time limit ends                                           | Score counts destruction, economy and objectives                                                                           |
+| **Survival**              | Surviving a set number of waves against attacking bots                           | Co-op against bots                                                                                                         |
+| **Mission**               | Completing a campaign or scenario's primary objectives                           | Campaigns and custom scenarios                                                                                             |
 
-- A mode can be combined with conquest: in every mode except Survival and Mission, eliminating all opponents also wins.
+- In every mode except Survival and Mission, eliminating all opponents also wins.
 - Timed goals show a countdown to every player, and are announced when a team starts one, so nobody loses by surprise.
 - The map limits the choice: Territorial Control needs facilities on the map, and Economic Dominance needs enough resource nodes. The lobby only offers modes the map supports.
 - Under dynamic diplomacy, who shares a win follows [multiplayer.md §5](multiplayer.md#5-diplomacy). A temporary ceasefire never shares a victory.
@@ -48,7 +48,7 @@ A **team** is defeated when all its Forces are eliminated, unless it wins anothe
 ## Capturing
 
 - **Structures** can be destroyed, or **captured by builders** where the rules allow. A captured structure changes owner and keeps working for the new Force.
-- **Neutral objectives** (quantum computing facilities, resource nodes, tech buildings) are captured the same way and count towards Territorial Control and Economic Dominance ([neutrals-and-map-objects.md](neutrals-and-map-objects.md)).
+- **Neutral objectives** (quantum computing facilities, structures on resource nodes, tech buildings) are captured the same way and count towards Territorial Control and Economic Dominance ([neutrals-and-map-objects.md](neutrals-and-map-objects.md)).
 
 ## Missions and objectives
 

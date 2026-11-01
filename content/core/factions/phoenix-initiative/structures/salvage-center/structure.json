@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/salvage-center",
   "name": "Salvage Center",
   "description": "Processes battlefield debris and ore into credits, materials and salvage points. Drop-off for Salvage Crawlers. Comes with one Salvage Crawler.",
+  "role": "dropoff",
   "cost": {
     "credits": 1300
   },
   "buildTime": 16,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 1400,
   "armor": "structure",
   "footprint": [3, 3],

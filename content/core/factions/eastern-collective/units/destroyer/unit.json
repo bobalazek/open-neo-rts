@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/destroyer",
   "name": "Destroyer",
   "description": "All-round warship with depth charges and shore bombardment. (Addition.)",
+  "role": "combat",
   "family": "naval",
   "tags": ["naval"],
   "cost": {
@@ -23,31 +24,52 @@
   "weapons": [
     {
       "id": "naval-gun",
-      "damageType": "explosive",
-      "damage": 70,
+      "targets": ["ground", "naval", "structure"],
       "range": [0, 12],
       "reload": 3,
       "projectile": {
-        "kind": "ballistic",
+        "kind": "arc",
         "speed": 14
       },
-      "targets": ["ground", "naval", "structure"],
-      "splash": {
-        "radius": 1,
-        "edgePercent": 40
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 70,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 1,
+          "falloff": [100, 40],
+          "tags": ["explosive"]
+        }
+      ]
     },
     {
       "id": "torpedo",
-      "damageType": "armorPiercing",
-      "damage": 120,
+      "targets": ["naval"],
       "range": [0, 8],
       "reload": 5,
       "projectile": {
-        "kind": "direct",
+        "kind": "bullet",
         "speed": 8
       },
-      "targets": ["naval"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 120,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80
+          }
+        }
+      ]
     }
   ],
   "presentation": {

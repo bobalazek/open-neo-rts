@@ -23,7 +23,7 @@ Short form: PI. Content folder: [content/core/factions/phoenix-initiative/](../.
 
 ## Builder
 
-**Nanite Constructor**, the world document's "mobile repair and building unit". Built at the Command Node. Builds every structure on site, repairs, rebuilds wrecks into working Phoenix vehicles, and contributes to wonders. Salvage Experts can also repair and capture, but don't build.
+**Nanite Constructor**, the original world design's "mobile repair and building unit". Built at the Command Node. Builds every structure on site, repairs, rebuilds wrecks into working Phoenix vehicles, and contributes to wonders. Salvage Experts can also repair and capture, but don't build.
 
 ## Structures
 
@@ -83,7 +83,7 @@ Command Node (mobile) ── Nanite Constructor
 
 ## Commander powers
 
-From the world document: **guerrilla operations** and **market manipulation**.
+From the original world design ([story.md](../story.md)): **guerrilla operations** and **market manipulation**.
 
 | Power                    | Unlocked by      | Effect                                                                                                  |
 | ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------- |

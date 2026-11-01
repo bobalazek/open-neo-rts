@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/guerrilla-bunker",
   "name": "Guerrilla Bunker",
   "description": "Hidden defensive position; garrison 4 infantry.",
+  "role": "defense",
   "cost": {
     "credits": 600
   },
   "buildTime": 10,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 1400,
   "armor": "structure",
   "footprint": [2, 2],

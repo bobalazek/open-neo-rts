@@ -1,6 +1,6 @@
 # Match rules and settings
 
-Almost everything about a match is configurable. Rules are data with defaults, and a host can override them per match: in single-player skirmish, in multiplayer lobbies, and in presets.
+Almost everything about a match is configurable. Rules are data with defaults, and a host can override them per match, in single-player skirmish and in multiplayer lobbies.
 
 ## Configuration layers
 
@@ -8,7 +8,7 @@ Each layer overrides the one before it:
 
 ```text
 Engine hard limits         safety ceilings, never exceeded (below)
-  → Setting defaults       defined in code; packs may override defaults and ranges (rules/settings.json)
+  → Setting defaults       defined in code; packs may override defaults and ranges (`packages/content/src/rules/settings.ts`)
     → Map                  player count, spawns, start mode
       → Lobby choices      the host's settings, within the allowed ranges
         → Per-Force        handicaps and per-Force limits
@@ -21,35 +21,35 @@ Engine hard limits         safety ceilings, never exceeded (below)
 
 ## Settings
 
-| Group              | Setting                                                                            | Default (standard)                      | Scope                                                          |
-| ------------------ | ---------------------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------- |
-| **Caps**           | Population cap                                                                     | 200 per Force (150 with 5+ Forces)      | Match, per faction, per Force                                  |
-|                    | Population cost per unit                                                           | From content                            | Per unit (content)                                             |
-|                    | Structure cap                                                                      | 150 (walls count ¼)                     | Match, per faction, per Force                                  |
-|                    | Per-type limits                                                                    | 1 strategic structure; unlimited others | Per unit or structure type                                     |
-|                    | Max tech tier                                                                      | 4                                       | Match                                                          |
-|                    | Banned units and structures                                                        | None                                    | List                                                           |
-| **Economy**        | Starting resources                                                                 | Standard                                | Match, per Force                                               |
-|                    | Income multiplier                                                                  | 100%                                    | Match, per Force (handicap)                                    |
-|                    | Resource node richness                                                             | Normal                                  | Match                                                          |
-|                    | Team resource sharing                                                              | Transfers allowed                       | Match                                                          |
-|                    | Upkeep                                                                             | Off                                     | Match                                                          |
-| **Speed**          | Game speed                                                                         | Normal                                  | Match (single player: live)                                    |
-|                    | Build and research speed                                                           | 100%                                    | Match                                                          |
-|                    | Peace timer (no attacks)                                                           | Off                                     | Match                                                          |
-|                    | Time limit                                                                         | None                                    | Match                                                          |
-| **Combat**         | Friendly fire                                                                      | Splash only                             | Match                                                          |
-|                    | Veterancy                                                                          | On                                      | Match                                                          |
-|                    | Commander powers                                                                   | On                                      | Match                                                          |
-|                    | Strategic structures                                                               | On                                      | Match                                                          |
-|                    | Wreck decay                                                                        | After 500 wrecks                        | Match                                                          |
-| **Map and vision** | Fog                                                                                | Standard                                | Match                                                          |
-|                    | Starting positions                                                                 | Fixed                                   | Match                                                          |
-| **Victory**        | Conditions and parameters                                                          | Conquest                                | Match ([objectives-and-victory.md](objectives-and-victory.md)) |
-|                    | Elimination rule                                                                   | Annihilation                            | Match                                                          |
-| **Teams**          | Diplomacy mode, post-defeat policy, Shared Command grants, leave/disconnect policy | Lobby                                   | Match ([multiplayer.md](multiplayer.md))                       |
-| **Bots**           | Difficulty, personality, handicap                                                  | Normal                                  | Per bot                                                        |
-| **Rule modules**   | Territory, supply, trade, wonders, eras                                            | Per profile                             | Match ([content-and-eras.md](content-and-eras.md))             |
+| Group              | Setting                                                                            | Default (standard)                 | Scope                                                          |
+| ------------------ | ---------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| **Caps**           | Population cap                                                                     | 200 per Force (150 with 5+ Forces) | Match, per faction, per Force                                  |
+|                    | Population cost per unit                                                           | From content                       | Per unit (content)                                             |
+|                    | Structure cap                                                                      | 150 (walls count ¼)                | Match, per faction, per Force                                  |
+|                    | Per-type limits                                                                    | 1 superweapon; unlimited others    | Per unit or structure type                                     |
+|                    | Max tech tier                                                                      | 4                                  | Match                                                          |
+|                    | Banned units and structures                                                        | None                               | List                                                           |
+| **Economy**        | Starting resources                                                                 | Standard                           | Match, per Force                                               |
+|                    | Income multiplier                                                                  | 100%                               | Match, per Force (handicap)                                    |
+|                    | Resource node richness                                                             | Normal                             | Match                                                          |
+|                    | Team resource sharing                                                              | Transfers allowed                  | Match                                                          |
+|                    | Upkeep                                                                             | Off                                | Match                                                          |
+| **Speed**          | Game speed                                                                         | Normal                             | Match (single player: live)                                    |
+|                    | Build and research speed                                                           | 100%                               | Match                                                          |
+|                    | Peace timer (no attacks)                                                           | Off                                | Match                                                          |
+|                    | Time limit                                                                         | None                               | Match                                                          |
+| **Combat**         | Friendly fire                                                                      | Splash only                        | Match                                                          |
+|                    | Veterancy                                                                          | On                                 | Match                                                          |
+|                    | Commander powers                                                                   | On                                 | Match                                                          |
+|                    | Superweapons                                                                       | On                                 | Match                                                          |
+|                    | Wreck decay                                                                        | After 500 wrecks                   | Match                                                          |
+| **Map and vision** | Fog                                                                                | Standard                           | Match                                                          |
+|                    | Starting positions                                                                 | Fixed                              | Match                                                          |
+| **Victory**        | Conditions and parameters                                                          | Last Man Standing                  | Match ([objectives-and-victory.md](objectives-and-victory.md)) |
+|                    | Elimination rule                                                                   | Annihilation                       | Match                                                          |
+| **Teams**          | Diplomacy mode, post-defeat policy, Shared Command grants, leave/disconnect policy | Lobby                              | Match ([multiplayer.md](multiplayer.md))                       |
+| **Bots**           | Difficulty, personality, handicap                                                  | Normal                             | Per bot                                                        |
+| **Rule modules**   | Territory, supply, trade, wonders, eras                                            | Off                                | Match ([content-and-eras.md](content-and-eras.md))             |
 
 Settings are defined once in code (`packages/content/src/rules/settings.ts`), each with a type, default, range and description. New settings don't need lobby UI work: the Advanced rules panel is generated from that list.
 
@@ -89,7 +89,7 @@ The sim always runs 20 ticks per _game_ second. Game speed changes how many tick
 
 - **Single player:** change speed any time from the HUD or with hotkeys (+ / −), and pause with the in-game menu.
 - **Multiplayer:** the speed is set in the lobby and fixed for the match. Pausing follows [in-game-menu.md](screens/in-game-menu.md).
-- **Editor playtest:** pause, step one tick, and up to 8×.
+- **Debug mode** (and the map editor playtest, which reuses it): pause, step one tick, ×0.25 to ×8 ([debug-mode.md](screens/debug-mode.md)).
 - **Replays:** 0.5× to 8×, with seeking.
 - Timers, cooldowns and the match clock always show game time.
 

@@ -3,12 +3,12 @@
   "id": "structure:phoenix-initiative/black-market-hub",
   "name": "Black Market Hub",
   "description": "Access to special units, upgrades, market manipulation and the black-market superweapon.",
+  "role": "support",
   "tags": ["superweapon"],
   "cost": {
     "credits": 1500
   },
   "buildTime": 18,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "requires": ["structure:phoenix-initiative/research-bunker"],
   "health": 1200,
   "armor": "structure",

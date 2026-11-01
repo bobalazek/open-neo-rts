@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/radar-tower",
   "name": "Radar Tower",
   "description": "Early warning with jamming. Unlocks tier 2 and the EMP Blackout power.",
+  "role": "support",
   "cost": {
     "credits": 1200
   },
   "buildTime": 15,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "health": 1300,
   "armor": "structure",
   "footprint": [2, 2],

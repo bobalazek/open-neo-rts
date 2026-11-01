@@ -14,15 +14,15 @@ A list like [Load game](load-game.md): map thumbnail, mode, players and factions
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │ IRON VALLEY · 2v2 · 34:12            Vision: [ All ▾ | Mara | Ozzy | … ]  ✕   │
 │ ┌ PLAYERS ──────────────────────────────────────────────────────────────────┐ │
-│ │ Mara+Bob AFN  ◉4 820 ▲1 240  army 12 400  [prod: ▣▣▣]                      │ │
-│ │ Ozzy PI       ◉2 100 ▲  900  army  8 900  [prod: ▣▣]                       │ │
+│ │ Mara+Bob  Alliance of Free Nations  ◉4 820 ▲1 240 army 12 400 [prod: ▣▣▣] │ │
+│ │ Ozzy      Phoenix Initiative        ◉2 100 ▲  900 army  8 900 [prod: ▣▣]  │ │
 │ └───────────────────────────────────────────────────────────────────────────┘ │
 │                                                                               │
 │                         (3D battlefield, free camera)                         │
 │                                                                               │
-│ ┌──────────┐                                                                   │
+│ ┌──────────┐                                                                  │
 │ │ MINIMAP  │  ◂◂  ▶ ❚❚  ▸▸  1×▾  ────────●───────────────── 12:41 / 34:12     │
-│ └──────────┘         event markers on the timeline: ⚔ fights · ✖ eliminations  │
+│ └──────────┘         event markers on the timeline: ⚔ fights · ✖ eliminations │
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 

@@ -4,13 +4,13 @@ Because the sim is deterministic, saving is simple: a match is fully described b
 
 ## What gets stored
 
-| Kind               | Contents                                                                                                                     | Used for                               |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **Snapshot**       | Full canonical sim state at a tick: entities and components, feature tables, PRNG states, tick, pending commands, state hash | Save games, reconnect, seeking replays |
-| **Command log**    | Match setup (profile, pack and map hashes, seed, seats) plus every accepted command with its tick                            | Replays, debugging, determinism tests  |
-| **Replay file**    | Command log plus periodic snapshot keyframes (e.g. every 60 s)                                                               | Watching with fast seek                |
-| **Profile save**   | Settings, campaign progress, unlocked missions, stats                                                                        | Player progress, not sim state         |
-| **Campaign state** | World-map regions, ownership, diplomacy, persistent modifiers                                                                | The Conquer the World layer            |
+| Kind               | Contents                                                                                                                      | Used for                               |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **Snapshot**       | Full canonical sim state at a tick: entities and components, feature tables, PRNG states, tick, pending commands, state hash  | Save games, reconnect, seeking replays |
+| **Command log**    | Match setup (packs and their hashes, map and its hash, seed, seats, match settings) plus every accepted command with its tick | Replays, debugging, determinism tests  |
+| **Replay file**    | Command log plus periodic snapshot keyframes (e.g. every 60 s)                                                                | Watching with fast seek                |
+| **Profile save**   | Settings, campaign progress, unlocked missions, stats                                                                         | Player progress, not sim state         |
+| **Campaign state** | World-map regions, ownership, diplomacy, persistent modifiers                                                                 | The Conquer the World layer            |
 
 Every file carries a header: format version, sim version, pack IDs, versions and hashes, map hash, and creation time. (Wall-clock time is fine here; it's metadata, not sim state.)
 
@@ -36,7 +36,7 @@ Every file carries a header: format version, sim version, pack IDs, versions and
 
 ## Version compatibility
 
-- Snapshots use **versioned component serialization**. A snapshot from an older sim version is either migrated (when migrations exist for every step) or refused with a clear message, never loaded wrong.
+- Snapshots use **versioned component serialization**: a snapshot embeds each component's field layout, and a changed layout is rejected on load unless a migration exists. Changing a layout needs a simulation version bump. A snapshot from an older sim version is either migrated (when migrations exist for every step) or refused with a clear message, never loaded wrong.
 - Campaign progress and profile saves use their own small schema with migrations, independent of the sim version, so a game update never wipes progress.
 
 ## Tests

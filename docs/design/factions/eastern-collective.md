@@ -90,7 +90,7 @@ Command Center ── Field Technician
 
 ## Commander powers
 
-From the world document: **mass production surges** and **EMP blackouts**.
+From the original world design ([story.md](../story.md)): **mass production surges** and **EMP blackouts**.
 
 | Power                 | Unlocked by        | Effect                                                                         |
 | --------------------- | ------------------ | ------------------------------------------------------------------------------ |

@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/cyber-operations-center",
   "name": "Cyber Operations Center",
   "description": "Enables cyber warfare and electronic countermeasures. Unlocks tier 2 and the Cyber Attack power.",
+  "role": "support",
   "cost": {
     "credits": 1500
   },
   "buildTime": 18,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "health": 1400,
   "armor": "structure",
   "footprint": [2, 3],

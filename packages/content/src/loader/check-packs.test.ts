@@ -71,6 +71,68 @@ function pack(overrides: Record<string, unknown> = {}): PackInput {
   return { id: "core", files: [...json.keys()], json };
 }
 
+const FACTION = "factions/eastern-collective/faction.json";
+const HQ = "factions/eastern-collective/structures/command-center/structure.json";
+const BUILDER = "factions/eastern-collective/units/field-technician/unit.json";
+const HQ_ID = "structure:eastern-collective/command-center";
+
+function factionPack(hqRole = "headquarters", builderAt = HQ_ID): PackInput {
+  return pack({
+    "manifest.json": {
+      ...manifest,
+      files: { factions: [FACTION], units: [UNIT, BUILDER], structures: [STRUCTURE, HQ] },
+    },
+    [FACTION]: {
+      $schema: schemaRef(FACTION, "faction"),
+      id: "faction:eastern-collective",
+      name: "Eastern Collective",
+      description: "Test faction.",
+      color: "#d8443a",
+      start: { structures: [HQ_ID], units: [], resources: { credits: 5000 } },
+      ai: { personality: "test" },
+    },
+    [HQ]: { ...structure, $schema: schemaRef(HQ, "structure"), id: HQ_ID, role: hqRole },
+    [BUILDER]: unit(["socket_muzzle"], {
+      $schema: schemaRef(BUILDER, "unit"),
+      id: "unit:eastern-collective/field-technician",
+      role: "builder",
+      producedBy: [builderAt],
+    }),
+  });
+}
+
+const MAP = "maps/test-map/map.json";
+
+function mapPack(extra: Record<string, unknown> = {}, layers = new Map<string, Uint8Array>()) {
+  const p = pack({
+    "manifest.json": { ...manifest, files: { ...manifest.files, maps: [MAP] } },
+    [MAP]: {
+      $schema: schemaRef(MAP, "map"),
+      id: "map:test-map",
+      name: "Test Map",
+      description: "A small test map.",
+      size: { width: 32, height: 32 },
+      biome: "temperate",
+      players: { min: 2, max: 2 },
+      spawns: [
+        { id: "west", position: [4, 16], facing: 90 },
+        { id: "east", position: [28, 16], facing: 270 },
+      ],
+      start: "faction",
+      resources: [{ kind: "ore", position: [16, 8], amount: 1000, radius: 4 }],
+      objects: [
+        {
+          definition: "structure:eastern-collective/barracks-complex",
+          position: [16, 28],
+          owner: "east",
+        },
+      ],
+      ...extra,
+    },
+  });
+  return { ...p, layers };
+}
+
 const errors = (p: PackInput) =>
   checkPacks([p])
     .issues.filter((i) => i.level === "error")
@@ -108,5 +170,70 @@ describe("checkPacks", () => {
   test("requires a role", () => {
     const { role: _, ...noRole } = unit(["socket_muzzle"]);
     expect(errors(pack({ [UNIT]: noRole }))).toContain("$.role is required");
+  });
+  test("cell rows must match the footprint", () => {
+    const fits = { ...structure, cells: ["lll", "sss"] };
+    const short = { ...structure, cells: ["lll", "ss"] };
+    expect(errors(pack({ [STRUCTURE]: fits }))).toEqual([]);
+    expect(errors(pack({ [STRUCTURE]: short }))).toContain(
+      "cells must be 2 rows of 3 letters, matching footprint",
+    );
+  });
+  test("a faction with one headquarters and a builder trained there is valid", () => {
+    expect(errors(factionPack())).toEqual([]);
+  });
+  test("a faction needs exactly one headquarters", () => {
+    expect(errors(factionPack("production"))).toContain(
+      "needs exactly one headquarters structure, has 0",
+    );
+  });
+  test("a faction's builder must be trained at its headquarters", () => {
+    expect(
+      errors(factionPack("headquarters", "structure:eastern-collective/barracks-complex")),
+    ).toContain("needs a builder unit trained at its headquarters");
+  });
+  test("a map keeps spawns, resource fields and objects 4 cells from the edge", () => {
+    expect(errors(mapPack())).toEqual([]);
+    const near = mapPack({
+      spawns: [
+        { id: "west", position: [3, 16], facing: 90 },
+        { id: "east", position: [28, 16], facing: 270 },
+      ],
+      resources: [{ kind: "ore", position: [16, 7], amount: 1000, radius: 4 }],
+      objects: [
+        {
+          definition: "structure:eastern-collective/barracks-complex",
+          position: [16, 29],
+          owner: "neutral",
+        },
+      ],
+    });
+    expect(errors(near)).toEqual([
+      'spawn "west" is closer than 4 cells to the map edge',
+      "resource at [16,7] is closer than 4 cells to the map edge",
+      'object "structure:eastern-collective/barracks-complex" is closer than 4 cells to the map edge',
+    ]);
+  });
+  test("map layers must exist and be one byte per cell", () => {
+    const layers = { height: "height.r8", water: "water.r8" };
+    const bytes = (n: number) => new Uint8Array(n);
+    expect(
+      errors(mapPack({ layers }, new Map([["maps/test-map/height.r8", bytes(1024)]]))),
+    ).toEqual(['layers.water "water.r8" doesn\'t exist']);
+    const short = new Map([
+      ["maps/test-map/height.r8", bytes(1024)],
+      ["maps/test-map/water.r8", bytes(1000)],
+    ]);
+    expect(errors(mapPack({ layers }, short))).toEqual([
+      "layers.water is 1000 bytes, expected 32 × 32 = 1024",
+    ]);
+  });
+  test("reports terrain errors in map layers", () => {
+    const height = new Uint8Array(1024);
+    height[33] = 9;
+    const layers = new Map([["maps/test-map/height.r8", height]]);
+    expect(errors(mapPack({ layers: { height: "height.r8" } }, layers))).toEqual([
+      "level above 7 at (1, 1)",
+    ]);
   });
 });

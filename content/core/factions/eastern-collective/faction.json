@@ -8,6 +8,10 @@
     "structures": ["structure:eastern-collective/command-center"],
     "units": [
       {
+        "unit": "unit:eastern-collective/field-technician",
+        "count": 2
+      },
+      {
         "unit": "unit:eastern-collective/supply-truck",
         "count": 1
       },

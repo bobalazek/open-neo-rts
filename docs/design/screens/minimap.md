@@ -1,6 +1,6 @@
 # Minimap
 
-The most-used piece of the HUD: it's where players notice attacks, plan moves and jump the camera. **Phase:** basic minimap in phase 1b, alerts and pings in phase 2, overlays in phase 3–4.
+The most-used piece of the HUD: it's where players notice attacks, plan moves and jump the camera. **Phase:** basic minimap, alerts and pings in phase 2 ([roadmap](../../project/roadmap.md#what-each-phase-builds)), overlays in phase 3–4.
 
 **Position:** bottom left of the [match HUD](match-hud.md). Square, 220 px at 100% UI scale, scalable with the UI scale setting. The map is rotated to match the camera's default orientation.
 

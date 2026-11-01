@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/mercenary-camp",
   "name": "Mercenary Camp",
   "description": "Recruits specialised mercenaries.",
+  "role": "production",
   "cost": {
     "credits": 1000
   },
   "buildTime": 14,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "requires": ["structure:phoenix-initiative/research-bunker"],
   "health": 1000,
   "armor": "structure",

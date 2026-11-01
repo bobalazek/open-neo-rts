@@ -17,7 +17,7 @@ Single player   Multiplayer    Map editor     Replays    Field      Settings   C
    │  (later) ─┤               │       │
    └─ Load ────┤               │       │
                ▼               ▼       ▼
-             Loading ──► Match HUD (+ playtest tools in the editor) ──► Post-match ──► back
+             Loading ──► Match HUD (+ debug mode tools in the editor playtest) ──► Post-match ──► back
                              │
                              └─ In-game menu (Esc) ─► Settings / Save / Load / Leave
 ```
@@ -39,8 +39,9 @@ Single player   Multiplayer    Map editor     Replays    Field      Settings   C
 | Replays and replay viewer                     | `/replays`, `/replay/:id`                 | [replays.md](replays.md)                       |
 | Map editor and playtest                       | `/editor`, `/editor/playtest`             | [map-editor.md](map-editor.md)                 |
 | Content editor and model viewer               | `/tools/content`                          | [content-editor.md](content-editor.md)         |
+| Debug mode (development builds)               | `/debug`                                  | [debug-mode.md](debug-mode.md)                 |
 
-Routes are real URLs in the web build, so screens can be deep-linked (e.g. PR previews link straight into `/editor/playtest?spawn=unit:panther`).
+Routes are real URLs in the web build, so screens can be deep-linked (e.g. PR previews link straight into `/debug?map=core.map:training-grounds&spawn=core.unit:eastern-collective/dragon-tank@40,12`, see [debug-mode.md](debug-mode.md#how-it-stays-honest)).
 
 ## UI look
 
@@ -58,6 +59,6 @@ The UI matches the blocky, toy-brick world ([art-and-audio.md](../art-and-audio.
 - **Navigation:** Esc or Back always returns to the previous screen. Screens never trap the player.
 - **Keyboard and controller-friendly focus:** every control is reachable by keyboard with a visible focus ring.
 - **States:** every screen defines its loading, empty and error states. Errors say what went wrong and what to do next.
-- **Text:** all strings come from locale files. Layouts must survive 30% longer strings.
+- **Text:** no hard-coded strings: interface text comes from the client's locale files, and content names from the definitions or their translations ([localization.md](../../engineering/localization.md)). Layouts must survive 30% longer strings.
 - **Scaling:** layouts work from 1280×720 up to ultrawide, and with UI scale from 75% to 150%.
-- **Tech:** React components in `apps/web/src/features/<screen>/`. Screens read state, and send commands or service calls; they never touch the sim directly.
+- **Tech:** React components in `packages/client/src/features/<screen>/`. Screens read state, and send commands or service calls; they never touch the sim directly.

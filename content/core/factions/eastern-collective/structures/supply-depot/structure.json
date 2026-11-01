@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/supply-depot",
   "name": "Supply Depot",
   "description": "Drop-off point for Supply Trucks. Comes with one Supply Truck. (Addition.)",
+  "role": "dropoff",
   "cost": {
     "credits": 1600
   },
   "buildTime": 18,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "health": 1800,
   "armor": "structure",
   "footprint": [3, 3],

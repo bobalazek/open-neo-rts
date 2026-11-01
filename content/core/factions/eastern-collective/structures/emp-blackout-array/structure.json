@@ -3,12 +3,12 @@
   "id": "structure:eastern-collective/emp-blackout-array",
   "name": "EMP Blackout Array",
   "description": "Superweapon: a city-scale EMP that disables everything in a huge area. Announced to every player when built. (Addition, after Operation Blackout.)",
+  "role": "superweapon",
   "tags": ["superweapon"],
   "cost": {
     "credits": 5000
   },
   "buildTime": 90,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/emp-research-lab"],
   "health": 3500,
   "armor": "structure",

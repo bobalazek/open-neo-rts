@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/panther-mbt",
   "name": "Panther MBT",
   "description": "Main battle tank with adaptive armour.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "heavy",
   "movement": {
     "domain": "tracked",
-    "speed": 2.0
+    "speed": 2
   },
   "radius": 0.8,
   "vision": 8,
@@ -24,14 +25,23 @@
   "weapons": [
     {
       "id": "railgun",
-      "damageType": "armorPiercing",
-      "damage": 110,
+      "targets": ["ground"],
       "range": [0, 9],
       "reload": 3.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 110,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80
+          }
+        }
+      ]
     }
   ],
   "turret": {

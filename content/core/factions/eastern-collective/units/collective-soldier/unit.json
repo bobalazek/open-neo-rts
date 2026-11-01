@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/collective-soldier",
   "name": "Collective Soldier",
   "description": "Standard infantry with assault rifles. Cheap, trained in pairs.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -22,14 +23,26 @@
   "weapons": [
     {
       "id": "rifle",
-      "damageType": "smallArms",
-      "damage": 10,
+      "targets": ["ground"],
       "range": [0, 5],
       "reload": 1,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 10,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

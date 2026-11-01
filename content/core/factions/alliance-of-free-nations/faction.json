@@ -8,6 +8,10 @@
     "structures": ["structure:alliance-of-free-nations/command-hub"],
     "units": [
       {
+        "unit": "unit:alliance-of-free-nations/combat-engineer",
+        "count": 2
+      },
+      {
         "unit": "unit:alliance-of-free-nations/supply-drone",
         "count": 1
       },

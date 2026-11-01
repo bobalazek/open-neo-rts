@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/salvage-expert",
   "name": "Salvage Expert",
   "description": "Gathers salvage, repairs, captures, and rebuilds enemy wrecks into PI units.",
+  "role": "support",
   "family": "infantry",
   "tags": ["infantry", "engineer"],
   "cost": {

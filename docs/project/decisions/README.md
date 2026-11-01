@@ -22,6 +22,10 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-01 — Agent-made assets are credited to the owner](./2026-11-01-agent-made-asset-author.md) — Models, props and textures made by a coding agent at the owner's direction name Borut Balazek as author.
+- [2026-11-01 — Debug mode is the first visual milestone](./2026-11-01-debug-mode-first.md) — Phase 1b delivers a dev-only mode to spawn anything on any map and inspect the sim, with sandbox maps and end-to-end tests.
+- [2026-11-01 — First-pass models before the art sign-off](./2026-11-01-first-pass-models.md) — Hand-made blocky models for the tier-1 Eastern Collective roster, refined or replaced once the art direction is signed off.
+- [2026-11-01 — From phase 1, every task lands as one pull request](./2026-11-01-work-through-prs.md) — One task, one branch, one PR of one type, green CI before merge.
 - [2026-11-01 — Co-located content, rules in code](./2026-11-01-content-model.md) — Definitions own their weapons, abilities, strings and assets; resources, armour classes and roles are engine code.
 - [2026-11-01 — Weapon, projectile, warheads](./2026-11-01-weapon-model.md) — Attacks are a launcher, a projectile and warheads with per-armour multipliers, inline in each unit.
 - [2026-11-01 — Builders construct structures](./2026-11-01-builders.md) — Every faction has a builder role that constructs on site, repairs, captures and works on wonders.

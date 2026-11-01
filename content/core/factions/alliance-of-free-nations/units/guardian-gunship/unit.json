@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/guardian-gunship",
   "name": "Guardian Gunship",
   "description": "Heavy air support with point-defence systems.",
+  "role": "combat",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {
@@ -24,25 +25,42 @@
   "weapons": [
     {
       "id": "chain-gun",
-      "damageType": "armorPiercing",
-      "damage": 25,
+      "targets": ["ground"],
       "range": [0, 6],
       "reload": 0.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 25,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80
+          }
+        }
+      ]
     },
     {
       "id": "point-defence",
-      "damageType": "antiAir",
-      "damage": 20,
+      "targets": ["projectile"],
       "range": [0, 4],
       "reload": 0.3,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["projectile"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 20,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     }
   ],
   "presentation": {

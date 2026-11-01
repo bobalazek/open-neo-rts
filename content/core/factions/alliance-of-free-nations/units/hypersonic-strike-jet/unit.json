@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/hypersonic-strike-jet",
   "name": "Hypersonic Strike Jet",
   "description": "Signature strike aircraft: one devastating run, then back to rearm.",
+  "role": "combat",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 12.0
+    "speed": 12
   },
   "radius": 0.9,
   "vision": 8,
@@ -24,18 +25,30 @@
   "weapons": [
     {
       "id": "bombs",
-      "damageType": "explosive",
-      "damage": 200,
+      "targets": ["ground", "structure"],
       "range": [0, 1],
       "reload": 6,
       "projectile": {
-        "kind": "delivered"
+        "kind": "dropped"
       },
-      "targets": ["ground", "structure"],
-      "splash": {
-        "radius": 2,
-        "edgePercent": 30
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 200,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 2,
+          "falloff": [100, 30],
+          "tags": ["explosive"]
+        }
+      ]
     }
   ],
   "ammo": 1,

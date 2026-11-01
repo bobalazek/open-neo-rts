@@ -3,6 +3,7 @@
   "id": "structure:alliance-of-free-nations/command-hub",
   "name": "Command Hub",
   "description": "Primary command centre. Builds structures and provides the minimap and radar.",
+  "role": "headquarters",
   "health": 3500,
   "armor": "structure",
   "footprint": [3, 3],

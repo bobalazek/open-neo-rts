@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/scorpion-tank",
   "name": "Scorpion Tank",
   "description": "Light tank with stealth while stationary.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -23,15 +24,24 @@
   "weapons": [
     {
       "id": "cannon",
-      "damageType": "armorPiercing",
-      "damage": 60,
+      "targets": ["ground"],
       "range": [0, 6],
       "reload": 2.5,
       "projectile": {
-        "kind": "direct",
+        "kind": "bullet",
         "speed": 20
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 60,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80
+          }
+        }
+      ]
     }
   ],
   "abilities": [

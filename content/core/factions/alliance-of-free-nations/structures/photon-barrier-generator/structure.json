@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/photon-barrier-generator",
   "name": "Photon Barrier Generator",
   "description": "Creates an energy shield that absorbs damage to nearby structures.",
+  "role": "defense",
   "cost": {
     "credits": 1800
   },
   "buildTime": 25,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
   "health": 1200,
   "armor": "structure",

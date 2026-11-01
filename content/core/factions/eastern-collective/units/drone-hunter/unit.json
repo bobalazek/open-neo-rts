@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/drone-hunter",
   "name": "Drone Hunter",
   "description": "Signature anti-air infantry: shreds drones and low aircraft.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -22,15 +23,23 @@
   "weapons": [
     {
       "id": "drone-shredder",
-      "damageType": "antiAir",
-      "damage": 25,
+      "targets": ["air"],
       "range": [0, 7],
       "reload": 1,
       "projectile": {
-        "kind": "direct",
+        "kind": "bullet",
         "speed": 30
       },
-      "targets": ["air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 25,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     }
   ],
   "presentation": {

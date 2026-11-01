@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/anti-air-matrix",
   "name": "Anti-Air Matrix",
   "description": "Anti-air defence with predictive targeting; also shoots down missiles.",
+  "role": "defense",
   "cost": {
     "credits": 900
   },
   "buildTime": 12,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "health": 1200,
   "armor": "structure",
   "footprint": [2, 2],
@@ -16,26 +16,45 @@
   "weapons": [
     {
       "id": "aa-missile",
-      "damageType": "antiAir",
-      "damage": 40,
+      "targets": ["air"],
       "range": [0, 8],
       "reload": 2,
       "projectile": {
-        "kind": "homing",
-        "speed": 25
+        "kind": "missile",
+        "speed": 25,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
       },
-      "targets": ["air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 40,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     },
     {
       "id": "point-defence",
-      "damageType": "antiAir",
-      "damage": 20,
+      "targets": ["projectile"],
       "range": [0, 5],
       "reload": 0.3,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["projectile"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 20,
+          "versus": {
+            "default": 0,
+            "aircraft": 150
+          }
+        }
+      ]
     }
   ],
   "presentation": {

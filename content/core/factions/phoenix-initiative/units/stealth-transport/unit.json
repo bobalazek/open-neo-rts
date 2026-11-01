@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/stealth-transport",
   "name": "Stealth Transport",
   "description": "Cloaked transport for 6 infantry.",
+  "role": "transport",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {
@@ -16,9 +17,9 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 5.0
+    "speed": 5
   },
-  "radius": 1.0,
+  "radius": 1,
   "vision": 8,
   "pop": 2,
   "weapons": [],

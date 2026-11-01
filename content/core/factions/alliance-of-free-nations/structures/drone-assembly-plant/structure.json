@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/drone-assembly-plant",
   "name": "Drone Assembly Plant",
   "description": "Produces aerial and ground drones and VTOL aircraft. Its pads rearm aircraft.",
+  "role": "production",
   "cost": {
     "credits": 1600
   },
   "buildTime": 18,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
   "health": 1600,
   "armor": "structure",
