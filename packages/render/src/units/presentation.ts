@@ -48,6 +48,7 @@ export function createEntityPresentation(
   let duration = 50;
   let frameAt = 0;
   let disposed = false;
+  let playbackRate = 1;
   let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
@@ -107,7 +108,8 @@ export function createEntityPresentation(
   function render(nowMs: number) {
     if (disposed) return;
     frameAt = nowMs;
-    const alpha = Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
+    const alpha =
+      playbackRate === 0 ? 1 : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
     for (const entity of entities.values()) {
       if (!entity.root || !entity.playback) continue;
       const a = entity.previous;
@@ -139,6 +141,7 @@ export function createEntityPresentation(
         entity.playback.play(clip);
         entity.clip = clip;
       }
+      entity.playback.setRate(playbackRate);
     }
   }
 
@@ -233,6 +236,12 @@ export function createEntityPresentation(
       await accepted;
     },
     render,
+    setPlaybackRate(rate: number) {
+      if (!Number.isFinite(rate) || rate < 0) throw new RangeError("Invalid playback rate");
+      playbackRate = rate;
+      if (rate === 0) for (const entity of entities.values()) entity.previous = entity.current;
+      render(frameAt);
+    },
     setForceColor(force: number, hex: string) {
       setTeamColor([], hex);
       colors.set(force, hex);

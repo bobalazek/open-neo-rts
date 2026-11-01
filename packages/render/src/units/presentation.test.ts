@@ -214,6 +214,13 @@ test("poses convert subcells to metres, follow ramps, and interpolate wrapped fa
     const south = Vector3.TransformNormal(Vector3.Forward(), tank.computeWorldMatrix(true));
     expect(south.x).toBeCloseTo(0);
     expect(south.z).toBeCloseTo(1);
+    layer.setPlaybackRate(0);
+    layer.render(200);
+    expect(tank.position.x).toBe(6);
+    expect(f.scene.animationGroups.every((group) => group.speedRatio === 0)).toBe(true);
+    layer.setPlaybackRate(8);
+    expect(f.scene.animationGroups.every((group) => group.speedRatio === 8)).toBe(true);
+    expect(() => layer.setPlaybackRate(-1)).toThrow("Invalid playback rate");
   } finally {
     layer.dispose();
     f.dispose();

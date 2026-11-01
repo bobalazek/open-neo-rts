@@ -97,6 +97,9 @@ export function createModelPlayback(
   );
   return {
     clips: groups.map((group) => group.name),
+    setRate(rate: number) {
+      for (const group of groups) group.speedRatio = rate;
+    },
     play(name: string): void {
       const group = groups.find((g) => g.name === name);
       if (name && !group) throw new RangeError(`No animation "${name}"`);
