@@ -80,9 +80,9 @@
     "model": "gunboat.glb",
     "icon": "gunboat.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "gunboat.wreck.glb"
   }
 }
