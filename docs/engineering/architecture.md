@@ -148,7 +148,7 @@ The CLI's `bun neo run <scenario> [--seed N] [--ticks T]` reads a versioned comm
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `web`    | The static build for browsers. Also the build that the desktop and mobile shells wrap                                                                            |
 | `server` | A long-running process with its own deployment and scaling (§8). Players never download it                                                                       |
-| `cli`    | Developer and CI tools (`bun neo validate`, `generate-schemas`, `make-placeholders`, `run`, and later `replay`, `bench`, `ai-vs-ai`). Same packages, no graphics |
+| `cli`    | Developer and CI tools (`bun neo validate`, `generate-schemas`, `make-placeholders`, `run`, `bench`, and later `replay`, `ai-vs-ai`). Same packages, no graphics |
 
 ## 4. Module dependency direction
 

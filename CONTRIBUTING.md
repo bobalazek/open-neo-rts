@@ -12,18 +12,19 @@ bun install
 bun run dev              # web client
 ```
 
-| Command                                         | What                                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `bun run check` / `bun run fix`                 | Biome lint and format (check only / apply fixes)                                      |
-| `bun run typecheck`                             | TypeScript across all packages                                                        |
-| `bun run test`                                  | All tests in Bun                                                                      |
-| `bun run test:browsers`                         | Playwright tests in Chromium, Firefox and WebKit                                      |
-| `bun run build`                                 | Production build                                                                      |
-| `bun neo validate`                              | Every content and asset check (what CI runs)                                          |
-| `bun neo make-placeholders [pack]`              | Block-model GLBs, wrecks and icons for definitions without art (default pack: `core`) |
-| `bun neo generate-schemas`                      | Regenerate `content/schemas` after changing content types (`--check` fails if stale)  |
-| `bun neo`                                       | List all CLI commands                                                                 |
-| `bun neo run <scenario> [--seed N] [--ticks T]` | Run a versioned command log twice and print checkpoint and final hashes               |
+| Command                                         | What                                                                                                            |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `bun run check` / `bun run fix`                 | Biome lint and format (check only / apply fixes)                                                                |
+| `bun run typecheck`                             | TypeScript across all packages                                                                                  |
+| `bun run test`                                  | All tests in Bun                                                                                                |
+| `bun run test:browsers`                         | Playwright tests in Chromium, Firefox and WebKit                                                                |
+| `bun run build`                                 | Production build                                                                                                |
+| `bun neo validate`                              | Every content and asset check (what CI runs)                                                                    |
+| `bun neo make-placeholders [pack]`              | Block-model GLBs, wrecks and icons for definitions without art (default pack: `core`)                           |
+| `bun neo generate-schemas`                      | Regenerate `content/schemas` after changing content types (`--check` fails if stale)                            |
+| `bun neo`                                       | List all CLI commands                                                                                           |
+| `bun neo run <scenario> [--seed N] [--ticks T]` | Run a versioned command log twice and print checkpoint and final hashes                                         |
+| `bun neo bench [--units N] [--ticks T]`         | Measure moving-unit tick cost and compare ECS operations with a sparse set (defaults: 1,000 units, 1,000 ticks) |
 
 The repo layout is described in [docs/engineering/architecture.md](docs/engineering/architecture.md#3-monorepo-layout).
 
