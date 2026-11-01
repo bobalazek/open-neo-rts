@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/map.schema.json",
   "id": "map:training-grounds",
   "name": "Training Grounds",
-  "description": "A flat 128 × 128 map with four corner spawns and a rich middle field.",
+  "description": "A 128 × 128 map with four raised corner bases, broad ramps, open side routes and a rich middle field on a central terrace.",
   "size": {
     "width": 128,
     "height": 128
@@ -78,5 +78,9 @@
       "amount": 5000
     }
   ],
-  "objects": []
+  "objects": [],
+  "layers": {
+    "height": "height.r8",
+    "ramps": "ramps.r8"
+  }
 }
