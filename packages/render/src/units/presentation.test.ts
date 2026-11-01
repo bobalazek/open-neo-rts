@@ -64,14 +64,43 @@ test("static model origins follow the rotated authoritative footprint anchor", a
     bytes: await bytes(),
     movementDomain: null,
     footprint: [2, 4],
+    foundation: true,
   }));
   await layer.accept(snapshot(0, [entity("building", { facing: 0x4000 })]), 0);
   expect(root(f.scene, "building").position.asArray()).toEqual([4, 0, 6]);
+  const foundation = () => f.scene.getMeshByName("structure foundation");
+  expect(foundation()?.getBoundingInfo().boundingBox.maximum.x).toBe(6);
+  expect(foundation()?.getBoundingInfo().boundingBox.maximum.z).toBe(10);
+  const originalFoundation = foundation();
   await layer.accept(snapshot(1, [entity("building", { facing: 0x8000 })]), 50);
   layer.render(100);
   expect(root(f.scene, "building").position.asArray()).toEqual([6, 0, 4]);
+  expect(originalFoundation?.isDisposed()).toBe(true);
+  expect(foundation()?.getBoundingInfo().boundingBox.maximum.x).toBe(10);
+  expect(foundation()?.getBoundingInfo().boundingBox.maximum.z).toBe(6);
+  await layer.accept(snapshot(2, []), 100);
+  expect(foundation()).toBeNull();
+  expect(f.scene.materials).toHaveLength(0);
   layer.dispose();
   f.dispose();
+});
+
+test("static props keep their footprint origins without receiving structure foundations", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes(),
+    movementDomain: null,
+    footprint: [2, 4],
+    foundation: false,
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("boulder")]), 0);
+    expect(root(f.scene, "boulder").position.asArray()).toEqual([6, 0, 4]);
+    expect(f.scene.getMeshByName("structure foundation")).toBeNull();
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
 });
 
 test("200 actual rigid GLBs share geometry and Force materials, with independent clips", async () => {
