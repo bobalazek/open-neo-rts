@@ -84,6 +84,8 @@ export interface OfflineState {
   /** Full-state hash is a debug inspection tool, never part of a normal seat view. */
   hash?: string;
   overlays?: DebugOverlayData;
+  /** Last sim.step duration only, excluding projection, hashing and message transport. */
+  tickMs?: number;
 }
 export interface DebugSessionExport {
   scenario: Scenario;
@@ -217,6 +219,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
   )
     return false;
   const snapshot = state.snapshot;
+  if (
+    state.tickMs !== undefined &&
+    (typeof state.tickMs !== "number" || !Number.isFinite(state.tickMs) || state.tickMs < 0)
+  )
+    return false;
   if (
     !isRecord(snapshot) ||
     !Number.isSafeInteger(snapshot.tick) ||
