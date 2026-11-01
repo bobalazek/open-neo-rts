@@ -371,9 +371,11 @@ describe("navigation compilation", () => {
   });
 
   test("supports the 512 bound and rejects malformed grids, profiles, definitions and objects", () => {
-    const grid = compile(flatMap(512));
+    const grid = compile(flatMap(512), 8192);
     expect(grid.cost.length).toBe(512 * 512);
     expect(grid.clearanceSubcells[256 * 512 + 256]).toBe(8192);
+    expect(grid.cost[256 * 512 + 256]).toBeGreaterThan(0);
+    expect(grid.cost[0]).toBe(0);
     for (const radius of [-1, 0.5, NaN, Infinity, 8193])
       expect(() => compile(flatMap(), radius)).toThrow();
     expect(() => compile(flatMap(513, 1))).toThrow();
