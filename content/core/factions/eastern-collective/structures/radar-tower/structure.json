@@ -35,6 +35,8 @@
     "icon": "radar-tower.icon.png",
     "wreck": "radar-tower.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "parts": ["radar"],
+    "sockets": ["socket_smoke", "socket_healthbar"],
+    "animations": ["active"]
   }
 }
