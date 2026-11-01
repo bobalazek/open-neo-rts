@@ -1,0 +1,16 @@
+{
+  "files": {
+    "stealth-generator.glb": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-generator.bricks.json"
+    },
+    "stealth-generator.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-generator.bricks.json"
+    },
+    "stealth-generator.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/stealth-generator.bricks.json"
+    }
+  }
+}

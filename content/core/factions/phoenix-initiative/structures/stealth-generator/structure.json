@@ -35,6 +35,7 @@
     "icon": "stealth-generator.icon.png",
     "wreck": "stealth-generator.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
