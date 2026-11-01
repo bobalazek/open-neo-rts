@@ -1,0 +1,16 @@
+{
+  "files": {
+    "drone-assembly-plant.glb": {
+      "author": "Borut Balazek",
+      "source": "source/drone-assembly-plant.bricks.json"
+    },
+    "drone-assembly-plant.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/drone-assembly-plant.bricks.json"
+    },
+    "drone-assembly-plant.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/drone-assembly-plant.bricks.json"
+    }
+  }
+}

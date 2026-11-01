@@ -1,0 +1,204 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "drone_assembly_plant",
+      "bricks": [
+        {
+          "at": [-11.7, 0, -11.7],
+          "size": [23.4, 0.6, 23.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-10, 4.6, -9],
+          "size": [20, 0.7, 10],
+          "slot": "team",
+          "studs": true
+        },
+        {
+          "at": [-9, 0.6, 3],
+          "size": [18, 0.3, 7],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-5, 0.9, 4],
+          "size": [10, 0.15, 5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-3, 1.1, 5],
+          "size": [6, 0.1, 3],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-9, 5.3, -8],
+          "size": [2, 1.5, 8],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [7, 5.3, -8],
+          "size": [2, 1.5, 8],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-10, 6.8, -7],
+          "size": [20, 0.6, 2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-11, 0.6, 8],
+          "size": [2, 1.5, 2],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [9, 0.6, 8],
+          "size": [2, 1.5, 2],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-10, 0.6, -9],
+          "size": [2, 4, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [8, 0.6, -9],
+          "size": [2, 4, 10],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-8, 0.6, -9],
+          "size": [16, 4, 1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-8, 0.6, -8],
+          "size": [16, 0.3, 9],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-8, 0.6, 0],
+          "size": [1, 3.7, 1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [7, 0.6, 0],
+          "size": [1, 3.7, 1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        }
+      ]
+    },
+    {
+      "name": "gantry",
+      "parent": "drone_assembly_plant",
+      "at": [0, 6.2, -6],
+      "bricks": [
+        {
+          "at": [-1, -1, -1],
+          "size": [2, 1.5, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.3, -3, -0.3],
+          "size": [0.6, 2, 0.6],
+          "slot": "metal",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "parent": "drone_assembly_plant",
+      "at": [0, 0.6, 1],
+      "bricks": [
+        {
+          "at": [-7, 0, -0.15],
+          "size": [14, 3.8, 0.3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-6, 1.7, 0.15],
+          "size": [12, 0.3, 0.1],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "drone_assembly_plant",
+      "at": [0, 5, -4]
+    },
+    {
+      "name": "socket_exit",
+      "parent": "drone_assembly_plant",
+      "at": [0, 0.6, 10]
+    },
+    {
+      "name": "socket_dock",
+      "parent": "drone_assembly_plant",
+      "at": [0, 1.1, 6]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "gantry",
+          "translation": [[0, [-6, 0, 0]], [2, [6, 0, 0]], [4, [-6, 0, 0]]]
+        }
+      ]
+    },
+    "open": {
+      "duration": 1,
+      "loop": false,
+      "tracks": [
+        {
+          "node": "door",
+          "translation": [[0, [0, 0, 0]], [1, [0, 3.8, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 1,
+      "loop": false,
+      "tracks": [
+        {
+          "node": "door",
+          "translation": [[0, [0, 3.8, 0]], [1, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}
