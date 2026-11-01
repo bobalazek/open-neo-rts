@@ -20,6 +20,7 @@
     "icon": "drone-assembly-plant.icon.png",
     "wreck": "drone-assembly-plant.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit", "socket_dock"],
+    "animations": ["active", "open", "close"]
   }
 }
