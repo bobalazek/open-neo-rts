@@ -1,6 +1,6 @@
 # Handoff
 
-Snapshot on 2026-11-01. The [task queue](./tasks.md) and [phase-1b plan](./phases/1b.md) distinguish remaining work from delivered foundations. The owner requests implementation in coherent batches, with full validation at the end of each batch.
+Snapshot on 2026-11-02. The [task queue](./tasks.md) and [phase-1b plan](./phases/1b.md) distinguish remaining work from delivered foundations. The owner requests implementation in coherent batches, with full validation at the end of each batch.
 
 ## Delivered foundations
 
@@ -15,6 +15,8 @@ Snapshot on 2026-11-01. The [task queue](./tasks.md) and [phase-1b plan](./phase
 ## Validation and limits
 
 The current delivery batch has independent source review and scoped author checks. Repository, content and three-browser CI run together on the final assembled main commit. Do not treat a merged intermediate commit or source-review gate as a final CI receipt.
+
+At `7b8475b`, [CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41359306216) passed repository verification, full content validation, all 32 Chromium cases and 28 Firefox cases (four older visual-only cases skipped there). WebKit passed 27 cases, skipped the same four and found a lost Pause-click bug; the reproduced fix merged in PR #141. The next assembled run must verify that repair and the new performance/movement evidence. All three key probes passed and retained separate reports; native accelerator capture remains unverified.
 
 Measured navigation on a 128×128 map with 200 units starts every open-map order on the first tick. With an obstructing structure, all units begin moving by tick 23 (1.15 seconds); measured movement p95 was about 14.17 ms, hash p95 1.58 ms and cold compilation peaked near 89 ms. These are CPU/response measurements, not a 60 fps proof. The [phase-1b exit](./roadmap.md#exit-criteria) remains open.
 
