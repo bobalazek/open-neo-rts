@@ -40,6 +40,8 @@ The first thing anyone can see of the game, and the tool every later feature is 
 
 ## Model check
 
+The initial terrain view at `/debug` has a **Map** picker for the five sandbox maps and Training Grounds. Its deep link is `?map=core.map:sandbox-terrain`; invalid maps show an error with the picker available. This loads authored terrain layers and camera bounds. Forces, spawning and simulation controls below remain later debug-mode work.
+
 The first asset-inspection stage is available at `/debug?models=1` after `bun run dev`. Open a local `.glb`, change **Team colour**, and select a named **Animation**. **Rest pose** restores the model's authored transforms. Drag the canvas to orbit and scroll to zoom. The controls stay above the canvas and wrap on narrow screens.
 
 ```text
