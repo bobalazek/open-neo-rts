@@ -59,6 +59,7 @@
     "icon": "advanced-armory.icon.png",
     "wreck": "advanced-armory.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
