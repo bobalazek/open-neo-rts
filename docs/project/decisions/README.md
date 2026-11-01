@@ -22,6 +22,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-01 — One neutral extractor for both node types](./2026-11-01-neutral-extractor.md) — Any faction builds the shared neutral structure on raw-material or oil nodes.
+
 - [2026-11-01 — Movement domains and water](./2026-11-01-movement-water-table.md) — One accepted water table; wheeled shallow movement is 50% speed and air uses no grid.
 
 - [2026-11-01 — Debug spawning skips build radius](./2026-11-01-debug-spawn-placement.md) — Terrain, bounds and occupied cells remain authoritative; normal construction policy stays owner-gated.

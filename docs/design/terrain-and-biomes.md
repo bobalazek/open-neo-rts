@@ -118,7 +118,7 @@ The roster keeps to what RTS maps generally carry: OpenRA's Red Alert and Tiberi
 - **Ore fields** are clusters of ore cells that harvesters mine ([economy.md](economy.md#harvesting)). Units drive over them; nothing can be built on them.
 - **Nodes** are single spots (1×1 or 2×2 cells) with something only a particular structure can use: raw-material deposits and oil wells. Each node has a **kind**.
 - **Node-bound structures** can only be placed on a node of their kind, and a node accepts nothing else. The node is one of the footprint's cell rules, next to `land`, `shore` and `water` ([structures.md](structures.md#placement)). Destroying the structure leaves the node, so it can be rebuilt or taken over.
-- Which structure works each kind of node (a neutral structure any builder can build, or one per faction) is a pending decision ([human-tasks.md](../project/human-tasks.md)).
+- The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md) that any faction builds on either node type. Its footprint, anchor and economy fit are under [design review](../project/neutral-extractor-plan.md); the shared-type decision does not settle those details.
 
 ### Resource visuals
 
@@ -138,7 +138,7 @@ Resources are engine code, but their look is pack art. The models live in `conte
 - An optional short looping **`harvest`** clip plays while a harvester mines the cell (the ore cell's is a squash pulse).
 - A material node under its structure is hidden; its stage shows again when the structure is destroyed.
 - The triangle budget (props: 1k) covers all stages together.
-- Oil nodes and node-bound structures wait on the pending decision in [human-tasks.md](../project/human-tasks.md). Until then the oil-well marker has no stages, since nothing says oil runs out.
+- The shared extractor choice is [accepted](../project/decisions/2026-11-01-neutral-extractor.md); node geometry and implementation follow the [fit proposal](../project/neutral-extractor-plan.md). Oil depletion remains undecided, so the oil-well marker has no depletion stages.
 
 ## Ground under structures
 

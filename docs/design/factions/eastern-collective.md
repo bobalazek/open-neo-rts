@@ -19,7 +19,7 @@ Dark steel-grey and **brick-red** bricks with **yellow-and-black hazard stripes*
 ## Economy
 
 - **Credits:** armoured Supply Trucks bring ore to a Supply Depot.
-- **Raw materials:** from captured material nodes on the map.
+- **Raw materials:** from the shared neutral extractor built on material nodes ([accepted direction](../../project/decisions/2026-11-01-neutral-extractor.md)); its operating design is under [fit review](../../project/neutral-extractor-plan.md).
 - **Industrial capacity** (unique): earned by producing units, spent on the **Mass Production Surge** (faster production for a while) and on Dragon Tank and APC mode switches.
 
 ## Builder
