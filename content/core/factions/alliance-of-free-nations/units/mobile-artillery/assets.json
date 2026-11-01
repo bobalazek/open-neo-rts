@@ -1,0 +1,16 @@
+{
+  "files": {
+    "mobile-artillery.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-artillery.bricks.json"
+    },
+    "mobile-artillery.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-artillery.bricks.json"
+    },
+    "mobile-artillery.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-artillery.bricks.json"
+    }
+  }
+}
