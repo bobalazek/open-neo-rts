@@ -142,6 +142,9 @@ test("debug orders use selection handles and preserve right-drag camera input", 
     }),
   ).toBe(true);
   await page.getByRole("button", { name: "Stop (S)", exact: true }).click();
+  await expect(page.getByRole("status", { name: "Order mode" })).toContainText(
+    "unit.stop: accepted",
+  );
   const stopped = await state();
   expect(stopped.snapshot.entities.every((entity) => entity.order === null)).toBe(true);
   await page.getByRole("button", { name: "Step one tick", exact: true }).click();
