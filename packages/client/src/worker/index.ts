@@ -2,13 +2,14 @@
 import type { DebugOverlayOptions, DebugSpawn } from "@open-neo-rts/sim";
 import {
   isDebugSessionExport,
+  isPlacementDiagnostic,
   isWorkerReply,
   type OfflineSetup,
   type OfflineState,
   type WorkerRequest,
 } from "./protocol";
 
-export type { OfflineSetup, OfflineState } from "./protocol";
+export type { OfflineSetup, OfflineState, PlacementDiagnostic } from "./protocol";
 
 /** One worker per match. Disposal rejects outstanding requests and ignores late replies. */
 export function createOfflineMatch(
@@ -71,7 +72,11 @@ export function createOfflineMatch(
       request({ type: "command", command: { type, payload } }),
     pause: (paused: boolean) => request({ type: "pause", paused }),
     step: () => request({ type: "step" }),
-    placement: (spawn: DebugSpawn) => request({ type: "placement", spawn }),
+    placement: (spawn: DebugSpawn) =>
+      request({ type: "placement", spawn }).then((value) => {
+        if (!isPlacementDiagnostic(value)) throw new Error("Invalid placement diagnostic");
+        return value;
+      }),
     speed: (speed: number) => request({ type: "speed", speed }),
     exportLog: () => request({ type: "export" }),
     exportSession: () =>
