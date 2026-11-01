@@ -46,7 +46,10 @@ test("the CLI writes only the requested map and rejects invalid selection before
       source: "apps/cli/src/commands/generate-sandbox-maps.ts",
     });
     expect(run("sandbox-biomes").exitCode).toBe(0);
-    expect(readdirSync(join(cwd, "content/core/maps"))).toEqual(["sandbox-biomes", "sandbox-flat"]);
+    expect(readdirSync(join(cwd, "content/core/maps")).sort()).toEqual([
+      "sandbox-biomes",
+      "sandbox-flat",
+    ]);
     const biomes = SANDBOX_MAPS["sandbox-biomes"]?.().terrain;
     expect(readFileSync(join(cwd, "content/core/maps/sandbox-biomes/biome.r8"))).toEqual(
       Buffer.from(biomes?.biome ?? []),
