@@ -41,6 +41,7 @@
     "icon": "emp-blackout-array.icon.png",
     "wreck": "emp-blackout-array.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

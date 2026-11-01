@@ -1,0 +1,273 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-11.8, 0, -11.8],
+          "size": [23.6, 0.8, 23.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-10, 0.8, -10],
+          "size": [20, 2.4, 20],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-9, 3.2, -9],
+          "size": [18, 0.8, 18],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-5, 4, -5],
+          "size": [10, 3.2, 10],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-5.5, 7.2, -5.5],
+          "size": [11, 0.6, 11],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3.4, 7.8, -3.4],
+          "size": [6.8, 3, 6.8],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-4, 10.8, -4],
+          "size": [8, 0.6, 8],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.8, 0.8, 10.1],
+          "size": [3.6, 2.4, 0.2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-2.1, 3.3, 10.1],
+          "size": [4.2, 0.5, 0.3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-9, 4, -9],
+          "size": [2, 8.5, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-9.5, 6, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.5, 8, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.5, 10, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.2, 12.5, -9.2],
+          "size": [2.4, 0.5, 2.4],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [7, 4, -9],
+          "size": [2, 8.5, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [6.5, 6, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.5, 8, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.5, 10, -9.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.8, 12.5, -9.2],
+          "size": [2.4, 0.5, 2.4],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9, 4, 7],
+          "size": [2, 8.5, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-9.5, 6, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.5, 8, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.5, 10, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.2, 12.5, 6.8],
+          "size": [2.4, 0.5, 2.4],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [7, 4, 7],
+          "size": [2, 8.5, 2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [6.5, 6, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.5, 8, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.5, 10, 6.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#8a4a24",
+          "shape": "cyl-y"
+        },
+        {
+          "at": [6.8, 12.5, 6.8],
+          "size": [2.4, 0.5, 2.4],
+          "slot": "team_emissive",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    },
+    {
+      "name": "array",
+      "bricks": [
+        {
+          "at": [-7, -0.4, -0.7],
+          "size": [14, 0.8, 1.4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.7, -0.4, -7],
+          "size": [1.4, 0.8, 14],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.5, -0.5, -0.5],
+          "size": [1, 3, 1],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [5.6, -0.7, -1],
+          "size": [1.4, 1.4, 2],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        }
+      ],
+      "parent": "base",
+      "at": [0, 13, 0]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [8, 13, -8]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 6,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "array",
+          "rotation": [
+            [0.0, [0, 0.0, 0]],
+            [1.5, [0, 90.0, 0]],
+            [3.0, [0, 180.0, 0]],
+            [4.5, [0, 270.0, 0]],
+            [6.0, [0, 360.0, 0]]
+          ]
+        }
+      ]
+    }
+  }
+}

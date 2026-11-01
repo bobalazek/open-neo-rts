@@ -1,0 +1,16 @@
+{
+  "files": {
+    "emp-blackout-array.glb": {
+      "author": "Borut Balazek",
+      "source": "source/emp-blackout-array.bricks.json"
+    },
+    "emp-blackout-array.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/emp-blackout-array.bricks.json"
+    },
+    "emp-blackout-array.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/emp-blackout-array.bricks.json"
+    }
+  }
+}
