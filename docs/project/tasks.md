@@ -1,18 +1,25 @@
 # Tasks
 
-Work that can start now without a further decision, grouped by [roadmap](./roadmap.md) phase. One line each, linking what specifies it. Work blocked on a person goes in [human-tasks.md](./human-tasks.md). Each task becomes one pull request of the type shown ([pull-requests.md](../contributing/pull-requests.md)).
+Work that can start now without a further decision, grouped by [roadmap](./roadmap.md) phase. One task, one pull request of the type shown ([pull-requests.md](../contributing/pull-requests.md)). Dependencies, scope and acceptance criteria live in the [phase plans](./phases/README.md); work blocked on a person goes in [human-tasks.md](./human-tasks.md).
 
-## Now: phase 1a (engine foundations)
+## Phase 1a: delivery status
 
-- [ ] Confirm CI for the implemented [two-Force scenario golden hashes](./phases/1a.md#1a-11--add-the-two-force-scenario-and-its-golden-hashes-in-bun-and-browsers), including Firefox. Bun, Chromium and WebKit pass locally; Firefox has a local profile launch failure. PR type: tooling.
+The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and Chromium, Firefox and WebKit [in CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41341002715) and merged at `6519ae8`. The [benchmark](./phases/1a.md#1a-13--add-bun-neo-bench-for-tick-cost) and [divergence traces](./phases/1a.md#1a-12--report-the-first-divergent-tick) are also done on main through PR #47 (`f710103`) and PR #48 (`d0fd2ca`); do not reimplement them.
 
-## Next: phase 1b (debug mode)
+## Now: phase 1b (debug mode)
 
-- [ ] First-pass models for remaining existing unit and structure definitions, following each faction's established brick style. Spec: [assets.md](../contributing/assets.md#model-conventions), [decision](./decisions/2026-11-01-first-pass-models.md). PR type: art (one per unit or structure).
-- [ ] Renderer follow-ups: shadows and quality presets, animated water and shore foam, chunk LOD, foundations under structures. Spec: [rendering.md](../engineering/rendering.md). PR type: engine.
-- [ ] Render the single-player worker’s copied per-seat projection in the client, and integrate authored maps. The flat-world worker/projection foundation is implemented; phase-2 vision remains separate. Spec: [fog-of-war.md](../design/fog-of-war.md#how-it-works). PR type: engine.
-- [ ] Debug mode at `/debug`: map picker, Forces, spawn palette, inspector, overlays, time controls, command-log export, deep links. Spec: [debug-mode.md](../design/screens/debug-mode.md). PR type: engine.
-- [ ] Placement rules in the sim: footprint cell rules `land`, `shore`, `water`, `node`, build radius and clearance, shown in debug mode. Spec: [structures.md](../design/structures.md#placement). PR type: engine.
-- [ ] Pathfinding: A* on nav grids per movement domain, path budgets per Force. Spec: [pathfinding.md](../engineering/pathfinding.md). PR type: engine.
-- [ ] Selection, box select, move and attack-move; key-capture spike for browser-reserved keys. Spec: [match-hud.md](../design/screens/match-hud.md), [hotkeys.md](../design/hotkeys.md). PR type: engine.
-- [ ] End-to-end tests: Playwright against `bun run dev`, opening debug mode on `sandbox-flat`, spawning, moving and checking the state hash; add to CI. Spec: [testing.md](../engineering/testing.md). PR type: tooling.
+- [ ] [1B-09 · Quality presets and shadows](./phases/1b.md#1b-09--add-quality-presets-and-shadows). PR type: engine.
+- [ ] [1B-10 · Animated water and shore foam](./phases/1b.md#1b-10--animate-water-and-shore-foam). PR type: engine.
+- [ ] [1B-12 · Map props and resource visuals](./phases/1b.md#1b-12--instance-map-props-and-resource-visuals). Authored terrain loading is merged; this adds object presentation. PR type: engine.
+- [ ] [1B-17 · Map-aware match setup and terrain fixtures](./phases/1b.md#1b-17--put-maps-and-terrain-fixtures-in-match-setup). PR type: engine.
+- [ ] [1B-22 · Per-Force path budgets](./phases/1b.md#1b-22--budget-path-requests-fairly-between-forces): the pure A* prerequisite is merged. PR type: engine.
+- [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
+
+## In progress or awaiting delivery
+
+- [ ] [1B-15 · Alliance of Free Nations first-pass artwork](./phases/1b.md#1b-15--integrate-reviewed-alliance-of-free-nations-artwork): first three folders merged in PR #50–52; remaining accepted source is ongoing, one existing definition folder per art PR.
+- [ ] [1B-16 · Phoenix Initiative first-pass artwork](./phases/1b.md#1b-16--integrate-reviewed-phoenix-initiative-artwork): accepted source branch, not yet merged; deliver one existing definition folder per art PR.
+
+The [A* core](./phases/1b.md#1b-21--add-incremental-integer-a-over-an-explicit-grid) is merged in PR #53 (`3eb0b39`). The flat-world [projection](./phases/1b.md#1b-25--define-the-per-seat-presentation-projection) and [worker](./phases/1b.md#1b-26--host-single-player-in-a-web-worker) foundation is merged in PR #54 (`25cce95`). Their terrain, movement and client integration follow the plan's dependencies; full fog remains phase 2.
+
+[Authored map terrain loading](./phases/1b.md#1b-08--load-authored-maps-in-the-terrain-client) is done on main through PR #49 (`b7b4520`), with [green CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41341685124). The [remaining dependency graph](./phases/1b.md#dependency-overview) covers terrain LOD, foundations, occupancy, navigation compilation, reachability, Force budgets, movement/repaths, debug panels, selection/orders, model rendering/animation, e2e and measured performance. Promote each task here when its prerequisites land. The water-domain table, real node binding and placement-radius/clearance policy are owner-blocked; strict presentation enforcement stays held until the reviewed artwork lands. Phase 2 systems are not part of this queue.
