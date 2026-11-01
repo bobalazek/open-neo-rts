@@ -1,0 +1,219 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-15.8, 0, -15.8],
+          "size": [7.8, 2, 31.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [8, 0, -15.8],
+          "size": [7.8, 2, 31.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-8, 0, -15.8],
+          "size": [16, 2, 7.8],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-15.4, 2, -15.4],
+          "size": [7, 0.5, 30.8],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [8.4, 2, -15.4],
+          "size": [7, 0.5, 30.8],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-8.4, 2, -15.4],
+          "size": [16.8, 0.5, 7],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-15, 2.5, -14],
+          "size": [6, 5, 8],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-15.3, 7.5, -14.3],
+          "size": [6.6, 0.6, 8.6],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-14.7, 5, -5.99],
+          "size": [5.4, 1.3, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [10, 2.5, -12],
+          "size": [4, 7, 4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [11, 9.5, -11],
+          "size": [2, 3, 2],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [8.2, 2.5, -7],
+          "size": [0.35, 0.2, 21],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-8.55, 2.5, -7],
+          "size": [0.35, 0.2, 21],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [-12, 2.5, 5],
+          "size": [1.4, 10, 1.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [10.6, 2.5, 5],
+          "size": [1.4, 10, 1.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-12, 12.5, 4.5],
+          "size": [24, 1.3, 2.4],
+          "slot": "team",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "trolley",
+      "bricks": [
+        {
+          "at": [-1.8, -0.5, -1],
+          "size": [3.6, 1, 2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.15, -5, -0.15],
+          "size": [0.3, 5, 0.3],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.8, -5.4, -0.3],
+          "size": [1.6, 0.6, 0.6],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "base",
+      "at": [0, 12.5, 5.7]
+    },
+    {
+      "name": "gate",
+      "bricks": [
+        {
+          "at": [0, 0, -0.3],
+          "size": [16, 1.4, 0.6],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [1, 0.3, 0.31],
+          "size": [1, 0.7, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [5, 0.3, 0.31],
+          "size": [1, 0.7, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [9, 0.3, 0.31],
+          "size": [1, 0.7, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        },
+        {
+          "at": [13, 0.3, 0.31],
+          "size": [1, 0.7, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705"
+        }
+      ],
+      "parent": "base",
+      "at": [-8, 1, 13.5]
+    },
+    {
+      "name": "socket_exit",
+      "parent": "base",
+      "at": [0, 0.2, 15.5]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [12, 12.8, -10]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 5,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "trolley",
+          "translation": [[0, [-7, 0, 0]], [2.5, [7, 0, 0]], [5, [-7, 0, 0]]]
+        }
+      ]
+    },
+    "open": {
+      "duration": 1.4,
+      "tracks": [
+        {
+          "node": "gate",
+          "rotation": [[0, [0, 0, 0]], [1.4, [0, 90, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 1.4,
+      "tracks": [
+        {
+          "node": "gate",
+          "rotation": [[0, [0, 90, 0]], [1.4, [0, 0, 0]]]
+        }
+      ]
+    }
+  }
+}
