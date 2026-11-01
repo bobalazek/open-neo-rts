@@ -1,0 +1,16 @@
+{
+  "files": {
+    "hypersonic-strike-jet.glb": {
+      "author": "Borut Balazek",
+      "source": "source/hypersonic-strike-jet.bricks.json"
+    },
+    "hypersonic-strike-jet.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/hypersonic-strike-jet.bricks.json"
+    },
+    "hypersonic-strike-jet.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/hypersonic-strike-jet.bricks.json"
+    }
+  }
+}
