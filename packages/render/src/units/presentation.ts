@@ -1,4 +1,13 @@
-import { type AssetContainer, Mesh, type Scene, TransformNode } from "@babylonjs/core";
+import {
+  type AbstractMesh,
+  type AssetContainer,
+  Color3,
+  Mesh,
+  MeshBuilder,
+  type Scene,
+  StandardMaterial,
+  TransformNode,
+} from "@babylonjs/core";
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
@@ -17,6 +26,7 @@ interface Entity {
   playback?: ReturnType<typeof createModelPlayback>;
   clip?: string;
   loading?: Promise<void>;
+  ring?: ReturnType<Mesh["createInstance"]>;
 }
 interface Template {
   force: number;
@@ -43,6 +53,10 @@ export function createEntityPresentation(
   const entities = new Map<string, Entity>();
   const templates = new Map<string, Template>();
   const colors = new Map<number, string>();
+  const meshHandles = new Map<AbstractMesh, string>();
+  let selected = new Set<string>();
+  let ringModel: Mesh | undefined;
+  let ringMaterial: StandardMaterial | undefined;
   let tick: number | undefined;
   let receivedAt = 0;
   let duration = 50;
@@ -52,6 +66,8 @@ export function createEntityPresentation(
   let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
+    for (const mesh of entity.root?.getChildMeshes() ?? []) meshHandles.delete(mesh);
+    entity.ring?.dispose();
     const morphs = entity.root
       ?.getChildMeshes()
       .flatMap((mesh) => (mesh.morphTargetManager ? [mesh.morphTargetManager] : []));
@@ -110,7 +126,7 @@ export function createEntityPresentation(
     frameAt = nowMs;
     const alpha =
       playbackRate === 0 ? 1 : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
-    for (const entity of entities.values()) {
+    for (const [handle, entity] of entities) {
       if (!entity.root || !entity.playback) continue;
       const a = entity.previous;
       const b = entity.current;
@@ -129,6 +145,33 @@ export function createEntityPresentation(
           ? waterHeight(terrain, x, y)
           : terrainHeight(terrain, x, y);
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
+      if (selected.has(handle)) {
+        if (!ringModel) {
+          ringModel = MeshBuilder.CreateTorus(
+            "selection ring template",
+            { diameter: 2, thickness: 0.06, tessellation: 32 },
+            scene,
+          );
+          ringMaterial = new StandardMaterial("selection ring", scene);
+          ringMaterial.emissiveColor = new Color3(0.4, 1, 0.65);
+          ringMaterial.disableLighting = true;
+          ringModel.material = ringMaterial;
+          ringModel.isVisible = ringModel.isPickable = false;
+        }
+        if (!entity.ring) {
+          entity.ring = ringModel.createInstance("selected entity");
+          entity.ring.isVisible = true;
+          entity.ring.isPickable = false;
+        }
+        const size = template?.footprint
+          ? (Math.max(...template.footprint) * CELL_SIZE) / 2 + 0.2
+          : CELL_SIZE * 0.65;
+        entity.ring.scaling.set(size, 1, size);
+        entity.ring.position.set(x * CELL_SIZE, height + 0.08, y * CELL_SIZE);
+      } else if (entity.ring) {
+        entity.ring.dispose();
+        entity.ring = undefined;
+      }
       // Sim 0 faces +x; authored glTF fronts face +Z, with +y on the map becoming +z.
       entity.root.rotation.y = Math.PI / 2 - ((a.facing + turn * alpha) * Math.PI * 2) / 65536;
       const clip =
@@ -203,8 +246,10 @@ export function createEntityPresentation(
                 .getDescendants()
                 .filter((node) => node instanceof TransformNode);
               const meshes = current.root.getChildMeshes();
-              for (const mesh of meshes)
+              for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
+                meshHandles.set(mesh, handle);
+              }
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,
@@ -236,6 +281,26 @@ export function createEntityPresentation(
       await accepted;
     },
     render,
+    select(handles: readonly string[]) {
+      selected = new Set(handles);
+      render(frameAt);
+    },
+    /** Picking is confined to currently projected, rendered entity geometry. */
+    pick(x: number, y: number): string | null {
+      const hits =
+        scene.multiPick(
+          x,
+          y,
+          (mesh) => meshHandles.has(mesh) && mesh.isVisible && mesh.isEnabled(),
+        ) ?? [];
+      hits.sort((a, b) => {
+        const left = a.pickedMesh ? (meshHandles.get(a.pickedMesh) ?? "") : "";
+        const right = b.pickedMesh ? (meshHandles.get(b.pickedMesh) ?? "") : "";
+        return a.distance - b.distance || (left < right ? -1 : left > right ? 1 : 0);
+      });
+      const mesh = hits[0]?.pickedMesh;
+      return mesh ? (meshHandles.get(mesh) ?? null) : null;
+    },
     setPlaybackRate(rate: number) {
       if (!Number.isFinite(rate) || rate < 0) throw new RangeError("Invalid playback rate");
       playbackRate = rate;
@@ -254,6 +319,9 @@ export function createEntityPresentation(
       disposed = true;
       for (const entity of entities.values()) remove(entity);
       entities.clear();
+      meshHandles.clear();
+      ringModel?.dispose();
+      ringMaterial?.dispose();
       for (const template of templates.values()) template.model?.dispose();
       templates.clear();
     },
