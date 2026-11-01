@@ -11,9 +11,7 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 - [ ] [1B-30 · Placement failure overlays](./phases/1b.md#1b-30--show-authoritative-placement-failures). PR type: engine.
 - [ ] [1B-38 · Model LOD and culling](./phases/1b.md#1b-38--animate-projected-models-and-choose-model-lod): idle/move animation and independent playback already work; finish available authored LOD selection and measure frame cost. PR type: engine.
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
-
-## In progress or awaiting delivery
-
+- [ ] [1B-41 · Shared neutral extractor and node placement](./phases/1b.md#1b-41--bind-node-placement-to-the-accepted-content-rule). The [owner decision](./decisions/2026-11-01-neutral-extractor.md) selects one neutral extractor built by any faction on raw-material or oil nodes. PR type: engine.
 
 ## Delivered foundations
 
@@ -21,4 +19,4 @@ All existing 54 units, 45 structures and 37 props have first-pass model referenc
 
 The map-aware worker/debug client includes authoritative placement, terrain navigation, reachability, shared path budgets, movement and occupancy repathing; model instances, team colors and idle/move playback; inspector/time controls, selection/box selection and distinct move/stop/attack-move commands. Graphics presets, structure foundations and animated water/shore foam complete the current renderer delivery batch. Combined repository/content/browser validation is run at the end of this batch; merged implementation alone is not a phase-exit claim.
 
-The [water-domain table](./decisions/2026-11-01-movement-water-table.md) and [debug placement exception](./decisions/2026-11-01-debug-spawn-placement.md) are accepted. Real node binding and normal-match placement-radius/clearance policy remain [owner-blocked](./human-tasks.md). Full fog, combat and economy remain phase 2. The [phase-1b exit](./roadmap.md#exit-criteria), including measured 200-unit medium frame rate, is still open.
+The [water-domain table](./decisions/2026-11-01-movement-water-table.md), [debug placement exception](./decisions/2026-11-01-debug-spawn-placement.md) and [neutral extractor policy](./decisions/2026-11-01-neutral-extractor.md) are accepted. Normal-match placement-radius/clearance policy remains [owner-blocked](./human-tasks.md). Full fog, combat and economy remain phase 2. The [phase-1b exit](./roadmap.md#exit-criteria), including measured 200-unit medium frame rate, is still open.
