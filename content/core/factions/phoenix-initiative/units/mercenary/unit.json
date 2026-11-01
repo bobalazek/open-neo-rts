@@ -73,7 +73,8 @@
           "radius": 0.5,
           "falloff": [100, 50]
         }
-      ]
+      ],
+      "socket": "socket_rocket"
     }
   ],
   "presentation": {
@@ -81,7 +82,7 @@
     "icon": "mercenary.icon.png",
     "materials": {},
     "parts": [],
-    "sockets": ["socket_muzzle"],
+    "sockets": ["socket_muzzle", "socket_rocket"],
     "animations": ["idle", "move", "attack", "death"]
   }
 }
