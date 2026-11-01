@@ -1,0 +1,16 @@
+{
+  "files": {
+    "thunder-fighter.glb": {
+      "author": "Borut Balazek",
+      "source": "source/thunder-fighter.bricks.json"
+    },
+    "thunder-fighter.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/thunder-fighter.bricks.json"
+    },
+    "thunder-fighter.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/thunder-fighter.bricks.json"
+    }
+  }
+}
