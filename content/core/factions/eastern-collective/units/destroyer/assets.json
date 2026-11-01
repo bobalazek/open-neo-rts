@@ -1,0 +1,16 @@
+{
+  "files": {
+    "destroyer.glb": {
+      "author": "Borut Balazek",
+      "source": "source/destroyer.bricks.json"
+    },
+    "destroyer.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/destroyer.bricks.json"
+    },
+    "destroyer.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/destroyer.bricks.json"
+    }
+  }
+}
