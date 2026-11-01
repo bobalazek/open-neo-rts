@@ -58,7 +58,7 @@
     "model": "flame-tank.glb",
     "icon": "flame-tank.icon.png",
     "materials": {},
-    "parts": ["hull", "turret"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
     "animations": [],
     "wreck": "flame-tank.wreck.glb"
