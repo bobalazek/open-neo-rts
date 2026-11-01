@@ -129,6 +129,23 @@ describe("validateModel", () => {
     };
     expect(errors(model, "unit", { animations: ["idle"] })).toEqual([]);
     expect(
+      errors(
+        {
+          ...model,
+          accessors: [...(model.accessors ?? []).slice(0, 3), { count: 6 }],
+          animations: [
+            {
+              name: "idle",
+              samplers: [{ input: 2, output: 3, interpolation: "CUBICSPLINE" }],
+              channels: [{ sampler: 0, target: { node: 0, path: "translation" } }],
+            },
+          ],
+        },
+        "unit",
+        { animations: ["idle"] },
+      ),
+    ).toEqual([]);
+    expect(
       errors({ ...model, animations: [{ name: "idle" }] }, "unit", { animations: ["idle"] }),
     ).toEqual(['animation "idle" needs a keyed transform channel']);
     const animation = model.animations?.[0];
@@ -144,5 +161,23 @@ describe("validateModel", () => {
         { animations: ["idle"] },
       ),
     ).toEqual(['animation "idle" needs a keyed transform channel']);
+  });
+  test("unused scenes and orphan nodes cannot satisfy team colour coverage", () => {
+    const model: Gltf = {
+      ...tank,
+      scenes: [{ nodes: [0] }, { nodes: [1] }],
+      nodes: [
+        { name: "hull", mesh: 0 },
+        { name: "unused_trim", mesh: 1 },
+      ],
+      meshes: [
+        { primitives: [{ attributes: { POSITION: 0 }, material: 0 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] },
+      ],
+    };
+    expect(errors(model, "unit", { teamColor: true })).toContain(
+      "needs team colour on mesh geometry (team, team_dark, team_light or team_emissive)",
+    );
+    expect(errors({ ...model, scene: 1 }, "unit", { teamColor: true })).toEqual([]);
   });
 });

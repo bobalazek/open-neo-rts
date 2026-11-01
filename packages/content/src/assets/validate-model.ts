@@ -82,7 +82,18 @@ export function validateModel(
   }
 
   if (requires.teamColor) {
-    const usedMeshes = new Set(nodes.flatMap((n) => (n.mesh === undefined ? [] : [n.mesh])));
+    const usedMeshes = new Set<number>();
+    const visited = new Set<number>();
+    const pending = [...(gltf.scenes?.[gltf.scene ?? 0]?.nodes ?? [])];
+    while (pending.length > 0) {
+      const index = pending.pop() as number;
+      if (visited.has(index)) continue;
+      visited.add(index);
+      const node = nodes[index];
+      if (!node) continue;
+      if (node.mesh !== undefined) usedMeshes.add(node.mesh);
+      pending.push(...(node.children ?? []));
+    }
     const hasTeamColor = [...usedMeshes].some((index) =>
       gltf.meshes?.[index]?.primitives.some((p) => {
         const name = p.material === undefined ? undefined : gltf.materials?.[p.material]?.name;
