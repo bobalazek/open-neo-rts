@@ -33,6 +33,7 @@ let sequence = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let queued: { id: number; command: Command }[] = [];
 let diagnostics: ReturnType<typeof createDebugDiagnostics>;
+let tickMs: number | undefined;
 
 function publish(id: number, result?: unknown) {
   if (!kernel) throw new Error("Initialize the match first");
@@ -46,6 +47,7 @@ function publish(id: number, result?: unknown) {
       ...(overlays ? { overlays } : {}),
       paused,
       speed,
+      ...(mode === "debug-no-fog" && tickMs !== undefined ? { tickMs } : {}),
       ...(mode === "debug-no-fog" ? { hash: checkpointHash(kernel) } : {}),
     },
   });
@@ -54,10 +56,10 @@ function tick() {
   if (!kernel) return;
   const commands = queued;
   queued = [];
-  const entries = step(
-    kernel,
-    commands.map(({ command }) => command),
-  );
+  const inputs = commands.map(({ command }) => command);
+  const start = performance.now();
+  const entries = step(kernel, inputs);
+  tickMs = performance.now() - start;
   commands.forEach(({ id }, i) => {
     port.postMessage({ id, result: entries[i]?.result });
   });

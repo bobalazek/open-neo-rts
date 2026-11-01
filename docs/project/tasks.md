@@ -14,10 +14,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 - [ ] [1B-41 · Shared neutral extractor and node placement](./phases/1b.md#1b-41--bind-node-placement-to-the-accepted-content-rule). Shared neutral availability is [decided](./decisions/2026-11-01-neutral-extractor.md); the owner requested the [contextual fit proposal](./neutral-extractor-plan.md) before schema, geometry and content choices. PR type: engine after the design contract is settled.
 
-## In progress or awaiting delivery
-
-- [ ] [1B-47 · Performance counters and repeatable scene](./phases/1b.md#1b-47--expose-browser-performance-counters-and-a-repeatable-scene): animation and optional LOD implementation are delivered; real 200-unit frame-cost measurement remains open. PR type: engine.
-
 ## Delivered foundations
 
 All existing 54 units, 45 structures and 37 props have first-pass model references. Remaining Alliance of Free Nations artwork merged in PR #70–89 and Phoenix Initiative artwork in PR #90–112, one definition folder per art PR. Strict animation/team-color validation follows the integrated art. Final art direction remains an owner decision.

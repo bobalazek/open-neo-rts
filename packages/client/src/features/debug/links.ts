@@ -1,5 +1,6 @@
 import type { CatalogEntry } from "./catalog";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
+import { performanceScene } from "./performance-scene";
 
 export interface InitialSpawn {
   definition: string;
@@ -9,6 +10,7 @@ export interface InitialSpawn {
   rotation: number;
 }
 export interface DebugLink {
+  scene?: "terrain-200";
   map: string;
   seed: number;
   forces: DebugForce[];
@@ -63,6 +65,15 @@ export function parseDebugLink(
   catalog: readonly CatalogEntry[],
 ): DebugLink {
   const params = new URLSearchParams(search);
+  if (params.has("scene")) {
+    if (params.size !== 1 || params.get("scene") !== "terrain-200")
+      throw new Error("The terrain-200 scene accepts no setup overrides");
+    const setup = performanceScene();
+    const map = maps.find((entry) => entry.id === setup.map);
+    if (!map) throw new Error(`Unknown map: ${setup.map}`);
+    validateInitialSpawns(setup.spawns, map, setup.forces, catalog);
+    return setup;
+  }
   const allowed = new Set(["map", "seed", "force", "controlled", "spawn"]);
   const seen = new Set<string>();
   params.forEach((_value, key) => {
@@ -116,6 +127,10 @@ export function parseDebugLink(
 
 export function debugLink(base: string, setup: DebugLink): string {
   const url = new URL("/debug", base);
+  if (setup.scene) {
+    url.searchParams.set("scene", setup.scene);
+    return url.href;
+  }
   url.searchParams.set("map", setup.map);
   url.searchParams.set("seed", String(setup.seed));
   url.searchParams.set(
