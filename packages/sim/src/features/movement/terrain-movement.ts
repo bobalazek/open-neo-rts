@@ -10,7 +10,7 @@ import {
 } from "@open-neo-rts/deterministic";
 import type { Kernel } from "../../kernel";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
-import { MoveIntent } from ".";
+import { MoveIntent, MovementFailure } from ".";
 import { compileNavigation, type NavigationGrid, type NavigationObject } from "./navigation";
 import { PathScheduler } from "./path-scheduler";
 import { labelReachability, nearestReachable } from "./reachability";
@@ -23,6 +23,8 @@ interface Route {
   target: Point;
   path: Point[];
   searching: boolean;
+  stuck: number;
+  repaths: number;
 }
 interface Profile {
   grid: NavigationGrid;
@@ -32,6 +34,9 @@ interface Profile {
 
 /** Fixed work quota, shared by every domain/radius and Force in this match. */
 export const MOVEMENT_NODE_BUDGET = 4096;
+/** First-pass engineering limits: two automatic retries after two seconds without motion or turning. */
+export const MOVEMENT_STUCK_TICKS = 40;
+export const MOVEMENT_MAX_REPATHS = 2;
 
 /** Map movement state. Compiled grids/labels are derived caches; routes and scheduler are hashed. */
 export class TerrainMovement {
@@ -39,6 +44,7 @@ export class TerrainMovement {
   private readonly routes = new Map<number, Route>();
   private readonly scheduler: PathScheduler;
   private readonly definitionHash: string;
+  private occupancy = "";
 
   constructor(
     private readonly kernel: Kernel,
@@ -132,14 +138,78 @@ export class TerrainMovement {
     this.routes.delete(id);
   }
 
+  private fail(id: number, reason: number): void {
+    this.cancel(id);
+    const world = this.kernel.world;
+    if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);
+    if (world.has(id, MovementFailure)) world.remove(id, MovementFailure);
+    world.add(id, MovementFailure, { reason });
+  }
+
+  /** Commands have finished before movement; cached searches always see one immutable occupancy. */
+  refreshOccupancy(): void {
+    const world = this.kernel.world;
+    const occupied = world
+      .query(Template, Transform)
+      .filter((id) => {
+        const definition = this.definitions[this.definitionOf(id)] as Definition;
+        const kind = definition.id.split(":")[0]?.split(".").at(-1);
+        return kind === "structure" || (kind === "prop" && definition.blocks !== "nothing");
+      })
+      .map((id) => [
+        id,
+        this.definitionOf(id),
+        world.get(id, Transform, "x"),
+        world.get(id, Transform, "y"),
+        world.get(id, Transform, "facing"),
+      ]);
+    const signature = JSON.stringify(occupied);
+    if (signature === this.occupancy) return;
+    this.occupancy = signature;
+    this.profiles.clear();
+    for (const [id, route] of [...this.routes].sort(([a], [b]) => a - b)) {
+      if (!world.isAlive(id) || !world.has(id, MoveIntent)) {
+        this.cancel(id);
+        continue;
+      }
+      if ((this.definitions[route.definition] as Definition).domain === "air") continue;
+      const grid = this.profile(route.definition).grid;
+      let previous = this.position(id);
+      const valid = route.path.every((point) => {
+        const clear = clearSegment(grid, previous, point);
+        previous = point;
+        return clear;
+      });
+      if (route.searching || !valid) this.repath(id, route, false);
+    }
+  }
+
+  private repath(id: number, route: Route, stuck: boolean): void {
+    if (stuck && route.repaths >= MOVEMENT_MAX_REPATHS) {
+      this.fail(id, 2);
+      return;
+    }
+    const attempts = route.repaths + (stuck ? 1 : 0);
+    this.cancel(id);
+    this.kernel.world.remove(id, MoveIntent);
+    this.plan(id, route.requested, "repath", attempts);
+  }
+
   order(id: number, target: Point): void {
+    this.plan(id, target, "order", 0);
+  }
+
+  private plan(id: number, target: Point, kind: "order" | "repath", repaths: number): void {
     const world = this.kernel.world;
     const definition = this.definitionOf(id);
     const found = this.definitions[definition] as Definition;
     const map = this.kernel.map;
     if (!map) throw new Error("Map movement requires a map");
     const radius = found.radiusSubcells as number;
-    if (radius * 2 > map.terrain.width * 1024 || radius * 2 > map.terrain.height * 1024) return;
+    if (radius * 2 > map.terrain.width * 1024 || radius * 2 > map.terrain.height * 1024) {
+      this.fail(id, 1);
+      return;
+    }
     const bounded = {
       x: Math.max(radius, Math.min(map.terrain.width * 1024 - Math.max(1, radius), target.x)),
       y: Math.max(radius, Math.min(map.terrain.height * 1024 - Math.max(1, radius), target.y)),
@@ -153,6 +223,8 @@ export class TerrainMovement {
         target: bounded,
         path: [bounded],
         searching: false,
+        stuck: 0,
+        repaths,
       });
       return;
     }
@@ -162,7 +234,10 @@ export class TerrainMovement {
       x: Math.floor(target.x / 1024),
       y: Math.floor(target.y / 1024),
     });
-    if (goal === undefined || !clearSegment(grid, this.position(id), this.centre(start))) return;
+    if (goal === undefined || !clearSegment(grid, this.position(id), this.centre(start))) {
+      this.fail(id, 1);
+      return;
+    }
     const destination =
       goal === this.cell(bounded) && clearSegment(grid, this.centre(goal), bounded)
         ? bounded
@@ -177,6 +252,8 @@ export class TerrainMovement {
       target: destination,
       path: direct ? [destination] : [],
       searching: !direct,
+      stuck: 0,
+      repaths,
     });
     if (direct) return;
     this.scheduler.submit([
@@ -184,7 +261,7 @@ export class TerrainMovement {
         force: world.get(id, OwnerForce, "force"),
         entity: id,
         issueTick: this.kernel.tick,
-        kind: "order",
+        kind,
         start,
         goal,
       },
@@ -195,6 +272,7 @@ export class TerrainMovement {
     const world = this.kernel.world;
     for (const id of [...this.routes.keys()].sort((a, b) => a - b))
       if (!world.isAlive(id) || !world.has(id, MoveIntent)) this.cancel(id);
+    this.refreshOccupancy();
     for (const result of this.scheduler.tick().results) {
       const id = result.request.entity;
       const route = this.routes.get(id);
@@ -235,7 +313,11 @@ export class TerrainMovement {
       const turn = ((atan2(dy, dx) - facing + 0x8000) & 0xffff) - 0x8000;
       const step = Math.max(0 - definition.turnRate, Math.min(definition.turnRate, turn));
       world.set(id, Transform, "facing", (facing + step) & 0xffff);
-      if (step !== turn) continue;
+      if (step !== turn) {
+        if (step !== 0) route.stuck = 0;
+        else this.stalled(id, route);
+        continue;
+      }
       const percent =
         definition.domain === "air"
           ? 100
@@ -252,10 +334,15 @@ export class TerrainMovement {
       if (
         definition.domain !== "air" &&
         !clearSegment(this.profile(route.definition).grid, position, next)
-      )
+      ) {
+        this.stalled(id, route);
         continue;
+      }
       world.set(id, Transform, "x", next.x);
       world.set(id, Transform, "y", next.y);
+      if (position.x === next.x && position.y === next.y && (dx !== 0 || dy !== 0))
+        this.stalled(id, route);
+      else route.stuck = 0;
       if (next.x === waypoint.x && next.y === waypoint.y) route.path.shift();
       if (!route.searching && route.path.length === 0) {
         world.remove(id, MoveIntent);
@@ -278,6 +365,8 @@ export class TerrainMovement {
         route.target.x,
         route.target.y,
         route.searching ? 1 : 0,
+        route.stuck,
+        route.repaths,
         route.path.length,
       ])
         addInt(h, n);
@@ -287,6 +376,10 @@ export class TerrainMovement {
       }
     }
     this.scheduler.hashInto(h);
+  }
+
+  private stalled(id: number, route: Route): void {
+    if (++route.stuck >= MOVEMENT_STUCK_TICKS) this.repath(id, route, true);
   }
 
   /** Explicit diagnostics/save preparation; ordinary checkpoint hashes do not allocate this. */

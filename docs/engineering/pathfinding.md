@@ -85,7 +85,19 @@ Each Force has its own path request queue, ordered canonically by (tick issued, 
 
 The standalone `PathScheduler` implements this quota over one caller-supplied `NavGrid`. Submit each tick's requests before calling `tick()`; resolve multiple commands for the same entity in canonical command order first. `submit()` replaces prior work for that entity, including after a Force transfer; `cancel()` removes it for stop/death/removal. A new player order can preempt an automatic repath while retaining that repath's search. The next Force cursor persists across ticks, including when the quota is smaller than the number of Forces. Results contain a partial/final path once per served request, and integer expansion/completion/queue counters per tick and Force. A zero quota performs no work.
 
-`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**, or the same request-to-grid resolver. Grids stay caller-owned and are not included in scheduler state. Map matches hash the scheduler's full continuation state directly. Tick-boundary occupancy invalidation remains a separate task. Simulation version 4 introduces map path following; older replays fail explicitly.
+`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**, or the same request-to-grid resolver. Grids stay caller-owned and are not included in scheduler state. Map matches hash the scheduler's full continuation state directly. Simulation version 4 introduced map path following; version 5 adds occupancy invalidation and bounded stuck termination. Older replays fail explicitly.
+
+At each movement boundary, a canonical static-occupancy signature invalidates derived grids and labels.
+Pending searches are cancelled and resubmitted as automatic repaths against the new immutable grid;
+completed routes repath if any remaining swept segment is blocked. New player orders refresh occupancy
+before planning. Dead, removed and stopped entities retain no queued search. Units never advance across
+a newly blocked segment. Authored map objects remain immutable; debug removal applies to live entities.
+
+**Addition — first-pass engineering stuck limits:** 40 ticks without translation or turning triggers an
+automatic repath, at most twice per order. A further stall terminates the order with `MovementFailure`
+reason 2. A missing clear start/destination terminates with reason 1. Waiting for budgeted search work
+does not consume this motion timeout. New move/stop orders clear the failure. These are bounded debug
+movement defaults, not construction, collision-avoidance or final movement-feel policy.
 
 ## Group movement
 

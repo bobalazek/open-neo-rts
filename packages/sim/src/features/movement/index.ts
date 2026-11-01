@@ -5,6 +5,7 @@ import { atan2, divFloor, isqrt } from "@open-neo-rts/deterministic";
 import { type Grant, hasGrant, type Rejection } from "../../commands";
 import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
+import type { MatchMap } from "../../match-map";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 
 export * from "./navigation";
@@ -14,6 +15,8 @@ export * from "./reachability";
 
 /** Where a unit is moving, in subcells. Present only while it has a move order. */
 export const MoveIntent = defineComponent("MoveIntent", { x: "i32", y: "i32" });
+/** Terminal map movement failure: 1 = no clear start/destination, 2 = bounded stuck retries exhausted. */
+export const MovementFailure = defineComponent("MovementFailure", { reason: "u8" });
 
 /**
  * `unit.move` and `unit.stop` for a match created with `definitions` and `grants`, and the movement system:
@@ -24,6 +27,7 @@ export const MoveIntent = defineComponent("MoveIntent", { x: "i32", y: "i32" });
 export function movementFeature(match: {
   definitions: readonly Definition[];
   grants: readonly Grant[];
+  map?: MatchMap;
 }): Feature {
   const { definitions, grants } = match;
   const speedOf = (world: World, id: number) =>
@@ -42,7 +46,9 @@ export function movementFeature(match: {
     const force = (id: number) => world.get(id, OwnerForce, "force");
     if (!ids.every((id) => hasGrant(grants, seat, force(id), "unit.orders", tick)))
       return "no_grant";
+    if (target) kernel.movement?.refreshOccupancy();
     for (const id of ids) {
+      if (kernel.movement && world.has(id, MovementFailure)) world.remove(id, MovementFailure);
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);
       kernel.movement?.cancel(id);
       if (target && speedOf(world, id) > 0) {
@@ -53,7 +59,13 @@ export function movementFeature(match: {
   }
 
   return {
-    components: [Template, OwnerForce, Transform, MoveIntent],
+    components: [
+      Template,
+      OwnerForce,
+      Transform,
+      MoveIntent,
+      ...(match.map ? [MovementFailure] : []),
+    ],
     systems: {
       movement: [
         (kernel) =>
