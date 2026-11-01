@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun ./index.html",
-    "build": "bun build ./index.html --outdir=dist --minify",
-    "typecheck": "tsc && tsc -p tsconfig.test.json && tsc -p e2e/tsconfig.json",
+    "dev": "bun ./dev.ts",
+    "build": "bun ./build.ts",
+    "typecheck": "tsc && tsc -p tsconfig.test.json && tsc -p e2e/tsconfig.json && tsc -p tsconfig.tools.json",
     "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {

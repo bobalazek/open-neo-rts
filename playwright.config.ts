@@ -8,7 +8,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   webServer: {
-    command: "bun --port=4320 apps/web/index.html",
+    command: "bun --cwd apps/web ./dev.ts",
     url: "http://localhost:4320",
   },
   projects: [

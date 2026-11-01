@@ -10,7 +10,7 @@ Work that can start now without a further decision, grouped by [roadmap](./roadm
 
 - [ ] First-pass models for remaining existing unit and structure definitions, following each faction's established brick style. Spec: [assets.md](../contributing/assets.md#model-conventions), [decision](./decisions/2026-11-01-first-pass-models.md). PR type: art (one per unit or structure).
 - [ ] Renderer follow-ups: shadows and quality presets, animated water and shore foam, chunk LOD, foundations under structures. Spec: [rendering.md](../engineering/rendering.md). PR type: engine.
-- [ ] Single-player sim worker and per-seat projection, rendered by the client. Spec: [fog-of-war.md](../design/fog-of-war.md#how-it-works). PR type: engine.
+- [ ] Render the single-player worker’s copied per-seat projection in the client, and integrate authored maps. The flat-world worker/projection foundation is implemented; phase-2 vision remains separate. Spec: [fog-of-war.md](../design/fog-of-war.md#how-it-works). PR type: engine.
 - [ ] Debug mode at `/debug`: map picker, Forces, spawn palette, inspector, overlays, time controls, command-log export, deep links. Spec: [debug-mode.md](../design/screens/debug-mode.md). PR type: engine.
 - [ ] Placement rules in the sim: footprint cell rules `land`, `shore`, `water`, `node`, build radius and clearance, shown in debug mode. Spec: [structures.md](../design/structures.md#placement). PR type: engine.
 - [ ] Pathfinding: A* on nav grids per movement domain, path budgets per Force. Spec: [pathfinding.md](../engineering/pathfinding.md). PR type: engine.

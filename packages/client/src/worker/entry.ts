@@ -1,0 +1,166 @@
+// Browser-only clock and transport. All game outcomes still come from sim.step.
+import {
+  type Command,
+  checkpointHash,
+  createMatch,
+  createProjection,
+  type Kernel,
+  type MatchSetup,
+  type ProjectionMode,
+  parseScenario,
+  SCENARIO_FORMAT,
+  SIM_VERSION,
+  step,
+  validateCommands,
+} from "@open-neo-rts/sim";
+import { isRecord, type WorkerReply } from "./protocol";
+
+const port = globalThis as unknown as {
+  onmessage: (event: MessageEvent<unknown>) => void;
+  postMessage: (reply: WorkerReply) => void;
+};
+let kernel: Kernel | undefined;
+let setup: MatchSetup;
+let seat: number;
+let mode: ProjectionMode;
+let projection: ReturnType<typeof createProjection>;
+let paused = true;
+let speed = 1;
+let sequence = 0;
+let timer: ReturnType<typeof setTimeout> | undefined;
+let queued: { id: number; command: Command }[] = [];
+
+function publish(id: number, result?: unknown) {
+  if (!kernel) throw new Error("Initialize the match first");
+  port.postMessage({
+    id,
+    result,
+    state: {
+      snapshot: projection.snapshot(kernel),
+      paused,
+      speed,
+      ...(mode === "debug-no-fog" ? { hash: checkpointHash(kernel) } : {}),
+    },
+  });
+}
+function tick() {
+  if (!kernel) return;
+  const commands = queued;
+  queued = [];
+  const entries = step(
+    kernel,
+    commands.map(({ command }) => command),
+  );
+  commands.forEach(({ id }, i) => {
+    port.postMessage({ id, result: entries[i]?.result });
+  });
+  publish(0);
+}
+function schedule() {
+  clearTimeout(timer);
+  if (!paused)
+    timer = setTimeout(() => {
+      tick();
+      schedule();
+    }, 50 / speed);
+}
+
+port.onmessage = ({ data }) => {
+  const id =
+    isRecord(data) && Number.isSafeInteger(data.id) && Number(data.id) > 0 ? Number(data.id) : 0;
+  try {
+    if (!id || !isRecord(data) || typeof data.type !== "string")
+      throw new Error("Malformed worker request");
+    if (data.type === "init") {
+      if (kernel) throw new Error("Create a new worker to reload a match");
+      if (!isRecord(data.options)) throw new Error("Invalid match options");
+      const options = data.options;
+      const scenario = parseScenario({
+        format: SCENARIO_FORMAT,
+        simVersion: SIM_VERSION,
+        setup: options.setup,
+        commands: [],
+      });
+      if (typeof options.seat !== "number" || !scenario.setup.seats.includes(options.seat))
+        throw new Error("Unknown player seat");
+      if (options.mode !== "controlled" && options.mode !== "debug-no-fog")
+        throw new Error("Invalid projection mode");
+      setup = scenario.setup;
+      seat = options.seat;
+      mode = options.mode;
+      projection = createProjection(setup, seat, mode);
+      kernel = createMatch(setup);
+      publish(id);
+      return;
+    }
+    if (!kernel) throw new Error("Initialize the match first");
+    switch (data.type) {
+      case "command": {
+        if (!isRecord(data.command) || Object.keys(data.command).length !== 2)
+          throw new Error("Invalid command request");
+        const { type } = data.command;
+        let payload = data.command.payload;
+        if (isRecord(payload)) {
+          payload = { ...payload };
+          const fields = payload as Record<string, unknown>;
+          if (type === "unit.move" || type === "unit.stop") {
+            if (Array.isArray(fields.entities))
+              fields.entities = fields.entities.map((handle) => projection.resolve(handle) ?? -1);
+          } else if (type === "debug.remove" || type === "debug.setHealth")
+            fields.entity = projection.resolve(fields.entity) ?? -1;
+        }
+        const command = { tick: kernel.tick, seat, sequence: sequence++, type, payload };
+        const validation = validateCommands([command], kernel)[0];
+        if (!validation) throw new Error("Missing command validation");
+        if (!validation.accepted) {
+          publish(id, validation.code);
+          return;
+        }
+        const accepted = validation.command;
+        if (
+          accepted.type === "debug.spawn" &&
+          !setup.forces.some((force) => force.index === accepted.payload.force)
+        ) {
+          publish(id, "bad_payload");
+          return;
+        }
+        queued.push({ id, command: validation.command });
+        return;
+      }
+      case "pause":
+        if (typeof data.paused !== "boolean") throw new Error("Invalid pause value");
+        paused = data.paused;
+        schedule();
+        break;
+      case "step":
+        if (!paused) throw new Error("Pause before single-stepping");
+        tick();
+        break;
+      case "speed":
+        if (typeof data.speed !== "number" || ![0.25, 0.5, 1, 2, 4, 8].includes(data.speed))
+          throw new Error("Invalid speed");
+        speed = data.speed;
+        schedule();
+        break;
+      case "export":
+        if (!setup.debug) throw new Error("Command-log export requires debug mode");
+        publish(id, {
+          format: SCENARIO_FORMAT,
+          simVersion: SIM_VERSION,
+          setup,
+          commands: kernel.log
+            .filter((entry) => entry.result === "accepted")
+            .map((entry) => entry.command),
+        });
+        return;
+      default:
+        throw new Error("Unknown worker request");
+    }
+    publish(id);
+  } catch (error) {
+    port.postMessage({
+      id,
+      error: error instanceof Error ? error.message : "Worker request failed",
+    });
+  }
+};

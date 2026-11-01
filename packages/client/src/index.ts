@@ -8,3 +8,6 @@ export async function startClient(canvas: HTMLCanvasElement) {
   const { startTerrainView } = await import("./features/debug/terrain");
   return startTerrainView(canvas);
 }
+
+export type { OfflineSetup, OfflineState } from "./worker";
+export { createOfflineMatch } from "./worker";
