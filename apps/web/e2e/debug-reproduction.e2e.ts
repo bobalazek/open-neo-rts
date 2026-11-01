@@ -81,7 +81,9 @@ test("initial links round-trip and a refused/reordered worker session exports to
   const tick = (await state()).snapshot.tick;
   await page.getByRole("button", { name: "Run", exact: true }).click();
   await expect.poll(async () => (await state()).snapshot.tick).toBeGreaterThan(tick + 2);
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  // Keep the button pressed across worker redraws at ×8, as a normal pointer press can be.
+  await page.getByRole("button", { name: "Pause", exact: true }).click({ delay: 100 });
+  await expect(page.getByRole("button", { name: "Step one tick", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Step one tick", exact: true }).click();
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export command log", exact: true }).click();
