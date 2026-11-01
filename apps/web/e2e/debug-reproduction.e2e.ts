@@ -86,7 +86,7 @@ test("initial links round-trip and a refused/reordered worker session exports to
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export command log", exact: true }).click();
   const file = await download;
-  const output = `/tmp/neo-art-completion/artifacts/debug-reproduction/${file.suggestedFilename()}`;
+  const output = test.info().outputPath(file.suggestedFilename());
   await file.saveAs(output);
   const exported = await page.evaluate(
     () => Reflect.get(window, "reproductionExport") as DebugSessionExport,
@@ -114,7 +114,7 @@ test("initial links round-trip and a refused/reordered worker session exports to
   expect(await link.inputValue()).toBe(canonical);
   await page.getByRole("status", { name: "Reproduction status" }).scrollIntoViewIfNeeded();
   await page.screenshot({
-    path: "/tmp/neo-art-completion/artifacts/debug-reproduction/export.png",
+    path: test.info().outputPath("export.png"),
   });
   await page.goto(canonical);
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
