@@ -1,0 +1,148 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "cyber_operations_center",
+      "bricks": [
+        {
+          "at": [-7.7, 0, -11.7],
+          "size": [15.4, 0.6, 23.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-6, 0.6, -10],
+          "size": [12, 3.5, 16],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-6, 4.1, -10],
+          "size": [12, 0.6, 16],
+          "slot": "team",
+          "studs": true
+        },
+        {
+          "at": [-4, 4.7, -8],
+          "size": [8, 3, 8],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-3.7, 5, -0.1],
+          "size": [7.4, 2.2, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-3.7, 7.7, -7.7],
+          "size": [7.4, 0.4, 7.4],
+          "slot": "palette",
+          "studs": false,
+          "color": "#eef0f2"
+        },
+        {
+          "at": [-5.5, 0.6, 7],
+          "size": [11, 0.15, 3],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-4.8, 0.8, 7.5],
+          "size": [9.6, 0.1, 2],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [5.5, 1, -8],
+          "size": [0.6, 2, 12],
+          "slot": "glass",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-6.2, 2, 6],
+          "size": [12.4, 0.4, 0.3],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "scanner",
+      "parent": "cyber_operations_center",
+      "at": [0, 8.5, -4],
+      "bricks": [
+        {
+          "at": [-0.2, -0.5, -2],
+          "size": [0.4, 1, 4],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-2.5, -0.3, -0.2],
+          "size": [5, 0.6, 0.4],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "cooling_fan",
+      "parent": "cyber_operations_center",
+      "at": [0, 4.8, 3],
+      "bricks": [
+        {
+          "at": [-2, 0, -0.2],
+          "size": [4, 0.15, 0.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.2, 0, -2],
+          "size": [0.4, 0.15, 4],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "cyber_operations_center",
+      "at": [0, 8, -4]
+    }
+  ],
+  "animations": {
+    "active": {
+      "duration": 2,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "scanner",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.5, [0, 90, 0]],
+            [1.0, [0, 180, 0]],
+            [1.5, [0, 270, 0]],
+            [2.0, [0, 360, 0]]
+          ]
+        },
+        {
+          "node": "cooling_fan",
+          "rotation": [
+            [0.0, [0, 0, 0]],
+            [0.5, [0, 90, 0]],
+            [1.0, [0, 180, 0]],
+            [1.5, [0, 270, 0]],
+            [2.0, [0, 360, 0]]
+          ]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.5
+  }
+}

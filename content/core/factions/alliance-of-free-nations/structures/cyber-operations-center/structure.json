@@ -35,6 +35,7 @@
     "icon": "cyber-operations-center.icon.png",
     "wreck": "cyber-operations-center.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
