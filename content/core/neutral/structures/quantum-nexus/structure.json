@@ -18,6 +18,9 @@
     "model": "quantum-nexus.glb",
     "icon": "quantum-nexus.icon.png",
     "wreck": "quantum-nexus.rubble.glb",
-    "materials": {}
+    "materials": {},
+    "parts": ["core"],
+    "sockets": ["socket_smoke", "socket_healthbar"],
+    "animations": ["active"]
   }
 }
