@@ -9,6 +9,8 @@ import {
   cornerHeights,
   type Geometry,
   LEVEL_HEIGHT,
+  terrainHeight,
+  waterHeight,
 } from "./mesh";
 
 function grid(width: number, height: number, levels: number[] = []): TerrainGrid {
@@ -31,6 +33,30 @@ const quads = (geos: (Geometry | null)[]) =>
   geos.reduce((n, g) => n + (g?.indices.length ?? 0) / 6, 0);
 
 describe("terrain geometry", () => {
+  test("entity heights follow all ramp planes and the existing water surface", () => {
+    const g = grid(3, 3, Array(9).fill(2));
+    for (const [ramp, low, high] of [
+      [RAMP.north, [1.5, 2], [1.5, 1]],
+      [RAMP.east, [1, 1.5], [2, 1.5]],
+      [RAMP.south, [1.5, 1], [1.5, 2]],
+      [RAMP.west, [2, 1.5], [1, 1.5]],
+    ] as const) {
+      g.ramp[4] = ramp;
+      // At the far edge the next cell owns the coordinate, so sample just within this ramp.
+      const within = ([x, y]: readonly number[]) =>
+        [Math.min(x ?? 0, 2 - 1e-8), Math.min(y ?? 0, 2 - 1e-8)] as const;
+      expect(terrainHeight(g, ...within(low))).toBeCloseTo(3.5);
+      expect(terrainHeight(g, ...within(high))).toBeCloseTo(5.3);
+      expect(terrainHeight(g, 1.5, 1.5)).toBeCloseTo(4.4);
+    }
+    g.ramp[4] = RAMP.none;
+    expect(terrainHeight(g, 1.5, 1.5)).toBeCloseTo(3.6);
+    g.water[4] = 2;
+    expect(terrainHeight(g, 1.5, 1.5)).toBeCloseTo(1.8);
+    expect(waterHeight(g, 1.5, 1.5)).toBeCloseTo(3.4);
+    expect(terrainHeight(g, -1, -1)).toBeCloseTo(3.6);
+    expect(terrainHeight(g, 20, 20)).toBeCloseTo(3.6);
+  });
   test("demo grid passes the map rules", () => {
     for (const biome of BIOMES) {
       const g = createDemoGrid(biome);

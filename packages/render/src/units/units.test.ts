@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
+import { ok as assert } from "node:assert/strict";
 import { Color3, NullEngine, PBRMaterial, Scene } from "@babylonjs/core";
-import { loadModel, setTeamColor } from ".";
+import { parseTerrain } from "@open-neo-rts/content";
+import { createEntityPresentation, loadModel, setTeamColor } from ".";
 
 function morphGlb(external = false): Uint8Array {
   const data = new Float32Array([
@@ -135,6 +137,55 @@ test("team recolouring preserves fixed materials and another model's colour", ()
     expect(() => setTeamColor(materials, "blue")).toThrow("#RRGGBB");
     expect(materials.map((m) => m.albedoColor)).toEqual(before);
   } finally {
+    scene.dispose();
+    engine.dispose();
+  }
+});
+
+test("entity morph playback owns its weights and releases cloned managers", async () => {
+  const engine = new NullEngine();
+  const scene = new Scene(engine);
+  const layer = createEntityPresentation(scene, parseTerrain(4, 4, {}), async () => ({
+    bytes: morphGlb(),
+    movementDomain: "foot",
+  }));
+  const unit = (handle: string, x = 0) => ({
+    handle,
+    definition: "morph",
+    force: 0,
+    x,
+    y: 0,
+    facing: 0,
+    health: 1,
+    maxHealth: 1,
+    order: null,
+  });
+  try {
+    await layer.accept({ tick: 0, mode: "controlled", entities: [unit("a"), unit("b")] }, 0);
+    await layer.accept({ tick: 1, mode: "controlled", entities: [unit("a", 1), unit("b")] }, 50);
+    const targets = ["a", "b"].map((handle) => {
+      const root = scene.getTransformNodeByName(`entity ${handle}`);
+      const target = root
+        ?.getChildMeshes()
+        .find((mesh) => mesh.morphTargetManager)
+        ?.morphTargetManager?.getTarget(0);
+      assert(target);
+      return target;
+    });
+    const animation = scene.animationGroups.find((group) =>
+      group.targetedAnimations.some(({ target }) => target === targets[0]),
+    );
+    assert(animation);
+    animation.goToFrame(60);
+    expect(targets[0]?.influence).toBe(1);
+    expect(targets[1]?.influence).toBe(0);
+    await layer.accept({ tick: 2, mode: "controlled", entities: [unit("a", 1), unit("b")] }, 100);
+    expect(targets[0]?.influence).toBe(0);
+    layer.dispose();
+    expect(scene.morphTargetManagers).toHaveLength(0);
+    expect(scene.geometries).toHaveLength(0);
+  } finally {
+    layer.dispose();
     scene.dispose();
     engine.dispose();
   }

@@ -49,7 +49,7 @@ Structures are the same, with `structure.json` and `<name>.rubble.glb`. Neutral 
 Binary files are stored with **Git LFS** ([.gitattributes](../../.gitattributes)). Run `git lfs install` once after cloning.
 
 - Adding a new binary file type means adding its extension to `.gitattributes` in the same PR.
-- LFS storage and bandwidth are metered on GitHub. Don't commit throwaway iterations; squash big rework into one commit. CI only downloads LFS files in the content job.
+- LFS storage and bandwidth are metered on GitHub. Don't commit throwaway iterations; squash big rework into one commit. CI's `verify` job downloads only the four GLBs read by renderer tests, explicitly listed in `ci.yml`. The `browsers` job pulls its model and map fixtures; the `content` job pulls all LFS with a cache.
 
 ## Authorship
 

@@ -14,6 +14,16 @@ The built-in registry in `client/features/debug/maps.ts` is temporary until phas
 
 The preview plays named animation groups and restores authored node transforms when returning to rest. Replacing or disposing an asset releases its meshes, materials and clips. Requests superseded by another file selection are disposed. This single-model inspection path does not implement the match's thin-instance renderer or mutate simulation state.
 
+## Phase-1b entity presentation
+
+`createEntityPresentation(scene, terrain, resolveModel)` consumes only copied `SeatSnapshot` values. The caller resolves a definition ID to `{ bytes, movementDomain }`, using the existing content domain or `null` for structures. This layer owns no pack catalog or simulation. Set Force colours with `setForceColor(force, "#RRGGBB")`; call `accept(snapshot, receivedAtMs)` on delivery and `render(nowMs)` each frame, using the same monotonic clock. Await or handle the promise from `accept` to report model-loading errors. Dispose the layer before its scene.
+
+Accepted ticks increase monotonically; stale and repeated ticks are ignored. A new match or timeline reset needs a new presentation layer. Poses interpolate from the preceding accepted snapshot to the current one over the elapsed ticks × 50 ms, clamped at both ends. New entities appear at their current pose. Handles absent from the current projection are removed immediately, with no inferred death event. Definition or Force changes replace the instance, and superseded asynchronous imports are released.
+
+One subcell becomes 2/1,024 metres. Map x/y become world x/z; binary facing zero points east (+x), while authored models face +Z. Grounded models follow terrain tops and ramp planes; naval models use the existing water surface. The snapshot supplies no altitude, so aircraft currently follow terrain height until authoritative elevation is available. Structures play `idle` when authored; activity, attacks and deaths require presentation events absent from the current contract.
+
+Rigid model parts use Babylon hardware instances, sharing one geometry/material template per (definition, Force). Each entity owns its transform hierarchy and animation groups, so its idle/move clip can run independently. Actual position changes select `move`; otherwise `idle` or rest. Force recolouring changes only team slots. Morph or skinned meshes use Babylon's shared-geometry clone path with independent animation state; vertex animation textures and cross-Force thin instancing remain later work. Templates are released when their last projected entity leaves. The isolated model preview shares the self-contained GLB loader and rest-pose playback code.
+
 ## Frame loop
 
 - The sim ticks at a fixed 20 Hz (in a Web Worker offline, on the server online). The renderer draws at display rate and **interpolates** positions, rotations and turret angles between the last two ticks, without extrapolating.

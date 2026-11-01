@@ -43,6 +43,39 @@ const RAMP_HIGH: Record<number, [number, number]> = {
   [RAMP.west]: [3, 0],
 };
 
+/** Walkable surface in metres at fractional cell coordinates, matching the drawn tops and ramps. */
+export function terrainHeight(g: TerrainGrid, x: number, y: number): number {
+  const cx = Math.max(0, Math.min(g.width, x));
+  const cy = Math.max(0, Math.min(g.height, y));
+  const ix = Math.min(g.width - 1, Math.floor(cx));
+  const iy = Math.min(g.height - 1, Math.floor(cy));
+  const i = iy * g.width + ix;
+  const fx = Math.min(1, cx - ix);
+  const fy = Math.min(1, cy - iy);
+  const level = (g.level[i] ?? 0) * LEVEL_HEIGHT;
+  switch (g.ramp[i]) {
+    case RAMP.north:
+      return level + (1 - fy) * LEVEL_HEIGHT - BEVEL;
+    case RAMP.east:
+      return level + fx * LEVEL_HEIGHT - BEVEL;
+    case RAMP.south:
+      return level + fy * LEVEL_HEIGHT - BEVEL;
+    case RAMP.west:
+      return level + (1 - fx) * LEVEL_HEIGHT - BEVEL;
+    default: {
+      const water = g.water[i];
+      return (
+        level - (water === WATER.deep ? DEEP_DEPTH : water === WATER.shallow ? SHALLOW_DEPTH : 0)
+      );
+    }
+  }
+}
+
+/** The same water plane drawn by the terrain mesh; coordinates are fractional cells. */
+export function waterHeight(g: TerrainGrid, x: number, y: number): number {
+  return (g.level[sample(g, Math.floor(x), Math.floor(y))] ?? 0) * LEVEL_HEIGHT - WATER_DROP;
+}
+
 export interface Geometry {
   positions: Float32Array;
   normals: Float32Array;
@@ -232,7 +265,7 @@ export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
           }
 
           const waterKind = isRamp ? WATER.none : (g.water[i] ?? WATER.none);
-          const surface = (g.level[i] ?? 0) * LEVEL_HEIGHT - WATER_DROP;
+          const surface = waterHeight(g, x, y);
           if (waterKind !== WATER.none) {
             const tint = waterKind === WATER.deep ? deep : shallow;
             water.quad(
