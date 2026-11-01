@@ -49,9 +49,9 @@
     "model": "scout-helicopter.glb",
     "icon": "scout-helicopter.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "rotor", "barrel"],
     "sockets": ["socket_muzzle"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "scout-helicopter.wreck.glb"
   }
 }
