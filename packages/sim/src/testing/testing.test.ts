@@ -27,13 +27,62 @@ describe("Eastern Collective tier-1 definitions", () => {
   test("converts the original roster to integer sim units in stable ID order", () => {
     const definitions = easternCollectiveTier1Definitions();
     expect(definitions).toEqual([
-      { id: "unit:eastern-collective/collective-soldier", health: 100, speed: 77, turnRate: 65536 },
-      { id: "unit:eastern-collective/dragon-tank", health: 900, speed: 92, turnRate: 65536 },
-      { id: "unit:eastern-collective/drone-hunter", health: 100, speed: 72, turnRate: 65536 },
-      { id: "unit:eastern-collective/field-technician", health: 100, speed: 77, turnRate: 65536 },
-      { id: "unit:eastern-collective/metamorphic-apc", health: 600, speed: 133, turnRate: 65536 },
-      { id: "unit:eastern-collective/rocket-trooper", health: 100, speed: 67, turnRate: 65536 },
-      { id: "unit:eastern-collective/supply-truck", health: 900, speed: 82, turnRate: 65536 },
+      {
+        id: "unit:eastern-collective/collective-soldier",
+        health: 100,
+        speed: 77,
+        turnRate: 65536,
+        domain: "foot",
+        radiusSubcells: 256,
+      },
+      {
+        id: "unit:eastern-collective/dragon-tank",
+        health: 900,
+        speed: 92,
+        turnRate: 65536,
+        domain: "tracked",
+        radiusSubcells: 870,
+      },
+      {
+        id: "unit:eastern-collective/drone-hunter",
+        health: 100,
+        speed: 72,
+        turnRate: 65536,
+        domain: "foot",
+        radiusSubcells: 256,
+      },
+      {
+        id: "unit:eastern-collective/field-technician",
+        health: 100,
+        speed: 77,
+        turnRate: 65536,
+        domain: "foot",
+        radiusSubcells: 256,
+      },
+      {
+        id: "unit:eastern-collective/metamorphic-apc",
+        health: 600,
+        speed: 133,
+        turnRate: 65536,
+        domain: "wheeled",
+        radiusSubcells: 768,
+      },
+      {
+        id: "unit:eastern-collective/rocket-trooper",
+        health: 100,
+        speed: 67,
+        turnRate: 65536,
+        domain: "foot",
+        radiusSubcells: 256,
+      },
+      {
+        id: "unit:eastern-collective/supply-truck",
+        health: 900,
+        speed: 82,
+        turnRate: 65536,
+        domain: "wheeled",
+        radiusSubcells: 819,
+      },
     ]);
     const first = definitions[0];
     if (!first) throw new Error("Missing Collective Soldier definition");

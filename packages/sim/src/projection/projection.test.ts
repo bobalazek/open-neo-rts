@@ -18,7 +18,14 @@ const setup = {
     { seat: 2, force: 1, scopes: ["unit.orders" as const], grantedAtTick: 0 },
   ],
   definitions: [
-    { id: "unit:eastern-collective/dragon-tank", health: 900, speed: 92, turnRate: 65536 },
+    {
+      id: "unit:eastern-collective/dragon-tank",
+      health: 900,
+      speed: 92,
+      turnRate: 65536,
+      domain: "foot" as const,
+      radiusSubcells: 0,
+    },
   ],
 };
 

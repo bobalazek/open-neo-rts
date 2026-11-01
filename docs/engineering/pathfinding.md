@@ -20,7 +20,18 @@ to be passable. Costs stay exact integers even at the largest grid and cell cost
 `nearestReachable` resolves blocked, disconnected or off-map target cell coordinates within the start's
 component, using octile distance then row-major cell index. A blocked start has no destination. Labels
 and fallback scans are bounded by the grid size; ordinary same-component targets use constant time.
-Movement integration is still pending; existing simulation outcomes are unchanged.
+Map matches now register ground path following and bounded direct air movement. Mapless kernel tests
+retain the phase-1a flat movement helper. Map units require their original domain and integer radius
+at setup/replay validation. `toDefinition` projects owner-authored `movement.domain`, `radius` and prop
+`domains` once; no roster-specific movement rule is introduced.
+
+The match shares a 4,096-expansion quota across all Forces, domains and radii through one scheduler.
+Swept circular segment checks string-pull paths against exact static rectangles, cliff edges and map
+bounds; unobstructed orders can follow the resulting direct segment immediately. Partial results can
+move while A* continues. Routes, targets, search progress and the next-Force cursor participate in
+canonical hashing. Search hashing reads sparse discovered nodes directly, without allocating or
+JSON-encoding whole A* arrays at each debug publication. Explicit `movement.snapshot()` remains
+available for diagnostics; replay remains the supported restore path in phase 1.
 
 ## Navigation data
 
@@ -61,7 +72,7 @@ Those sources support the engineering separation, not these numerical balance va
 
 1. **Same-sector or short paths:** A* on the 8-connected grid.
    - Integer costs: 10 orthogonal, 14 diagonal, times the cell cost.
-   - Octile-distance heuristic.
+   - Octile-distance heuristic scaled by the grid's minimum positive entry cost.
    - No diagonal corner-cutting past blocked cells.
    - **Deterministic tie-breaking:** lowest f, then lowest h, then lowest cell index. The open list is a binary heap with that ordering.
 2. **Long paths:** hierarchical. The map is divided into sectors (e.g. 16×16 cells) with portals between them. A* runs first on the portal graph, then refines inside each sector as the unit advances.
@@ -74,7 +85,7 @@ Each Force has its own path request queue, ordered canonically by (tick issued, 
 
 The standalone `PathScheduler` implements this quota over one caller-supplied `NavGrid`. Submit each tick's requests before calling `tick()`; resolve multiple commands for the same entity in canonical command order first. `submit()` replaces prior work for that entity, including after a Force transfer; `cancel()` removes it for stop/death/removal. A new player order can preempt an automatic repath while retaining that repath's search. The next Force cursor persists across ticks, including when the quota is smaller than the number of Forces. Results contain a partial/final path once per served request, and integer expansion/completion/queue counters per tick and Force. A zero quota performs no work.
 
-`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**. The grid stays caller-owned and is not included in this state. This scheduler is not registered in a match yet; movement registration and tick-boundary invalidation remain separate tasks. Registration must include this entire state in canonical match hashing and apply the simulation-version/golden outcome rule. Current match outcomes and `SIM_VERSION` are unchanged.
+`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**, or the same request-to-grid resolver. Grids stay caller-owned and are not included in scheduler state. Map matches hash the scheduler's full continuation state directly. Tick-boundary occupancy invalidation remains a separate task. Simulation version 4 introduces map path following; older replays fail explicitly.
 
 ## Group movement
 

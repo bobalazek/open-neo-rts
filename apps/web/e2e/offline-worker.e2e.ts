@@ -23,7 +23,14 @@ const setup: MatchSetup = {
   seats: [1],
   grants: [{ seat: 1, force: 0, scopes: ["unit.orders"], grantedAtTick: 0 }],
   definitions: [
-    { id: "unit:eastern-collective/dragon-tank", health: 900, speed: 92, turnRate: 65536 },
+    {
+      id: "unit:eastern-collective/dragon-tank",
+      health: 900,
+      speed: 92,
+      turnRate: 65536,
+      domain: "foot",
+      radiusSubcells: 0,
+    },
   ],
 };
 

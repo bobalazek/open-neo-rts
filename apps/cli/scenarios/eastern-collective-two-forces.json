@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 3,
+  "simVersion": 4,
   "setup": {
     "map": {
       "id": "map:fixture-terrain",
@@ -36,7 +36,7 @@
       "spawns": [
         {
           "id": "west",
-          "position": [312, 3125],
+          "position": [1536, 3584],
           "facing": 32768
         }
       ],
@@ -81,43 +81,57 @@
         "id": "unit:eastern-collective/collective-soldier",
         "health": 100,
         "speed": 77,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "foot",
+        "radiusSubcells": 256
       },
       {
         "id": "unit:eastern-collective/dragon-tank",
         "health": 900,
         "speed": 92,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "tracked",
+        "radiusSubcells": 870
       },
       {
         "id": "unit:eastern-collective/drone-hunter",
         "health": 100,
         "speed": 72,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "foot",
+        "radiusSubcells": 256
       },
       {
         "id": "unit:eastern-collective/field-technician",
         "health": 100,
         "speed": 77,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "foot",
+        "radiusSubcells": 256
       },
       {
         "id": "unit:eastern-collective/metamorphic-apc",
         "health": 600,
         "speed": 133,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "wheeled",
+        "radiusSubcells": 768
       },
       {
         "id": "unit:eastern-collective/rocket-trooper",
         "health": 100,
         "speed": 67,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "foot",
+        "radiusSubcells": 256
       },
       {
         "id": "unit:eastern-collective/supply-truck",
         "health": 900,
         "speed": 82,
-        "turnRate": 65536
+        "turnRate": 65536,
+        "domain": "wheeled",
+        "radiusSubcells": 819
       }
     ]
   },
@@ -130,8 +144,8 @@
       "payload": {
         "definition": "unit:eastern-collective/collective-soldier",
         "force": 0,
-        "x": 312,
-        "y": 3125,
+        "x": 1536,
+        "y": 3584,
         "facing": 32768
       }
     },
@@ -143,8 +157,8 @@
       "payload": {
         "definition": "unit:eastern-collective/dragon-tank",
         "force": 0,
-        "x": 312,
-        "y": 3141,
+        "x": 1536,
+        "y": 3600,
         "facing": 32768
       }
     },
@@ -156,8 +170,8 @@
       "payload": {
         "definition": "unit:eastern-collective/drone-hunter",
         "force": 0,
-        "x": 312,
-        "y": 3157,
+        "x": 1536,
+        "y": 3616,
         "facing": 32768
       }
     },
@@ -169,8 +183,8 @@
       "payload": {
         "definition": "unit:eastern-collective/field-technician",
         "force": 0,
-        "x": 312,
-        "y": 3173,
+        "x": 1536,
+        "y": 3632,
         "facing": 32768
       }
     },
@@ -182,8 +196,8 @@
       "payload": {
         "definition": "unit:eastern-collective/metamorphic-apc",
         "force": 0,
-        "x": 312,
-        "y": 3189,
+        "x": 1536,
+        "y": 3648,
         "facing": 32768
       }
     },
@@ -195,8 +209,8 @@
       "payload": {
         "definition": "unit:eastern-collective/rocket-trooper",
         "force": 0,
-        "x": 312,
-        "y": 3205,
+        "x": 1536,
+        "y": 3664,
         "facing": 32768
       }
     },
@@ -208,8 +222,8 @@
       "payload": {
         "definition": "unit:eastern-collective/supply-truck",
         "force": 0,
-        "x": 312,
-        "y": 3221,
+        "x": 1536,
+        "y": 3680,
         "facing": 32768
       }
     },
@@ -221,8 +235,8 @@
       "payload": {
         "definition": "unit:eastern-collective/collective-soldier",
         "force": 1,
-        "x": 5937,
-        "y": 3125,
+        "x": 6656,
+        "y": 1536,
         "facing": 0
       }
     },
@@ -234,8 +248,8 @@
       "payload": {
         "definition": "unit:eastern-collective/dragon-tank",
         "force": 1,
-        "x": 5937,
-        "y": 3109,
+        "x": 6656,
+        "y": 1552,
         "facing": 0
       }
     },
@@ -247,8 +261,8 @@
       "payload": {
         "definition": "unit:eastern-collective/drone-hunter",
         "force": 1,
-        "x": 5937,
-        "y": 3093,
+        "x": 6656,
+        "y": 1568,
         "facing": 0
       }
     },
@@ -260,8 +274,8 @@
       "payload": {
         "definition": "unit:eastern-collective/field-technician",
         "force": 1,
-        "x": 5937,
-        "y": 3077,
+        "x": 6656,
+        "y": 1584,
         "facing": 0
       }
     },
@@ -273,8 +287,8 @@
       "payload": {
         "definition": "unit:eastern-collective/metamorphic-apc",
         "force": 1,
-        "x": 5937,
-        "y": 3061,
+        "x": 6656,
+        "y": 1600,
         "facing": 0
       }
     },
@@ -286,8 +300,8 @@
       "payload": {
         "definition": "unit:eastern-collective/rocket-trooper",
         "force": 1,
-        "x": 5937,
-        "y": 3045,
+        "x": 6656,
+        "y": 1616,
         "facing": 0
       }
     },
@@ -299,8 +313,8 @@
       "payload": {
         "definition": "unit:eastern-collective/supply-truck",
         "force": 1,
-        "x": 5937,
-        "y": 3029,
+        "x": 6656,
+        "y": 1632,
         "facing": 0
       }
     },
