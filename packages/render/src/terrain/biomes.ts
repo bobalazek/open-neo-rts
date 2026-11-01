@@ -8,7 +8,7 @@ export interface Palette {
   cliff: number;
   shallow: number;
   deep: number;
-  /** Ground under structures. Unused until structures render. */
+  /** Ground under projected structures. */
   foundation: number;
 }
 

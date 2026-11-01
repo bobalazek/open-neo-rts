@@ -13,6 +13,7 @@ import {
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { registerModelShadows } from "../scene/shadows";
+import { createFoundation } from "../structures";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
 
@@ -30,12 +31,15 @@ interface Entity {
   clip?: string;
   loading?: Promise<void>;
   ring?: ReturnType<Mesh["createInstance"]>;
+  foundation?: Mesh;
+  foundationPose?: string;
 }
 interface Template {
   force: number;
   movementDomain: (typeof DOMAINS)[number] | null;
   footprint?: readonly [number, number];
   radiusSubcells?: number;
+  foundation?: boolean;
   visibility: Map<string, boolean>;
   model?: AssetContainer;
   loading: Promise<AssetContainer | undefined>;
@@ -53,6 +57,7 @@ export function createEntityPresentation(
     movementDomain: (typeof DOMAINS)[number] | null;
     footprint?: readonly [number, number];
     radiusSubcells?: number;
+    foundation?: boolean;
   }>,
 ) {
   const entities = new Map<string, Entity>();
@@ -73,6 +78,7 @@ export function createEntityPresentation(
   function remove(entity: Entity) {
     for (const mesh of entity.root?.getChildMeshes() ?? []) meshHandles.delete(mesh);
     entity.ring?.dispose();
+    entity.foundation?.dispose();
     const morphs = entity.root
       ?.getChildMeshes()
       .flatMap((mesh) => (mesh.morphTargetManager ? [mesh.morphTargetManager] : []));
@@ -91,7 +97,7 @@ export function createEntityPresentation(
       visibility: new Map(),
       loading: Promise.resolve()
         .then(async () => {
-          const { bytes, movementDomain, footprint, radiusSubcells } =
+          const { bytes, movementDomain, footprint, radiusSubcells, foundation } =
             await resolveModel(definition);
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
@@ -111,6 +117,7 @@ export function createEntityPresentation(
             template.movementDomain = movementDomain;
             template.footprint = footprint;
             template.radiusSubcells = radiusSubcells;
+            template.foundation = foundation;
             template.model = model;
             return model;
           } catch (error) {
@@ -144,6 +151,19 @@ export function createEntityPresentation(
       if (template?.footprint) {
         const [width, depth] = template.footprint;
         const turned = (((b.facing >>> 14) + 3) & 1) !== 0;
+        const pose = `${b.x},${b.y},${turned}`;
+        if (template.foundation && entity.foundationPose !== pose) {
+          entity.foundation?.dispose();
+          entity.foundation = createFoundation(
+            scene,
+            terrain,
+            b.x / 1024,
+            b.y / 1024,
+            turned ? depth : width,
+            turned ? width : depth,
+          );
+          entity.foundationPose = pose;
+        }
         x += (turned ? depth : width) / 2;
         y += (turned ? width : depth) / 2;
       }
