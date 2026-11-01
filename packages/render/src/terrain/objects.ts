@@ -1,6 +1,7 @@
 // Static map art is separate from selectable, authoritative simulation entities.
 import { type AssetContainer, type Scene, TransformNode } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
+import { registerModelShadows } from "../scene/shadows";
 import { loadModelContainer } from "../units/model";
 import { CELL_SIZE, hash2, terrainHeight } from "./mesh";
 
@@ -153,6 +154,7 @@ export function createMapPresentation(
             const [x = 0, y = 0] = placement.position;
             root.position.set(x * CELL_SIZE, terrainHeight(terrain, x, y), y * CELL_SIZE);
             root.rotation.y = ((placement.rotation ?? 0) * Math.PI) / 180;
+            registerModelShadows(root);
           }
         } catch (error) {
           throw new Error(
