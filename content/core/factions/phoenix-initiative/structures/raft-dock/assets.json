@@ -1,0 +1,16 @@
+{
+  "files": {
+    "raft-dock.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raft-dock.bricks.json"
+    },
+    "raft-dock.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/raft-dock.bricks.json"
+    },
+    "raft-dock.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raft-dock.bricks.json"
+    }
+  }
+}

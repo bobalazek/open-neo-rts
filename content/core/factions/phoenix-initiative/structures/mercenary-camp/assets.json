@@ -1,0 +1,16 @@
+{
+  "files": {
+    "mercenary-camp.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mercenary-camp.bricks.json"
+    },
+    "mercenary-camp.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mercenary-camp.bricks.json"
+    },
+    "mercenary-camp.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mercenary-camp.bricks.json"
+    }
+  }
+}

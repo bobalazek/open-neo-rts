@@ -19,6 +19,7 @@
     "icon": "mercenary-camp.icon.png",
     "wreck": "mercenary-camp.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["active", "open", "close"]
   }
 }

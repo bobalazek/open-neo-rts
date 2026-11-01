@@ -1,0 +1,16 @@
+{
+  "files": {
+    "black-market-hub.glb": {
+      "author": "Borut Balazek",
+      "source": "source/black-market-hub.bricks.json"
+    },
+    "black-market-hub.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/black-market-hub.bricks.json"
+    },
+    "black-market-hub.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/black-market-hub.bricks.json"
+    }
+  }
+}
