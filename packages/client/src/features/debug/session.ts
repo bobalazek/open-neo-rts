@@ -8,6 +8,7 @@ import {
 import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
+import { changeSelection } from "../match/selection";
 import { catalogEntry, resolveEntityModel } from "./catalog";
 import { createPresentationClock } from "./clock";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
@@ -52,7 +53,10 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   const controls = { forceRows, controlled, addForce };
   const signal = new AbortController();
   const palette = createSpawnPalette(panel, catalog, signal.signal);
-  const inspector = createInspector(panel, catalog, signal.signal, () => {});
+  let updateSelection: (handles: readonly string[]) => void = () => {};
+  const inspector = createInspector(panel, catalog, signal.signal, (handles) =>
+    updateSelection(handles),
+  );
   map.replaceChildren(
     ...MAPS.map(({ definition }) => new Option(definition.name, `core.${definition.id}`)),
   );
@@ -147,6 +151,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       released = true;
       clicks.abort();
       match?.dispose();
+      updateSelection = () => {};
       inspector.bind();
       entities?.dispose();
       art?.dispose();
@@ -186,6 +191,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         return resolveEntityModel(entry);
       });
       const presentation = entities;
+      updateSelection = (handles) => presentation.select(handles);
       const clock = createPresentationClock();
       for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
       renderer.scene.onBeforeRenderObservable.add(() =>
@@ -264,9 +270,28 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const activeRenderer = renderer;
       let busy = false;
       canvas.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.code !== "Escape") return;
+          event.preventDefault();
+          if (!palette.cancel()) inspector.select([]);
+        },
+        { signal: clicks.signal },
+      );
+      canvas.addEventListener(
         "click",
         async (event) => {
           if (!current() || busy || inspector.busy() || event.button !== 0) return;
+          if (!palette.spawning()) {
+            const bounds = canvas.getBoundingClientRect();
+            const picked = presentation.pick(
+              event.clientX - bounds.left,
+              event.clientY - bounds.top,
+            );
+            inspector.select(changeSelection(inspector.selected(), picked ? [picked] : [], event));
+            canvas.focus({ preventScroll: true });
+            return;
+          }
           const selection = palette.selection();
           const cell = activeRenderer.pickCell(event.clientX, event.clientY);
           if (!selection || !cell) {
