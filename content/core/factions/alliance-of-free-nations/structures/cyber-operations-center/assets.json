@@ -1,0 +1,16 @@
+{
+  "files": {
+    "cyber-operations-center.glb": {
+      "author": "Borut Balazek",
+      "source": "source/cyber-operations-center.bricks.json"
+    },
+    "cyber-operations-center.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/cyber-operations-center.bricks.json"
+    },
+    "cyber-operations-center.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/cyber-operations-center.bricks.json"
+    }
+  }
+}
