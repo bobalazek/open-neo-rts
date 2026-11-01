@@ -14,9 +14,9 @@ Snapshot on 2026-11-02. The [task queue](./tasks.md) and [phase-1b plan](./phase
 
 ## Validation and limits
 
-The current delivery batch has independent source review and scoped author checks. Repository, content and three-browser CI run together on the final assembled main commit. Do not treat a merged intermediate commit or source-review gate as a final CI receipt.
+Baseline main `b19a7fea9447b84e7a3efaddc4338e6f1ba34880` passed repository verification, full content validation and all three browser engines in [CI 41360534690](https://github.com/bobalazek/open-neo-rts/actions/runs/41360534690). This receipt precedes the issue #143 shadow-fit optimization; it does not validate that candidate. Independent review and owning-PR CI remain pending for [1B-49](./phases/1b.md#1b-49--reuse-directional-shadow-bounds-during-receiver-rendering).
 
-At `7b8475b`, [CI](https://github.com/bobalazek/open-neo-rts/actions/runs/41359306216) passed repository verification, full content validation, all 32 Chromium cases and 28 Firefox cases (four older visual-only cases skipped there). WebKit passed 27 cases, skipped the same four and found a lost Pause-click bug; the reproduced fix merged in PR #141. The next assembled run must verify that repair and the new performance/movement evidence. All three key probes passed and retained separate reports; native accelerator capture remains unverified.
+The preceding `7b8475b` run found a lost Pause-click bug in WebKit; the reproduced fix merged in PR #141 and is covered by the green baseline above. Four older visual-only cases remain skipped in Firefox and WebKit. All three key probes passed and retained separate reports; native accelerator capture remains unverified.
 
 Measured navigation on a 128×128 map with 200 units starts every open-map order on the first tick. With an obstructing structure, all units begin moving by tick 23 (1.15 seconds); measured movement p95 was about 14.17 ms, hash p95 1.58 ms and cold compilation peaked near 89 ms. These are CPU/response measurements, not a 60 fps proof. The [phase-1b exit](./roadmap.md#exit-criteria) remains open.
 
