@@ -68,7 +68,7 @@
     "materials": {},
     "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": ["fire_recoil"],
+    "animations": ["idle", "move", "attack", "fire_recoil"],
     "wreck": "scorpion-tank.wreck.glb"
   }
 }
