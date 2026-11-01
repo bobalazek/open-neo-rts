@@ -10,7 +10,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 - [ ] [1B-09 · Quality presets and shadows](./phases/1b.md#1b-09--add-quality-presets-and-shadows). PR type: engine.
 - [ ] [1B-10 · Animated water and shore foam](./phases/1b.md#1b-10--animate-water-and-shore-foam). PR type: engine.
-- [ ] [1B-12 · Map props and resource visuals](./phases/1b.md#1b-12--instance-map-props-and-resource-visuals). Authored terrain loading is merged; this adds object presentation. PR type: engine.
 - [ ] [1B-18 · Authoritative spawn occupancy and footprint placement](./phases/1b.md#1b-18--enforce-spawn-occupancy-and-footprint-placement): map-aware setup is implemented. PR type: engine.
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
 

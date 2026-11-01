@@ -1,4 +1,5 @@
-import { createRenderer } from "@open-neo-rts/render";
+import { createMapPresentation, createRenderer, resourceInstances } from "@open-neo-rts/render";
+import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
 
 export async function startTerrainView(canvas: HTMLCanvasElement) {
@@ -31,9 +32,20 @@ export async function startTerrainView(canvas: HTMLCanvasElement) {
   document.body.append(controls);
   canvas.setAttribute("aria-label", "Map terrain. Use arrow keys to pan and scroll to zoom.");
   canvas.tabIndex = 0;
+  let renderer: Awaited<ReturnType<typeof createRenderer>> | undefined;
+  let art: ReturnType<typeof createMapPresentation> | undefined;
   try {
     const { definition, grid } = await loadMap(id);
-    const renderer = await createRenderer(canvas, { terrain: grid });
+    renderer = await createRenderer(canvas, { terrain: grid });
+    art = createMapPresentation(
+      renderer.scene,
+      grid,
+      [...mapDecorations(definition.objects), ...resourceInstances(definition, grid)],
+      resolveMapModel,
+    );
+    await art.ready;
+    const activeRenderer = renderer;
+    const activeArt = art;
     status.textContent = `${definition.name} · ${grid.width} × ${grid.height} cells`;
     canvas.dataset.map = id;
     return {
@@ -41,12 +53,19 @@ export async function startTerrainView(canvas: HTMLCanvasElement) {
       dispose() {
         controls.remove();
         document.body.classList.remove("model-check-page");
-        renderer.dispose();
+        activeArt.dispose();
+        activeRenderer.dispose();
       },
     };
   } catch (error) {
+    art?.dispose();
+    renderer?.dispose();
     console.error(error);
-    status.textContent = "Could not load this map. Choose another map.";
+    const detail =
+      error instanceof Error && /^(Map model|No map model|Unknown map object)/.test(error.message)
+        ? ` ${error.message}`
+        : "";
+    status.textContent = `Could not load this map. Choose another map.${detail}`;
     status.setAttribute("role", "alert");
     status.classList.add("model-check-error");
     return {
