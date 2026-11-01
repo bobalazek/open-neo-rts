@@ -49,5 +49,6 @@ export async function resolveEntityModel(entry: CatalogEntry) {
     movementDomain: entry.movementDomain,
     footprint: entry.definition.footprint,
     radiusSubcells: entry.definition.radiusSubcells,
+    foundation: entry.kind === "structure",
   };
 }

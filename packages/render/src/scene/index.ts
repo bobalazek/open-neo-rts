@@ -1,4 +1,4 @@
-// Engine, scene, lighting. Phase 1b; quality presets come later.
+// Engine, neutral scene and lighting. Map quality is owned by the renderer.
 
 import {
   type AbstractEngine,
@@ -16,8 +16,12 @@ import {
 export async function createEngine(canvas: HTMLCanvasElement): Promise<AbstractEngine> {
   if (await WebGPUEngine.IsSupportedAsync) {
     const engine = new WebGPUEngine(canvas, { antialias: true });
-    await engine.initAsync();
-    return engine;
+    try {
+      await engine.initAsync();
+      return engine;
+    } catch {
+      engine.dispose();
+    }
   }
   return new Engine(canvas, true);
 }

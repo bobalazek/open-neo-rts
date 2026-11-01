@@ -9,6 +9,7 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
+import { registerShadowCaster } from "../scene/shadows";
 import { buildTerrainGeometry, type Geometry } from "./mesh";
 
 export { PALETTES, type Palette } from "./biomes";
@@ -37,13 +38,13 @@ export function createTerrain(scene: Scene, grid: TerrainGrid): TransformNode {
     data.indices = geometry.indices;
     data.applyToMesh(m);
     m.material = material;
+    if (material === ground) registerShadowCaster(m);
     m.freezeWorldMatrix();
   };
   for (const chunk of buildTerrainGeometry(grid)) {
     mesh(`terrain ${chunk.cx},${chunk.cy}`, chunk.terrain, ground);
     if (chunk.water) mesh(`water ${chunk.cx},${chunk.cy}`, chunk.water, water);
   }
-  ground.freeze();
-  water.freeze();
+  // Quality changes rebuild shadow, prepass and depth shader variants; keep materials unfrozen.
   return root;
 }

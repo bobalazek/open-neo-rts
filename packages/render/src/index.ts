@@ -1,11 +1,14 @@
 // Babylon renderer: scene, RTS camera and terrain. Reads sim presentation, never writes sim state.
 
+import { DirectionalLight } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
 import { createRtsCamera } from "./camera";
 import { createEngine, createScene } from "./scene";
+import { createQuality, type GraphicsQuality } from "./scene/quality";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
+export type { GraphicsQuality } from "./scene/quality";
 export {
   createMapPresentation,
   type MapDecoration,
@@ -18,6 +21,8 @@ export { createModelPreview } from "./units/preview";
 
 export interface RendererOptions {
   terrain: TerrainGrid;
+  quality?: GraphicsQuality;
+  tiltShift?: boolean;
 }
 
 export async function createRenderer(canvas: HTMLCanvasElement, options: RendererOptions) {
@@ -31,6 +36,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     minZ: 0,
     maxZ: grid.height * CELL_SIZE,
   });
+  const sun = scene.getLightByName("sun");
+  if (!(sun instanceof DirectionalLight)) throw new Error("Scene has no directional sun");
+  const quality = createQuality(scene, camera, sun);
+  quality.setQuality(options.quality ?? "medium", options.tiltShift);
 
   const render = () => scene.render();
   const resize = () => engine.resize();
@@ -41,6 +50,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     scene,
     camera,
     terrain,
+    setQuality: quality.setQuality,
     /** Pick only authored ground/water, never a model that covers the intended cell. */
     pickCell(clientX: number, clientY: number) {
       const bounds = canvas.getBoundingClientRect();
@@ -58,6 +68,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     dispose() {
       removeEventListener("resize", resize);
       engine.stopRenderLoop(render);
+      quality.dispose();
       scene.dispose();
       engine.dispose();
     },

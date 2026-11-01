@@ -8,6 +8,14 @@ The terrain view at `/` or `/debug` loads the selected built-in map's authored d
 
 The built-in registry in `client/features/debug/maps.ts` is temporary until phase-2 pack loading. Binary layers use [Bun's asset imports](https://bun.sh/docs/bundler#assets), so both the HTML dev server and production build serve the original map bytes. The client also resolves original map decoration and resource GLBs; their static instances are separate from simulation entities.
 
+## Graphics quality
+
+`createRenderer(canvas, { terrain, quality: "medium" })` defaults to medium. The debug/performance harness can call `renderer.setQuality("low" | "medium" | "high" | "ultra", tiltShift?)` at runtime. Tilt-shift is optional and applies only to Ultra; pass `true` to enable the subtle depth-of-field effect, focused at the RTS camera target. No preference persistence or settings UI is included.
+
+Low renders at 75% of the normal canvas resolution, with flat per-model blob shadows and no postprocessing. Medium uses a 1024-pixel directional sun shadow map and mild contrast grading. High uses 2048-pixel sun shadows, half-resolution SSAO2 (8 samples), grading and bloom. Ultra keeps 100% resolution, adds filtered soft sun shadows, full-resolution SSAO2 (16 samples and expensive blur), and the optional depth of field. SSAO is omitted on engines without Babylon's SSAO2 support. Particle density settings await the effects system; these presets do not claim to implement particles.
+
+Terrain and visible model instances explicitly register as casters/receivers. Hidden shared GLB templates, water and selection overlays never enter the shadow render list. Babylon instances receive shadows through their shared source mesh but cast through their visible instances. Registration follows asynchronous model creation and disposal. Low's blobs follow model roots on a flat local plane; they are a cheap fallback rather than projected terrain shadows. Terrain materials remain unfrozen so shadow, prepass and depth shader variants can change safely. Preset replacement releases shadow maps, postprocess pipelines, AO prepass and optional depth-renderer resources. The isolated model preview retains its neutral scene and does not use match presets.
+
 ## Static map art
 
 `createMapPresentation(scene, grid, placements, resolveModel)` owns static art and its templates. Placements retain original definition references and authored centre coordinates in cells; one cell is 2 metres, quarter-turn rotations apply to the original model, and height follows the terrain/ramp plane at that centre. The client resolves only registered built-in GLBs. Each model loads once per map view and rigid instances share geometry/materials. Instances are not pickable. Dispose this layer before the scene; failed or superseded loads release their assets, and errors identify the model.
