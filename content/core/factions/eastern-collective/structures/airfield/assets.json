@@ -1,0 +1,16 @@
+{
+  "files": {
+    "airfield.glb": {
+      "author": "Borut Balazek",
+      "source": "source/airfield.bricks.json"
+    },
+    "airfield.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/airfield.bricks.json"
+    },
+    "airfield.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/airfield.bricks.json"
+    }
+  }
+}
