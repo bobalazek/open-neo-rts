@@ -40,7 +40,12 @@
           "color": "#2f3338",
           "studs": false
         },
-        { "at": [-10.1, 6.4, -9.1], "size": [20.2, 1.6, 16.2], "slot": "team", "studs": false },
+        {
+          "at": [-10.1, 6.4, -9.1],
+          "size": [20.2, 1.6, 16.2],
+          "slot": "team",
+          "studs": false
+        },
         {
           "at": [-10, 8, -9],
           "size": [20, 2, 16],
@@ -55,7 +60,12 @@
           "studs": false,
           "shape": "slope-z"
         },
-        { "at": [-9.5, 10.6, -5.2], "size": [19, 2.2, 0.2], "slot": "glass", "studs": false },
+        {
+          "at": [-9.5, 10.6, -5.2],
+          "size": [19, 2.2, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
         {
           "at": [-10, 10, -5],
           "size": [20, 3, 4],
@@ -63,7 +73,12 @@
           "studs": false,
           "shape": "slope-z"
         },
-        { "at": [-9.5, 10.6, -1.2], "size": [19, 2.2, 0.2], "slot": "glass", "studs": false },
+        {
+          "at": [-9.5, 10.6, -1.2],
+          "size": [19, 2.2, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
         {
           "at": [-10, 10, -1],
           "size": [20, 3, 4],
@@ -71,7 +86,12 @@
           "studs": false,
           "shape": "slope-z"
         },
-        { "at": [-9.5, 10.6, 2.8], "size": [19, 2.2, 0.2], "slot": "glass", "studs": false },
+        {
+          "at": [-9.5, 10.6, 2.8],
+          "size": [19, 2.2, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
         {
           "at": [-10, 10, 3],
           "size": [20, 3, 4],
@@ -79,7 +99,12 @@
           "studs": false,
           "shape": "slope-z"
         },
-        { "at": [-9.5, 10.6, 6.8], "size": [19, 2.2, 0.2], "slot": "glass", "studs": false },
+        {
+          "at": [-9.5, 10.6, 6.8],
+          "size": [19, 2.2, 0.2],
+          "slot": "glass",
+          "studs": false
+        },
         {
           "at": [6, 0.6, 6.8],
           "size": [1.2, 9.4, 1.2],
@@ -87,7 +112,12 @@
           "studs": false,
           "mirror": true
         },
-        { "at": [-6, 8.4, 6.8], "size": [12, 1.6, 1.2], "slot": "team_dark", "studs": false },
+        {
+          "at": [-6, 8.4, 6.8],
+          "size": [12, 1.6, 1.2],
+          "slot": "team_dark",
+          "studs": false
+        },
         {
           "at": [-6, 8.6, 8],
           "size": [1, 0.6, 0.1],
@@ -403,7 +433,12 @@
       "parent": "base",
       "at": [0, 8.4, 7.2],
       "bricks": [
-        { "at": [-6, -7.8, -0.2], "size": [12, 7.8, 0.4], "slot": "team_dark", "studs": false },
+        {
+          "at": [-6, -7.8, -0.2],
+          "size": [12, 7.8, 0.4],
+          "slot": "team_dark",
+          "studs": false
+        },
         {
           "at": [-6, -6.65, 0.17],
           "size": [12, 0.25, 0.1],
@@ -490,27 +525,52 @@
         }
       ]
     },
-    { "name": "socket_exit_0", "parent": "base", "at": [0, 0, 12] },
-    { "name": "socket_smoke_0", "parent": "base", "at": [7.5, 18, -7.5] },
-    { "name": "socket_smoke_1", "parent": "base", "at": [4.2, 16.5, -7.5] }
+    {
+      "name": "socket_exit_0",
+      "parent": "base",
+      "at": [0, 0, 12]
+    },
+    {
+      "name": "socket_smoke_0",
+      "parent": "base",
+      "at": [7.5, 18, -7.5]
+    },
+    {
+      "name": "socket_smoke_1",
+      "parent": "base",
+      "at": [4.2, 16.5, -7.5]
+    }
   ],
   "animations": {
     "open": {
       "duration": 1.2,
-      "tracks": [{ "node": "door", "scale": [[0, [1, 1, 1]], [1.2, [1, 0.08, 1]]] }]
+      "tracks": [
+        {
+          "node": "door",
+          "scale": [[0, [1, 1, 1]], [1.2, [1, 0.08, 1]]]
+        }
+      ]
     },
     "close": {
       "duration": 1.2,
-      "tracks": [{ "node": "door", "scale": [[0, [1, 0.08, 1]], [1.2, [1, 1, 1]]] }]
+      "tracks": [
+        {
+          "node": "door",
+          "scale": [[0, [1, 0.08, 1]], [1.2, [1, 1, 1]]]
+        }
+      ]
     },
     "active": {
       "duration": 3,
       "loop": true,
       "tracks": [
-        { "node": "crate_0", "translation": [[0, [0, 0, 0]], [3, [0, 0, 14]]] },
+        {
+          "node": "crate_0",
+          "translation": [[0, [0, 0, 0]], [1.5, [0, 0, 7]], [3, [0, 0, 0]]]
+        },
         {
           "node": "crate_1",
-          "translation": [[0, [0, 0, 0]], [1.5, [0, 0, 7]], [1.501, [0, 0, -7]], [3, [0, 0, 0]]]
+          "translation": [[0, [0, 0, 0]], [1.5, [0, 0, 7]], [3, [0, 0, 0]]]
         }
       ]
     }
