@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/patrol-boat",
+  "name": "Patrol Boat",
+  "description": "Fast patrol craft. (Addition.)",
+  "role": "combat",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 700,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/naval-yard"],
+  "health": 450,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 4
+  },
+  "radius": 0.8,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "targets": ["ground", "air"],
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "patrol-boat.glb",
+    "icon": "patrol-boat.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "patrol-boat.wreck.glb"
+  }
+}

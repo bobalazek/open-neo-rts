@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/phoenix-gunship",
+  "name": "Phoenix Gunship",
+  "description": "Experimental gunship with a plasma cannon.",
+  "role": "combat",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 2000,
+    "materials": 350
+  },
+  "buildTime": 24,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 750,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 4
+  },
+  "radius": 1.1,
+  "vision": 9,
+  "pop": 4,
+  "weapons": [
+    {
+      "id": "plasma-cannon",
+      "targets": ["ground", "structure"],
+      "range": [0, 7],
+      "reload": 2,
+      "projectile": {
+        "kind": "bullet",
+        "speed": 18
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 70,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 1.5,
+          "falloff": [100, 40],
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "phoenix-gunship.glb",
+    "icon": "phoenix-gunship.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "phoenix-gunship.wreck.glb"
+  }
+}

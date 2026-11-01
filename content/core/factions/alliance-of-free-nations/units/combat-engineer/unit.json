@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/combat-engineer",
+  "name": "Combat Engineer",
+  "description": "Builder: constructs every structure on site, repairs, captures buildings and deploys field equipment.",
+  "role": "builder",
+  "family": "infantry",
+  "tags": ["infantry", "engineer"],
+  "cost": {
+    "credits": 500
+  },
+  "buildTime": 8,
+  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
+  "health": 100,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.5
+  },
+  "radius": 0.25,
+  "vision": 6,
+  "pop": 1,
+  "weapons": [],
+  "presentation": {
+    "model": "combat-engineer.glb",
+    "icon": "combat-engineer.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": [],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

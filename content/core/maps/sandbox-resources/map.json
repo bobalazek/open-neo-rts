@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../schemas/map.schema.json",
+  "id": "map:sandbox-resources",
+  "name": "Sandbox: Resources",
+  "description": "Ore fields of three sizes and raw-material nodes, the smallest of each nearly empty so depletion shows quickly.",
+  "size": {
+    "width": 64,
+    "height": 64
+  },
+  "biome": "temperate",
+  "players": {
+    "min": 1,
+    "max": 2
+  },
+  "spawns": [
+    {
+      "id": "west",
+      "position": [12, 32],
+      "facing": 90
+    },
+    {
+      "id": "east",
+      "position": [52, 32],
+      "facing": 270
+    }
+  ],
+  "start": "empty",
+  "resources": [
+    {
+      "kind": "ore",
+      "position": [32, 12],
+      "amount": 30000,
+      "radius": 5
+    },
+    {
+      "kind": "ore",
+      "position": [20, 50],
+      "amount": 10000,
+      "radius": 3
+    },
+    {
+      "kind": "ore",
+      "position": [44, 50],
+      "amount": 500,
+      "radius": 1
+    },
+    {
+      "kind": "materials",
+      "position": [32, 32],
+      "amount": 5000
+    },
+    {
+      "kind": "materials",
+      "position": [32, 44],
+      "amount": 250
+    }
+  ],
+  "objects": []
+}

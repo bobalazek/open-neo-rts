@@ -1,0 +1,1044 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "structure",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+      "description": "structure ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^.{1,400}$",
+      "description": "English description"
+    },
+    "role": {
+      "enum": [
+        "headquarters",
+        "power",
+        "dropoff",
+        "production",
+        "research",
+        "support",
+        "defense",
+        "wall",
+        "superweapon",
+        "wonder"
+      ],
+      "description": "what the engine treats it as; any builder of the faction constructs it"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "propertyNames": {
+        "pattern": "^(credits|materials|power|quantum-processing|industrial-capacity|salvage-points)$"
+      }
+    },
+    "buildTime": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 600,
+      "description": "seconds with one builder"
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?[a-z]+:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+        "description": "any definition ID"
+      }
+    },
+    "health": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "armor": {
+      "enum": [
+        "infantry",
+        "light",
+        "medium",
+        "heavy",
+        "aircraft",
+        "naval",
+        "structure"
+      ]
+    },
+    "resist": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000,
+        "description": "percent taken from warheads with this tag"
+      },
+      "propertyNames": {
+        "pattern": "^(emp|fire|explosive|energy|nanite)$"
+      }
+    },
+    "footprint": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[lsw]+$"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "power": {
+      "type": "integer",
+      "minimum": -500,
+      "maximum": 500,
+      "description": "+ produced, - used"
+    },
+    "vision": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 40,
+      "description": "cells"
+    },
+    "pop": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "weapons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "local name, unique within this definition"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ground",
+                "air",
+                "naval",
+                "structure",
+                "projectile"
+              ]
+            },
+            "minItems": 1
+          },
+          "range": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 60,
+              "description": "cells"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "reload": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 120,
+            "description": "seconds"
+          },
+          "burst": {
+            "type": "object",
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "delay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "seconds between shots"
+              }
+            },
+            "required": [
+              "count",
+              "delay"
+            ],
+            "additionalProperties": false
+          },
+          "accuracy": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "description": "scatter radius in cells at maximum range; 0 is perfect"
+          },
+          "aim": {
+            "enum": [
+              "turret",
+              "forward",
+              "omni"
+            ]
+          },
+          "arc": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 360,
+            "description": "degrees the unit may be off-facing when aim is forward"
+          },
+          "socket": {
+            "type": "string",
+            "pattern": "^socket_[a-z]+$",
+            "description": "muzzle socket it fires from; defaults to socket_muzzle"
+          },
+          "projectile": {
+            "type": "object",
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "instant",
+                  "bullet",
+                  "arc",
+                  "grenade",
+                  "missile",
+                  "beam",
+                  "dropped"
+                ]
+              },
+              "speed": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 200,
+                "description": "cells per second (not for instant or beam)"
+              },
+              "gravity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "arc height factor for arc and grenade"
+              },
+              "turnRate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3600,
+                "description": "degrees per second (missile)"
+              },
+              "flightTime": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 60,
+                "description": "seconds before a missile self-destructs"
+              },
+              "fuse": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 30,
+                "description": "seconds between impact and detonation"
+              },
+              "blockedBy": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "terrain",
+                    "structures",
+                    "units"
+                  ]
+                }
+              },
+              "interceptable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          "warheads": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "$schema": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "damage",
+                    "burn",
+                    "disable",
+                    "slow",
+                    "reveal",
+                    "spawn"
+                  ]
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "description": "damage for damage; per second for burn"
+                },
+                "versus": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "description": "percent of amount dealt to this armour class"
+                  },
+                  "propertyNames": {
+                    "pattern": "^(default|infantry|light|medium|heavy|aircraft|naval|structure)$"
+                  }
+                },
+                "radius": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 20,
+                  "description": "splash radius in cells"
+                },
+                "falloff": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "percent"
+                  },
+                  "minItems": 1,
+                  "maxItems": 8
+                },
+                "delay": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 30,
+                  "description": "seconds after impact"
+                },
+                "duration": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 120,
+                  "description": "seconds (burn, disable, slow, reveal)"
+                },
+                "percent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "slow strength"
+                },
+                "unit": {
+                  "type": "string",
+                  "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+                  "description": "unit ID"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                },
+                "friendlyFire": {
+                  "type": "boolean"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "emp",
+                      "fire",
+                      "explosive",
+                      "energy",
+                      "nanite"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "targets",
+          "range",
+          "reload",
+          "projectile",
+          "warheads"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "abilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "local name, unique within this definition"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^.{1,60}$",
+            "description": "English name; translations go in locales/<lang>.json"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^.{1,400}$",
+            "description": "English description"
+          },
+          "target": {
+            "enum": [
+              "self",
+              "unit",
+              "point",
+              "area"
+            ]
+          },
+          "range": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "cells"
+          },
+          "cooldown": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3600,
+            "description": "seconds"
+          },
+          "autoCast": {
+            "type": "boolean"
+          },
+          "cost": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "propertyNames": {
+              "pattern": "^(credits|materials|power|quantum-processing|industrial-capacity|salvage-points)$"
+            }
+          },
+          "effects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A typed effect. New effect types are engine features, never scripts.",
+              "properties": {
+                "$schema": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "modifyStat",
+                    "spawn",
+                    "damageArea",
+                    "reveal",
+                    "stealth",
+                    "disable",
+                    "heal",
+                    "grantResource"
+                  ]
+                },
+                "target": {
+                  "description": "a { tags } filter for which units it affects"
+                },
+                "scope": {
+                  "enum": [
+                    "self",
+                    "target",
+                    "area",
+                    "force",
+                    "team"
+                  ],
+                  "description": "who it reaches; area uses radius"
+                },
+                "stat": {
+                  "enum": [
+                    "damage",
+                    "health",
+                    "speed",
+                    "reload",
+                    "range",
+                    "vision",
+                    "armor",
+                    "productionSpeed",
+                    "researchSpeed",
+                    "power",
+                    "cost",
+                    "shieldStrength",
+                    "empResistance",
+                    "repair",
+                    "mobile"
+                  ]
+                },
+                "percent": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "radius": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "duration": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "unit": {
+                  "type": "string",
+                  "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+                  "description": "unit ID"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "target",
+          "cooldown",
+          "effects"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "research": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "local name, unique within this structure"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^.{1,60}$",
+            "description": "English name; translations go in locales/<lang>.json"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^.{1,400}$",
+            "description": "English description"
+          },
+          "cost": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "propertyNames": {
+              "pattern": "^(credits|materials|power|quantum-processing|industrial-capacity|salvage-points)$"
+            }
+          },
+          "researchTime": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 900,
+            "description": "seconds"
+          },
+          "requires": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^([a-z0-9-]+\\.)?[a-z]+:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+              "description": "any definition ID"
+            }
+          },
+          "effects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A typed effect. New effect types are engine features, never scripts.",
+              "properties": {
+                "$schema": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "modifyStat",
+                    "spawn",
+                    "damageArea",
+                    "reveal",
+                    "stealth",
+                    "disable",
+                    "heal",
+                    "grantResource"
+                  ]
+                },
+                "target": {
+                  "description": "a { tags } filter for which units it affects"
+                },
+                "scope": {
+                  "enum": [
+                    "self",
+                    "target",
+                    "area",
+                    "force",
+                    "team"
+                  ],
+                  "description": "who it reaches; area uses radius"
+                },
+                "stat": {
+                  "enum": [
+                    "damage",
+                    "health",
+                    "speed",
+                    "reload",
+                    "range",
+                    "vision",
+                    "armor",
+                    "productionSpeed",
+                    "researchSpeed",
+                    "power",
+                    "cost",
+                    "shieldStrength",
+                    "empResistance",
+                    "repair",
+                    "mobile"
+                  ]
+                },
+                "percent": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "radius": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "duration": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "unit": {
+                  "type": "string",
+                  "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+                  "description": "unit ID"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cost",
+          "researchTime",
+          "effects"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "spawnsWith": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+        "description": "unit ID"
+      }
+    },
+    "dock": {
+      "type": "boolean"
+    },
+    "pads": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "aircraft pads"
+    },
+    "garrison": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      },
+      "required": [
+        "slots"
+      ],
+      "additionalProperties": false
+    },
+    "repair": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "type": "string"
+            },
+            "families": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "infantry",
+                  "vehicle",
+                  "aircraft",
+                  "naval"
+                ]
+              }
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "builder",
+                  "harvester",
+                  "combat",
+                  "scout",
+                  "support",
+                  "transport",
+                  "headquarters",
+                  "power",
+                  "dropoff",
+                  "production",
+                  "research",
+                  "support",
+                  "defense",
+                  "wall",
+                  "superweapon",
+                  "wonder"
+                ]
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              }
+            },
+            "structures": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "health per second"
+        },
+        "range": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20,
+          "description": "cells; 0 means adjacent"
+        },
+        "costPercent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "share of the target's cost for a full repair"
+        },
+        "automatic": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "targets",
+        "rate"
+      ],
+      "additionalProperties": false
+    },
+    "adjacency": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "minItems": 1
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "stat": {
+            "type": "string"
+          },
+          "percent": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxSources": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": [
+          "tags",
+          "radius",
+          "stat",
+          "percent",
+          "maxSources"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "eras": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?era:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+        "description": "era ID"
+      },
+      "minItems": 1
+    },
+    "eraVariants": {
+      "type": "object",
+      "additionalProperties": {
+        "description": "partial definition overriding fields for that era"
+      },
+      "propertyNames": {
+        "pattern": "^([a-z0-9-]+\\.)?era:[a-z0-9-]+$"
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "runtime model (.glb) in the same folder"
+        },
+        "icon": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "icon (.png) in the same folder"
+        },
+        "wreck": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "rubble model (.rubble.glb)"
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "palette",
+              "team",
+              "team_dark",
+              "team_light",
+              "team_emissive",
+              "metal",
+              "glass",
+              "emissive"
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^.+$"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^socket_[a-z]+$"
+          }
+        },
+        "animations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "sounds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+          },
+          "propertyNames": {
+            "pattern": "^[a-z_]+$"
+          }
+        },
+        "damageStates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "below": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99,
+                "description": "health percent"
+              },
+              "show": {
+                "enum": [
+                  "state_damaged",
+                  "state_critical"
+                ]
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "smoke",
+                    "fire",
+                    "sparks",
+                    "leak"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "below"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "construction": {
+          "enum": [
+            "bricks",
+            "drop",
+            "unfold"
+          ]
+        },
+        "destruction": {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "type": "string"
+            },
+            "style": {
+              "enum": [
+                "explode",
+                "collapse",
+                "sink",
+                "crash"
+              ]
+            },
+            "size": {
+              "enum": [
+                "small",
+                "medium",
+                "large",
+                "huge"
+              ]
+            }
+          },
+          "required": [
+            "style",
+            "size"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "model",
+        "materials"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "role",
+    "health",
+    "armor",
+    "footprint",
+    "power",
+    "vision",
+    "presentation"
+  ],
+  "additionalProperties": false
+}

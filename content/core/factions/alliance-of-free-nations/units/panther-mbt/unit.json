@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/panther-mbt",
+  "name": "Panther MBT",
+  "description": "Main battle tank with adaptive armour.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1400,
+    "materials": 200
+  },
+  "buildTime": 18,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 750,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2
+  },
+  "radius": 0.8,
+  "vision": 8,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "railgun",
+      "targets": ["ground"],
+      "range": [0, 9],
+      "reload": 3.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 110,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80
+          }
+        }
+      ]
+    }
+  ],
+  "turret": {
+    "turnRate": 100
+  },
+  "presentation": {
+    "model": "panther-mbt.glb",
+    "icon": "panther-mbt.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "panther-mbt.wreck.glb"
+  }
+}

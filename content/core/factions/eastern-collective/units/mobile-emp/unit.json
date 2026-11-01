@@ -1,0 +1,68 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/mobile-emp",
+  "name": "Mobile EMP",
+  "description": "Signature EMP artillery: disables vehicles at range.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1400,
+    "materials": 200
+  },
+  "buildTime": 18,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "requires": ["structure:eastern-collective/emp-research-lab"],
+  "health": 400,
+  "armor": "light",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 1.8
+  },
+  "radius": 0.75,
+  "vision": 7,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "emp-shell",
+      "targets": ["ground"],
+      "range": [4, 14],
+      "reload": 6,
+      "projectile": {
+        "kind": "arc",
+        "speed": 10
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 40,
+          "versus": {
+            "default": 50,
+            "infantry": 0,
+            "aircraft": 100,
+            "structure": 25
+          },
+          "radius": 2,
+          "falloff": [100, 50],
+          "tags": ["emp"]
+        },
+        {
+          "type": "disable",
+          "duration": 3,
+          "radius": 2,
+          "falloff": [100, 50],
+          "tags": ["emp"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "mobile-emp.glb",
+    "icon": "mobile-emp.icon.png",
+    "materials": {},
+    "parts": ["hull", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "mobile-emp.wreck.glb"
+  }
+}

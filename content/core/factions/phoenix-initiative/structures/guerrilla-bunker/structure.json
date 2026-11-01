@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/guerrilla-bunker",
+  "name": "Guerrilla Bunker",
+  "description": "Hidden defensive position; garrison 4 infantry.",
+  "role": "defense",
+  "cost": {
+    "credits": 600
+  },
+  "buildTime": 10,
+  "health": 1400,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": 0,
+  "vision": 6,
+  "garrison": {
+    "slots": 4
+  },
+  "presentation": {
+    "model": "guerrilla-bunker.glb",
+    "icon": "guerrilla-bunker.icon.png",
+    "wreck": "guerrilla-bunker.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

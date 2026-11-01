@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      content: ${{ steps.filter.outputs.content }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            content:
+              - 'content/**'
+              - 'packages/content/**'
+              - 'apps/cli/**'
+
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # No LFS here: code checks don't need binary assets, and LFS bandwidth is metered.
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build
+      - run: bun neo generate-schemas --check
+
+  # Cross-engine determinism: the same golden digests in Chromium, Firefox and WebKit as in Bun.
+  browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium firefox webkit
+      - run: bunx tsc -p apps/web/e2e/tsconfig.json
+      - run: bun run test:browsers
+
+  content:
+    needs: changes
+    if: needs.changes.outputs.content == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore LFS cache
+        id: lfs
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-ids
+      - uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-${{ hashFiles('.lfs-ids') }}
+          restore-keys: lfs-
+      - run: git lfs pull
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun neo validate

@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/scrap-monitor",
+  "name": "Scrap Monitor",
+  "description": "Improvised gun barge for shore bombardment. (Addition.)",
+  "role": "combat",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 1500,
+    "materials": 200
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:phoenix-initiative/raft-dock"],
+  "health": 1100,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 2
+  },
+  "radius": 1.4,
+  "vision": 9,
+  "pop": 4,
+  "weapons": [
+    {
+      "id": "naval-gun",
+      "targets": ["ground", "naval", "structure"],
+      "range": [0, 12],
+      "reload": 3,
+      "projectile": {
+        "kind": "arc",
+        "speed": 14
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 70,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 1,
+          "falloff": [100, 40],
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "scrap-monitor.glb",
+    "icon": "scrap-monitor.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "scrap-monitor.wreck.glb"
+  }
+}

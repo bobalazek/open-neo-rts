@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/field-technician",
+  "name": "Field Technician",
+  "description": "Builder: constructs every structure on site, repairs and captures structures.",
+  "role": "builder",
+  "family": "infantry",
+  "tags": ["infantry", "engineer"],
+  "cost": {
+    "credits": 450
+  },
+  "buildTime": 8,
+  "producedBy": ["structure:eastern-collective/command-center"],
+  "health": 100,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.5
+  },
+  "radius": 0.25,
+  "vision": 6,
+  "pop": 1,
+  "weapons": [],
+  "presentation": {
+    "model": "field-technician.glb",
+    "icon": "field-technician.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": [],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/drone-assembly-plant",
+  "name": "Drone Assembly Plant",
+  "description": "Produces aerial and ground drones and VTOL aircraft. Its pads rearm aircraft.",
+  "role": "production",
+  "cost": {
+    "credits": 1600
+  },
+  "buildTime": 18,
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 1600,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -30,
+  "vision": 6,
+  "pads": 4,
+  "presentation": {
+    "model": "drone-assembly-plant.glb",
+    "icon": "drone-assembly-plant.icon.png",
+    "wreck": "drone-assembly-plant.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_exit"]
+  }
+}

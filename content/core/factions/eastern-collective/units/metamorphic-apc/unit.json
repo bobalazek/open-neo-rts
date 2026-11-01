@@ -1,0 +1,76 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/metamorphic-apc",
+  "name": "Metamorphic APC",
+  "description": "Transforming transport: drives with 5 infantry, or deploys into a fortified bunker they fire from.",
+  "role": "transport",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 800
+  },
+  "buildTime": 10,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "health": 600,
+  "armor": "medium",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 2.6
+  },
+  "radius": 0.75,
+  "vision": 7,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "targets": ["ground", "air"],
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "bunker-mode",
+      "name": "Bunker Mode",
+      "description": "Deploys into a bunker: +50% armour, passengers fire out.",
+      "target": "self",
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "armor",
+          "percent": 150
+        }
+      ]
+    }
+  ],
+  "transport": {
+    "slots": 5
+  },
+  "presentation": {
+    "model": "metamorphic-apc.glb",
+    "icon": "metamorphic-apc.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "metamorphic-apc.wreck.glb"
+  }
+}

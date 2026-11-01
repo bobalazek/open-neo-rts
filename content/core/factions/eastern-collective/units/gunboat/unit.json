@@ -1,0 +1,88 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/gunboat",
+  "name": "Gunboat",
+  "description": "Cheap patrol boat. (Addition.)",
+  "role": "combat",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 800,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:eastern-collective/shipyard"],
+  "health": 550,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 3.6
+  },
+  "radius": 0.8,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "targets": ["ground", "air"],
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "rocket",
+      "targets": ["ground", "air"],
+      "range": [0, 6],
+      "reload": 3,
+      "accuracy": 0.3,
+      "aim": "forward",
+      "projectile": {
+        "kind": "missile",
+        "speed": 14,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 50,
+          "versus": {
+            "infantry": 25,
+            "light": 100,
+            "heavy": 100,
+            "aircraft": 60,
+            "structure": 50
+          },
+          "radius": 0.5,
+          "falloff": [100, 50]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "gunboat.glb",
+    "icon": "gunboat.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "gunboat.wreck.glb"
+  }
+}

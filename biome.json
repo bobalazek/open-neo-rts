@@ -1,0 +1,65 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!.claude", "!content/schemas"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "packages/deterministic/**",
+        "packages/sim/**",
+        "packages/ai/**",
+        "packages/content/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "Date": "Non-deterministic. Use the sim tick.",
+                  "performance": "Non-deterministic. Use the sim tick.",
+                  "setTimeout": "Non-deterministic. Schedule on the sim tick.",
+                  "setInterval": "Non-deterministic. Schedule on the sim tick.",
+                  "crypto": "Non-deterministic. Use the seeded sim RNG.",
+                  "globalThis": "Bypasses the determinism guards. Import what you need explicitly.",
+                  "queueMicrotask": "Non-deterministic scheduling. Schedule on the sim tick.",
+                  "setImmediate": "Non-deterministic scheduling. Schedule on the sim tick.",
+                  "requestIdleCallback": "Non-deterministic scheduling. Schedule on the sim tick.",
+                  "Intl": "Locale-dependent. Sim state must not depend on locale.",
+                  "WeakRef": "Depends on garbage collection timing.",
+                  "FinalizationRegistry": "Depends on garbage collection timing.",
+                  "Float32Array": "No floats in sim state. Use integer typed arrays.",
+                  "Float64Array": "No floats in sim state. Use integer typed arrays."
+                }
+              }
+            }
+          }
+        }
+      },
+      "plugins": ["./tools/biome/no-nondeterministic-js.grit"]
+    }
+  ]
+}

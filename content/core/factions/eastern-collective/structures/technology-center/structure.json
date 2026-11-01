@@ -1,0 +1,65 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/technology-center",
+  "name": "Technology Center",
+  "description": "Research and development. Unlocks tier 3.",
+  "role": "research",
+  "cost": {
+    "credits": 2400
+  },
+  "buildTime": 30,
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 1800,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -60,
+  "vision": 6,
+  "research": [
+    {
+      "id": "reinforced-plating",
+      "name": "Reinforced Plating",
+      "description": "+20% vehicle health.",
+      "cost": {
+        "credits": 1800
+      },
+      "researchTime": 50,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "health",
+          "percent": 120,
+          "target": {
+            "tags": ["vehicle"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "assembly-lines",
+      "name": "Assembly Lines",
+      "description": "Vehicles cost 10% less.",
+      "cost": {
+        "credits": 2000
+      },
+      "researchTime": 60,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "cost",
+          "percent": 90,
+          "target": {
+            "tags": ["vehicle"]
+          }
+        }
+      ]
+    }
+  ],
+  "tags": ["research"],
+  "presentation": {
+    "model": "technology-center.glb",
+    "icon": "technology-center.icon.png",
+    "wreck": "technology-center.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

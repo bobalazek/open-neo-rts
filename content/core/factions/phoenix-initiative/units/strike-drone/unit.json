@@ -1,0 +1,89 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/strike-drone",
+  "name": "Strike Drone",
+  "description": "Automated attack aircraft.",
+  "role": "combat",
+  "family": "aircraft",
+  "tags": ["drone"],
+  "cost": {
+    "credits": 700,
+    "materials": 50
+  },
+  "buildTime": 9,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 220,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 6
+  },
+  "radius": 0.5,
+  "vision": 8,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "drone-gun",
+      "targets": ["ground"],
+      "range": [0, 4],
+      "reload": 0.4,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 6,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "rocket",
+      "targets": ["ground", "air"],
+      "range": [0, 6],
+      "reload": 3,
+      "accuracy": 0.3,
+      "aim": "forward",
+      "projectile": {
+        "kind": "missile",
+        "speed": 14,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 50,
+          "versus": {
+            "infantry": 25,
+            "light": 100,
+            "heavy": 100,
+            "aircraft": 60,
+            "structure": 50
+          },
+          "radius": 0.5,
+          "falloff": [100, 50]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "strike-drone.glb",
+    "icon": "strike-drone.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "strike-drone.wreck.glb"
+  }
+}

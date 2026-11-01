@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/propaganda-center",
+  "name": "Propaganda Center",
+  "description": "Battlefield buffs and morale: nearby units fight harder.",
+  "role": "support",
+  "cost": {
+    "credits": 1100
+  },
+  "buildTime": 15,
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 1200,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -30,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "rally-broadcast",
+      "name": "Rally Broadcast",
+      "description": "+15% damage and speed for units within 8 cells for 20 seconds.",
+      "target": "self",
+      "cooldown": 90,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "damage",
+          "percent": 115,
+          "radius": 8,
+          "duration": 20
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "propaganda-center.glb",
+    "icon": "propaganda-center.icon.png",
+    "wreck": "propaganda-center.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

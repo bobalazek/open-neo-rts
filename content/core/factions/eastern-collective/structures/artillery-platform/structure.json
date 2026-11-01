@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/artillery-platform",
+  "name": "Artillery Platform",
+  "description": "Fixed long-range artillery position.",
+  "role": "defense",
+  "cost": {
+    "credits": 1400
+  },
+  "buildTime": 18,
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 1800,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -30,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "platform-gun",
+      "targets": ["ground"],
+      "range": [5, 18],
+      "reload": 6,
+      "projectile": {
+        "kind": "arc",
+        "speed": 10
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 110,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 2,
+          "falloff": [100, 25],
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "artillery-platform.glb",
+    "icon": "artillery-platform.icon.png",
+    "wreck": "artillery-platform.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

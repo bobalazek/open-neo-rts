@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/stealth-generator",
+  "name": "Stealth Generator",
+  "description": "Cloaks friendly structures and units in a radius.",
+  "role": "support",
+  "cost": {
+    "credits": 1400
+  },
+  "buildTime": 18,
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 900,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -50,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "cloaking-field",
+      "name": "Cloaking Field",
+      "description": "Friendly units and structures within 6 cells are stealthed.",
+      "target": "self",
+      "cooldown": 1,
+      "effects": [
+        {
+          "type": "stealth",
+          "radius": 6
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "presentation": {
+    "model": "stealth-generator.glb",
+    "icon": "stealth-generator.icon.png",
+    "wreck": "stealth-generator.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

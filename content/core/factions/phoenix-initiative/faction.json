@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/faction.schema.json",
+  "id": "faction:phoenix-initiative",
+  "name": "Phoenix Initiative",
+  "description": "A decentralised network of private military companies, tech corporations and resistance movements that rose from failed states. Guerrilla tactics, salvage, mercenaries and experimental weapons.",
+  "color": "#e8a33a",
+  "start": {
+    "structures": ["structure:phoenix-initiative/command-node"],
+    "units": [
+      {
+        "unit": "unit:phoenix-initiative/nanite-constructor",
+        "count": 2
+      },
+      {
+        "unit": "unit:phoenix-initiative/salvage-crawler",
+        "count": 1
+      },
+      {
+        "unit": "unit:phoenix-initiative/insurgent",
+        "count": 3
+      }
+    ],
+    "resources": {
+      "credits": 5000
+    }
+  },
+  "ai": {
+    "personality": "guerrilla-salvage"
+  }
+}

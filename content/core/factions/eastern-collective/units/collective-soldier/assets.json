@@ -1,0 +1,12 @@
+{
+  "files": {
+    "collective-soldier.glb": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.bricks.json"
+    },
+    "collective-soldier.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/flame-tank",
+  "name": "Flame Tank",
+  "description": "Area-denial vehicle that clears infantry and garrisons.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 900,
+    "materials": 50
+  },
+  "buildTime": 13,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 650,
+  "armor": "medium",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2
+  },
+  "radius": 0.75,
+  "vision": 6,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "flamethrower",
+      "targets": ["ground"],
+      "range": [0, 3],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "beam"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 25,
+          "versus": {
+            "default": 20,
+            "infantry": 160,
+            "light": 60,
+            "structure": 80
+          },
+          "radius": 1,
+          "falloff": [100, 50],
+          "tags": ["fire"]
+        },
+        {
+          "type": "burn",
+          "amount": 5,
+          "duration": 3,
+          "tags": ["fire"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "flame-tank.glb",
+    "icon": "flame-tank.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "flame-tank.wreck.glb"
+  }
+}

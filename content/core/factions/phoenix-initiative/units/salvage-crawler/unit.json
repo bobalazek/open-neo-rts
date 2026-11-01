@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/salvage-crawler",
+  "name": "Salvage Crawler",
+  "description": "Resource collector with combat abilities: gathers ore and wrecks.",
+  "role": "harvester",
+  "family": "vehicle",
+  "tags": ["vehicle", "harvester"],
+  "cost": {
+    "credits": 1000
+  },
+  "buildTime": 14,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "health": 800,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 1.6
+  },
+  "radius": 0.8,
+  "vision": 6,
+  "pop": 0,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "targets": ["ground", "air"],
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    }
+  ],
+  "harvest": {
+    "capacity": 500
+  },
+  "presentation": {
+    "model": "salvage-crawler.glb",
+    "icon": "salvage-crawler.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "salvage-crawler.wreck.glb"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@open-neo-rts/app-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@open-neo-rts/server": "workspace:*"
+  }
+}

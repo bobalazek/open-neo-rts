@@ -1,0 +1,72 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/infiltrator",
+  "name": "Infiltrator",
+  "description": "Stealth reconnaissance unit.",
+  "role": "scout",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 600
+  },
+  "buildTime": 10,
+  "producedBy": ["structure:eastern-collective/barracks-complex"],
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 90,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.8
+  },
+  "radius": 0.25,
+  "vision": 10,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "pistol",
+      "targets": ["ground"],
+      "range": [0, 4],
+      "reload": 1,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 12,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "cloak",
+      "name": "Cloak",
+      "description": "Invisible while not firing.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "stealth"
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "presentation": {
+    "model": "infiltrator.glb",
+    "icon": "infiltrator.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

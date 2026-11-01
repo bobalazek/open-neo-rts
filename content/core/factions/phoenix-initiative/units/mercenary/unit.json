@@ -1,0 +1,87 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/mercenary",
+  "name": "Mercenary",
+  "description": "Powerful but expensive veteran infantry.",
+  "role": "combat",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 900,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:phoenix-initiative/mercenary-camp"],
+  "health": 260,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.6
+  },
+  "radius": 0.3,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "heavy-rifle",
+      "targets": ["ground"],
+      "range": [0, 6],
+      "reload": 0.8,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 25,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "rocket",
+      "targets": ["ground", "air"],
+      "range": [0, 6],
+      "reload": 3,
+      "accuracy": 0.3,
+      "aim": "forward",
+      "projectile": {
+        "kind": "missile",
+        "speed": 14,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 50,
+          "versus": {
+            "infantry": 25,
+            "light": 100,
+            "heavy": 100,
+            "aircraft": 60,
+            "structure": 50
+          },
+          "radius": 0.5,
+          "falloff": [100, 50]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "mercenary.glb",
+    "icon": "mercenary.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

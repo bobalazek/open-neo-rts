@@ -1,0 +1,24 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/sensor-array",
+  "name": "Sensor Array",
+  "description": "Detects stealth units and infantry in a wide radius.",
+  "role": "support",
+  "cost": {
+    "credits": 600
+  },
+  "buildTime": 10,
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 800,
+  "armor": "structure",
+  "footprint": [1, 1],
+  "power": -15,
+  "vision": 6,
+  "presentation": {
+    "model": "sensor-array.glb",
+    "icon": "sensor-array.icon.png",
+    "wreck": "sensor-array.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "../../../schemas/map.schema.json",
+  "id": "map:training-grounds",
+  "name": "Training Grounds",
+  "description": "A flat 128 × 128 map with four corner spawns and a rich middle field.",
+  "size": {
+    "width": 128,
+    "height": 128
+  },
+  "biome": "temperate",
+  "players": {
+    "min": 2,
+    "max": 4
+  },
+  "spawns": [
+    {
+      "id": "north-west",
+      "position": [20, 20],
+      "facing": 135
+    },
+    {
+      "id": "north-east",
+      "position": [108, 20],
+      "facing": 225
+    },
+    {
+      "id": "south-west",
+      "position": [20, 108],
+      "facing": 45
+    },
+    {
+      "id": "south-east",
+      "position": [108, 108],
+      "facing": 315
+    }
+  ],
+  "teams": [["north-west", "south-west"], ["north-east", "south-east"]],
+  "start": "faction",
+  "resources": [
+    {
+      "kind": "ore",
+      "position": [30, 30],
+      "amount": 20000,
+      "radius": 4
+    },
+    {
+      "kind": "ore",
+      "position": [98, 30],
+      "amount": 20000,
+      "radius": 4
+    },
+    {
+      "kind": "ore",
+      "position": [30, 98],
+      "amount": 20000,
+      "radius": 4
+    },
+    {
+      "kind": "ore",
+      "position": [98, 98],
+      "amount": 20000,
+      "radius": 4
+    },
+    {
+      "kind": "ore",
+      "position": [64, 64],
+      "amount": 40000,
+      "radius": 6
+    },
+    {
+      "kind": "materials",
+      "position": [64, 24],
+      "amount": 5000
+    },
+    {
+      "kind": "materials",
+      "position": [64, 104],
+      "amount": 5000
+    }
+  ],
+  "objects": []
+}

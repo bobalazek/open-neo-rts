@@ -1,0 +1,67 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/mobile-artillery",
+  "name": "Mobile Artillery",
+  "description": "Long-range precision strike platform.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1600,
+    "materials": 250
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 300,
+  "armor": "light",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 1.6
+  },
+  "radius": 0.75,
+  "vision": 7,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "guided-shell",
+      "targets": ["ground"],
+      "range": [4, 16],
+      "reload": 6,
+      "projectile": {
+        "kind": "missile",
+        "speed": 12,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 90,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 1,
+          "falloff": [100, 30],
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "mobile-artillery.glb",
+    "icon": "mobile-artillery.icon.png",
+    "materials": {},
+    "parts": ["hull", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "mobile-artillery.wreck.glb"
+  }
+}

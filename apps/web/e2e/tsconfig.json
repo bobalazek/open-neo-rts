@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"]
+  },
+  "include": [".", "../../../playwright.config.ts"],
+  "exclude": []
+}

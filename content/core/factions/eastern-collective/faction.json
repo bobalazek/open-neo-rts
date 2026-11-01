@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/faction.schema.json",
+  "id": "faction:eastern-collective",
+  "name": "Eastern Collective",
+  "description": "Formed from the merger of Asian industrial powerhouses. Overwhelming force through mass production, adaptable hybrid units and electromagnetic weapons.",
+  "color": "#d8443a",
+  "start": {
+    "structures": ["structure:eastern-collective/command-center"],
+    "units": [
+      {
+        "unit": "unit:eastern-collective/field-technician",
+        "count": 2
+      },
+      {
+        "unit": "unit:eastern-collective/supply-truck",
+        "count": 1
+      },
+      {
+        "unit": "unit:eastern-collective/collective-soldier",
+        "count": 3
+      }
+    ],
+    "resources": {
+      "credits": 5000
+    }
+  },
+  "ai": {
+    "personality": "mass-and-attrition"
+  }
+}

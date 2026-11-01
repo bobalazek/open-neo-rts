@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/strategic-bomber",
+  "name": "Strategic Bomber",
+  "description": "Long-range strike aircraft that carpet-bombs a line.",
+  "role": "combat",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 2600,
+    "materials": 500
+  },
+  "buildTime": 30,
+  "producedBy": ["structure:eastern-collective/airfield"],
+  "requires": ["structure:eastern-collective/technology-center"],
+  "health": 900,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 7
+  },
+  "radius": 1.4,
+  "vision": 8,
+  "pop": 5,
+  "weapons": [
+    {
+      "id": "bombs",
+      "targets": ["ground", "structure"],
+      "range": [0, 1],
+      "reload": 6,
+      "projectile": {
+        "kind": "dropped"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 200,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 2,
+          "falloff": [100, 30],
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "ammo": 1,
+  "presentation": {
+    "model": "strategic-bomber.glb",
+    "icon": "strategic-bomber.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "strategic-bomber.wreck.glb"
+  }
+}

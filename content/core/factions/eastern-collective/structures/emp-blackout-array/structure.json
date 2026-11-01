@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/emp-blackout-array",
+  "name": "EMP Blackout Array",
+  "description": "Superweapon: a city-scale EMP that disables everything in a huge area. Announced to every player when built. (Addition, after Operation Blackout.)",
+  "role": "superweapon",
+  "tags": ["superweapon"],
+  "cost": {
+    "credits": 5000
+  },
+  "buildTime": 90,
+  "requires": ["structure:eastern-collective/emp-research-lab"],
+  "health": 3500,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -150,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "blackout",
+      "name": "Blackout",
+      "description": "Disables all vehicles and structures in the area for 30 seconds and damages them.",
+      "target": "area",
+      "cooldown": 360,
+      "effects": [
+        {
+          "type": "disable",
+          "radius": 10,
+          "duration": 30
+        },
+        {
+          "type": "damageArea",
+          "radius": 10,
+          "amount": 300
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "emp-blackout-array.glb",
+    "icon": "emp-blackout-array.icon.png",
+    "wreck": "emp-blackout-array.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

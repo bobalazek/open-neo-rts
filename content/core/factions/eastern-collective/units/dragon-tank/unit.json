@@ -1,0 +1,91 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/dragon-tank",
+  "name": "Dragon Tank",
+  "description": "Heavy main battle tank, the Collective's Metamorphic Battle Tank: switches between assault and siege mode.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1000,
+    "materials": 100
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "health": 900,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 1.8
+  },
+  "radius": 0.85,
+  "vision": 8,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "heavy-cannon",
+      "targets": ["ground", "structure"],
+      "range": [0, 7],
+      "reload": 3,
+      "accuracy": 0.2,
+      "aim": "turret",
+      "projectile": {
+        "kind": "bullet",
+        "speed": 20,
+        "blockedBy": ["terrain", "structures"]
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 90,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "aircraft": 0,
+            "structure": 80
+          },
+          "tags": ["explosive"]
+        },
+        {
+          "type": "damage",
+          "amount": 15,
+          "radius": 0.5,
+          "falloff": [100, 50],
+          "versus": {
+            "default": 0,
+            "infantry": 100
+          },
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "siege-mode",
+      "name": "Siege Mode",
+      "description": "Deploys: +3 range and +25% damage, but can't move.",
+      "target": "self",
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "range",
+          "percent": 150
+        }
+      ]
+    }
+  ],
+  "turret": {
+    "turnRate": 80
+  },
+  "presentation": {
+    "model": "dragon-tank.glb",
+    "icon": "dragon-tank.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "dragon-tank.wreck.glb"
+  }
+}

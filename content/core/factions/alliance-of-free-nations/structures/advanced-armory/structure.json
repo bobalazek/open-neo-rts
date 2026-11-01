@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/advanced-armory",
+  "name": "Advanced Armory",
+  "description": "Weapons and equipment upgrades.",
+  "role": "research",
+  "cost": {
+    "credits": 1200
+  },
+  "buildTime": 15,
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 1300,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -30,
+  "vision": 6,
+  "research": [
+    {
+      "id": "smart-munitions",
+      "name": "Smart Munitions",
+      "description": "+10% damage for infantry and vehicles.",
+      "cost": {
+        "credits": 1500
+      },
+      "researchTime": 45,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "damage",
+          "percent": 110,
+          "target": {
+            "tags": ["infantry", "vehicle"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "adaptive-armor",
+      "name": "Adaptive Armor",
+      "description": "+15% vehicle health.",
+      "cost": {
+        "credits": 1800
+      },
+      "researchTime": 50,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "health",
+          "percent": 115,
+          "target": {
+            "tags": ["vehicle"]
+          }
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "advanced-armory.glb",
+    "icon": "advanced-armory.icon.png",
+    "wreck": "advanced-armory.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

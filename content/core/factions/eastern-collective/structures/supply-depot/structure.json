@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/supply-depot",
+  "name": "Supply Depot",
+  "description": "Drop-off point for Supply Trucks. Comes with one Supply Truck. (Addition.)",
+  "role": "dropoff",
+  "cost": {
+    "credits": 1600
+  },
+  "buildTime": 18,
+  "health": 1800,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -20,
+  "vision": 6,
+  "dock": true,
+  "spawnsWith": ["unit:eastern-collective/supply-truck"],
+  "presentation": {
+    "model": "supply-depot.glb",
+    "icon": "supply-depot.icon.png",
+    "wreck": "supply-depot.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_dock"]
+  }
+}

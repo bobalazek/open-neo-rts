@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "faction",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?faction:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+      "description": "faction ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^.{1,400}$",
+      "description": "English description"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$",
+      "description": "default team colour"
+    },
+    "start": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "structures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+            "description": "structure ID"
+          }
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string",
+                "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+                "description": "unit ID"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              }
+            },
+            "required": [
+              "unit",
+              "count"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "propertyNames": {
+            "pattern": "^(credits|materials|power|quantum-processing|industrial-capacity|salvage-points)$"
+          }
+        }
+      },
+      "required": [
+        "structures",
+        "units",
+        "resources"
+      ],
+      "additionalProperties": false
+    },
+    "ai": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        }
+      },
+      "required": [
+        "personality"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "color",
+    "start",
+    "ai"
+  ],
+  "additionalProperties": false
+}

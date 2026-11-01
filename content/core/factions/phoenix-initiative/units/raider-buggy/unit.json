@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/raider-buggy",
+  "name": "Raider Buggy",
+  "description": "Fast attack vehicle.",
+  "role": "combat",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 450
+  },
+  "buildTime": 7,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "health": 250,
+  "armor": "light",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 4.5
+  },
+  "radius": 0.6,
+  "vision": 9,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "targets": ["ground", "air"],
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "raider-buggy.glb",
+    "icon": "raider-buggy.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "raider-buggy.wreck.glb"
+  }
+}

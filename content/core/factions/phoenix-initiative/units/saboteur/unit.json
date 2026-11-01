@@ -1,0 +1,75 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/saboteur",
+  "name": "Saboteur",
+  "description": "Stealth demolitions specialist.",
+  "role": "combat",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 700,
+    "materials": 50
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:phoenix-initiative/underground-barracks"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 90,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.8
+  },
+  "radius": 0.25,
+  "vision": 8,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "demolition-charge",
+      "targets": ["structure"],
+      "range": [0, 1],
+      "reload": 20,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 300,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "tags": ["explosive"]
+        }
+      ]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "camouflage",
+      "name": "Camouflage",
+      "description": "Invisible while not attacking.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "stealth"
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "presentation": {
+    "model": "saboteur.glb",
+    "icon": "saboteur.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

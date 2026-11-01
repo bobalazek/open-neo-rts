@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/tesla-coil",
+  "name": "Tesla Coil",
+  "description": "Electromagnetic defence that disables and damages vehicles.",
+  "role": "defense",
+  "cost": {
+    "credits": 1000
+  },
+  "buildTime": 14,
+  "requires": ["structure:eastern-collective/radar-tower"],
+  "health": 1300,
+  "armor": "structure",
+  "footprint": [1, 1],
+  "power": -40,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "arc",
+      "targets": ["ground"],
+      "range": [0, 5],
+      "reload": 2,
+      "projectile": {
+        "kind": "instant"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 45,
+          "versus": {
+            "default": 50,
+            "infantry": 0,
+            "aircraft": 100,
+            "structure": 25
+          },
+          "tags": ["emp"]
+        },
+        {
+          "type": "disable",
+          "duration": 1,
+          "tags": ["emp"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "tesla-coil.glb",
+    "icon": "tesla-coil.icon.png",
+    "wreck": "tesla-coil.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

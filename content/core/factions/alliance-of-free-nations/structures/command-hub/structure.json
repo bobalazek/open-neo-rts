@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/command-hub",
+  "name": "Command Hub",
+  "description": "Primary command centre. Builds structures and provides the minimap and radar.",
+  "role": "headquarters",
+  "health": 3500,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": 20,
+  "vision": 8,
+  "abilities": [
+    {
+      "id": "satellite-scan",
+      "name": "Satellite Scan",
+      "description": "Reveals an area for 10 seconds.",
+      "target": "area",
+      "cooldown": 60,
+      "effects": [
+        {
+          "type": "reveal",
+          "radius": 8,
+          "duration": 10
+        }
+      ],
+      "range": 200
+    }
+  ],
+  "presentation": {
+    "model": "command-hub.glb",
+    "icon": "command-hub.icon.png",
+    "wreck": "command-hub.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

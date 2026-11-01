@@ -1,0 +1,21 @@
+{
+  "name": "@open-neo-rts/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@open-neo-rts/ai": "workspace:*",
+    "@open-neo-rts/content": "workspace:*",
+    "@open-neo-rts/deterministic": "workspace:*",
+    "@open-neo-rts/net": "workspace:*",
+    "@open-neo-rts/render": "workspace:*",
+    "@open-neo-rts/sim": "workspace:*"
+  }
+}

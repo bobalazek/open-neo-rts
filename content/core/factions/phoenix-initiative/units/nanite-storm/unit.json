@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/nanite-storm",
+  "name": "Nanite Storm",
+  "description": "Area-denial air unit: a cloud of nanites that damages everything beneath it.",
+  "role": "combat",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 1800,
+    "materials": 300
+  },
+  "buildTime": 22,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 500,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 3
+  },
+  "radius": 1.2,
+  "vision": 8,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "nanite-cloud",
+      "targets": ["ground"],
+      "range": [0, 2],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "beam"
+      },
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 15,
+          "versus": {
+            "default": 100
+          },
+          "radius": 2,
+          "tags": ["nanite"]
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "nanite-storm.glb",
+    "icon": "nanite-storm.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "nanite-storm.wreck.glb"
+  }
+}
