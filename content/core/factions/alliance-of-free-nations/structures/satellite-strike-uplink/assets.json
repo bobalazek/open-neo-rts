@@ -1,0 +1,16 @@
+{
+  "files": {
+    "satellite-strike-uplink.glb": {
+      "author": "Borut Balazek",
+      "source": "source/satellite-strike-uplink.bricks.json"
+    },
+    "satellite-strike-uplink.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/satellite-strike-uplink.bricks.json"
+    },
+    "satellite-strike-uplink.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/satellite-strike-uplink.bricks.json"
+    }
+  }
+}
