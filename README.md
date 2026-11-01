@@ -47,8 +47,8 @@ open-neo-rts/
 ├── content/                  game data, no code (see docs/contributing/content-format.md)
 │   ├── schemas/              JSON schemas generated from packages/content
 │   └── packs/
-│       ├── core/             rules every game needs, UI strings, the test faction
-│       └── neo-2035/         AFN, EC, PI, their maps, campaigns and profile
+│       ├── core/             the base game: rules, factions, maps, UI strings, assets
+│       └── dev/              test faction, test maps, debug presets (hidden in release builds)
 ├── tools/biome/              lint plugin enforcing the determinism rules
 ├── docs/                     design, engineering and contributing docs
 ├── .github/                  PR template, CI workflow

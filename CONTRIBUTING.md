@@ -12,13 +12,16 @@ bun install
 bun run dev              # web client
 ```
 
-| Command                         | What                                                                   |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| `bun run check` / `bun run fix` | Biome lint and format (check only / apply fixes)                       |
-| `bun run typecheck`             | TypeScript across all packages                                         |
-| `bun run test`                  | All tests                                                              |
-| `bun run build`                 | Production build                                                       |
-| `bun neo <command>`             | Project CLI (`bun neo` lists commands), e.g. `bun neo validate-assets` |
+| Command                            | What                                                           |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `bun run check` / `bun run fix`    | Biome lint and format (check only / apply fixes)               |
+| `bun run typecheck`                | TypeScript across all packages                                 |
+| `bun run test`                     | All tests                                                      |
+| `bun run build`                    | Production build                                               |
+| `bun neo validate`                 | Every content and asset check (what CI runs)                   |
+| `bun neo make-placeholders <pack>` | Block-model GLBs, wrecks and icons for definitions without art |
+| `bun neo generate-schemas`         | Regenerate `content/schemas` after changing content types      |
+| `bun neo`                          | List all CLI commands                                          |
 
 The repo layout is described in [docs/engineering/architecture.md](docs/engineering/architecture.md#3-monorepo-layout).
 
@@ -49,14 +52,14 @@ The repo layout is described in [docs/engineering/architecture.md](docs/engineer
 
 ## Pull request checks
 
-CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) must pass before review: `check`, `typecheck`, `test`, `build` and `bun neo validate-assets`. The determinism suite, browser tests and content validation join as they're built. Reviewers follow [review-checklists.md](docs/contributing/review-checklists.md).
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) must pass before review: `check`, `typecheck`, `test`, `build`, `bun neo generate-schemas --check`, and `bun neo validate` when content changes. The determinism suite, browser tests and content validation join as they're built. Reviewers follow [review-checklists.md](docs/contributing/review-checklists.md).
 
 ## Previews
 
 _(Planned.)_ Every PR gets a preview build of the web client at its own URL. A bot comment on the PR lists:
 
 - the preview URL;
-- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=core.map:flat-test&spawn=neo-2035.unit:panther&vs=neo-2035.unit:tactical-operator`;
+- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=core.map:flat-test&spawn=core.unit:panther&vs=core.unit:tactical-operator`;
 - the content validation report and, later, rendered turntable thumbnails of new models.
 
 Reviewers use these links to try new content without checking out the branch. The hosting provider is still open; it needs per-PR preview URLs.

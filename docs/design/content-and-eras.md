@@ -10,7 +10,7 @@
 
 **Content pack:** Namespaced data and assets: faction descriptions, prefabs for units/buildings, weapons, abilities, upgrades, resources, era definitions, maps, localization and audiovisual material.
 
-**Game profile:** Resolved `ruleset + content pack list + economy configuration + era model + lobby defaults + victory preset`. Examples `neo-2035`, `ancient-kingdoms`, `epoch-wars`, `cross-era-sandbox`. A match pins the profile, manifest hashes, map and seed.
+**Game profile:** Resolved `ruleset + content pack list + economy configuration + era model + lobby defaults + victory preset`. Examples `standard` (the world of 2035), `ancient-kingdoms`, `epoch-wars`, `cross-era-sandbox`. A match pins the profile, manifest hashes, map and seed.
 
 **Force:** Runtime owner of units, structures, economy, tech and most territory. Players/AI control Forces via permissions. Teams and treaties exist separately. **Nation/civilization/faction** are content archetypes, not authoritative ownership entities.
 
@@ -29,7 +29,7 @@ A `ResourceDefinition` has `id`, `label`, `icon`, `scope`, `kind`, `precision`, 
 
 Alternative economies:
 
-**`neo-2035`:** `credits` stock, `materials` stock, `power` capacity, and AFN-only `compute` capacity (gates research); EC industrial capacity is production throughput; PI salvage is recoverable stock. Don't add these three as mandatory resources to unrelated rulesets.
+**`standard` (the world of 2035):** `credits` stock, `materials` stock, `power` capacity, and AFN-only `compute` capacity (gates research); EC industrial capacity is production throughput; PI salvage is recoverable stock. Don't add these three as mandatory resources to unrelated rulesets.
 
 **`ancient-kingdoms`:** `food, wood, stone, gold` stocks; `population` cap; optional `faith` or `influence` only when used by a faction or mode.
 
@@ -61,7 +61,7 @@ Important economy policies: per-force vs per-team bank, shared economy grant sco
 
 An `EraGraph` contains stable era IDs and directed transitions. Each era defines prerequisites, costs, duration, era-local resources, unlocks, globally applied modifiers, replacement/morph choices and cosmetic changes. The engine should support fixed starting era, a limited age range, all-era progression and mixed-era custom matches. A lobby chooses the starting era and whether players must advance synchronously or individually. Replays pin exact era graph and definitions.
 
-**Per-era variants.** neo-2035 ships with a single era, but every definition is written era-aware from the start. A definition lists the `eras` it exists in and can carry `eraVariants`: per-era overrides of stats, weapons, model and icon. When a Force advances an era, its existing structures **upgrade in place** (with a brick-rebuild animation) to the new era's variant, and production switches to the new unit variants. Units already on the field stay as they are, unless the era transition defines a refit. With one era, a definition simply has one entry and no variants.
+**Per-era variants.** The 2035 game ships with a single era, but every definition is written era-aware from the start. A definition lists the `eras` it exists in and can carry `eraVariants`: per-era overrides of stats, weapons, model and icon. When a Force advances an era, its existing structures **upgrade in place** (with a brick-rebuild animation) to the new era's variant, and production switches to the new unit variants. Units already on the field stay as they are, unless the era transition defines a refit. With one era, a definition simply has one entry and no variants.
 
 **Technology tree:** Graph nodes unlock units, buildings, resource modifiers, armor/weapon upgrades, abilities, and era transitions. Requirements can include `allOf`, `anyOf`, `not`, prior research, owner building, era, map objective or territory control. Validate cycles and unreachable branches. Research states are `locked, available, inProgress, completed`, with deterministic queue/transaction rules.
 
@@ -71,19 +71,19 @@ An `EraGraph` contains stable era IDs and directed transitions. Each era defines
 
 ## 5. Unit families and composable prefabs
 
-| Family           | Authoritative components                        | Notes                                  |
-| ---------------- | ----------------------------------------------- | -------------------------------------- |
-| Infantry         | foot nav, hitbox, morale/cover/garrison         | Solo or squad entity policies          |
-| Wheeled          | wheel mobility, path cost, optional transport   | Roads/rough terrain speed              |
-| Tracked          | tracked mobility, armor facings, turret         | Independent turret and hull            |
-| Hover/amphibious | multiple terrain domains                        | Later terrain transitions              |
-| Rotorcraft       | hovering flight, height, turning, landing       | Strafe, hover, transport               |
-| Fixed-wing       | flight controller, minimum speed, runway/rearm  | Attack runs rather than point stopping |
-| UAV/drone        | flight or hover + special AI/ability            | Recon/swarm/control                    |
-| Artillery        | minimum range, ballistic projectile, deployment | Spotting and splash                    |
-| Naval            | water nav, draft, weapons, transport            | In neo-2035, after the vertical slice  |
-| Support          | engineer, medic, repair, supply, salvage        | Worker and utility verbs               |
-| Superweapon      | windup, warning, cooldown, effects              | Telegraphed and configurable           |
+| Family           | Authoritative components                        | Notes                                      |
+| ---------------- | ----------------------------------------------- | ------------------------------------------ |
+| Infantry         | foot nav, hitbox, morale/cover/garrison         | Solo or squad entity policies              |
+| Wheeled          | wheel mobility, path cost, optional transport   | Roads/rough terrain speed                  |
+| Tracked          | tracked mobility, armor facings, turret         | Independent turret and hull                |
+| Hover/amphibious | multiple terrain domains                        | Later terrain transitions                  |
+| Rotorcraft       | hovering flight, height, turning, landing       | Strafe, hover, transport                   |
+| Fixed-wing       | flight controller, minimum speed, runway/rearm  | Attack runs rather than point stopping     |
+| UAV/drone        | flight or hover + special AI/ability            | Recon/swarm/control                        |
+| Artillery        | minimum range, ballistic projectile, deployment | Spotting and splash                        |
+| Naval            | water nav, draft, weapons, transport            | In the 2035 game, after the vertical slice |
+| Support          | engineer, medic, repair, supply, salvage        | Worker and utility verbs                   |
+| Superweapon      | windup, warning, cooldown, effects              | Telegraphed and configurable               |
 
 Unit tags describe target domain, weapon compatibility, armor, terrain domain and special conditions. A specific unit may combine categories (e.g., amphibious transport). All game-relevant collision uses deterministic nav/geometry; visual physics is not authoritative by default.
 

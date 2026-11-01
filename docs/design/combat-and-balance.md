@@ -22,7 +22,7 @@ A unit or structure carries weapon slots. A weapon defines:
 
 Every unit has one **armor class**: `infantry`, `light`, `medium`, `heavy`, `aircraft`, `naval` or `structure`. Drones are `aircraft` flying low, so both anti-air and small arms can hit them. Submarines are `naval` and can only be targeted while detected. Damage dealt is `damage × multiplier[damageType][armorClass] / 100` with all modifiers applied, **rounded down once at the end**. A multiplier of 0 means immune: no damage, including splash. Otherwise the minimum is 1. All values are integers; see [numerics.md](../engineering/numerics.md).
 
-Default matrix for `neo-2035` (percent):
+Default matrix in `core/rules/damage.json` (percent):
 
 | Damage type ↓ / armor → | infantry | light         | medium        | heavy         | aircraft       | naval         | structure       |
 | ----------------------- | -------- | ------------- | ------------- | ------------- | -------------- | ------------- | --------------- |

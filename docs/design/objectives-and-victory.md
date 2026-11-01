@@ -21,14 +21,18 @@ A **team** is defeated when all its Forces are eliminated, unless it completes a
 
 A match has one or more victory conditions; the first one met ends the match.
 
-| Condition          | Won when…                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| **Conquest**       | Every opposing team is eliminated                                                  |
-| **Territory**      | A team holds X% of the map's territory for N minutes (territory rulesets)          |
-| **Control points** | A team holds the marked points for N minutes, or reaches a score from holding them |
-| **Wonder**         | A team completes a wonder and defends it for N minutes                             |
-| **Score**          | Highest score when the time limit ends                                             |
-| **Objectives**     | All primary objectives of a scenario or mission are completed                      |
+| Condition                 | Won when…                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Conquest**              | Every opposing team is eliminated                                                                    |
+| **Territory**             | A team holds X% of the map's territory for N minutes (territory rulesets)                            |
+| **Control points**        | A team holds the marked points for N minutes, or reaches a score from holding them                   |
+| **Wonder**                | A team completes a wonder and defends it for N minutes                                               |
+| **Score**                 | Highest score when the time limit ends                                                               |
+| **Survival**              | The team survives a set number of waves or minutes against attacking bots (co-op)                    |
+| **Territorial control**   | A team holds the map's strategic facilities (quantum computing sites in the 2035 game) for N minutes |
+| **Economic dominance**    | A team controls 70% of the map's resource nodes for N minutes                                        |
+| **Technical superiority** | A Force completes and fires every one of its faction's superweapons                                  |
+| **Objectives**            | All primary objectives of a scenario or mission are completed                                        |
 
 Timed conditions show a visible countdown to everyone, so nobody loses by surprise. Under dynamic diplomacy, who shares a win follows the policy in [multiplayer.md §5](multiplayer.md#5-diplomacy). A temporary ceasefire never shares a victory.
 

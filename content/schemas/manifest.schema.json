@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "manifest",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "pack ID, equal to the folder name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "engine": {
+      "type": "string",
+      "description": "supported engine version range"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Every content file the pack includes. The loader reads exactly these; unlisted files are an error.",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^rules\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "factions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^factions\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^units\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "structures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^structures\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^weapons\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "abilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^abilities\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "research": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^research\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^profiles\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "presets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^presets\\/[a-z0-9-]+\\.json$"
+          }
+        },
+        "maps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^maps\\/[a-z0-9-]+\\/map\\.json$"
+          }
+        },
+        "campaigns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^campaigns\\/[a-z0-9-]+\\/campaign\\.json$"
+          }
+        },
+        "locales": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^locales\\/[a-z]{2}(-[A-Z]{2})?\\.json$"
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "hidden": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "engine",
+    "name",
+    "description",
+    "dependencies",
+    "files"
+  ],
+  "additionalProperties": false
+}

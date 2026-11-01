@@ -6,7 +6,7 @@
 ┌────────────────────────────────────────────────────────────────────┐
 │ (map key art / brick diorama of the map)                            │
 │                                                                    │
-│   IRON VALLEY · 2v2 · neo-2035                                      │
+│   IRON VALLEY · 2v2 · Standard                                      │
 │                                                                    │
 │   Team A                         Team B                             │
 │   Mara  AFN  ████████████ 100%   Ozzy  PI  ████████░░░░  70%        │
@@ -18,5 +18,5 @@
 
 - Single player shows one progress bar; multiplayer shows each player's progress, and the match starts when everyone is loaded.
 - Loads content packs, map, compiled nav data and assets, and warms the renderer (shaders, instancing buffers).
-- **Timeouts:** in multiplayer, a player stuck for more than 60 s is offered as a bot takeover, by host decision.
+- **Timeouts:** a player still loading after 60 s is treated as a disconnect, following the match's leave/disconnect policy ([match-rules.md](../match-rules.md#leaving-and-disconnecting)).
 - Tips come from locale files and are filtered for the active game profile.

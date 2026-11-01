@@ -17,7 +17,7 @@ A local match against bots. It's the same layout as the multiplayer [lobby](lobb
 │ │                                              │ │ [ Change map ▾ ]      │ │
 │ │ [+ Add Force]   Team mode: [2 teams ▾]       │ ├───────────────────────┤ │
 │ ├──────────────────────────────────────────────┤ │ RULES                 │ │
-│ │ GAME PROFILE: neo-2035 ▾                     │ │ Victory  [Annihilation▾]│
+│ │ GAME PROFILE: Standard (2035) ▾              │ │ Victory  [Conquest ▾]   │
 │ │ Starting resources [Standard ▾]              │ │ Fog      [Standard ▾] │ │
 │ │ Game speed [Normal ▾]                        │ │ Time limit [None ▾]   │ │
 │ │ Bot co-controller on my Force: [Off ▾]       │ │ Diplomacy [Locked ▾]  │ │

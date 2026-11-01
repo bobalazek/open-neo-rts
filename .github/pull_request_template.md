@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] `bun run fix`, `bun run typecheck` and `bun run test` pass locally
+- [ ] `bun run check`, `bun run typecheck`, `bun run test`, `bun run build` and `bun neo validate-assets` pass locally
 - [ ] Sim outcome changed? Golden hashes updated **and** simulation version bumped
 - [ ] No new dependency, or the reason is explained below
 - [ ] New assets are original work, have an `assets.json` entry, and are stored in Git LFS
@@ -20,6 +20,6 @@
 
 ## Preview
 
-<!-- For content: playtest links will be posted by the preview bot (planned). Add screenshots or GIFs for visual changes. -->
+<!-- For content: playtest links will be posted by the preview bot (planned). Add screenshots or GIFs for visual changes. Reviewers use docs/contributing/review-checklists.md. -->
 
 ## Notes for reviewers

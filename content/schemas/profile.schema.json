@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "profile",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?profile:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "profile ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "packs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "minItems": 1
+    },
+    "factions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?faction:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "faction ID"
+      },
+      "minItems": 1
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?resource:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "resource ID"
+      },
+      "minItems": 1
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "weather",
+              "territory",
+              "supply",
+              "trade",
+              "eras",
+              "wonders"
+            ]
+          }
+        },
+        "settings": {
+          "type": "object",
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "modules",
+        "settings"
+      ],
+      "additionalProperties": false
+    },
+    "presets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?preset:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "preset ID"
+      },
+      "minItems": 1
+    },
+    "maps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?map:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "map ID"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "packs",
+    "factions",
+    "resources",
+    "rules",
+    "presets"
+  ],
+  "additionalProperties": false
+}

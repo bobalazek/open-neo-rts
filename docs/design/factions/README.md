@@ -1,4 +1,4 @@
-# Factions (neo-2035)
+# Factions (the world of 2035)
 
 The first game pack has three asymmetric factions, plus a mirrored **test faction** used for balance work and the first playable.
 
@@ -60,7 +60,7 @@ Structures can boost structures near them, which rewards deliberate base layout.
 
 ## Eras
 
-neo-2035 has one era. Every structure and unit definition is still era-aware, so a later multi-era profile can upgrade buildings in place and swap unit variants when a Force advances. See [content-and-eras.md §4](../content-and-eras.md#4-eras-and-tech).
+The 2035 game has one era. Every structure and unit definition is still era-aware, so a later multi-era profile can upgrade buildings in place and swap unit variants when a Force advances. See [content-and-eras.md §4](../content-and-eras.md#4-eras-and-tech).
 
 ## Tech tiers
 
@@ -79,7 +79,7 @@ Every faction fields infantry, vehicles, aircraft and **naval** units. Naval uni
 
 ## Commander powers
 
-Each faction has support powers unlocked by its radar structure and the commander skill tree ([content-and-eras.md §4](../content-and-eras.md#4-eras-and-tech)). Powers have cooldowns, are announced to their targets, and are shared by everyone controlling the Force.
+Each faction has three commander powers ([world-2035.md](world-2035.md#commander-abilities)). Two unlock with its radar structure (tier 2) and the third with its tier-3 structure. Powers cost nothing to use; each has a cooldown (60–240 s, set per power) and gives its target area a short visible warning before it lands. Everyone controlling the Force shares the powers and their cooldowns. The full commander skill tree ([content-and-eras.md §4](../content-and-eras.md#4-eras-and-tech)) builds on this later.
 
 ## Test faction
 

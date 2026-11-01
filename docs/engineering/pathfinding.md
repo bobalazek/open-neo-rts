@@ -4,7 +4,7 @@ Our own implementation, inside the deterministic sim (`packages/sim/src/features
 
 ## Navigation data
 
-- The map compiles into one **nav grid per movement domain**: `foot`, `wheeled`, `tracked`, `hover`, `naval` and `amphibious`. Air units don't use a grid.
+- The map compiles into one **nav grid per movement domain**. The domains are a fixed list used everywhere (content `movement.domain`, map masks, overlays): `foot`, `wheeled`, `tracked`, `hover`, `amphibious`, `naval` and `air`. Air units don't use a grid.
 - Each cell stores passability and an **integer cost**, from the surface (road cheap, rubble and forest expensive or blocked per domain), occupancy (structures, blocking props), and clearance (large units need wider gaps).
 - **Height levels:** cells on different levels connect only through ramp cells. Cliffs are impassable edges.
 - **Connected components** are labelled per domain, so "is this reachable?" is a constant-time lookup. Orders to unreachable spots go to the nearest reachable cell.

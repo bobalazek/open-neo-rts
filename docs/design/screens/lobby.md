@@ -14,7 +14,7 @@ The rules behind the lobby (presets, seats, grants, post-defeat policy) are in [
 │ │   └ Bob      🔇  … not ready grants: army ▾      │ │ [Change map]      │ │
 │ │ Force 2  EC ▾   ■ blue  Spawn W                  │ ├───────────────────┤ │
 │ │   └ Bot (Hard) ⚙                                 │ │ Preset: Hybrid ▾  │ │
-│ │ TEAM B                                           │ │ Victory: Annihil. │ │
+│ │ TEAM B                                           │ │ Victory: Conquest │ │
 │ │ Force 3  PI ▾   ■ green Spawn S                  │ │ Fog: Standard     │ │
 │ │   └ [ open seat ]  [ + bot ]                     │ │ Diplomacy: Locked │ │
 │ │ Spectators: Ozzy (team A vision)                 │ │ Post-defeat:      │ │

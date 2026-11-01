@@ -6,8 +6,9 @@ Game data: JSON definitions plus assets, grouped in **packs**. No code. What a p
 content/
 ├── schemas/              JSON schemas generated from packages/content (never edited by hand)
 └── packs/
-    ├── core/             resources, damage types, match settings, the test faction, presets
-    └── neo-2035/         the world of 2035: AFN, EC, PI, maps, campaigns, profile
+    ├── core/             the base game: rules, resources, damage, settings, presets, UI strings,
+    │                     and (soon) AFN, EC, PI with their maps and assets
+    └── dev/              test faction, placeholder assets, debug profile (hidden in release builds)
 ```
 
 Add content: [adding-content.md](../docs/contributing/adding-content.md). Asset rules: [assets.md](../docs/contributing/assets.md). Check assets with `bun neo validate-assets`.

@@ -1,6 +1,6 @@
 # Game design
 
-## First game pack: near-future warfare (neo-2035)
+## The world of 2035
 
 Three asymmetric factions, plus a mirrored test faction for balancing. Each faction's look, economy, structures, tech tree, units and powers are in [factions/](factions/README.md).
 

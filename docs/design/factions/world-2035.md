@@ -1,6 +1,6 @@
 # World of 2035 (source document)
 
-> The original world-building summary for the neo-2035 pack: lore, factions, campaigns and the signature roster. It's the **source of truth for names and story**. The faction docs ([afn.md](afn.md), [ec.md](ec.md), [pi.md](pi.md)) turn it into playable rules; where they disagree on names or flavour, this document wins, and the faction docs are updated to match.
+> The original world-building summary for the base game in the `core` pack: lore, factions, campaigns and the signature roster. It's the **source of truth for names and story**. The faction docs ([afn.md](afn.md), [ec.md](ec.md), [pi.md](pi.md)) turn it into playable rules; where they disagree on names or flavour, this document wins, and the faction docs are updated to match.
 
 ## World Background - 2035
 

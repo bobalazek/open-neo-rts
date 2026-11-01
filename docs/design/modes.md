@@ -43,7 +43,7 @@ Playtest tools are ordinary sim commands (`playtest.*`), accepted only in editor
 **Content preview:** playtest is also how contributors and reviewers try new content. Deep links open it ready to go:
 
 ```text
-/editor/playtest?map=core.map:flat-test&spawn=neo-2035.unit:panther&vs=neo-2035.unit:tactical-operator
+/editor/playtest?map=core.map:flat-test&spawn=core.unit:panther&vs=core.unit:tactical-operator
 ```
 
 For a single model, the [content editor](screens/content-editor.md) shows sockets, damage states, team colours and destruction without a match. PR preview builds post these links for every changed definition; see [CONTRIBUTING.md](../../CONTRIBUTING.md#previews). Screens: [map-editor.md](screens/map-editor.md).

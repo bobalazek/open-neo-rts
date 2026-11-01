@@ -20,7 +20,7 @@ A runtime game must not depend on the editor's current unsaved brush state. Map 
 id: map:test-valley
 version: 1
 formatVersion: 1
-profileCompatibility: [neo-2035]
+profileCompatibility: [standard]
 size: { widthCells: 128, heightCells: 128, metersPerCell: 2 }
 terrain:
   heightLevels: height.r8 # discrete level per cell (0-7)
@@ -28,7 +28,7 @@ terrain:
   biomeLayer: biome.r8
   surfaceLayer: surface.r8
   waterLevel: 0
-  impassableMasks: { infantry: foot.r8, heavyGround: heavy.r8 }
+  domainMasks: { foot: foot.r8, tracked: tracked.r8 } # per movement domain, optional overrides
 spawnSlots:
   - { id: north, x: 20, y: 20, facing: 135, teamsAllowed: [1, 2] }
   - { id: south, x: 108, y: 108, facing: 315, teamsAllowed: [1, 2] }
@@ -63,7 +63,7 @@ Use command-based editor transactions with reversible actions and stable object 
 ## 6. Special overlays
 
 - Buildable cells per structure footprint and faction rules.
-- Movement costs for foot, light ground, heavy ground, air, naval and amphibious.
+- Movement costs per movement domain (foot, wheeled, tracked, hover, amphibious, naval).
 - Traversability connectivity/chokepoints and bridges.
 - Team spawn fairness and starting resources.
 - Territorial influence from cities, forts, command hubs and custom sources.

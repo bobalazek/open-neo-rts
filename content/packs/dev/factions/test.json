@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/faction.schema.json",
+  "id": "faction:test",
+  "name": "faction.test.name",
+  "description": "faction.test.description",
+  "color": "#8a8f98",
+  "start": {
+    "structures": ["structure:hq"],
+    "units": [
+      {
+        "unit": "unit:harvester",
+        "count": 1
+      },
+      {
+        "unit": "unit:rifleman",
+        "count": 3
+      }
+    ],
+    "resources": {
+      "core.resource:credits": 5000
+    }
+  },
+  "ai": {
+    "personality": "balanced"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "resources",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^([a-z0-9-]+\\.)?resource:[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "resource ID"
+          },
+          "kind": {
+            "enum": [
+              "stock",
+              "capacity",
+              "flow"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+            "description": "locale key"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "resources"
+  ],
+  "additionalProperties": false
+}

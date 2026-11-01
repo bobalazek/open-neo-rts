@@ -1,6 +1,6 @@
 # Economy
 
-How resources flow in neo-2035. Resource kinds and other profiles' economies are in [content-and-eras.md §2](content-and-eras.md#2-resource-model-no-hardcoded-four-resource-economy); faction twists are in [factions/](factions/README.md#resources).
+How resources flow in the 2035 game (`standard` profile). Resource kinds and other profiles' economies are in [content-and-eras.md §2](content-and-eras.md#2-resource-model-no-hardcoded-four-resource-economy); faction twists are in [factions/](factions/README.md#resources).
 
 ## The loop
 
@@ -10,6 +10,12 @@ Rare-metal node ─────────► materials ─┘
 Wrecks ──salvage──► materials (+ some credits)
 Power structures ──► power capacity ──► keeps everything running
 ```
+
+## Starting a match
+
+- Each faction's definition sets its start (`start` in the faction file): structures, units and resources. Default: an HQ, one harvester and a few infantry, plus the match's starting credits setting.
+- PI starts with its Command Node packed up as a vehicle and deploys it wherever it likes; everyone else starts with their HQ placed at the spawn.
+- Every spawn has at least one ore field nearby (the map validator checks this).
 
 ## Harvesting
 
@@ -24,6 +30,14 @@ Power structures ──► power capacity ──► keeps everything running
 - Costs are paid **when production or construction starts**, not reserved earlier. If two co-controllers spend in the same tick, the server order decides, and only what's affordable goes through ([multiplayer.md §8](multiplayer.md#8-adversarial-and-acceptance-tests)).
 - **Cancel** refunds 100% of what was paid. **Sell** refunds 50% of a structure's cost. Repair costs credits over time and pauses when broke.
 - **Low funds:** production pauses (not cancels) and resumes when credits arrive.
+
+## Production and construction queues
+
+- **Units:** each production structure builds one unit at a time from a queue of up to 5. Several structures of the same kind build in parallel; there is no speed bonus for owning more beyond that. The cost is paid when that unit **starts** building, not when it's queued.
+- **Structures:** the HQ (or a builder unit, depending on the faction) builds one structure at a time. When it's finished it waits until the player places it on the grid. Placing is instant.
+- **Cancel:** an item that hasn't started costs nothing to remove. Cancelling an item in progress refunds 100%.
+- **Destroyed mid-build:** if a production structure dies, its in-progress unit is refunded in full and the rest of the queue is dropped. If the HQ dies while a finished structure waits for placement, that structure is refunded.
+- **Low funds:** the next item waits at the head of the queue until it's affordable. Nothing is cancelled automatically.
 
 ## Power
 

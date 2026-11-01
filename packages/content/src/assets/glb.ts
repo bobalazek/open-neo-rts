@@ -6,7 +6,7 @@ export interface Gltf {
   scenes?: { nodes?: number[] }[];
   nodes?: GltfNode[];
   meshes?: { name?: string; primitives: GltfPrimitive[] }[];
-  accessors?: { count: number }[];
+  accessors?: { count: number; min?: number[]; max?: number[] }[];
   materials?: { name?: string }[];
   animations?: { name?: string }[];
   skins?: { joints: number[] }[];
@@ -18,6 +18,7 @@ export interface GltfNode {
   skin?: number;
   children?: number[];
   translation?: number[];
+  scale?: number[];
 }
 
 export interface GltfPrimitive {

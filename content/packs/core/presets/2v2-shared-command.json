@@ -2,6 +2,7 @@
   "$schema": "../../../schemas/preset.schema.json",
   "id": "preset:2v2-shared-command",
   "name": "preset.2v2-shared-command.name",
+  "description": "preset.2v2-shared-command.description",
   "forces": [
     {
       "team": "A",

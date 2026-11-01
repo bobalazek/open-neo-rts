@@ -20,10 +20,10 @@
 
 - **Single player and editor playtest:** opening the menu pauses the sim. The header says PAUSED.
 - **Multiplayer:** the game keeps running behind the menu, and the header says GAME RUNNING. Pausing is a separate command (Pause key, or the button in this menu) with a limited number of pauses per player. Pausing and unpausing are announced to everyone, and unpausing needs a short countdown.
-- **Save game:** opens a name field (default: map and time) and thumbnails the current view.
+- **Save game:** opens a name field (default: map and time) and thumbnails the current view. In custom multiplayer matches the host can save too; the save is held by the server and players get a resume code ([saves-and-replays.md](../../engineering/saves-and-replays.md#multiplayer)).
 - **Surrender:** asks for confirmation. Under Shared Command, it follows the Force's approval rule: if other controllers must agree, a vote appears for them.
 - **Leave match:**
   - Single player asks whether to save first.
-  - Multiplayer warns that a bot takes over your seat (or your co-controllers continue), and that you can rejoin from Home while the match runs.
+  - Multiplayer explains what happens to your seat under the match's [leave/disconnect policy](../match-rules.md#leaving-and-disconnecting) (co-controllers continue, a bot takes over, or the Force is eliminated in ranked), and that you can rejoin from Home while the match runs.
 - **Settings** opens the same panels as the main-menu [settings](settings.md), as an overlay. Graphics changes apply live.
 - **Objectives** shows the full objectives list with descriptions and progress.

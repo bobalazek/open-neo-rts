@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "structure",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "structure ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+      "description": "locale key"
+    },
+    "faction": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?faction:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "faction ID"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "propertyNames": {
+        "pattern": "^([a-z0-9-]+\\.)?resource:[a-z0-9-]+$"
+      }
+    },
+    "buildTime": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 600,
+      "description": "seconds"
+    },
+    "producedBy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "structure ID"
+      },
+      "minItems": 1
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?[a-z]+:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "any definition ID"
+      }
+    },
+    "health": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "armor": {
+      "enum": [
+        "infantry",
+        "light",
+        "medium",
+        "heavy",
+        "aircraft",
+        "naval",
+        "structure"
+      ]
+    },
+    "footprint": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "power": {
+      "type": "integer",
+      "minimum": -500,
+      "maximum": 500,
+      "description": "+ produced, - used"
+    },
+    "vision": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 40,
+      "description": "cells"
+    },
+    "pop": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "weapons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?weapon:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "weapon ID"
+      }
+    },
+    "abilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?ability:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "ability ID"
+      }
+    },
+    "spawnsWith": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "unit ID"
+      }
+    },
+    "dock": {
+      "type": "boolean"
+    },
+    "garrison": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      },
+      "required": [
+        "slots"
+      ],
+      "additionalProperties": false
+    },
+    "adjacency": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "minItems": 1
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "stat": {
+            "type": "string"
+          },
+          "percent": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxSources": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": [
+          "tags",
+          "radius",
+          "stat",
+          "percent",
+          "maxSources"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "eras": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+\\.)?era:[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "era ID"
+      },
+      "minItems": 1
+    },
+    "eraVariants": {
+      "type": "object",
+      "additionalProperties": {
+        "description": "partial definition overriding fields for that era"
+      },
+      "propertyNames": {
+        "pattern": "^([a-z0-9-]+\\.)?era:[a-z0-9-]+$"
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "pattern": "^assets\\/[a-z0-9/._-]+$",
+          "description": "runtime model (.glb), relative to the pack"
+        },
+        "icon": {
+          "type": "string",
+          "pattern": "^assets\\/[a-z0-9/._-]+$",
+          "description": "build-menu icon (.png)"
+        },
+        "wreck": {
+          "type": "string",
+          "pattern": "^assets\\/[a-z0-9/._-]+$",
+          "description": "rubble model (.rubble.glb)"
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "palette",
+              "team",
+              "team_dark",
+              "team_light",
+              "team_emissive",
+              "metal",
+              "glass",
+              "emissive"
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^.+$"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0
+        },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^socket_[a-z]+$"
+          },
+          "minItems": 0
+        },
+        "animations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0
+        },
+        "sounds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^assets\\/[a-z0-9/._-]+$"
+          }
+        }
+      },
+      "required": [
+        "model",
+        "icon",
+        "materials"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "faction",
+    "health",
+    "armor",
+    "footprint",
+    "power",
+    "vision",
+    "presentation"
+  ],
+  "additionalProperties": false
+}

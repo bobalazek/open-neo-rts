@@ -6,7 +6,7 @@ Editing units and structures by hand-writing JSON is error-prone, and checking a
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────────┐
-│ CONTENT EDITOR   neo-2035 ▾        [Units ▾] [ Search… ]          ● unsaved   [Save] │
+│ CONTENT EDITOR   core ▾            [Units ▾] [ Search… ]          ● unsaved   [Save] │
 │ ┌ DEFINITIONS ──┐ ┌──────────────────────────────────┐ ┌ unit:panther ──────────────┐ │
 │ │ ▾ AFN         │ │                                  │ │ [General][Combat][Visuals] │ │
 │ │   Panther  ◀  │ │   (3D model on the grid, with a  │ │ [Production][Upgrades]     │ │

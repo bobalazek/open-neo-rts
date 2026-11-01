@@ -2,7 +2,7 @@
 
 **Phase:** first playable (phase 2). The faction used for the first playable, AI development, determinism tests and as the baseline in balance reports. Both sides of a first-playable match use it (a mirror match). It has no special mechanics, so problems in the core loop can't hide behind faction quirks.
 
-The numbers are a first pass, to be tuned with the balance tools. The data lives in [content/packs/core](../../../content/packs/core/): one file per unit, structure and weapon, in human units (cells, seconds) that the loader converts to integers.
+The numbers are a first pass, to be tuned with the balance tools. The data lives in the developer pack [content/packs/dev](../../../content/packs/dev/), with generated placeholder models: one file per unit, structure and weapon, in human units (cells, seconds) that the loader converts to integers.
 
 ## Start
 

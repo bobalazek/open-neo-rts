@@ -8,7 +8,7 @@ Each layer overrides the one before it:
 
 ```text
 Engine hard limits         safety ceilings, never exceeded (below)
-  → Game profile defaults  e.g. neo-2035: pop cap 200, normal speed, annihilation
+  → Game profile defaults  e.g. standard: pop cap 200, normal speed, annihilation
     → Preset               e.g. "Hybrid 2v2", "FFA diplomacy", or a saved custom preset
       → Lobby overrides    the host's changes, within the ranges the profile allows
         → Per-Force        handicaps and per-Force limits
@@ -21,7 +21,7 @@ Engine hard limits         safety ceilings, never exceeded (below)
 
 ## Settings
 
-| Group              | Setting                                                                            | Default (neo-2035)                      | Scope                                                          |
+| Group              | Setting                                                                            | Default (standard)                      | Scope                                                          |
 | ------------------ | ---------------------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------- |
 | **Caps**           | Population cap                                                                     | 200 per Force (150 with 5+ Forces)      | Match, per faction, per Force                                  |
 |                    | Population cost per unit                                                           | From content                            | Per unit (content)                                             |

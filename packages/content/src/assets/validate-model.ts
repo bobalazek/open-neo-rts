@@ -16,6 +16,8 @@ export interface ModelRequirements {
   parts?: string[];
   sockets?: string[];
   animations?: string[];
+  /** Expected footprint in metres (structures: footprint cells; units: collision diameter). */
+  size?: { width: number; depth: number };
 }
 
 export const TRIANGLE_BUDGET: Record<ModelKind, number> = {
@@ -145,6 +147,23 @@ export function validateModel(
     warn("structures need at least one socket_smoke_<n> for damage effects");
   }
 
+  if (requires.size) {
+    const extent = modelExtent(gltf);
+    if (extent) {
+      const [w, d] = [extent.width, extent.depth];
+      const { width, depth } = requires.size;
+      if (w > width * 1.25 || d > depth * 1.25) {
+        error(
+          `model is ${w.toFixed(1)} × ${d.toFixed(1)} m; its footprint is ${width} × ${depth} m`,
+        );
+      } else if (w < width * 0.4 && d < depth * 0.4) {
+        warn(
+          `model is ${w.toFixed(1)} × ${d.toFixed(1)} m, much smaller than its ${width} × ${depth} m footprint`,
+        );
+      }
+    }
+  }
+
   for (const part of requires.parts ?? []) {
     if (!seen.has(part)) error(`missing part node "${part}"`);
   }
@@ -158,4 +177,38 @@ export function validateModel(
   }
 
   return issues;
+}
+
+/** Approximate size in metres from accessor bounds plus node translations and scales (rotations ignored). */
+export function modelExtent(
+  gltf: Gltf,
+): { width: number; depth: number; height: number } | undefined {
+  const nodes = gltf.nodes ?? [];
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  const visit = (i: number, offset: number[], scale: number[]) => {
+    const n = nodes[i];
+    if (!n) return;
+    const s = n.scale ?? [1, 1, 1];
+    const t = n.translation ?? [0, 0, 0];
+    const o = offset.map((v, k) => v + (t[k] ?? 0) * (scale[k] ?? 1));
+    const sc = scale.map((v, k) => v * (s[k] ?? 1));
+    for (const p of n.mesh === undefined ? [] : (gltf.meshes?.[n.mesh]?.primitives ?? [])) {
+      const a =
+        p.attributes.POSITION === undefined ? undefined : gltf.accessors?.[p.attributes.POSITION];
+      if (!a?.min || !a.max) continue;
+      for (let k = 0; k < 3; k++) {
+        min[k] = Math.min(min[k] ?? 0, (o[k] ?? 0) + (a.min[k] ?? 0) * (sc[k] ?? 1));
+        max[k] = Math.max(max[k] ?? 0, (o[k] ?? 0) + (a.max[k] ?? 0) * (sc[k] ?? 1));
+      }
+    }
+    for (const c of n.children ?? []) visit(c, o, sc);
+  };
+  for (const root of gltf.scenes?.[gltf.scene ?? 0]?.nodes ?? []) visit(root, [0, 0, 0], [1, 1, 1]);
+  if (min[0] === Infinity) return undefined;
+  return {
+    width: (max[0] ?? 0) - (min[0] ?? 0),
+    height: (max[1] ?? 0) - (min[1] ?? 0),
+    depth: (max[2] ?? 0) - (min[2] ?? 0),
+  };
 }

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "locale",
+  "type": "object",
+  "additionalProperties": {
+    "type": "string"
+  },
+  "propertyNames": {
+    "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+  }
+}

@@ -11,3 +11,4 @@ coverage/
 
 # Local agent settings
 .claude/settings.local.json
+.lfs-ids

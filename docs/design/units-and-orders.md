@@ -23,6 +23,13 @@ What units can be told to do, and what they do on their own. Every order is a si
 | Return to base / rearm     | R                                              | Aircraft go back to their pads                                                    |
 | Set rally point _(FP)_     | Right-click with production structure selected | Where new units go                                                                |
 
+## Order model
+
+- A unit has **one current order and a queue** of up to 32 more. A plain order replaces the current order and clears the queue; a Shift-order appends to the queue.
+- **Mixed selections:** an order goes to every selected unit that can carry it out; the others ignore it (e.g. "deploy" only reaches deployable units). Context orders (right-click) are resolved per unit: the same click can mean "attack" for a tank and "repair" for an engineer.
+- **Co-controllers:** two orders for the same unit in the same tick are applied in server order, each following the replace-or-append rule above, so the result is deterministic and the same for everyone.
+- **Produced units** inherit their factory's order queue at the moment they leave the factory.
+
 ## Queues and waypoints
 
 - **Shift queues** any order after the current one. Queued orders show as a path of waypoint markers for the selection.

@@ -117,7 +117,7 @@ open-neo-rts/
 │       └── src/{rooms,match-host,matchmaking,presence,voice}/
 ├── content/                       game data in packs (see content-format.md)
 │   ├── schemas/                   generated from packages/content
-│   └── packs/{core,neo-2035}/
+│   └── packs/{core,dev}/
 ├── tools/biome/                   lint plugin enforcing the determinism rules
 ├── docs/                          design, engineering, contributing
 └── .github/                       PR template and CI workflow
@@ -196,7 +196,7 @@ Each match, editor preview, test and replay creates its own isolated world. Worl
 
 ## 7. Movement, navigation and physics
 
-Terrain is a heightfield: a 2.5D authoritative world shown in 3D. Navigation has several domains: foot, wheeled, tracked/heavy and air, and later water, amphibious and tunnelling. The first pathfinding approach is a deterministic grid or hierarchical graph; large armies later need sector routes, formation planning and local avoidance. Define clearance and footprints, slope, terrain cost and obstacle occupancy. New buildings update the affected nav regions at tick boundaries.
+Terrain is a heightfield: a 2.5D authoritative world shown in 3D. Navigation has one grid per movement domain (the list is in [pathfinding.md](pathfinding.md#navigation-data)). The first pathfinding approach is a deterministic grid or hierarchical graph; large armies later need sector routes, formation planning and local avoidance. Define clearance and footprints, slope, terrain cost and obstacle occupancy. New buildings update the affected nav regions at tick boundaries.
 
 Fixed-wing aircraft use an airborne controller with turn radius, altitude band, attack runs and landing. Rotorcraft hover and strafe. Ground units follow the terrain. Path requests have a canonical budget and tie-breaking.
 

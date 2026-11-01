@@ -67,6 +67,28 @@ Start with [design/vision.md](design/vision.md). Contributors: see [CONTRIBUTING
 
 New docs go in the folder that matches their audience. Add a subfolder once a topic has at least two docs.
 
+## Glossary
+
+| Term                | Meaning                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| **Force**           | The owner of units, structures, resources and tech in a match. One or more seats control it   |
+| **Seat**            | A place in a match for one human or bot. Seats get grants on a Force                          |
+| **Grant**           | Permission for a seat to do certain things with a Force (army orders, economy, research…)     |
+| **Team**            | Forces that win or lose together. Fixed at the start (diplomacy can add temporary treaties)   |
+| **Faction**         | A content template (AFN, EC, PI, test). Several Forces can pick the same faction              |
+| **Shared Command**  | Several seats controlling one Force: one army, one economy                                    |
+| **Allied Command**  | Several Forces on one team, each with its own army and economy                                |
+| **Last Stand**      | The post-defeat rule that lets an eliminated player help a surviving ally's Force             |
+| **Vision group**    | Everyone who sees the same fog view: a Force, its co-controllers, and whoever shares vision   |
+| **System seat**     | A reserved seat for server-issued commands (takeover, pause, kick), so replays reproduce them |
+| **Pack**            | A self-contained folder of content (`core`, `dev`, mods)                                      |
+| **Profile**         | A playable game defined in a pack: packs, factions, resources, rule modules, defaults         |
+| **Preset**          | A lobby template: Force slots, teams, seats, setting overrides                                |
+| **Rule module**     | An optional rule set a profile switches on: weather, territory, eras, trade                   |
+| **Movement domain** | How something moves: foot, wheeled, tracked, hover, amphibious, naval, air                    |
+| **Tick**            | One simulation step: 1/20 of a game second                                                    |
+| **Subcell**         | The sim's distance unit: 1/1,024 of a map cell                                                |
+
 ## Decided so far
 
 - **Game first, engine second.** Build a fun game, then make its engine reusable.

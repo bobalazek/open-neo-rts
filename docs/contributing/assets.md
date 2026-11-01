@@ -12,7 +12,7 @@ content/packs/<pack>/
 ├── assets/
 │   ├── units/panther/
 │   │   ├── panther.glb                runtime model
-│   │   ├── panther.icon.webp          build-menu icon
+│   │   ├── panther.icon.png          build-menu icon
 │   │   └── assets.json                provenance for this folder
 │   ├── audio/…
 │   └── textures/…

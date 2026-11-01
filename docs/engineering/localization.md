@@ -11,8 +11,8 @@ content/packs/
 ├── core/locales/
 │   ├── en.json               UI strings (ui.*) plus core content (resources, test faction…)
 │   └── de.json               a translation: same keys, translated values
-└── neo-2035/locales/
-    └── en.json               AFN, EC, PI names, descriptions, dialogue, campaign text
+└── dev/locales/
+    └── en.json               test faction names (developer pack)
 ```
 
 - **UI strings** (menus, HUD, settings, errors) live in `core`, under `ui.<screen>.<element>` keys. The client ships no strings of its own.

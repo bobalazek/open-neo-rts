@@ -5,5 +5,10 @@
   "engine": ">=0.1.0",
   "name": "pack.core.name",
   "description": "pack.core.description",
-  "dependencies": {}
+  "dependencies": {},
+  "files": {
+    "rules": ["rules/damage.json", "rules/resources.json", "rules/settings.json"],
+    "presets": ["presets/1v1.json", "presets/2v2-shared-command.json"],
+    "locales": ["locales/en.json"]
+  }
 }

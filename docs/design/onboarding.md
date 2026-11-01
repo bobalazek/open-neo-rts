@@ -42,7 +42,7 @@ Tutorial missions are ordinary missions ([authoring-scenarios.md](../contributin
 ## Learning aids in every match
 
 - **Contextual hints:** the first time something happens (low power, idle workers, under attack, a counter unit appears), a short hint explains it. Each shows once per profile. The hint level (all / important / off) is in settings.
-- **HUD help (F1):** labels every HUD element with what it does.
+- **HUD help (`?`):** labels every HUD element with what it does.
 - **Tooltips** on everything, including "strong against" and "weak against" icons.
 - **Training bot difficulty:** attacks late, explains what it's doing in chat, and never rushes.
 - **Game speed:** single player can run slower.
@@ -58,7 +58,7 @@ Tutorial missions are ordinary missions ([authoring-scenarios.md](../contributin
 │ ┌ BROWSE ─────────┐ ┌──────────────────────────────────────────┐   │
 │ │ ▾ Units          │ │ (3D turntable of the unit)                │   │
 │ │    AFN           │ │ PANTHER · AFN · Heavy tank               │   │
-│ │     Panther  ◀   │ │ Cost 900 · Build 20 s · Health 1200      │   │
+│ │     Tank     ◀   │ │ Cost 800 · Build 15 s · Health 600       │   │
 │ │     Raptor       │ │ Armor heavy · Speed ●●○○                 │   │
 │ │ ▸ Structures     │ │ Cannon: armor-piercing, range 9          │   │
 │ │ ▸ Weapons        │ │ Strong vs: [tank][light]                 │   │

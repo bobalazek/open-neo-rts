@@ -62,7 +62,7 @@
 
 - **Mouse:** left-click and box-select; right-click for the context command; double-click selects all visible units of that type; Shift adds to the selection or queues orders.
 - **Orders:** attack-move (A), stop (S), hold (H), patrol (P), guard, scatter, rally point, and formation move (right-drag sets facing and width).
-- **Camera:** arrow keys, edge scroll, middle-drag to rotate, wheel to zoom, Space to jump to the last alert, Home to jump to base, F5–F8 for saved positions.
+- **Camera:** arrow keys, edge scroll, middle-drag to rotate, wheel to zoom, Space to jump to the last alert, Home to jump to base, saved camera positions if bound.
 - **Control groups:** Ctrl+number to set, number to select, double-tap to centre the camera.
 - **Hotkeys:** the default grid layout uses QWER / ASDF / ZXCV for the command card, so letter keys never move the camera. A "WASD camera" layout preset moves the command card to other keys for players who prefer it. The grid layout matches the command card; the classic per-letter layout is an option. Everything can be rebound in [settings](settings.md). Full list: [hotkeys.md](../hotkeys.md). Order behaviour: [units-and-orders.md](../units-and-orders.md).
 

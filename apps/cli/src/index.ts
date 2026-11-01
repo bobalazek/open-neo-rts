@@ -1,12 +1,41 @@
 #!/usr/bin/env bun
 // open-neo-rts CLI: tools that run without graphics. Usage: bun neo <command> [args]
 
+import { generateSchemas } from "./commands/generate-schemas";
+import { makePlaceholders } from "./commands/make-placeholders";
 import { validateAssets } from "./commands/validate-assets";
+import { validateContent } from "./commands/validate-content";
 
-const commands: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
+type Command = { summary: string; run: (args: string[]) => Promise<number> };
+
+const commands: Record<string, Command> = {
+  validate: {
+    summary: "Run every content and asset check (what CI runs)",
+    run: async (args) => {
+      const results = [
+        await generateSchemas(["--check"]),
+        await validateContent(args),
+        await validateAssets(args),
+      ];
+      return results.some((r) => r !== 0) ? 1 : 0;
+    },
+  },
+  "validate-content": {
+    summary: "Check packs: manifests, schemas, IDs, references, locales, models vs definitions",
+    run: validateContent,
+  },
   "validate-assets": {
-    summary: "Check pack assets: glTF validity, model conventions, provenance",
+    summary: "Check asset files: glTF validity, model conventions, provenance",
     run: validateAssets,
+  },
+  "make-placeholders": {
+    summary:
+      "Generate block-model GLBs, wrecks and icons for definitions without art (default pack: dev)",
+    run: makePlaceholders,
+  },
+  "generate-schemas": {
+    summary: "Write content/schemas from packages/content (--check: fail if stale)",
+    run: generateSchemas,
   },
 };
 

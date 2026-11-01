@@ -30,7 +30,7 @@ Everything here is data. A campaign mission and a skirmish setup are the same si
   "$schema": "../../../../schemas/mission.schema.json",
   "id": "mission:afn-04-cold-front",
   "map": "map:cold-front",
-  "profile": "profile:neo-2035",
+  "profile": "profile:standard",
   "forces": [
     { "id": "player", "faction": "faction:afn", "seat": "human", "start": "region:player-base" },
     {
@@ -102,7 +102,8 @@ A preset fills the [skirmish setup](../design/screens/skirmish-setup.md) and the
     { "team": "B", "seats": ["open"] }
   ],
   "rules": {
-    "victory": "annihilation",
+    "victory": "conquest",
+    "elimination": "annihilation",
     "fog": "standard",
     "diplomacy": "locked",
     "postDefeat": "requestAllyAssist"

@@ -10,7 +10,7 @@ New map (size, profile, base biome, number of height levels), open a recent map,
 
 ```text
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│ File ▾ Edit ▾ View ▾   ↶ ↷   Iron Valley* · 128×128 · neo-2035   [▶ Playtest] │
+│ File ▾ Edit ▾ View ▾   ↶ ↷   Iron Valley* · 128×128 · standard   [▶ Playtest] │
 │ ┌ TOOLS ┐ ┌───────────────────────────────────────────────┐ ┌ INSPECTOR ────┐ │
 │ │ ⛰ Height│ │                                               │ │ Selected:     │ │
 │ │ ▤ Paint │ │            (3D map view, same renderer        │ │ Spawn "north" │ │

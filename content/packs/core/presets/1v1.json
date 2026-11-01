@@ -2,6 +2,7 @@
   "$schema": "../../../schemas/preset.schema.json",
   "id": "preset:1v1",
   "name": "preset.1v1.name",
+  "description": "preset.1v1.description",
   "forces": [
     {
       "team": "A",
