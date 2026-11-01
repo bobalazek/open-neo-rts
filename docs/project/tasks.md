@@ -8,7 +8,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 ## Now: phase 1b (debug mode)
 
-- [ ] [1B-10 · Animated water and shore foam](./phases/1b.md#1b-10--animate-water-and-shore-foam). PR type: engine.
 - [ ] [1B-27 · Debug session shell](./phases/1b.md#1b-27--mount-the-debug-session-shell), followed by [configuration](./phases/1b.md#1b-28--choose-maps-seed-and-forces-in-debug-mode) and the [spawn palette](./phases/1b.md#1b-29--spawn-existing-definitions-through-commands): renderer, worker and authoritative debug placement are implemented. PR type: engine, one task per PR.
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
 
