@@ -42,6 +42,7 @@
     "icon": "quantum-research-lab.icon.png",
     "wreck": "quantum-research-lab.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
