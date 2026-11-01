@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { NAV_DIRECTIONS, type NavGrid, PathSearch } from ".";
+import { NAV_DIRECTIONS, type NavGrid, PathSearch, type PathSearchState } from ".";
 
 function grid(width: number, height: number, costs?: number[]): NavGrid {
   return {
@@ -127,6 +127,115 @@ describe("PathSearch", () => {
   test("maximum cell costs stay exact integers", () => {
     const nav = grid(3, 1, [65535, 65535, 65535]);
     expect(new PathSearch(nav, 0, 2).step(3).cost).toBe(1310700);
+  });
+
+  test("JSON search state preserves heap order and continuation, including terminal states", () => {
+    for (let fixture = 0; fixture < 10; fixture++) {
+      const nav = grid(
+        8,
+        8,
+        Array.from({ length: 64 }, (_, cell) => (cell === 0 ? 1 : (cell * 17 + fixture * 13) % 7)),
+      );
+      const search = new PathSearch(nav, 0, 63);
+      for (let step = 0; step < 12; step++) {
+        const serialized = JSON.stringify(search.snapshot());
+        const restored = PathSearch.restore(nav, JSON.parse(serialized));
+        expect(JSON.stringify(restored.snapshot())).toBe(serialized);
+        expect(restored.result()).toEqual(search.result());
+        expect(restored.step(7)).toEqual(search.step(7));
+        expect(restored.snapshot()).toEqual(search.snapshot());
+      }
+    }
+    const nav = grid(1, 1);
+    const found = new PathSearch(nav, 0, 0);
+    found.advance(1);
+    expect(PathSearch.restore(nav, found.snapshot()).step(10)).toEqual(found.step(10));
+  });
+
+  test("restore rejects nonadjacent parent jumps and invented entry costs", () => {
+    const jump: PathSearchState = {
+      start: 0,
+      goal: 3,
+      cost: [0, -1, -1, 10],
+      parent: [-1, -1, -1, 0],
+      closed: [1, 0, 0, 0],
+      heap: [3],
+      best: 3,
+      status: "searching",
+    };
+    expect(() => PathSearch.restore(grid(4, 1, [1, 0, 1, 1]), jump)).toThrow(RangeError);
+    // Consecutive row-major indices across a row boundary are not adjacent horizontally.
+    expect(() =>
+      PathSearch.restore(grid(3, 2), {
+        start: 2,
+        goal: 3,
+        cost: [-1, -1, 0, 10, -1, -1],
+        parent: [-1, -1, -1, 2, -1, -1],
+        closed: [0, 0, 1, 0, 0, 0],
+        heap: [3],
+        best: 3,
+        status: "searching",
+      }),
+    ).toThrow(RangeError);
+    const weighted = grid(2, 1, [1, 3]);
+    const search = new PathSearch(weighted, 0, 1);
+    search.advance(1);
+    const valid = search.snapshot();
+    for (const cost of [1, 10, 29, 31, 300])
+      expect(() => PathSearch.restore(weighted, { ...valid, cost: [0, cost] })).toThrow(RangeError);
+    expect(PathSearch.restore(weighted, valid).step(1).cost).toBe(30);
+  });
+
+  test("restore rejects parent edges into blocked cells or across forbidden connections", () => {
+    const nav = grid(2, 1);
+    const search = new PathSearch(nav, 0, 1);
+    search.advance(1);
+    const state = search.snapshot();
+    nav.cost[1] = 0;
+    expect(() => PathSearch.restore(nav, state)).toThrow(RangeError);
+    nav.cost[1] = 1;
+    nav.connections[0] = 255 & ~(1 << 4);
+    expect(() => PathSearch.restore(nav, state)).toThrow(RangeError);
+    nav.connections[0] = 255;
+    expect(() => PathSearch.restore(nav, { ...state, closed: [0, 0], heap: [1, 0] })).toThrow(
+      RangeError,
+    );
+  });
+
+  test("restore applies both diagonal corner routes and exact diagonal entry cost", () => {
+    const nav = grid(2, 2, [1, 1, 1, 3]);
+    const diagonal: PathSearchState = {
+      start: 0,
+      goal: 3,
+      cost: [0, -1, -1, 42],
+      parent: [-1, -1, -1, 0],
+      closed: [1, 0, 0, 0],
+      heap: [3],
+      best: 3,
+      status: "searching",
+    };
+    expect(PathSearch.restore(nav, diagonal).step(1).path).toEqual([0, 3]);
+    for (const cost of [10, 14, 30, 41, 43])
+      expect(() => PathSearch.restore(nav, { ...diagonal, cost: [0, -1, -1, cost] })).toThrow(
+        RangeError,
+      );
+    for (const cell of [1, 2]) {
+      nav.cost[cell] = 0;
+      expect(() => PathSearch.restore(nav, diagonal)).toThrow(RangeError);
+      nav.cost[cell] = 1;
+    }
+    // The diagonal itself and all four orthogonal edges round its two corners are required.
+    for (const [cell, direction] of [
+      [0, 7],
+      [0, 4],
+      [0, 6],
+      [1, 6],
+      [2, 4],
+    ]) {
+      nav.connections[cell as number] = 255 & ~(1 << (direction as number));
+      expect(() => PathSearch.restore(nav, diagonal)).toThrow(RangeError);
+      nav.connections[cell as number] = 255;
+    }
   });
 
   test("weighted routes match an independent exhaustive shortest-cost search", () => {
