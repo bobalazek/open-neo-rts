@@ -77,7 +77,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: key-capture-evidence
+          name: key-capture-evidence-${{ matrix.browser }}
           path: test-results/**/key-capture-*.json
           if-no-files-found: ignore
           retention-days: 14
