@@ -1,7 +1,21 @@
 {
-  "format": 1,
-  "simVersion": 1,
+  "format": 2,
+  "simVersion": 2,
   "setup": {
+    "map": {
+      "id": "map:fixture-smoke",
+      "terrain": {
+        "width": 2,
+        "height": 2,
+        "level": [0, 0, 0, 0],
+        "ramp": [0, 0, 0, 0],
+        "surface": [0, 0, 0, 0],
+        "water": [0, 0, 0, 0],
+        "biome": [0, 0, 0, 0]
+      },
+      "spawns": [],
+      "objects": []
+    },
     "seed": 1,
     "debug": true,
     "forces": [{ "index": 2, "faction": "faction:eastern-collective" }],

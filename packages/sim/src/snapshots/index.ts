@@ -14,13 +14,14 @@ import {
 import { type Command, REJECTIONS, SYSTEM_SEAT, validateCommands } from "../commands";
 import { checkpointHash } from "../kernel";
 import { type MatchSetup, SIM_VERSION } from "../match";
+import { checkMatchMap, matchMapSchema } from "../match-map";
 
 import { type RunOptions, replayScenario, scenarioTicks } from "./replay";
 import { strictObject } from "./schema";
 
 export * from "./trace";
 
-export const SCENARIO_FORMAT = 1;
+export const SCENARIO_FORMAT = 2;
 
 export interface Scenario {
   format: typeof SCENARIO_FORMAT;
@@ -36,6 +37,7 @@ const scenarioSchema = strictObject({
   format: int(SCENARIO_FORMAT, SCENARIO_FORMAT),
   simVersion: int(SIM_VERSION, SIM_VERSION),
   setup: strictObject({
+    map: matchMapSchema,
     seed: int(0, 0xffffffff),
     debug: bool(),
     forces: arr(strictObject({ index: id(), faction: idOf("faction") })),
@@ -84,6 +86,7 @@ export function parseScenario(value: unknown): Scenario {
   if (issues.length) fail(issues);
   const scenario = value as Scenario;
   const { forces, seats, definitions, grants } = scenario.setup;
+  checkMatchMap(scenario.setup.map, definitions, issues);
   const forceIds = unique(
     forces.map((force) => force.index),
     "$.setup.forces",
