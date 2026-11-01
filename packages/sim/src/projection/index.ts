@@ -5,6 +5,8 @@ import { MoveIntent } from "../features/movement";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
 
+export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
+
 export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
   handle: string;
