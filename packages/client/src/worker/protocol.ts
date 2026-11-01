@@ -84,7 +84,8 @@ export interface OfflineState {
   /** Full-state hash is a debug inspection tool, never part of a normal seat view. */
   hash?: string;
   overlays?: DebugOverlayData;
-  /** Last sim.step duration only, excluding projection, hashing and message transport. */
+  /** Full sim.step wall time, including command ingestion/logging and periodic checkpoints.
+   * Excludes subsequent projection, debug-publish hashing, transport and scheduling. */
   tickMs?: number;
 }
 export interface DebugSessionExport {
