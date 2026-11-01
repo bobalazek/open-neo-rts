@@ -1,0 +1,319 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-15.5, 0, -15.5],
+          "size": [31, 0.8, 31],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-13.5, 0.8, -13.5],
+          "size": [27, 1.2, 27],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "studs": false
+        },
+        { "at": [-12, 2, -12], "size": [24, 1, 24], "slot": "team_dark", "studs": false },
+        {
+          "at": [-10, 3, -10],
+          "size": [20, 0.6, 20],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        { "at": [-4, 0.8, 13.5], "size": [8, 0.4, 1.5], "slot": "metal", "studs": false },
+        { "at": [-3.5, 1.2, 12], "size": [7, 0.4, 1.5], "slot": "metal", "studs": false },
+        { "at": [-3, 1.6, 10.5], "size": [6, 0.4, 1.5], "slot": "metal", "studs": false },
+        {
+          "at": [-2.5, 2, 9],
+          "size": [5, 1.6, 1.5],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [12.8, 2, -12],
+          "size": [0.4, 0.3, 24],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        { "at": [-12, 2, -13.2], "size": [24, 0.3, 0.4], "slot": "team_emissive", "studs": false },
+        { "at": [-12, 2, 12.8], "size": [24, 0.3, 0.4], "slot": "team_emissive", "studs": false },
+        {
+          "at": [9, 2, -12],
+          "size": [3, 10, 5],
+          "slot": "palette",
+          "color": "#2f3338",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [9, 2, 7],
+          "size": [3, 10, 5],
+          "slot": "palette",
+          "color": "#2f3338",
+          "mirror": true,
+          "studs": false
+        },
+        { "at": [8.8, 12, -12.2], "size": [3.4, 0.6, 5.4], "slot": "team", "mirror": true },
+        { "at": [8.8, 12, 6.8], "size": [3.4, 0.6, 5.4], "slot": "team", "mirror": true },
+        {
+          "at": [8.75, 3, -11.5],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [8.75, 3, -10],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [8.75, 3, -8.5],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [8.75, 3, 7.5],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [8.75, 3, 9],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [8.75, 3, 10.5],
+          "size": [0.2, 7.8, 0.3],
+          "slot": "team_emissive",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 3, -11.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 5.2, -11.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 7.4, -11.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 9.6, -11.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 3, 7.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 5.2, 7.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 7.4, 7.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [12.01, 9.6, 7.5],
+          "size": [0.15, 1.2, 4],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [4.5, 3.6, -0.6],
+          "size": [4.4, 0.8, 1.2],
+          "slot": "metal",
+          "mirror": true,
+          "studs": false
+        },
+        { "at": [-0.6, 3.6, -9], "size": [1.2, 0.8, 4.5], "slot": "metal", "studs": false },
+        { "at": [-0.6, 3.6, 4.5], "size": [1.2, 0.8, 4.5], "slot": "metal", "studs": false }
+      ]
+    },
+    {
+      "name": "cryostat",
+      "parent": "base",
+      "at": [0, 3.6, 0],
+      "bricks": [
+        {
+          "at": [-6.5, 0, -6.5],
+          "size": [13, 1.8, 13],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-5.8, 1.8, -5.8],
+          "size": [11.6, 0.7, 11.6],
+          "slot": "team",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-4, 2.5, -4],
+          "size": [8, 11, 8],
+          "slot": "glass",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [4.5, 2.5, -4.8],
+          "size": [0.6, 11, 0.6],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [4.5, 2.5, 4.2],
+          "size": [0.6, 11, 0.6],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [-5.8, 13.5, -5.8],
+          "size": [11.6, 0.7, 11.6],
+          "slot": "team",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-6.5, 14.2, -6.5],
+          "size": [13, 1.8, 13],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-4, 16, -4],
+          "size": [8, 1.6, 8],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-3, 17.6, -3],
+          "size": [6, 0.4, 6],
+          "slot": "team_emissive",
+          "shape": "cyl-y",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "core",
+      "parent": "cryostat",
+      "at": [0, 8, 0],
+      "bricks": [
+        {
+          "at": [-1.3, -4.7, -1.3],
+          "size": [2.6, 9.4, 2.6],
+          "slot": "team_emissive",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-2.6, -3.5, -2.6],
+          "size": [5.2, 0.6, 5.2],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-2.6, -0.3, -2.6],
+          "size": [5.2, 0.6, 5.2],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-2.6, 2.9, -2.6],
+          "size": [5.2, 0.6, 5.2],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-3.2, -2.6, -0.3],
+          "size": [6.4, 5.2, 0.6],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "studs": false
+        },
+        {
+          "at": [-0.3, -2.6, -3.2],
+          "size": [0.6, 5.2, 6.4],
+          "slot": "palette",
+          "color": "#c4cad1",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_smoke_0", "parent": "base", "at": [10.5, 12.8, -9.5] },
+    { "name": "socket_smoke_1", "parent": "base", "at": [-10.5, 12.8, 9.5] },
+    { "name": "socket_healthbar", "parent": "base", "at": [0, 24, 0] }
+  ],
+  "animations": {
+    "active": {
+      "duration": 6,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "core",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [1.5, [0, 90, 0]],
+            [3, [0, 180, 0]],
+            [4.5, [0, 270, 0]],
+            [6, [0, 360, 0]]
+          ]
+        }
+      ]
+    }
+  }
+}
