@@ -1,0 +1,12 @@
+{
+  "files": {
+    "infiltrator.glb": {
+      "author": "Borut Balazek",
+      "source": "source/infiltrator.bricks.json"
+    },
+    "infiltrator.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/infiltrator.bricks.json"
+    }
+  }
+}
