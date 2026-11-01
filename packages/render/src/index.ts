@@ -6,6 +6,7 @@ import { createEngine, createScene } from "./scene";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
+export { createEntityPresentation } from "./units";
 export { createModelPreview } from "./units/preview";
 
 export interface RendererOptions {

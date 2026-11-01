@@ -13,7 +13,7 @@ import { buildTerrainGeometry, type Geometry } from "./mesh";
 
 export { PALETTES, type Palette } from "./biomes";
 export { createDemoGrid } from "./demo";
-export { BORDER, CELL_SIZE, CHUNK_SIZE, LEVEL_HEIGHT } from "./mesh";
+export { BORDER, CELL_SIZE, CHUNK_SIZE, LEVEL_HEIGHT, terrainHeight, waterHeight } from "./mesh";
 
 /**
  * Terrain meshes (one per chunk, plus one water mesh per chunk with water) under one node, each cell in its
