@@ -1,14 +1,20 @@
+import { builtins } from "virtual:debug-builtins";
 import {
   createEntityPresentation,
   createMapPresentation,
   createRenderer,
   resourceInstances,
 } from "@open-neo-rts/render";
+import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
+import { catalogEntry, resolveEntityModel } from "./catalog";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
 import { mapDecorations, resolveMapModel } from "./map-visuals";
 import { loadMap, MAPS } from "./maps";
+import { createSpawnPalette, spawnAtCell } from "./palette";
+
+const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
 
 /** Owns one rendered, worker-hosted session; replaced loads never regain ownership. */
 export function startDebugSession(canvas: HTMLCanvasElement) {
@@ -26,7 +32,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>
     <label>Controlled Force <select name="controlled" aria-label="Controlled Force"></select></label>
     <p>Debug no-fog · Paused · Empty setup. Setup changes apply on reload.</p>
-    <p role="status" aria-live="polite">Loading session…</p>`;
+    <p role="status" aria-label="Session status" aria-live="polite">Loading session…</p>`;
   document.body.append(panel);
   document.body.classList.add("model-check-page");
   canvas.setAttribute("aria-label", "Debug map. Arrow keys pan; scroll to zoom.");
@@ -43,6 +49,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   const status = statusElement;
   const controls = { forceRows, controlled, addForce };
   const signal = new AbortController();
+  const palette = createSpawnPalette(panel, catalog, signal.signal);
   map.replaceChildren(
     ...MAPS.map(({ definition }) => new Option(definition.name, `core.${definition.id}`)),
   );
@@ -102,7 +109,10 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   async function load() {
     let selectedSeed: number;
     const selectedForces = forces.map((force) => ({ ...force }));
-    const selectedControlled = Number(controlled?.value);
+    const controlledValue = controlled?.value ?? "";
+    const selectedControlled = /^(0|[1-9][0-9]*)$/.test(controlledValue)
+      ? Number(controlledValue)
+      : NaN;
     try {
       selectedSeed = parseDebugSeed(seed?.value ?? "");
       validateDebugForces(selectedForces, selectedControlled);
@@ -118,15 +128,20 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     status.textContent = "Loading session…";
     status.setAttribute("role", "status");
     delete canvas.dataset.session;
+    palette.setForces(selectedForces, selectedControlled);
+    palette.result.textContent = "No spawn submitted.";
+    palette.models.textContent = "No entity models loaded.";
     let renderer: Awaited<ReturnType<typeof createRenderer>> | undefined;
     let entities: ReturnType<typeof createEntityPresentation> | undefined;
     let match: ReturnType<typeof createOfflineMatch> | undefined;
     let art: ReturnType<typeof createMapPresentation> | undefined;
     let released = false;
+    const clicks = new AbortController();
     const current = () => !disposed && generation === ticket && !released;
     const release = () => {
       if (released) return;
       released = true;
+      clicks.abort();
       match?.dispose();
       entities?.dispose();
       art?.dispose();
@@ -161,7 +176,9 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       await art.ready;
       if (!current()) return;
       entities = createEntityPresentation(renderer.scene, grid, async (definition) => {
-        throw new Error(`Model unavailable: ${definition}`);
+        const entry = catalog.find((entry) => entry.definition.id === definition);
+        if (!entry) throw new Error(`Unknown definition model: ${definition}`);
+        return resolveEntityModel(entry);
       });
       const presentation = entities;
       for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
@@ -170,7 +187,17 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         if (!current()) return;
         status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · Paused · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = "ready";
-        void presentation.accept(state.snapshot, performance.now()).catch(fail);
+        void presentation
+          .accept(state.snapshot, performance.now())
+          .then(() => {
+            if (current() && state.snapshot.entities.length)
+              palette.models.textContent = `Models ready · ${state.snapshot.entities.length} projected entities`;
+          })
+          .catch((error: unknown) => {
+            if (current())
+              palette.models.textContent =
+                error instanceof Error ? error.message : "Model presentation failed";
+          });
       }, fail);
       await match.init({
         setup: {
@@ -203,11 +230,59 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
           grants: [
             { seat: 1, force: selectedControlled, scopes: ["unit.orders"], grantedAtTick: 0 },
           ],
-          definitions: [],
+          definitions: catalog.map((entry) => entry.definition),
         },
         seat: 1,
         mode: "debug-no-fog",
       });
+      if (!current()) return;
+      const activeMatch = match;
+      const activeRenderer = renderer;
+      let busy = false;
+      canvas.addEventListener(
+        "click",
+        async (event) => {
+          if (!current() || busy || event.button !== 0) return;
+          const selection = palette.selection();
+          const cell = activeRenderer.pickCell(event.clientX, event.clientY);
+          if (!selection || !cell) {
+            palette.result.textContent = "Choose a definition and a map cell.";
+            return;
+          }
+          busy = true;
+          const payload = spawnAtCell(
+            selection.entry,
+            selection.force,
+            cell.x,
+            cell.y,
+            selection.rotation,
+          );
+          palette.result.textContent = `Submitting ${selection.entry.name} at ${cell.x}, ${cell.y}…`;
+          try {
+            const [result] = await Promise.all([
+              activeMatch.command("debug.spawn", payload),
+              activeMatch.step(),
+            ]);
+            if (!current()) return;
+            if (result === "accepted")
+              palette.result.textContent = `Spawned ${selection.entry.name} · Force ${selection.force + 1} · Cell ${cell.x}, ${cell.y}`;
+            else if (result === "placement_failed") {
+              const placement = (await activeMatch.placement(payload)) as SpawnPlacement;
+              if (!current()) return;
+              const reasons = new Set(
+                placement.cells?.flatMap((cell) => (cell.failure ? [cell.failure] : [])) ?? [],
+              );
+              palette.result.textContent = `Refused ${selection.entry.name}: ${result} · ${placement.failure ?? [...reasons].join(", ")}`;
+            } else
+              palette.result.textContent = `Refused ${selection.entry.name}: ${String(result)}`;
+          } catch (error) {
+            fail(error);
+          } finally {
+            busy = false;
+          }
+        },
+        { signal: clicks.signal },
+      );
     } catch (error) {
       fail(error);
     }

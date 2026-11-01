@@ -58,6 +58,22 @@ function fixture() {
   };
 }
 
+test("static model origins follow the rotated authoritative footprint anchor", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes(),
+    movementDomain: null,
+    footprint: [2, 4],
+  }));
+  await layer.accept(snapshot(0, [entity("building", { facing: 0x4000 })]), 0);
+  expect(root(f.scene, "building").position.asArray()).toEqual([4, 0, 6]);
+  await layer.accept(snapshot(1, [entity("building", { facing: 0x8000 })]), 50);
+  layer.render(100);
+  expect(root(f.scene, "building").position.asArray()).toEqual([6, 0, 4]);
+  layer.dispose();
+  f.dispose();
+});
+
 test("200 actual rigid GLBs share geometry and Force materials, with independent clips", async () => {
   const f = fixture();
   let loads = 0;

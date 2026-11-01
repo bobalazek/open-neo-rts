@@ -1,4 +1,4 @@
-import type { MatchSetup, ProjectionMode, SeatSnapshot } from "@open-neo-rts/sim";
+import type { DebugSpawn, MatchSetup, ProjectionMode, SeatSnapshot } from "@open-neo-rts/sim";
 
 export interface OfflineSetup {
   setup: MatchSetup;
@@ -17,6 +17,7 @@ export type WorkerRequest =
   | { type: "command"; command: { type: string; payload: unknown } }
   | { type: "pause"; paused: boolean }
   | { type: "speed"; speed: number }
+  | { type: "placement"; spawn: DebugSpawn }
   | { type: "step" | "export" };
 
 export interface WorkerReply {
