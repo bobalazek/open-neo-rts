@@ -1,6 +1,14 @@
-import { createEntityPresentation, createRenderer } from "@open-neo-rts/render";
+import {
+  createEntityPresentation,
+  createMapPresentation,
+  createRenderer,
+  resourceInstances,
+} from "@open-neo-rts/render";
+import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
-import { loadMap } from "./maps";
+import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
+import { mapDecorations, resolveMapModel } from "./map-visuals";
+import { loadMap, MAPS } from "./maps";
 
 /** Owns one rendered, worker-hosted session; replaced loads never regain ownership. */
 export function startDebugSession(canvas: HTMLCanvasElement) {
@@ -10,25 +18,100 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   panel.innerHTML = `
     <h1>Debug session</h1>
     <div class="model-check-controls">
-      <button type="button">Reload session</button>
+      <label>Map <select name="map" aria-label="Map"></select></label>
+      <label>Seed <input name="seed" type="text" inputmode="numeric" value="1" /></label>
+      <button type="button" name="reload">Reload session</button>
       <a href="/">Terrain view</a><a href="/debug?models=1">Model check</a>
     </div>
-    <p>Debug no-fog · Paused · Empty setup</p>
+    <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>
+    <label>Controlled Force <select name="controlled" aria-label="Controlled Force"></select></label>
+    <p>Debug no-fog · Paused · Empty setup. Setup changes apply on reload.</p>
     <p role="status" aria-live="polite">Loading session…</p>`;
   document.body.append(panel);
   document.body.classList.add("model-check-page");
   canvas.setAttribute("aria-label", "Debug map. Arrow keys pan; scroll to zoom.");
   canvas.tabIndex = 0;
   const statusElement = panel.querySelector<HTMLElement>('[role="status"]');
-  const reload = panel.querySelector("button");
-  if (!statusElement || !reload) throw new Error("Debug controls missing");
+  const reload = panel.querySelector<HTMLButtonElement>('[name="reload"]');
+  const map = panel.querySelector<HTMLSelectElement>('[name="map"]');
+  const seed = panel.querySelector<HTMLInputElement>('[name="seed"]');
+  const forceRows = panel.querySelector<HTMLElement>("[data-forces]");
+  const controlled = panel.querySelector<HTMLSelectElement>('[name="controlled"]');
+  const addForce = panel.querySelector<HTMLButtonElement>('[name="add-force"]');
+  if (!statusElement || !reload || !map || !seed || !forceRows || !controlled || !addForce)
+    throw new Error("Debug controls missing");
   const status = statusElement;
+  const controls = { forceRows, controlled, addForce };
   const signal = new AbortController();
+  map.replaceChildren(
+    ...MAPS.map(({ definition }) => new Option(definition.name, `core.${definition.id}`)),
+  );
+  const initialMap = new URLSearchParams(location.search).get("map") ?? "core.map:sandbox-flat";
+  if (!MAPS.some(({ definition }) => `core.${definition.id}` === initialMap))
+    map.add(new Option("Unknown map", initialMap));
+  map.value = initialMap;
+  const forces: DebugForce[] = [];
+  function appendForce() {
+    if (forces.length >= 8) return;
+    const index = forces.length;
+    const faction = FACTIONS[index % FACTIONS.length];
+    if (!faction) return;
+    const force: DebugForce = { index, faction: `core.${faction.id}`, color: faction.color };
+    forces.push(force);
+    const row = document.createElement("div");
+    row.className = "model-check-controls";
+    const factionLabel = document.createElement("label");
+    factionLabel.textContent = `Force ${index + 1} faction`;
+    const picker = document.createElement("select");
+    picker.replaceChildren(
+      ...FACTIONS.map((faction) => new Option(faction.name, `core.${faction.id}`)),
+    );
+    picker.value = force.faction;
+    picker.addEventListener(
+      "change",
+      () => {
+        force.faction = picker.value;
+      },
+      { signal: signal.signal },
+    );
+    factionLabel.append(picker);
+    const colorLabel = document.createElement("label");
+    colorLabel.textContent = `Force ${index + 1} colour`;
+    const color = document.createElement("input");
+    color.type = "color";
+    color.value = force.color;
+    color.addEventListener(
+      "input",
+      () => {
+        force.color = color.value;
+      },
+      { signal: signal.signal },
+    );
+    colorLabel.append(color);
+    row.append(factionLabel, colorLabel);
+    controls.forceRows.append(row);
+    controls.controlled.add(new Option(`Force ${index + 1}`, String(index)));
+    controls.addForce.disabled = forces.length === 8;
+  }
+  appendForce();
+  addForce.addEventListener("click", appendForce, { signal: signal.signal });
   let generation = 0;
   let disposed = false;
   let cleanup: (() => void) | undefined;
 
   async function load() {
+    let selectedSeed: number;
+    const selectedForces = forces.map((force) => ({ ...force }));
+    const selectedControlled = Number(controlled?.value);
+    try {
+      selectedSeed = parseDebugSeed(seed?.value ?? "");
+      validateDebugForces(selectedForces, selectedControlled);
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : "Invalid setup";
+      status.setAttribute("role", "alert");
+      return;
+    }
+    const mapId = map?.value ?? "";
     const ticket = ++generation;
     cleanup?.();
     cleanup = undefined;
@@ -38,6 +121,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     let renderer: Awaited<ReturnType<typeof createRenderer>> | undefined;
     let entities: ReturnType<typeof createEntityPresentation> | undefined;
     let match: ReturnType<typeof createOfflineMatch> | undefined;
+    let art: ReturnType<typeof createMapPresentation> | undefined;
     let released = false;
     const current = () => !disposed && generation === ticket && !released;
     const release = () => {
@@ -45,6 +129,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       released = true;
       match?.dispose();
       entities?.dispose();
+      art?.dispose();
       renderer?.dispose();
     };
     cleanup = release;
@@ -56,7 +141,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       release();
     };
     try {
-      const { grid } = await loadMap("core.map:sandbox-flat");
+      const { definition, grid } = await loadMap(mapId);
       if (!current()) return;
       const nextRenderer = await createRenderer(canvas, { terrain: grid });
       if (!current()) {
@@ -64,21 +149,33 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         return;
       }
       renderer = nextRenderer;
+      art = createMapPresentation(
+        renderer.scene,
+        grid,
+        [
+          ...mapDecorations(definition.objects),
+          ...resourceInstances(definition, grid, selectedSeed),
+        ],
+        resolveMapModel,
+      );
+      await art.ready;
+      if (!current()) return;
       entities = createEntityPresentation(renderer.scene, grid, async (definition) => {
         throw new Error(`Model unavailable: ${definition}`);
       });
       const presentation = entities;
+      for (const force of selectedForces) presentation.setForceColor(force.index, force.color);
       renderer.scene.onBeforeRenderObservable.add(() => presentation.render(performance.now()));
       match = createOfflineMatch((state) => {
         if (!current()) return;
-        status.textContent = `Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · Paused · Debug no-fog`;
+        status.textContent = `${definition.name} · Ready · Tick ${state.snapshot.tick} · ${state.snapshot.entities.length} entities · Paused · Debug no-fog · Seed ${selectedSeed} · Controlled Force ${selectedControlled + 1}`;
         canvas.dataset.session = "ready";
         void presentation.accept(state.snapshot, performance.now()).catch(fail);
       }, fail);
       await match.init({
         setup: {
           map: {
-            id: "core.map:sandbox-flat",
+            id: mapId,
             terrain: {
               width: grid.width,
               height: grid.height,
@@ -88,14 +185,24 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
               water: Array.from(grid.water),
               biome: Array.from(grid.biome),
             },
-            spawns: [],
+            spawns: definition.spawns.map((spawn) => ({
+              id: spawn.id,
+              position: [
+                Math.round((spawn.position[0] ?? 0) * 1024),
+                Math.round((spawn.position[1] ?? 0) * 1024),
+              ],
+              facing: Math.round(((90 - spawn.facing) * 65536) / 360) & 0xffff,
+            })),
+            resources: toMatchResources(definition.resources),
             objects: [],
           },
-          seed: 1,
+          seed: selectedSeed,
           debug: true,
-          forces: [{ index: 0, faction: "core.faction:eastern-collective" }],
+          forces: selectedForces.map(({ index, faction }) => ({ index, faction })),
           seats: [1],
-          grants: [{ seat: 1, force: 0, scopes: ["unit.orders"], grantedAtTick: 0 }],
+          grants: [
+            { seat: 1, force: selectedControlled, scopes: ["unit.orders"], grantedAtTick: 0 },
+          ],
           definitions: [],
         },
         seat: 1,
