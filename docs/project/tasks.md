@@ -13,8 +13,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 - [ ] [1B-33 · Scenario exports and session deep links](./phases/1b.md#1b-33--reproduce-sessions-with-scenario-exports-and-deep-links). PR type: engine.
 - [ ] [1B-38 · Model LOD and culling](./phases/1b.md#1b-38--animate-projected-models-and-choose-model-lod): idle/move animation and independent playback already work; finish available authored LOD selection and measure frame cost. PR type: engine.
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
-- [ ] [1B-40 · Debug spawn/move/hash CI proof](./phases/1b.md#1b-40--run-debug-spawnmovehash-e2e-in-ci). Existing worker and controls e2e are foundations; complete the scenario/hash comparison. PR type: tooling.
-- [ ] [1B-47 · Performance counters and repeatable scene](./phases/1b.md#1b-47--expose-browser-performance-counters-and-a-repeatable-scene). PR type: engine.
 - [ ] [1B-48 · Navigation CLI benchmark](./phases/1b.md#1b-48--benchmark-navigation-in-the-existing-cli). PR type: tooling.
 
 ## In progress or awaiting delivery
