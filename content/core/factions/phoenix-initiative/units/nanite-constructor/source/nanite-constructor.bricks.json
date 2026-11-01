@@ -1,7 +1,9 @@
 {
   "author": "Borut Balazek",
   "nodes": [
-    { "name": "nanite-constructor" },
+    {
+      "name": "nanite-constructor"
+    },
     {
       "name": "hull",
       "parent": "nanite-constructor",
@@ -12,38 +14,6 @@
           "slot": "palette",
           "color": "#1c1d20",
           "studs": false,
-          "mirror": true
-        },
-        {
-          "at": [5.25, 0.35, -4.5],
-          "size": [0.2, 1, 1],
-          "slot": "metal",
-          "studs": false,
-          "shape": "cyl-x",
-          "mirror": true
-        },
-        {
-          "at": [5.25, 0.35, -2],
-          "size": [0.2, 1, 1],
-          "slot": "metal",
-          "studs": false,
-          "shape": "cyl-x",
-          "mirror": true
-        },
-        {
-          "at": [5.25, 0.35, 0.5],
-          "size": [0.2, 1, 1],
-          "slot": "metal",
-          "studs": false,
-          "shape": "cyl-x",
-          "mirror": true
-        },
-        {
-          "at": [5.25, 0.35, 3],
-          "size": [0.2, 1, 1],
-          "slot": "metal",
-          "studs": false,
-          "shape": "cyl-x",
           "mirror": true
         },
         {
@@ -131,9 +101,23 @@
           "color": "#55663d",
           "studs": false
         },
-        { "at": [0.5, 3.75, 4], "size": [2.5, 0.9, 0.15], "slot": "glass", "studs": false },
-        { "at": [3.25, 3.75, 1.5], "size": [0.12, 0.9, 2], "slot": "glass", "studs": false },
-        { "at": [0, 5, 0.75], "size": [3.5, 0.4, 3.5], "slot": "team" },
+        {
+          "at": [0.5, 3.75, 4],
+          "size": [2.5, 0.9, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [3.25, 3.75, 1.5],
+          "size": [0.12, 0.9, 2],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [0, 5, 0.75],
+          "size": [3.5, 0.4, 3.5],
+          "slot": "team"
+        },
         {
           "at": [-3.25, 2.75, -4.75],
           "size": [1.5, 2.25, 1.5],
@@ -154,9 +138,24 @@
           "studs": false,
           "shape": "cyl-y"
         },
-        { "at": [-1.1, 2.85, -4.35], "size": [0.7, 2, 0.7], "slot": "emissive", "studs": false },
-        { "at": [-3.35, 5, -4.85], "size": [3.5, 0.35, 1.7], "slot": "metal", "studs": false },
-        { "at": [-2.6, 5.35, -4.25], "size": [0.3, 0.3, 3.5], "slot": "metal", "studs": false },
+        {
+          "at": [-1.1, 2.85, -4.35],
+          "size": [0.7, 2, 0.7],
+          "slot": "emissive",
+          "studs": false
+        },
+        {
+          "at": [-3.35, 5, -4.85],
+          "size": [3.5, 0.35, 1.7],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-2.6, 5.35, -4.25],
+          "size": [0.3, 0.3, 3.5],
+          "slot": "metal",
+          "studs": false
+        },
         {
           "at": [0.25, 2.75, -5],
           "size": [3, 1.5, 2.5],
@@ -164,8 +163,18 @@
           "color": "#363a40",
           "studs": false
         },
-        { "at": [0.5, 4.25, -4.75], "size": [0.75, 0.5, 2], "slot": "metal", "studs": false },
-        { "at": [1.75, 4.25, -4.75], "size": [0.75, 0.5, 2], "slot": "metal", "studs": false },
+        {
+          "at": [0.5, 4.25, -4.75],
+          "size": [0.75, 0.5, 2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [1.75, 4.25, -4.75],
+          "size": [0.75, 0.5, 2],
+          "slot": "metal",
+          "studs": false
+        },
         {
           "at": [2.6, 4.25, -2.9],
           "size": [0.5, 2.5, 0.5],
@@ -189,6 +198,98 @@
       ]
     },
     {
+      "name": "roller_1",
+      "parent": "hull",
+      "at": [0, 0.85, -4.0],
+      "bricks": [
+        {
+          "at": [5.25, -0.5, -0.5],
+          "size": [0.2, 1, 1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [5.46, -0.1, -0.4],
+          "size": [0.08, 0.2, 0.8],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "roller_2",
+      "parent": "hull",
+      "at": [0, 0.85, -1.5],
+      "bricks": [
+        {
+          "at": [5.25, -0.5, -0.5],
+          "size": [0.2, 1, 1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [5.46, -0.1, -0.4],
+          "size": [0.08, 0.2, 0.8],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "roller_3",
+      "parent": "hull",
+      "at": [0, 0.85, 1.0],
+      "bricks": [
+        {
+          "at": [5.25, -0.5, -0.5],
+          "size": [0.2, 1, 1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [5.46, -0.1, -0.4],
+          "size": [0.08, 0.2, 0.8],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "roller_4",
+      "parent": "hull",
+      "at": [0, 0.85, 3.5],
+      "bricks": [
+        {
+          "at": [5.25, -0.5, -0.5],
+          "size": [0.2, 1, 1],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [5.46, -0.1, -0.4],
+          "size": [0.08, 0.2, 0.8],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    },
+    {
       "name": "crane",
       "parent": "hull",
       "at": [-1.75, 2.75, 1.5],
@@ -208,7 +309,12 @@
           "color": "#8a4a24",
           "studs": false
         },
-        { "at": [-0.55, 1.25, -0.55], "size": [1.1, 0.4, 1.1], "slot": "team", "studs": false }
+        {
+          "at": [-0.55, 1.25, -0.55],
+          "size": [1.1, 0.4, 1.1],
+          "slot": "team",
+          "studs": false
+        }
       ]
     },
     {
@@ -224,7 +330,12 @@
           "color": "#b5652b",
           "studs": false
         },
-        { "at": [-0.15, 0.4, 0], "size": [0.3, 0.2, 3.5], "slot": "metal", "studs": false }
+        {
+          "at": [-0.15, 0.4, 0],
+          "size": [0.3, 0.2, 3.5],
+          "slot": "metal",
+          "studs": false
+        }
       ]
     },
     {
@@ -240,7 +351,12 @@
           "color": "#363a40",
           "studs": false
         },
-        { "at": [-0.55, -1.6, -0.45], "size": [1.1, 0.6, 0.9], "slot": "glass", "studs": false },
+        {
+          "at": [-0.55, -1.6, -0.45],
+          "size": [1.1, 0.6, 0.9],
+          "slot": "glass",
+          "studs": false
+        },
         {
           "at": [-0.3, -1.5, -0.2],
           "size": [0.6, 0.45, 0.4],
@@ -254,11 +370,102 @@
       "parent": "hull",
       "at": [3, 5.4, 0.9],
       "bricks": [
-        { "at": [-0.06, 0, -0.06], "size": [0.12, 3, 0.12], "slot": "metal", "studs": false },
-        { "at": [0, 1.9, -1.4], "size": [0.06, 1, 1.35], "slot": "team", "studs": false }
+        {
+          "at": [-0.06, 0, -0.06],
+          "size": [0.12, 3, 0.12],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [0, 1.9, -1.4],
+          "size": [0.06, 1, 1.35],
+          "slot": "team",
+          "studs": false
+        }
       ]
     },
-    { "name": "socket_exhaust", "parent": "hull", "at": [2.85, 6.9, -2.65] }
+    {
+      "name": "socket_exhaust",
+      "parent": "hull",
+      "at": [2.85, 6.9, -2.65]
+    }
   ],
-  "destroyed": { "drop": ["flag", "emitter"], "darken": 0.45 }
+  "destroyed": {
+    "drop": ["flag", "emitter"],
+    "darken": 0.45
+  },
+  "animations": {
+    "idle": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "crane",
+          "rotation": [[0, [0, -8, 0]], [2, [0, 8, 0]], [4, [0, -8, 0]]]
+        },
+        {
+          "node": "boom",
+          "rotation": [[0, [-4, 0, 0]], [2, [-10, 0, 0]], [4, [-4, 0, 0]]]
+        },
+        {
+          "node": "flag",
+          "rotation": [[0, [0, -8, 0]], [2, [0, 10, 0]], [4, [0, -8, 0]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 1.2,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "roller_1",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.3, [90, 0, 0]],
+            [0.6, [180, 0, 0]],
+            [0.9, [270, 0, 0]],
+            [1.2, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "roller_2",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.3, [90, 0, 0]],
+            [0.6, [180, 0, 0]],
+            [0.9, [270, 0, 0]],
+            [1.2, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "roller_3",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.3, [90, 0, 0]],
+            [0.6, [180, 0, 0]],
+            [0.9, [270, 0, 0]],
+            [1.2, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "roller_4",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.3, [90, 0, 0]],
+            [0.6, [180, 0, 0]],
+            [0.9, [270, 0, 0]],
+            [1.2, [360, 0, 0]]
+          ]
+        },
+        {
+          "node": "boom",
+          "rotation": [[0, [-8, 0, 0]], [0.6, [-12, 0, 0]], [1.2, [-8, 0, 0]]]
+        },
+        {
+          "node": "flag",
+          "rotation": [[0, [0, -12, 0]], [0.6, [0, 15, 0]], [1.2, [0, -12, 0]]]
+        }
+      ]
+    }
+  }
 }

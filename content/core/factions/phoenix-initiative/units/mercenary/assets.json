@@ -1,0 +1,12 @@
+{
+  "files": {
+    "mercenary.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mercenary.bricks.json"
+    },
+    "mercenary.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mercenary.bricks.json"
+    }
+  }
+}
