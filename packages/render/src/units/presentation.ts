@@ -15,6 +15,7 @@ import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { registerModelShadows } from "../scene/shadows";
 import { createFoundation } from "../structures";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
+import { createModelLod } from "./lod";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
 
 type Pose = Pick<PresentedEntity, "x" | "y" | "facing">;
@@ -28,6 +29,7 @@ interface Entity {
   root?: TransformNode;
   instance?: Instance;
   playback?: ReturnType<typeof createModelPlayback>;
+  lod?: ReturnType<typeof createModelLod>;
   clip?: string;
   loading?: Promise<void>;
   ring?: ReturnType<Mesh["createInstance"]>;
@@ -73,6 +75,7 @@ export function createEntityPresentation(
   let frameAt = 0;
   let disposed = false;
   let playbackRate = 1;
+  let lodDistance = 96;
   let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
@@ -110,10 +113,9 @@ export function createEntityPresentation(
             const color = colors.get(force);
             if (color) setTeamColor(model.materials, color);
             model.addAllToScene();
-            for (const mesh of model.meshes) {
-              template.visibility.set(mesh.name, mesh.isVisible);
-              mesh.isVisible = false;
-            }
+            // Capture before hiding parents: glTF visibility may be inherited by children.
+            for (const mesh of model.meshes) template.visibility.set(mesh.name, mesh.isVisible);
+            for (const mesh of model.meshes) mesh.isVisible = false;
             template.movementDomain = movementDomain;
             template.footprint = footprint;
             template.radiusSubcells = radiusSubcells;
@@ -172,6 +174,12 @@ export function createEntityPresentation(
       if (domain === "naval" || domain === "hover" || domain === "amphibious")
         height = Math.max(height, waterHeight(terrain, x, y));
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
+      const camera = scene.activeCamera;
+      entity.lod?.setDistant(
+        !!camera &&
+          Vector3.DistanceSquared(camera.globalPosition, entity.root.position) >=
+            lodDistance * lodDistance,
+      );
       if (selected.has(handle)) {
         if (!ringModel) {
           ringModel = MeshBuilder.CreateTorus(
@@ -277,6 +285,7 @@ export function createEntityPresentation(
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
                 meshHandles.set(mesh, handle);
               }
+              current.lod = createModelLod(nodes, meshes);
               registerModelShadows(current.root);
               current.playback = createModelPlayback(
                 nodes,
@@ -365,6 +374,12 @@ export function createEntityPresentation(
       if (!Number.isFinite(rate) || rate < 0) throw new RangeError("Invalid playback rate");
       playbackRate = rate;
       if (rate === 0) for (const entity of entities.values()) entity.previous = entity.current;
+      render(frameAt);
+    },
+    /** Camera-to-entity distance in metres. Infinity keeps the authored near variants. */
+    setLodDistance(metres: number) {
+      if (!(metres > 0)) throw new RangeError("Invalid model LOD distance");
+      lodDistance = metres;
       render(frameAt);
     },
     setForceColor(force: number, hex: string) {
