@@ -177,7 +177,7 @@ Starting biomes: **temperate**, **desert**, **arctic** and **urban**. Packs can 
 
 ## Sandbox maps
 
-Small maps in `content/core/maps/`, each showing one feature, for [debug mode](screens/debug-mode.md) and for tests. Skirmish setup doesn't list them. `bun neo generate-sandbox-maps` writes them; [generate-sandbox-maps.ts](../../apps/cli/src/commands/generate-sandbox-maps.ts) is their editable source. `sandbox-biomes` waits on a biome map layer.
+Small maps in `content/core/maps/`, each showing one feature, for [debug mode](screens/debug-mode.md) and for tests. Skirmish setup doesn't list them. `bun neo generate-sandbox-maps` writes them; [generate-sandbox-maps.ts](../../apps/cli/src/commands/generate-sandbox-maps.ts) is their editable source. The biome layer exists; `sandbox-biomes` remains to be authored.
 
 | Map                 | Size    | Shows                                                                                                                                |
 | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
