@@ -10,7 +10,15 @@ describe("parseTerrain", () => {
   test("a missing layer is all zeros", () => {
     const t = parseTerrain(3, 2, { height: layer("012", "345") });
     expect([...t.level]).toEqual([0, 1, 2, 3, 4, 5]);
-    for (const l of [t.ramp, t.surface, t.water]) expect([...l]).toEqual([0, 0, 0, 0, 0, 0]);
+    for (const l of [t.ramp, t.surface, t.water, t.biome])
+      expect([...l]).toEqual([0, 0, 0, 0, 0, 0]);
+  });
+  test("a missing biome layer is the base biome; a present one wins", () => {
+    expect([...parseTerrain(2, 1, {}, "arctic").biome]).toEqual([2, 2]);
+    expect([...parseTerrain(2, 1, { biome: layer("13") }, "arctic").biome]).toEqual([1, 3]);
+    expect(() => parseTerrain(2, 1, {}, "volcanic")).toThrow(
+      'biome "volcanic" isn\'t one of temperate, desert, arctic, urban',
+    );
   });
   test("rejects a layer of the wrong size", () => {
     expect(() => parseTerrain(3, 2, { water: layer("012") })).toThrow(
@@ -27,10 +35,11 @@ describe("checkTerrain", () => {
     expect(check(2, 1, { height: layer("77") })).toEqual([]);
     expect(check(3, 1, { height: layer("788") })).toEqual(["level above 7 at (1, 0) and 1 more"]);
   });
-  test("rejects unknown ramp, surface and water values", () => {
+  test("rejects unknown ramp, surface, water and biome values", () => {
     expect(check(1, 1, { ramps: layer("5") })).toEqual(["unknown ramp value at (0, 0)"]);
     expect(check(1, 1, { surface: layer("8") })).toEqual(["unknown surface at (0, 0)"]);
     expect(check(1, 1, { water: layer("3") })).toEqual(["unknown water value at (0, 0)"]);
+    expect(check(2, 1, { biome: layer("34") })).toEqual(["unknown biome at (1, 0)"]);
   });
   test("a ramp rises exactly one level toward its direction", () => {
     const ramps = layer("0200", "0200");

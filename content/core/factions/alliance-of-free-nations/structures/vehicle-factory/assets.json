@@ -1,0 +1,16 @@
+{
+  "files": {
+    "vehicle-factory.glb": {
+      "author": "Borut Balazek",
+      "source": "source/vehicle-factory.bricks.json"
+    },
+    "vehicle-factory.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/vehicle-factory.bricks.json"
+    },
+    "vehicle-factory.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/vehicle-factory.bricks.json"
+    }
+  }
+}

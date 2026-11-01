@@ -1,0 +1,12 @@
+{
+  "files": {
+    "dumpster.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dumpster.bricks.json"
+    },
+    "dumpster.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/dumpster.bricks.json"
+    }
+  }
+}

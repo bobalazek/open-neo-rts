@@ -1,0 +1,106 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "trunk",
+      "bricks": [
+        {
+          "at": [-0.75, 0, -0.75],
+          "size": [1.5, 2, 1.5],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.25, 0, -1.25],
+          "size": [2.5, 0.5, 2.5],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "canopy",
+      "parent": "trunk",
+      "at": [0, 2, 0],
+      "bricks": [
+        {
+          "at": [-0.75, 0, -0.75],
+          "size": [1.5, 3, 1.5],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [0.5, 3, -0.5],
+          "size": [2, 0.8, 1],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        },
+        {
+          "at": [2, 3.8, -0.5],
+          "size": [1, 2.2, 1],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 3.5, -0.5],
+          "size": [2, 0.8, 1],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 4.3, -0.5],
+          "size": [1, 1.7, 1],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        },
+        {
+          "at": [-5, 6, -4],
+          "size": [10, 1.5, 8],
+          "slot": "palette",
+          "color": "#3f6e2c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-4, 7.5, -3],
+          "size": [8, 0.75, 6],
+          "slot": "palette",
+          "color": "#7a8f3c",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "canopy",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [2, [1.5, 0, 0.8999999999999999]],
+            [4, [0, 0, 0]],
+            [6, [-1.5, 0, -0.8999999999999999]],
+            [8, [0, 0, 0]]
+          ]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["canopy"],
+    "darken": 0.85
+  }
+}

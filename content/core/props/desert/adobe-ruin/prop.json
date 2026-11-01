@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:desert/adobe-ruin",
+  "name": "Adobe Ruin",
+  "description": "The crumbling mud-brick walls of an abandoned house.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 800
+  },
+  "presentation": {
+    "model": "adobe-ruin.glb",
+    "icon": "adobe-ruin.icon.png",
+    "wreck": "adobe-ruin.rubble.glb",
+    "materials": {}
+  }
+}

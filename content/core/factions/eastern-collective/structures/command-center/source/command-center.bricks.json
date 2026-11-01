@@ -1,0 +1,363 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-11.75, 0, -11.75],
+          "size": [23.5, 0.6, 23.5],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-9, 0.6, -9],
+          "size": [18, 8.4, 14],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        { "at": [-9.1, 3.2, 4.95], "size": [18.2, 2.2, 0.3], "slot": "team", "studs": false },
+        {
+          "at": [8.95, 3.2, -9.1],
+          "size": [0.3, 2.2, 14.2],
+          "slot": "team",
+          "studs": false,
+          "mirror": true
+        },
+        { "at": [-7, 9, -7.5], "size": [14, 4.6, 10], "slot": "team", "studs": false },
+        {
+          "at": [-7.2, 13.6, -7.7],
+          "size": [14.4, 0.4, 10.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-5.7, 10.8, 2.49],
+          "size": [1.4, 1, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-3.2, 10.8, 2.49],
+          "size": [1.4, 1, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.7, 10.8, 2.49],
+          "size": [1.4, 1, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [1.8, 10.8, 2.49],
+          "size": [1.4, 1, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [4.3, 10.8, 2.49],
+          "size": [1.4, 1, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-3, 14, -6.3],
+          "size": [6, 4.4, 5.6],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-2.6, 16.4, -0.72],
+          "size": [5.2, 0.8, 0.12],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        { "at": [-3.2, 18.4, -6.5], "size": [6.4, 0.5, 6], "slot": "team_dark" },
+        {
+          "at": [-2.5, 0.6, 4.9],
+          "size": [5, 4.6, 0.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-0.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [0.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [1.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [2.5, 5.2, 5.15],
+          "size": [1, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.25, 0.6, 5],
+          "size": [0.5, 4.6, 0.6],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-3, 0, 5.5],
+          "size": [6, 0.6, 4],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [6.1, 0.6, 5.6],
+          "size": [4.4, 2.8, 4.4],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        { "at": [6.8, 3.4, 6.3], "size": [3, 1.4, 3], "slot": "team_dark", "studs": false },
+        { "at": [7.3, 4.8, 6.6], "size": [2, 0.4, 2], "slot": "team" },
+        {
+          "at": [7.7, 3.9, 8.8],
+          "size": [0.3, 0.3, 2.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [8.6, 3.9, 8.8],
+          "size": [0.3, 0.3, 2.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-10.5, 0.6, 5.6],
+          "size": [4.4, 2.8, 4.4],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        { "at": [-9.8, 3.4, 6.3], "size": [3, 1.4, 3], "slot": "team_dark", "studs": false },
+        { "at": [-9.3, 4.8, 6.6], "size": [2, 0.4, 2], "slot": "team" },
+        {
+          "at": [-8.9, 3.9, 8.8],
+          "size": [0.3, 0.3, 2.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-8, 3.9, 8.8],
+          "size": [0.3, 0.3, 2.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.5, 8.4, -9],
+          "size": [2, 7.5, 2],
+          "slot": "palette",
+          "color": "#9c3b2c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [5.425, 10.65, -9.075],
+          "size": [2.15, 0.4, 2.15],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [5.35, 15.9, -9.15],
+          "size": [2.3, 0.5, 2.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-7.5, 8.4, -9],
+          "size": [2, 6, 2],
+          "slot": "palette",
+          "color": "#9c3b2c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-7.575, 10.2, -9.075],
+          "size": [2.15, 0.4, 2.15],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-7.65, 14.4, -9.15],
+          "size": [2.3, 0.5, 2.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-5.625, 13.6, -6.125],
+          "size": [0.25, 6, 0.25],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-5.7, 19.6, -6.2],
+          "size": [0.4, 0.4, 0.4],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        { "at": [-11.5, 0.6, -9], "size": [3, 5, 6], "slot": "team_dark", "studs": false },
+        {
+          "at": [-11.6, 0.6, -9],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-11.6, 0.6, -8],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-11.6, 0.6, -7],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-11.6, 0.6, -6],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-11.6, 0.6, -5],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-11.6, 0.6, -4],
+          "size": [0.1, 0.6, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "radar",
+      "parent": "base",
+      "at": [2, 18.9, -3.5],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 1.6, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-2, 1.6, 0.05],
+          "size": [4, 1.4, 0.3],
+          "slot": "palette",
+          "color": "#a9adb2",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 1.9, -0.25],
+          "size": [3, 0.8, 0.3],
+          "slot": "palette",
+          "color": "#a9adb2",
+          "studs": false
+        },
+        {
+          "at": [-0.25, 2.05, 0.3],
+          "size": [0.5, 0.5, 0.2],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_smoke_0", "parent": "base", "at": [6.5, 16.5, -8] },
+    { "name": "socket_smoke_1", "parent": "base", "at": [-6.5, 15, -8] },
+    { "name": "socket_muzzle_0", "parent": "base", "at": [8.3, 4.05, 11.3] },
+    { "name": "socket_muzzle_1", "parent": "base", "at": [-8.3, 4.05, 11.3] }
+  ],
+  "animations": {
+    "active": {
+      "duration": 4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "radar",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [1, [0, 90, 0]],
+            [2, [0, 180, 0]],
+            [3, [0, 270, 0]],
+            [4, [0, 360, 0]]
+          ]
+        }
+      ]
+    }
+  }
+}

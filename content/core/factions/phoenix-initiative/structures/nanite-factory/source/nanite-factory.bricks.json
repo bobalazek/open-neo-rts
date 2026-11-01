@@ -1,0 +1,247 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "nanite-factory",
+      "bricks": [
+        {
+          "at": [-11.5, 0, -11.5],
+          "size": [23, 0.5, 23],
+          "slot": "palette",
+          "color": "#9a968c",
+          "studs": false
+        },
+        {
+          "at": [-5, 0.5, 6],
+          "size": [0.5, 0.1, 5.5],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-9, 0.5, -10],
+          "size": [18, 8, 1],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [8, 0.5, -9],
+          "size": [1, 8, 14],
+          "slot": "palette",
+          "color": "#55663d",
+          "studs": false
+        },
+        {
+          "at": [-9, 0.5, -9],
+          "size": [1, 8, 14],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        {
+          "at": [5, 0.5, 5],
+          "size": [4, 8, 1],
+          "slot": "palette",
+          "color": "#3f4d2e",
+          "studs": false
+        },
+        {
+          "at": [-9, 0.5, 5],
+          "size": [4, 8, 1],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [-5, 6.5, 5],
+          "size": [10, 2, 1],
+          "slot": "palette",
+          "color": "#55663d",
+          "studs": false
+        },
+        {
+          "at": [8.5, 2, -2],
+          "size": [0.75, 3, 4],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        {
+          "at": [-9.75, 1, 0],
+          "size": [0.75, 3.5, 3],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [-9.5, 8.5, -10.5],
+          "size": [19, 0.5, 16.5],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        {
+          "at": [-9.5, 9, -10.5],
+          "size": [9.5, 2.5, 16.5],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false,
+          "shape": "slope-x"
+        },
+        {
+          "at": [0, 9, -10.5],
+          "size": [9.5, 2.5, 16.5],
+          "slot": "palette",
+          "color": "#55663d",
+          "studs": false,
+          "shape": "slope+x"
+        },
+        {
+          "at": [-2, 10.5, -8],
+          "size": [4, 1.5, 3],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        { "at": [2.5, 10.5, -9.5], "size": [0.25, 5, 0.25], "slot": "metal", "studs": false },
+        { "at": [2.75, 14, -9.5], "size": [0.1, 1, 1.75], "slot": "team", "studs": false },
+        { "at": [-9, 7, 6], "size": [4, 0.75, 0.15], "slot": "team", "studs": false },
+        { "at": [5, 7, 6], "size": [4, 0.75, 0.15], "slot": "team", "studs": false },
+        { "at": [-4, 7.5, 6], "size": [8, 0.3, 0.15], "slot": "emissive", "studs": false },
+        {
+          "at": [-8.5, 1, 6],
+          "size": [1.5, 1.5, 0.2],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false
+        },
+        {
+          "at": [6, 3, 6],
+          "size": [2, 2, 0.2],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-8, 0.5, -9],
+          "size": [16, 0.1, 14],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        { "at": [-3, 0.6, -6], "size": [6, 0.05, 6], "slot": "emissive", "studs": false },
+        {
+          "at": [-1, 0.6, -8.5],
+          "size": [2, 3, 2],
+          "slot": "palette",
+          "color": "#b5652b",
+          "studs": false
+        },
+        {
+          "at": [-0.5, 3.6, -8.5],
+          "size": [1, 0.75, 5],
+          "slot": "palette",
+          "color": "#b5652b",
+          "studs": false
+        },
+        { "at": [-0.4, 2.8, -4], "size": [0.8, 0.8, 0.8], "slot": "emissive", "studs": false },
+        {
+          "at": [9.25, 0.5, -8],
+          "size": [2.25, 6, 2.25],
+          "slot": "glass",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [9.85, 0.75, -7.4],
+          "size": [1.05, 5.5, 1.05],
+          "slot": "emissive",
+          "studs": false
+        },
+        {
+          "at": [9.25, 0.5, -5],
+          "size": [2.25, 6, 2.25],
+          "slot": "glass",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [9.85, 0.75, -4.4],
+          "size": [1.05, 5.5, 1.05],
+          "slot": "emissive",
+          "studs": false
+        },
+        { "at": [9, 6.5, -8.25], "size": [2.75, 0.5, 5.75], "slot": "metal", "studs": false },
+        {
+          "at": [-11, 0.5, -9],
+          "size": [1.25, 13, 1.25],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-11, 0.5, -6.5],
+          "size": [1.25, 11, 1.25],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-11.1, 12, -9.1],
+          "size": [1.45, 0.5, 1.45],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [-10, 4, -9.25],
+          "size": [1, 0.75, 4],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "parent": "nanite-factory",
+      "at": [0, 0.5, 5.5],
+      "bricks": [
+        {
+          "at": [-5, 0, -0.25],
+          "size": [10, 6, 0.5],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        { "at": [-4.5, 0, 0.25], "size": [0.5, 6, 0.2], "slot": "metal", "studs": false },
+        { "at": [-2, 0, 0.25], "size": [0.5, 6, 0.2], "slot": "metal", "studs": false },
+        { "at": [1.5, 0, 0.25], "size": [0.5, 6, 0.2], "slot": "metal", "studs": false },
+        { "at": [4, 0, 0.25], "size": [0.5, 6, 0.2], "slot": "metal", "studs": false },
+        { "at": [-5, 2.5, 0.25], "size": [10, 1, 0.15], "slot": "team", "studs": false },
+        {
+          "at": [-5, 0, 0.25],
+          "size": [10, 0.4, 0.12],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_smoke", "parent": "nanite-factory", "at": [-10.4, 14, -8.4] },
+    { "name": "socket_exit", "parent": "nanite-factory", "at": [0, 0.5, 9.5] }
+  ],
+  "animations": {
+    "open": {
+      "duration": 1.2,
+      "tracks": [{ "node": "door", "translation": [[0, [0, 0, 0]], [1.2, [0, 5.75, 0]]] }]
+    },
+    "close": {
+      "duration": 1.2,
+      "tracks": [{ "node": "door", "translation": [[0, [0, 5.75, 0]], [1.2, [0, 0, 0]]] }]
+    }
+  },
+  "destroyed": { "drop": ["door"], "darken": 0.45 }
+}

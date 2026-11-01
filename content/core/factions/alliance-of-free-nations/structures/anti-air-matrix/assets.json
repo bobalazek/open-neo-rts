@@ -1,0 +1,16 @@
+{
+  "files": {
+    "anti-air-matrix.glb": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-matrix.bricks.json"
+    },
+    "anti-air-matrix.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-matrix.bricks.json"
+    },
+    "anti-air-matrix.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-matrix.bricks.json"
+    }
+  }
+}

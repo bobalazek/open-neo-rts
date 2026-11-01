@@ -1,0 +1,12 @@
+{
+  "files": {
+    "tank-trap.glb": {
+      "author": "Borut Balazek",
+      "source": "source/tank-trap.bricks.json"
+    },
+    "tank-trap.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/tank-trap.bricks.json"
+    }
+  }
+}

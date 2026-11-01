@@ -1,0 +1,12 @@
+{
+  "files": {
+    "bench.glb": {
+      "author": "Borut Balazek",
+      "source": "source/bench.bricks.json"
+    },
+    "bench.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/bench.bricks.json"
+    }
+  }
+}

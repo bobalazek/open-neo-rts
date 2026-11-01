@@ -1,0 +1,12 @@
+{
+  "files": {
+    "field-technician.glb": {
+      "author": "Borut Balazek",
+      "source": "source/field-technician.bricks.json"
+    },
+    "field-technician.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/field-technician.bricks.json"
+    }
+  }
+}

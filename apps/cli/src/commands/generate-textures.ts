@@ -105,7 +105,8 @@ type RGB = [number, number, number];
 type Tile = Float32Array; // RGB per pixel, 0–255, row-major
 const SHADES = [0.9, 0.96, 1, 1.06];
 
-const rgb = (hex: string): RGB => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)) as RGB;
+const rgb = (hex: string): RGB =>
+  [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)) as RGB;
 const surface = (name: keyof typeof PALETTE.surfaces) => rgb(PALETTE.surfaces[name]);
 const prop = (name: keyof typeof PALETTE.props) => rgb(PALETTE.props[name]);
 
@@ -171,7 +172,15 @@ const studs = (t: Tile, pitch: number, strength: number) =>
   });
 
 /** Plate seams every `w` × `h` pixels (rows offset by half for running bond), each plate a slightly different shade. */
-const seams = (t: Tile, w: number, h: number, strength: number, bond: boolean, vary: number, s: number) =>
+const seams = (
+  t: Tile,
+  w: number,
+  h: number,
+  strength: number,
+  bond: boolean,
+  vary: number,
+  s: number,
+) =>
   each((x, y) => {
     const row = Math.floor(y / h);
     const xo = x + (bond && row % 2 === 1 ? w / 2 : 0);
@@ -185,7 +194,7 @@ const seams = (t: Tile, w: number, h: number, strength: number, bond: boolean, v
 /** Wind ripples across sand. */
 const ripples = (t: Tile, amount: number, s: number) =>
   each((x, y) => {
-    const p = (((y + 8 * noise(x, y, 32, s)) / 16) % 1 + 1) % 1;
+    const p = ((((y + 8 * noise(x, y, 32, s)) / 16) % 1) + 1) % 1;
     shade(t, x, y, 1 + amount * (Math.abs(p - 0.5) * 4 - 1));
   });
 
@@ -228,7 +237,17 @@ function grass(name: "grass-1" | "grass-2" | "grass-3", s: number): Tile {
   seams(t, 32, 32, 0.05, false, 0.03, s);
   studs(t, 16, 0.1);
   fragments(t, 70, [1, 2], [lighter(base, 1.18), lighter(base, 0.82)], s + 7);
-  if (name === "grass-2") fragments(t, 6, [1, 1], [[236, 214, 92], [240, 240, 232]], s + 9);
+  if (name === "grass-2")
+    fragments(
+      t,
+      6,
+      [1, 1],
+      [
+        [236, 214, 92],
+        [240, 240, 232],
+      ],
+      s + 9,
+    );
   return t;
 }
 
@@ -315,7 +334,8 @@ export const TILES: Record<string, () => Tile> = {
 const toRgba = (t: Tile): Uint8Array => {
   const out = new Uint8Array(TILE * TILE * 4);
   for (let p = 0; p < TILE * TILE; p++) {
-    for (let c = 0; c < 3; c++) out[p * 4 + c] = Math.max(0, Math.min(255, Math.round(t[p * 3 + c] ?? 0)));
+    for (let c = 0; c < 3; c++)
+      out[p * 4 + c] = Math.max(0, Math.min(255, Math.round(t[p * 3 + c] ?? 0)));
     out[p * 4 + 3] = 255;
   }
   return out;

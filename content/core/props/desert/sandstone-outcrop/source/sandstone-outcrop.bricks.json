@@ -1,0 +1,75 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "rock",
+      "bricks": [
+        {
+          "at": [-6.5, 0, -6.5],
+          "size": [13, 2, 13],
+          "slot": "palette",
+          "color": "#b0844f",
+          "studs": false
+        },
+        {
+          "at": [-6, 2, -6],
+          "size": [12, 3, 12],
+          "slot": "palette",
+          "color": "#c49a62",
+          "studs": false
+        },
+        {
+          "at": [-6.25, 5, -6.25],
+          "size": [12.5, 1, 12.5],
+          "slot": "palette",
+          "color": "#b0844f",
+          "studs": false
+        },
+        {
+          "at": [-6, 6, -6],
+          "size": [12, 3, 7],
+          "slot": "palette",
+          "color": "#d8b27a",
+          "studs": false
+        },
+        {
+          "at": [-6, 6, 1],
+          "size": [6, 3, 5],
+          "slot": "palette",
+          "color": "#d8b27a",
+          "studs": false
+        },
+        {
+          "at": [1, 6, 2],
+          "size": [3, 1.5, 3],
+          "slot": "palette",
+          "color": "#c49a62",
+          "studs": false
+        },
+        {
+          "at": [6.5, 0, -3],
+          "size": [1.5, 1.5, 6],
+          "slot": "palette",
+          "color": "#b0844f",
+          "studs": false,
+          "shape": "slope+x"
+        },
+        {
+          "at": [-3, 0, 6.5],
+          "size": [6, 1.5, 1.5],
+          "slot": "palette",
+          "color": "#b0844f",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-8, 0, 4],
+          "size": [1.5, 1.2, 2],
+          "slot": "palette",
+          "color": "#c49a62",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "broadleaf-tree.glb": {
+      "author": "Borut Balazek",
+      "source": "source/broadleaf-tree.bricks.json"
+    },
+    "broadleaf-tree.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/broadleaf-tree.bricks.json"
+    },
+    "broadleaf-tree.stump.glb": {
+      "author": "Borut Balazek",
+      "source": "source/broadleaf-tree.bricks.json"
+    }
+  }
+}

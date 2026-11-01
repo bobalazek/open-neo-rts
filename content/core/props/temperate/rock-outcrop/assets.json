@@ -1,0 +1,12 @@
+{
+  "files": {
+    "rock-outcrop.glb": {
+      "author": "Borut Balazek",
+      "source": "source/rock-outcrop.bricks.json"
+    },
+    "rock-outcrop.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/rock-outcrop.bricks.json"
+    }
+  }
+}

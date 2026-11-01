@@ -1,0 +1,114 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "trunk",
+      "bricks": [
+        {
+          "at": [-1, 0, -1],
+          "size": [2, 2, 2],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.5, 0, -1.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 0.5, -1.5],
+          "size": [3, 0.3, 3],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "canopy",
+      "parent": "trunk",
+      "at": [0, 2, 0],
+      "bricks": [
+        {
+          "at": [-0.75, 0, -0.75],
+          "size": [1.5, 7, 1.5],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [0.75, 3, -0.4],
+          "size": [2.5, 0.8, 0.8],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [0.75, 3.8, -0.4],
+          "size": [2.2, 0.3, 0.8],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [3, 3.8, -0.4],
+          "size": [0.8, 2, 0.8],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [-3.75, 5, -0.4],
+          "size": [3, 0.8, 0.8],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [-3.45, 5.8, -0.4],
+          "size": [2.7, 0.3, 0.8],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-3.75, 5.8, -0.4],
+          "size": [0.8, 1.8, 0.8],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [-0.4, 6, 0.75],
+          "size": [0.8, 0.8, 2.5],
+          "slot": "palette",
+          "color": "#5e5248",
+          "studs": false
+        },
+        {
+          "at": [-0.4, 6.8, 0.75],
+          "size": [0.8, 0.3, 1.7],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-0.75, 7, -0.75],
+          "size": [1.5, 0.4, 1.5],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        }
+      ]
+    }
+  ],
+  "destroyed": {
+    "drop": ["canopy"],
+    "darken": 0.85
+  }
+}

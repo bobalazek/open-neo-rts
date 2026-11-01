@@ -1,0 +1,86 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "trunk",
+      "bricks": [
+        {
+          "at": [-3, 0, -3],
+          "size": [6, 1, 6],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-0.75, 1, -0.75],
+          "size": [1.5, 2, 1.5],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    },
+    {
+      "name": "canopy",
+      "parent": "trunk",
+      "at": [0, 3, 0],
+      "bricks": [
+        {
+          "at": [-0.6, 0, -0.6],
+          "size": [1.2, 3, 1.2],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2.5, 2.5, -2.5],
+          "size": [5, 0.5, 5],
+          "slot": "palette",
+          "color": "#3f6e2c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3, 3, -3],
+          "size": [6, 3, 6],
+          "slot": "palette",
+          "color": "#4f8a35",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2, 6, -2],
+          "size": [4, 1.2, 4],
+          "slot": "palette",
+          "color": "#66a344",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "canopy",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [2, [1.5, 0, 0.8999999999999999]],
+            [4, [0, 0, 0]],
+            [6, [-1.5, 0, -0.8999999999999999]],
+            [8, [0, 0, 0]]
+          ]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["canopy"],
+    "darken": 0.85
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/supply-crates",
+  "name": "Supply Crates",
+  "description": "A stack of wooden crates. Crushers flatten them.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 100,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "supply-crates.glb",
+    "icon": "supply-crates.icon.png",
+    "materials": {}
+  }
+}

@@ -446,7 +446,7 @@ function wreck(model: Model, seed: string, darken: number, drop: Set<string>): M
       const t = world.get(n.name)?.t ?? [0, 0, 0];
       const bricks = n.bricks.flatMap((b) => {
         const burnt = burn(b, darken * (0.85 + rand() * 0.3));
-        if (b.size[0] * b.size[1] * b.size[2] > 1.5 || rand() > 0.3) return [burnt];
+        if (b.size[0] * b.size[1] * b.size[2] > 4 || rand() > 0.45) return [burnt];
         debris.push({
           ...burnt,
           lo: [
@@ -506,25 +506,32 @@ function rubble(model: Model, seed: string, darken: number): Model {
     minZ + D * (0.25 + 0.5 * rand()),
   ]);
   const spread = () => rand() + rand() + rand() - 1.5;
+  const volume = placed.reduce((v, b) => v + b.size[0] * b.size[1] * b.size[2], 0);
   const count = Math.min(
     Math.floor((DERIVED_BUDGET - triangles({ nodes: [rubbleNode(bricks)], clips: [] })) / 12),
     Math.round((W * D) / 5),
   );
   for (let i = 0; i < count; i++) {
-    const src = placed[Math.floor(rand() * placed.length)] as Brick;
+    // Colours by volume, so big walls dominate the heap rather than small trim.
+    let pick = rand() * volume;
+    const src =
+      placed.find((b) => {
+        pick -= b.size[0] * b.size[1] * b.size[2];
+        return pick <= 0;
+      }) ?? placed[0];
     const [hx = 0, hz = 0] = heaps[i % heaps.length] ?? [];
     const [w, h, d] = [
       1 + Math.floor(rand() * 3),
       0.6 + Math.floor(rand() * 2) * 0.4,
       1 + Math.floor(rand() * 3),
     ];
-    const x0 = Math.min(Math.max(Math.round(hx + spread() * W * 0.3 - w / 2), minX), minX + W - w);
-    const z0 = Math.min(Math.max(Math.round(hz + spread() * D * 0.3 - d / 2), minZ), minZ + D - d);
+    const x0 = Math.min(Math.max(Math.round(hx + spread() * W * 0.22 - w / 2), minX), minX + W - w);
+    const z0 = Math.min(Math.max(Math.round(hz + spread() * D * 0.22 - d / 2), minZ), minZ + D - d);
     const under = cells(x0, z0, w, d);
     const y = Math.max(0, ...under.map((c) => height[c] ?? 0));
     for (const c of under) height[c] = y + h;
     bricks.push({
-      ...burn(src, darken * (0.7 + rand() * 0.5)),
+      ...burn(src as Brick, darken * (0.7 + rand() * 0.5)),
       lo: [x0, y, z0],
       size: [w, h, d],
       shape: "box",

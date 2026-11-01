@@ -1,0 +1,45 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "streetlight",
+      "bricks": [
+        {
+          "at": [-0.75, 0, -0.75],
+          "size": [1.5, 0.75, 1.5],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false
+        },
+        {
+          "at": [-0.4, 0.75, -0.4],
+          "size": [0.8, 11.5, 0.8],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.3, 11.6, -0.3],
+          "size": [3, 0.6, 0.6],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false
+        },
+        {
+          "at": [2, 11.4, -0.6],
+          "size": [2.5, 0.6, 1.2],
+          "slot": "palette",
+          "color": "#4a4e54",
+          "studs": false
+        },
+        {
+          "at": [2.2, 11, -0.5],
+          "size": [2.1, 0.4, 1],
+          "slot": "emissive",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

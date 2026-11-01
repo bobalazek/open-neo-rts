@@ -1,0 +1,12 @@
+{
+  "files": {
+    "ore-cell.glb": {
+      "author": "Borut Balazek",
+      "source": "source/ore-cell.bricks.json"
+    },
+    "ore-cell.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/ore-cell.bricks.json"
+    }
+  }
+}

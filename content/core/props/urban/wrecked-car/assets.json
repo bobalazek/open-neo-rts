@@ -1,0 +1,12 @@
+{
+  "files": {
+    "wrecked-car.glb": {
+      "author": "Borut Balazek",
+      "source": "source/wrecked-car.bricks.json"
+    },
+    "wrecked-car.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/wrecked-car.bricks.json"
+    }
+  }
+}

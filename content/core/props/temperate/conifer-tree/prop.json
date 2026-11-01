@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:temperate/conifer-tree",
+  "name": "Conifer Tree",
+  "description": "A tall pine in stacked tiers. Forest cover: infantry walk through slowly and can't be seen inside.",
+  "footprint": [1, 1],
+  "blocks": "movement-and-vision",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 300,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "conifer-tree.glb",
+    "icon": "conifer-tree.icon.png",
+    "wreck": "conifer-tree.stump.glb",
+    "materials": {},
+    "animations": ["idle"]
+  }
+}

@@ -28,6 +28,7 @@
     "icon": "industrial-reactor.icon.png",
     "wreck": "industrial-reactor.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

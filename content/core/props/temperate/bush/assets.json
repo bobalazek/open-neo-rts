@@ -1,0 +1,12 @@
+{
+  "files": {
+    "bush.glb": {
+      "author": "Borut Balazek",
+      "source": "source/bush.bricks.json"
+    },
+    "bush.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/bush.bricks.json"
+    }
+  }
+}

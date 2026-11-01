@@ -1,0 +1,16 @@
+{
+  "files": {
+    "dragon-tank.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.bricks.json"
+    },
+    "dragon-tank.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.bricks.json"
+    },
+    "dragon-tank.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.bricks.json"
+    }
+  }
+}

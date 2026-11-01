@@ -1,0 +1,16 @@
+{
+  "files": {
+    "metamorphic-apc.glb": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.bricks.json"
+    },
+    "metamorphic-apc.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.bricks.json"
+    },
+    "metamorphic-apc.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.bricks.json"
+    }
+  }
+}

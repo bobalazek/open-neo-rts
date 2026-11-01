@@ -1,0 +1,159 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "smart_turret",
+      "bricks": [
+        {
+          "at": [-3.5, 0, -3.5],
+          "size": [7, 0.75, 7],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [2.75, 0.75, 2.75],
+          "size": [0.5, 0.25, 0.5],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [2.75, 0.75, -3.25],
+          "size": [0.5, 0.25, 0.5],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-3.25, 0.75, 2.75],
+          "size": [0.5, 0.25, 0.5],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-3.25, 0.75, -3.25],
+          "size": [0.5, 0.25, 0.5],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-2.75, 0.75, -2.75],
+          "size": [5.5, 2.5, 5.5],
+          "slot": "palette",
+          "color": "#eef0f2",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2.85, 2, -2.85],
+          "size": [5.7, 0.5, 5.7],
+          "slot": "team",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    },
+    {
+      "name": "turret",
+      "parent": "smart_turret",
+      "at": [0, 3.25, 0],
+      "bricks": [
+        {
+          "at": [-2.25, 0, -2.25],
+          "size": [4.5, 0.5, 4.5],
+          "slot": "palette",
+          "color": "#4a5059",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2, 0.5, -2.25],
+          "size": [4, 2.25, 3.75],
+          "slot": "palette",
+          "color": "#eef0f2",
+          "studs": false
+        },
+        {
+          "at": [-2, 0.5, 1.5],
+          "size": [4, 2.25, 0.75],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-1.5, 2.75, -1.75],
+          "size": [3, 0.4, 3],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.25, 3.15, -1.25],
+          "size": [1.25, 0.75, 1.25],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [0.75, 1.75, 2],
+          "size": [0.9, 0.6, 0.15],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 0.75, -3],
+          "size": [3, 1.5, 0.75],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [-1, 1.25, -3.1],
+          "size": [2, 0.3, 0.15],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "barrel",
+      "parent": "turret",
+      "at": [0, 1.5, 2.25],
+      "bricks": [
+        {
+          "at": [-0.75, -0.6, -0.25],
+          "size": [1.5, 1.2, 0.75],
+          "slot": "palette",
+          "color": "#4a5059",
+          "studs": false
+        },
+        {
+          "at": [-0.25, -0.25, 0.5],
+          "size": [0.5, 0.5, 2.25],
+          "slot": "palette",
+          "color": "#2a2e34",
+          "studs": false,
+          "shape": "cyl-z"
+        },
+        {
+          "at": [-0.35, -0.35, 2.75],
+          "size": [0.7, 0.7, 0.5],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z"
+        }
+      ]
+    },
+    {
+      "name": "socket_muzzle",
+      "parent": "barrel",
+      "at": [0, 0, 3.3]
+    },
+    {
+      "name": "socket_smoke",
+      "parent": "smart_turret",
+      "at": [1.5, 3.25, -2]
+    }
+  ],
+  "destroyed": {
+    "darken": 0.5
+  }
+}

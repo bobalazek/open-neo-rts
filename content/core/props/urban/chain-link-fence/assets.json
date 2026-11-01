@@ -1,0 +1,12 @@
+{
+  "files": {
+    "chain-link-fence.glb": {
+      "author": "Borut Balazek",
+      "source": "source/chain-link-fence.bricks.json"
+    },
+    "chain-link-fence.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/chain-link-fence.bricks.json"
+    }
+  }
+}

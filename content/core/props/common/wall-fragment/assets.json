@@ -1,0 +1,16 @@
+{
+  "files": {
+    "wall-fragment.glb": {
+      "author": "Borut Balazek",
+      "source": "source/wall-fragment.bricks.json"
+    },
+    "wall-fragment.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/wall-fragment.bricks.json"
+    },
+    "wall-fragment.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/wall-fragment.bricks.json"
+    }
+  }
+}

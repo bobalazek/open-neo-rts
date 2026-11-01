@@ -1,6 +1,6 @@
 // Biome palettes: provisional colours until the art direction sign-off. See docs/design/terrain-and-biomes.md#biomes.
 
-import type { Surface } from "@open-neo-rts/content";
+import type { Biome, Surface } from "@open-neo-rts/content";
 
 export interface Palette {
   /** Base colour per surface, 0xRRGGBB. Every biome colours every surface. */
@@ -12,7 +12,8 @@ export interface Palette {
   foundation: number;
 }
 
-export const BIOMES = {
+/** One palette per biome; a cell is coloured by its own biome's palette. */
+export const PALETTES: Record<Biome, Palette> = {
   temperate: {
     surfaces: {
       grass: 0x6fae4a,
@@ -77,6 +78,4 @@ export const BIOMES = {
     deep: 0x2e5a66,
     foundation: 0xb8b4ac,
   },
-} satisfies Record<string, Palette>;
-
-export type Biome = keyof typeof BIOMES;
+};

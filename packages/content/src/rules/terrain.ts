@@ -16,6 +16,10 @@ export const BUILDABLE: Record<Surface, boolean> = {
   rubble: false,
 };
 
+/** Biome layer values index into this. A map's `biome` is its base: the biome of every cell without a layer. */
+export const BIOMES = ["temperate", "desert", "arctic", "urban"] as const;
+export type Biome = (typeof BIOMES)[number];
+
 /** Water layer values. */
 export const WATER = { none: 0, shallow: 1, deep: 2 } as const;
 

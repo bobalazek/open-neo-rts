@@ -1,0 +1,411 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hull",
+      "bricks": [
+        {
+          "at": [-3.2, 1, -6.6],
+          "size": [6.4, 1.2, 12.8],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        { "at": [-3.8, 2.2, -6.8], "size": [7.6, 2.4, 11.4], "slot": "team", "studs": false },
+        {
+          "at": [-3.8, 1.4, 4.6],
+          "size": [7.6, 3.2, 2.2],
+          "slot": "team",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        { "at": [-3.4, 4.6, -6.4], "size": [6.8, 0.4, 10.4], "slot": "team_dark" },
+        {
+          "at": [3.8, 2.5, -6.2],
+          "size": [0.3, 1.8, 3.2],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [3.8, 2.5, -2.8],
+          "size": [0.3, 1.8, 3.2],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [3.8, 2.5, 0.6],
+          "size": [0.3, 1.8, 3.2],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [4.09, 4, -6.2],
+          "size": [0.06, 0.25, 3.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [4.09, 4, -2.8],
+          "size": [0.06, 0.25, 3.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [4.09, 4, 0.6],
+          "size": [0.06, 0.25, 3.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false,
+          "mirror": true
+        },
+        { "at": [-1.8, 4.2, 4.5], "size": [3.6, 0.35, 0.3], "slot": "glass", "studs": false },
+        {
+          "at": [2, 2.4, 6.675],
+          "size": [0.8, 0.4, 0.15],
+          "slot": "team_emissive",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-2.6, 1.2, -7.1],
+          "size": [5.2, 3.2, 0.3],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-2.6, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-1.733, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.867, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [0, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [0.866, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [1.733, 1.2, -7.2],
+          "size": [0.867, 0.5, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [1.85, 2.4, -7.2],
+          "size": [0.3, 1.6, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-1.1, 5, -2.3],
+          "size": [2.2, 0.6, 2.2],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.5, 5.6, -1.7],
+          "size": [1, 0.8, 1.4],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-0.15, 5.85, -0.2],
+          "size": [0.3, 0.3, 2.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        { "at": [-1, 5.6, -0.1], "size": [2, 1.1, 0.2], "slot": "team_dark", "studs": false },
+        {
+          "at": [2.95, 4.6, -5.95],
+          "size": [0.7, 1.2, 0.7],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "wheel_l0",
+      "parent": "hull",
+      "at": [3.85, 1, 4.4],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.49, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.59, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_r0",
+      "parent": "hull",
+      "at": [-3.85, 1, 4.4],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.61, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.65, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_l1",
+      "parent": "hull",
+      "at": [3.85, 1, 1.5],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.49, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.59, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_r1",
+      "parent": "hull",
+      "at": [-3.85, 1, 1.5],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.61, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.65, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_l2",
+      "parent": "hull",
+      "at": [3.85, 1, -1.5],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.49, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.59, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_r2",
+      "parent": "hull",
+      "at": [-3.85, 1, -1.5],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.61, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.65, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_l3",
+      "parent": "hull",
+      "at": [3.85, 1, -4.4],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.49, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [0.59, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wheel_r3",
+      "parent": "hull",
+      "at": [-3.85, 1, -4.4],
+      "bricks": [
+        {
+          "at": [-0.5, -1, -1],
+          "size": [1, 2, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.61, -0.5, -0.5],
+          "size": [0.12, 1, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-x"
+        },
+        {
+          "at": [-0.65, -0.2, -0.4],
+          "size": [0.06, 0.4, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_muzzle_0", "parent": "hull", "at": [0, 6, 2.3] },
+    { "name": "socket_exhaust_0", "parent": "hull", "at": [3.3, 5.9, -5.6] },
+    { "name": "socket_exhaust_1", "parent": "hull", "at": [-3.3, 5.9, -5.6] }
+  ],
+  "destroyed": { "darken": 0.65 }
+}

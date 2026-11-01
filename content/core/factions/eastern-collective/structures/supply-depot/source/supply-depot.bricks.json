@@ -1,0 +1,473 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-11.75, 0, -11.75],
+          "size": [23.5, 0.6, 23.5],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [1.5, 0.6, -10],
+          "size": [8, 11, 8],
+          "slot": "team",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [1.4, 3.6, -10.1],
+          "size": [8.2, 0.5, 8.2],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [1.4, 7.6, -10.1],
+          "size": [8.2, 0.5, 8.2],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [2, 11.6, -9.5],
+          "size": [7, 1.2, 7],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [4.5, 12.8, -7],
+          "size": [2, 0.8, 2],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.5, 0.6, -10],
+          "size": [8, 11, 8],
+          "slot": "team",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.6, 3.6, -10.1],
+          "size": [8.2, 0.5, 8.2],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.6, 7.6, -10.1],
+          "size": [8.2, 0.5, 8.2],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9, 11.6, -9.5],
+          "size": [7, 1.2, 7],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-6.5, 12.8, -7],
+          "size": [2, 0.8, 2],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3, 0.6, 1],
+          "size": [12, 0.2, 10],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-3, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-2, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-1, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [0, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [1, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [2, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [3, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [4, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [6, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [7, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [8, 0.6, 11],
+          "size": [1, 0.3, 0.4],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 1],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 2],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 3],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 4],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 5],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 6],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 7],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 8],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 9],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-3.4, 0.6, 10],
+          "size": [0.4, 0.3, 1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [4, 0.8, -0.3],
+          "size": [5, 2.4, 3],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [3.5, 3.2, -0.3],
+          "size": [6, 1.6, 3.8],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [4.3, 3.4, 0],
+          "size": [4.4, 0.25, 2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 4, -0.8],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 5.25, -1.75],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 6.5, -2.7],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 7.75, -3.65],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 9, -4.6],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 10.25, -5.55],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [5.7, 11.5, -6.5],
+          "size": [1.6, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [7.325, 4, -0.8],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 5.25, -1.75],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 6.5, -2.7],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 7.75, -3.65],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 9, -4.6],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 10.25, -5.55],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [7.325, 11.5, -6.5],
+          "size": [0.15, 0.7, 1.2],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [6.3, 0.6, -1.35],
+          "size": [0.4, 4.85, 0.4],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [6.3, 0.6, -3.25],
+          "size": [0.4, 7.35, 0.4],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [6.3, 0.6, -5.15],
+          "size": [0.4, 9.85, 0.4],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        { "at": [-10.5, 0.6, 3], "size": [6, 5, 6], "slot": "team_dark", "studs": false },
+        { "at": [-9.8, 3.4, 8.975], "size": [4.6, 1.4, 0.15], "slot": "glass", "studs": false },
+        { "at": [-10.7, 5.6, 2.8], "size": [6.4, 0.4, 6.4], "slot": "team" },
+        {
+          "at": [-9.8, 6, 3.6],
+          "size": [1.2, 3.5, 1.2],
+          "slot": "palette",
+          "color": "#9c3b2c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.875, 7.05, 3.525],
+          "size": [1.35, 0.4, 1.35],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-9.95, 9.5, 3.45],
+          "size": [1.5, 0.5, 1.5],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3.5, 0.6, -0.75],
+          "size": [3, 1, 2.5],
+          "slot": "palette",
+          "color": "#c08a2e",
+          "studs": false
+        },
+        {
+          "at": [-2.3, 1.6, -0.5],
+          "size": [1.6, 0.6, 1.4],
+          "slot": "palette",
+          "color": "#c08a2e",
+          "studs": false
+        },
+        {
+          "at": [-4.1, 0.6, 1.8],
+          "size": [1.4, 0.8, 1.2],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "crate",
+      "parent": "base",
+      "at": [6.5, 4.4, -0.2],
+      "bricks": [
+        {
+          "at": [-0.5, 0, -0.5],
+          "size": [1, 0.7, 1],
+          "slot": "palette",
+          "color": "#c08a2e",
+          "studs": false
+        },
+        {
+          "at": [-0.2, 0.7, -0.4],
+          "size": [0.6, 0.35, 0.6],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_dock_0", "parent": "base", "at": [3, 0.8, 7] },
+    { "name": "socket_smoke_0", "parent": "base", "at": [-9.2, 10.2, 4.2] }
+  ],
+  "animations": {
+    "active": {
+      "duration": 2.4,
+      "loop": true,
+      "tracks": [{ "node": "crate", "translation": [[0, [0, 0, 0]], [2.4, [0, 7.5, -5.7]]] }]
+    }
+  }
+}

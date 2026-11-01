@@ -65,6 +65,7 @@
     "icon": "anti-air-complex.icon.png",
     "wreck": "anti-air-complex.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_muzzle"]
+    "sockets": ["socket_smoke", "socket_muzzle"],
+    "animations": ["active"]
   }
 }

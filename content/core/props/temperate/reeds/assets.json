@@ -1,0 +1,12 @@
+{
+  "files": {
+    "reeds.glb": {
+      "author": "Borut Balazek",
+      "source": "source/reeds.bricks.json"
+    },
+    "reeds.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/reeds.bricks.json"
+    }
+  }
+}

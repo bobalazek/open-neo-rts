@@ -59,6 +59,7 @@
     "icon": "command-center.icon.png",
     "wreck": "command-center.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_muzzle"]
+    "sockets": ["socket_smoke", "socket_muzzle"],
+    "animations": ["active"]
   }
 }

@@ -1,0 +1,195 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "node",
+      "bricks": [
+        {
+          "at": [-7, 0, -7],
+          "size": [14, 2, 3],
+          "slot": "palette",
+          "color": "#6c6f73",
+          "studs": false
+        },
+        {
+          "at": [-7, 0, 4],
+          "size": [14, 2, 3],
+          "slot": "palette",
+          "color": "#6c6f73",
+          "studs": false
+        },
+        {
+          "at": [-7, 0, -4],
+          "size": [3, 2, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [4, 0, -4],
+          "size": [3, 2, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [-8, 0, -8],
+          "size": [3, 3, 3],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [5, 0, 5],
+          "size": [3, 2.5, 3],
+          "slot": "palette",
+          "color": "#969a9e",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_full",
+      "parent": "node",
+      "bricks": [
+        {
+          "at": [-4, 0, -4],
+          "size": [8, 2.5, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [-3, 2.5, -3],
+          "size": [3, 3, 3],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        },
+        {
+          "at": [1, 2.5, -2.5],
+          "size": [2, 4, 2],
+          "slot": "palette",
+          "color": "#9cbcd4",
+          "studs": false
+        },
+        {
+          "at": [1, 6.5, -2.5],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#9cbcd4",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-1.5, 2.5, 1],
+          "size": [3, 2, 2.5],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        },
+        {
+          "at": [2, 2.5, 1.5],
+          "size": [1.5, 1.5, 1.5],
+          "slot": "palette",
+          "color": "#9cbcd4",
+          "studs": true
+        }
+      ]
+    },
+    {
+      "name": "stage_75",
+      "parent": "node",
+      "bricks": [
+        {
+          "at": [-4, 0, -4],
+          "size": [8, 2.5, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [-3, 2.5, -3],
+          "size": [3, 2, 3],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        },
+        {
+          "at": [1, 2.5, -2.5],
+          "size": [2, 3, 2],
+          "slot": "palette",
+          "color": "#9cbcd4",
+          "studs": false
+        },
+        {
+          "at": [-1.5, 2.5, 1],
+          "size": [3, 1.5, 2.5],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_50",
+      "parent": "node",
+      "bricks": [
+        {
+          "at": [-4, 0, -4],
+          "size": [8, 2, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [-3, 2, -3],
+          "size": [3, 1.5, 3],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        },
+        {
+          "at": [1, 2, -2.5],
+          "size": [2, 2, 2],
+          "slot": "palette",
+          "color": "#9cbcd4",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_25",
+      "parent": "node",
+      "bricks": [
+        {
+          "at": [-4, 0, -4],
+          "size": [8, 1.5, 8],
+          "slot": "palette",
+          "color": "#7f8285",
+          "studs": false
+        },
+        {
+          "at": [-2, 1.5, -2],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#6f8fa8",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_empty",
+      "parent": "node",
+      "bricks": [
+        {
+          "at": [-4, 0, -4],
+          "size": [8, 0.5, 8],
+          "slot": "palette",
+          "color": "#2f2b28",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

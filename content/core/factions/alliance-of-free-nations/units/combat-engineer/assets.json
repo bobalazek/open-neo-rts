@@ -1,0 +1,12 @@
+{
+  "files": {
+    "combat-engineer.glb": {
+      "author": "Borut Balazek",
+      "source": "source/combat-engineer.bricks.json"
+    },
+    "combat-engineer.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/combat-engineer.bricks.json"
+    }
+  }
+}

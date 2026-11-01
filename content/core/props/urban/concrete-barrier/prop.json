@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/concrete-barrier",
+  "name": "Concrete Barrier",
+  "description": "Two road-block barrier sections. Stops everything on the ground; doesn't block sight.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 1000
+  },
+  "presentation": {
+    "model": "concrete-barrier.glb",
+    "icon": "concrete-barrier.icon.png",
+    "materials": {}
+  }
+}

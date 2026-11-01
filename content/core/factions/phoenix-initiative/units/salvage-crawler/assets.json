@@ -1,0 +1,16 @@
+{
+  "files": {
+    "salvage-crawler.glb": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-crawler.bricks.json"
+    },
+    "salvage-crawler.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-crawler.bricks.json"
+    },
+    "salvage-crawler.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-crawler.bricks.json"
+    }
+  }
+}

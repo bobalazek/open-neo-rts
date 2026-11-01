@@ -19,6 +19,7 @@
     "icon": "power-generator.icon.png",
     "wreck": "power-generator.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

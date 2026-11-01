@@ -1,0 +1,16 @@
+{
+  "files": {
+    "snowy-conifer.glb": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-conifer.bricks.json"
+    },
+    "snowy-conifer.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-conifer.bricks.json"
+    },
+    "snowy-conifer.stump.glb": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-conifer.bricks.json"
+    }
+  }
+}

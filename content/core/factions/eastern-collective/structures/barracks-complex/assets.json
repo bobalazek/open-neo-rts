@@ -1,0 +1,16 @@
+{
+  "files": {
+    "barracks-complex.glb": {
+      "author": "Borut Balazek",
+      "source": "source/barracks-complex.bricks.json"
+    },
+    "barracks-complex.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/barracks-complex.bricks.json"
+    },
+    "barracks-complex.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/barracks-complex.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,491 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "command-node",
+      "bricks": [
+        {
+          "at": [-11, 0, -11],
+          "size": [22, 0.5, 22],
+          "slot": "palette",
+          "color": "#9a968c",
+          "studs": false
+        },
+        {
+          "at": [-10, 0.5, -10],
+          "size": [5, 0.25, 7],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        { "at": [4, 0.5, 5], "size": [6, 0.25, 4], "slot": "palette", "color": "#8a4a24" },
+        {
+          "at": [-3, 0.5, 9.25],
+          "size": [6, 0.1, 0.5],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-11, 0.5, 9.5],
+          "size": [6, 1, 1.5],
+          "slot": "palette",
+          "color": "#b39b6b",
+          "studs": false
+        },
+        {
+          "at": [5, 0.5, 9.5],
+          "size": [6, 1, 1.5],
+          "slot": "palette",
+          "color": "#b39b6b",
+          "studs": false
+        },
+        {
+          "at": [-10, 1.5, 9.5],
+          "size": [4, 0.75, 1.5],
+          "slot": "palette",
+          "color": "#7d7550",
+          "studs": false
+        },
+        {
+          "at": [-11, 0.5, -11],
+          "size": [1.5, 1, 7],
+          "slot": "palette",
+          "color": "#b39b6b",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-9.5, 0.5, -11],
+          "size": [5, 1, 1.5],
+          "slot": "palette",
+          "color": "#b39b6b",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [7.5, 0.5, -10.5],
+          "size": [1.5, 1.5, 1.5],
+          "slot": "palette",
+          "color": "#55663d"
+        },
+        { "at": [7.75, 2, -10.25], "size": [1, 1, 1], "slot": "palette", "color": "#8a4a24" },
+        {
+          "at": [-9.5, 0.5, 6.5],
+          "size": [1.5, 2, 1.5],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false,
+          "shape": "cyl-y"
+        }
+      ]
+    },
+    {
+      "name": "flags",
+      "parent": "command-node",
+      "bricks": [
+        { "at": [9.5, 0.5, 8.5], "size": [0.25, 6.5, 0.25], "slot": "metal", "studs": false },
+        { "at": [9.6, 5.5, 8.75], "size": [0.1, 1.25, 2], "slot": "team", "studs": false },
+        { "at": [-10, 1.5, -9.75], "size": [0.25, 6, 0.25], "slot": "metal", "studs": false },
+        { "at": [-9.9, 6, -9.5], "size": [0.1, 1.25, 2], "slot": "team", "studs": false }
+      ]
+    },
+    {
+      "name": "truck",
+      "parent": "command-node",
+      "at": [0, 0.5, 0],
+      "bricks": [
+        {
+          "at": [3, -0.5, -7],
+          "size": [1.5, 2.5, 2.5],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [4.5, 0.35, -6.15],
+          "size": [0.2, 0.8, 0.8],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [3, -0.5, -3.5],
+          "size": [1.5, 2.5, 2.5],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [4.5, 0.35, -2.65],
+          "size": [0.2, 0.8, 0.8],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [3, -0.5, 4],
+          "size": [1.5, 2.5, 2.5],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false,
+          "shape": "cyl-x",
+          "mirror": true
+        },
+        {
+          "at": [4.5, 0.35, 4.85],
+          "size": [0.2, 0.8, 0.8],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-3, 0.75, -8],
+          "size": [6, 1.25, 16],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-3, 2, 4.5],
+          "size": [6, 3.5, 3.5],
+          "slot": "palette",
+          "color": "#55663d",
+          "studs": false
+        },
+        { "at": [-2.5, 3.75, 8], "size": [5, 1.25, 0.15], "slot": "glass", "studs": false },
+        { "at": [-3.1, 5.5, 4.4], "size": [6.2, 0.4, 3.7], "slot": "team" },
+        { "at": [-3.25, 1, 8], "size": [6.5, 0.75, 0.5], "slot": "metal", "studs": false },
+        {
+          "at": [-2.75, 2.5, 8],
+          "size": [0.75, 0.5, 0.15],
+          "slot": "emissive",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-2.5, 1, 8.5],
+          "size": [0.4, 0.4, 0.5],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-3.25, 2, -8],
+          "size": [6.5, 4, 12],
+          "slot": "palette",
+          "color": "#3f4d2e",
+          "studs": false
+        },
+        {
+          "at": [-3.25, 6, -8],
+          "size": [6.5, 0.5, 6],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [-3.25, 6, -2],
+          "size": [6.5, 0.5, 6],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        {
+          "at": [-3.35, 4.5, -7.5],
+          "size": [0.1, 0.75, 11],
+          "slot": "team",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-1.5, 2, -8.15],
+          "size": [3, 3, 0.15],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-3.45, 2.5, 1],
+          "size": [0.2, 1.5, 2.5],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [1.5, 6.5, -7.5],
+          "size": [1.25, 0.75, 1.25],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wing_l",
+      "parent": "truck",
+      "at": [3.25, 2, -2],
+      "bricks": [
+        {
+          "at": [0, -0.5, -5.5],
+          "size": [6.5, 0.5, 9],
+          "slot": "palette",
+          "color": "#6b7078",
+          "studs": false
+        },
+        {
+          "at": [6, 0, -5.5],
+          "size": [0.5, 1, 9],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [1, 0, 1.5],
+          "size": [2, 1.25, 1.5],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        { "at": [1.25, 0.6, 3], "size": [1.5, 0.4, 0.1], "slot": "emissive", "studs": false },
+        {
+          "at": [3.5, 0, 1.5],
+          "size": [1.5, 1.25, 1.5],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        { "at": [0.5, 0, -5], "size": [2.5, 0.75, 2], "slot": "team" },
+        { "at": [2, 0, -4], "size": [0.25, 5, 0.25], "slot": "metal", "studs": false },
+        { "at": [4.5, 0, -2], "size": [0.25, 4, 0.25], "slot": "metal", "studs": false },
+        {
+          "at": [1.5, 4, -4],
+          "size": [1.25, 0.25, 0.25],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false
+        },
+        {
+          "at": [4, 3, -2],
+          "size": [1.25, 0.25, 0.25],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false
+        },
+        {
+          "at": [3.75, 0, -4.5],
+          "size": [1.5, 0.3, 1.5],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [3.9, 0.3, -4.35],
+          "size": [1.2, 1, 1.2],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false,
+          "shape": "slope+z"
+        }
+      ]
+    },
+    {
+      "name": "stilt_l",
+      "parent": "wing_l",
+      "at": [5.75, -0.5, 0],
+      "bricks": [
+        {
+          "at": [-0.375, -2, -5],
+          "size": [0.75, 2, 0.75],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-0.375, -2, 2.5],
+          "size": [0.75, 2, 0.75],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "wing_r",
+      "parent": "truck",
+      "at": [-3.25, 2, -2],
+      "bricks": [
+        {
+          "at": [-6.5, -0.5, -5.5],
+          "size": [6.5, 0.5, 9],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        {
+          "at": [-6, 0, -5],
+          "size": [5.5, 2.25, 6],
+          "slot": "palette",
+          "color": "#8c8466",
+          "studs": false
+        },
+        {
+          "at": [-6, 2.25, -5],
+          "size": [2.75, 1.25, 6],
+          "slot": "palette",
+          "color": "#8c8466",
+          "studs": false,
+          "shape": "slope-x"
+        },
+        {
+          "at": [-3.25, 2.25, -5],
+          "size": [2.75, 1.25, 6],
+          "slot": "palette",
+          "color": "#7d7550",
+          "studs": false,
+          "shape": "slope+x"
+        },
+        {
+          "at": [-4.25, 0, 1],
+          "size": [1.5, 1.75, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-4.75, 0, 2],
+          "size": [2.5, 1, 1.5],
+          "slot": "palette",
+          "color": "#5e4630",
+          "studs": false
+        },
+        {
+          "at": [-6.25, 0, 1.5],
+          "size": [1.25, 1.25, 1.25],
+          "slot": "palette",
+          "color": "#55663d"
+        },
+        { "at": [-6.1, 0.75, -5.1], "size": [5, 0.6, 0.1], "slot": "team", "studs": false }
+      ]
+    },
+    {
+      "name": "stilt_r",
+      "parent": "wing_r",
+      "at": [-5.75, -0.5, 0],
+      "bricks": [
+        {
+          "at": [-0.375, -2, -5],
+          "size": [0.75, 2, 0.75],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-0.375, -2, 2.5],
+          "size": [0.75, 2, 0.75],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "mast",
+      "parent": "truck",
+      "at": [0, 6.5, -3],
+      "bricks": [
+        { "at": [-0.4, 0, -0.4], "size": [0.8, 6, 0.8], "slot": "metal", "studs": false },
+        {
+          "at": [-0.6, 2.5, -0.6],
+          "size": [1.2, 0.4, 1.2],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "dish",
+      "parent": "mast",
+      "at": [0, 6, 0],
+      "bricks": [
+        {
+          "at": [-0.5, 0, -0.5],
+          "size": [1, 0.75, 1],
+          "slot": "palette",
+          "color": "#363a40",
+          "studs": false
+        },
+        {
+          "at": [-2, 0.5, 0.5],
+          "size": [4, 2.5, 0.4],
+          "slot": "palette",
+          "color": "#8d9196",
+          "studs": false
+        },
+        { "at": [-2, 0.5, 0.35], "size": [4, 0.4, 0.15], "slot": "team", "studs": false },
+        { "at": [-0.3, 1.5, 0.9], "size": [0.6, 0.6, 0.4], "slot": "emissive", "studs": false },
+        { "at": [-0.1, 0.75, -1.2], "size": [0.2, 0.2, 1.7], "slot": "metal", "studs": false }
+      ]
+    },
+    { "name": "socket_smoke", "parent": "truck", "at": [2.1, 7.5, -6.9] },
+    { "name": "socket_exit", "parent": "command-node", "at": [0, 0, 11.5] }
+  ],
+  "animations": {
+    "active": {
+      "duration": 6,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "dish",
+          "rotation": [[0, [0, 0, 0]], [2, [0, 120, 0]], [4, [0, 240, 0]], [6, [0, 360, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 2,
+      "tracks": [
+        {
+          "node": "mast",
+          "translation": [[0, [0, 0, 0]], [0.8, [0, -5.5, 0]], [2, [0, -5.5, 0]]]
+        },
+        { "node": "stilt_l", "scale": [[0, [1, 1, 1]], [0.5, [1, 0.05, 1]], [2, [1, 0.05, 1]]] },
+        { "node": "stilt_r", "scale": [[0, [1, 1, 1]], [0.5, [1, 0.05, 1]], [2, [1, 0.05, 1]]] },
+        {
+          "node": "wing_l",
+          "rotation": [[0, [0, 0, 0]], [0.6, [0, 0, 0]], [1.8, [0, 0, 90]], [2, [0, 0, 90]]]
+        },
+        {
+          "node": "wing_r",
+          "rotation": [[0, [0, 0, 0]], [0.6, [0, 0, 0]], [1.8, [0, 0, -90]], [2, [0, 0, -90]]]
+        }
+      ]
+    },
+    "open": {
+      "duration": 2,
+      "tracks": [
+        {
+          "node": "mast",
+          "translation": [[0, [0, -5.5, 0]], [1.2, [0, -5.5, 0]], [2, [0, 0, 0]]]
+        },
+        { "node": "stilt_l", "scale": [[0, [1, 0.05, 1]], [1.5, [1, 0.05, 1]], [2, [1, 1, 1]]] },
+        { "node": "stilt_r", "scale": [[0, [1, 0.05, 1]], [1.5, [1, 0.05, 1]], [2, [1, 1, 1]]] },
+        {
+          "node": "wing_l",
+          "rotation": [[0, [0, 0, 90]], [0.2, [0, 0, 90]], [1.4, [0, 0, 0]], [2, [0, 0, 0]]]
+        },
+        {
+          "node": "wing_r",
+          "rotation": [[0, [0, 0, -90]], [0.2, [0, 0, -90]], [1.4, [0, 0, 0]], [2, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": { "drop": ["flags", "mast", "dish"], "darken": 0.45 }
+}

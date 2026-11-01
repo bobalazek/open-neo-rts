@@ -38,9 +38,9 @@ A map is a folder in a pack: `map.json` plus its terrain layers ([content-format
 }
 ```
 
-- **Layers:** `layers` has the keys `height`, `ramps`, `surface` and `water`. Each names a file next to `map.json` with one byte per cell, row-major (cell (x, y) at index `y * width + x`, y growing southward), no header, exactly width × height bytes.
-- **Missing layers** are all zeros: level 0, no ramp, grass, no water.
-- **Values** come from [`rules/terrain.ts`](../../packages/content/src/rules/terrain.ts): height levels, ramp directions, surface types and water depths.
+- **Layers:** `layers` has the keys `height`, `ramps`, `surface`, `water` and `biome`. Each names a file next to `map.json` with one byte per cell, row-major (cell (x, y) at index `y * width + x`, y growing southward), no header, exactly width × height bytes.
+- **Missing layers** are all zeros: level 0, no ramp, grass, no water. A missing biome layer uses the map's base `biome` everywhere.
+- **Values** come from [`rules/terrain.ts`](../../packages/content/src/rules/terrain.ts): height levels, ramp directions, surface types, water depths and biome indices.
 - **Units:** positions are in cells and facings in degrees, decimals allowed; the loader converts them to subcells and binary angle units once ([numerics.md](numerics.md#content-units)).
 - **Scenario data** (pre-placed Forces, regions, objectives, triggers) goes in a separate `scenario.json` ([authoring-scenarios.md](../contributing/authoring-scenarios.md)).
 

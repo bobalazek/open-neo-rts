@@ -1,0 +1,12 @@
+{
+  "files": {
+    "oil-well.glb": {
+      "author": "Borut Balazek",
+      "source": "source/oil-well.bricks.json"
+    },
+    "oil-well.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/oil-well.bricks.json"
+    }
+  }
+}

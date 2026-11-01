@@ -1,0 +1,226 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "vehicle_factory",
+      "bricks": [
+        {
+          "at": [-11.5, 0, -11.5],
+          "size": [23, 0.75, 23],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [6, 0.75, 7.5],
+          "size": [0.5, 0.15, 4],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-6.5, 0.75, 7.5],
+          "size": [0.5, 0.15, 4],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-10, 0.75, -10],
+          "size": [20, 13, 17],
+          "slot": "palette",
+          "color": "#eef0f2",
+          "studs": false
+        },
+        {
+          "at": [-10.5, 13.75, -10.5],
+          "size": [21, 0.75, 18],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false
+        },
+        {
+          "at": [5, 14.5, -10],
+          "size": [5, 1.5, 17],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false,
+          "shape": "slope+x"
+        },
+        {
+          "at": [-10, 14.5, -10],
+          "size": [5, 1.5, 17],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false,
+          "shape": "slope-x"
+        },
+        {
+          "at": [-5, 14.5, -10],
+          "size": [10, 1.5, 17],
+          "slot": "palette",
+          "color": "#9aa1aa"
+        },
+        {
+          "at": [-10.1, 9, -8],
+          "size": [20.2, 1.25, 14],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-10.15, 11.5, -10.15],
+          "size": [20.3, 1, 17.3],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-6.5, 0.75, 6.95],
+          "size": [13, 10, 0.1],
+          "slot": "palette",
+          "color": "#4a5059",
+          "studs": false
+        },
+        {
+          "at": [6.5, 0.75, 6.9],
+          "size": [1, 10, 0.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-7.5, 0.75, 6.9],
+          "size": [1, 10, 0.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-7.5, 10.75, 6.9],
+          "size": [15, 1.25, 0.4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-9, 13.75, 4],
+          "size": [1.5, 4, 1.5],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [-9, 13.75, -5.5],
+          "size": [1.5, 4, 1.5],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [-9.1, 17.75, 3.9],
+          "size": [1.7, 0.4, 1.7],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-9.1, 17.75, -5.6],
+          "size": [1.7, 0.4, 1.7],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [10, 0.75, -8],
+          "size": [1.5, 8, 10],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false
+        },
+        {
+          "at": [11.4, 6, -7],
+          "size": [0.2, 0.4, 8],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-11.25, 0.75, -6],
+          "size": [1.25, 4, 8],
+          "slot": "palette",
+          "color": "#9aa1aa"
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "parent": "vehicle_factory",
+      "at": [0, 10.75, 7.25],
+      "bricks": [
+        {
+          "at": [-6.5, -10, -0.15],
+          "size": [13, 10, 0.3],
+          "slot": "palette",
+          "color": "#c9cdd3",
+          "studs": false
+        },
+        {
+          "at": [-6.5, -2.75, 0.15],
+          "size": [13, 0.4, 0.15],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [-6.5, -8.25, 0.15],
+          "size": [13, 0.4, 0.15],
+          "slot": "palette",
+          "color": "#9aa1aa",
+          "studs": false
+        },
+        {
+          "at": [-6.5, -6, 0.15],
+          "size": [13, 1, 0.15],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-5, -4, 0.15],
+          "size": [10, 0.75, 0.12],
+          "slot": "glass",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "socket_exit",
+      "parent": "vehicle_factory",
+      "at": [0, 0.75, 10]
+    },
+    {
+      "name": "socket_smoke_1",
+      "parent": "vehicle_factory",
+      "at": [-6, 15.25, -3]
+    },
+    {
+      "name": "socket_smoke_2",
+      "parent": "vehicle_factory",
+      "at": [-8.25, 18.25, -4.75]
+    }
+  ],
+  "animations": {
+    "open": {
+      "duration": 1.5,
+      "tracks": [
+        {
+          "node": "door",
+          "rotation": [[0, [0, 0, 0]], [1.5, [80, 0, 0]]]
+        }
+      ]
+    },
+    "close": {
+      "duration": 1.5,
+      "tracks": [
+        {
+          "node": "door",
+          "rotation": [[0, [80, 0, 0]], [1.5, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["door"],
+    "darken": 0.5
+  }
+}

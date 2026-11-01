@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:arctic/ice-shards",
+  "name": "Ice Shards",
+  "description": "Jagged spikes of ice. Crushers break through.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 300,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "ice-shards.glb",
+    "icon": "ice-shards.icon.png",
+    "materials": {}
+  }
+}

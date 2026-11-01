@@ -1,0 +1,16 @@
+{
+  "files": {
+    "power-matrix.glb": {
+      "author": "Borut Balazek",
+      "source": "source/power-matrix.bricks.json"
+    },
+    "power-matrix.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/power-matrix.bricks.json"
+    },
+    "power-matrix.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/power-matrix.bricks.json"
+    }
+  }
+}
