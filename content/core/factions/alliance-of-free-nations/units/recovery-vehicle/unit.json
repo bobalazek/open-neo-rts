@@ -47,7 +47,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": ["socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move"],
     "wreck": "recovery-vehicle.wreck.glb"
   }
 }
