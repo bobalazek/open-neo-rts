@@ -1,0 +1,16 @@
+{
+  "files": {
+    "emp-research-lab.glb": {
+      "author": "Borut Balazek",
+      "source": "source/emp-research-lab.bricks.json"
+    },
+    "emp-research-lab.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/emp-research-lab.bricks.json"
+    },
+    "emp-research-lab.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/emp-research-lab.bricks.json"
+    }
+  }
+}
