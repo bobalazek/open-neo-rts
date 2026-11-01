@@ -124,6 +124,7 @@ export function bindPlacementPreview(
   const leave = () => {
     pointer = null;
     payload = null;
+    input = "";
     void queries.update(null, tick);
   };
   canvas.addEventListener("pointerleave", leave, { signal });

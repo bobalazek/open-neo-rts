@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import type { DebugSpawn } from "@open-neo-rts/sim";
 import type { PlacementDiagnostic } from "../../worker";
-import { createPlacementQueries } from "./placement";
+import { bindPlacementPreview, createPlacementQueries } from "./placement";
 
 test("placement coalesces rotation/tick changes and discards stale or disposed replies", async () => {
   const requests: { spawn: DebugSpawn; resolve: (result: PlacementDiagnostic) => void }[] = [];
@@ -49,4 +49,56 @@ test("placement coalesces rotation/tick changes and discards stale or disposed r
   await refreshed;
   expect(painted).toEqual([authoritative]);
   expect(cleared).toBe(4);
+});
+
+test("leaving and returning to the same pixel before a frame restores the preview", async () => {
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  Object.assign(globalThis, { window: new EventTarget() });
+  const signal = new AbortController();
+  const canvas = Object.assign(new EventTarget(), {
+    getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }),
+  });
+  const palette = {
+    selection: () => ({
+      entry: { kind: "structure", definition: { id: "core.structure:fixture/extractor" } },
+      force: 0,
+      rotation: 0,
+    }),
+    preview: { textContent: "" },
+    previewCells: { replaceChildren() {} },
+  };
+  let requests = 0;
+  const owner = bindPlacementPreview(
+    canvas as unknown as Parameters<typeof bindPlacementPreview>[0],
+    palette as unknown as Parameters<typeof bindPlacementPreview>[1],
+    { accept() {} } as unknown as Parameters<typeof bindPlacementPreview>[2],
+    {
+      enabled: () => true,
+      pickCell: () => ({ x: 8, y: 8 }),
+      viewKey: () => "stable",
+      query: async () => {
+        requests++;
+        return { tick: 0, ok: true, cells: [] };
+      },
+    },
+    signal.signal,
+  );
+  const move = () =>
+    canvas.dispatchEvent(Object.assign(new Event("pointermove"), { clientX: 50, clientY: 50 }));
+  try {
+    move();
+    owner.frame();
+    await Bun.sleep(0);
+    expect(requests).toBe(1);
+    canvas.dispatchEvent(new Event("pointerleave"));
+    move();
+    owner.frame();
+    await Bun.sleep(0);
+    expect(requests).toBe(2);
+    expect(palette.preview.textContent).toContain("Allowed @0");
+  } finally {
+    signal.abort();
+    if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
+    else Reflect.deleteProperty(globalThis, "window");
+  }
 });
