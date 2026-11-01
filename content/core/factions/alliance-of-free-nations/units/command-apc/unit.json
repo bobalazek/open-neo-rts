@@ -74,7 +74,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "command-apc.wreck.glb"
   }
 }
