@@ -1,0 +1,16 @@
+{
+  "files": {
+    "radar-tower.glb": {
+      "author": "Borut Balazek",
+      "source": "source/radar-tower.bricks.json"
+    },
+    "radar-tower.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/radar-tower.bricks.json"
+    },
+    "radar-tower.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/radar-tower.bricks.json"
+    }
+  }
+}
