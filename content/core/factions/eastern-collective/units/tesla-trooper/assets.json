@@ -1,0 +1,12 @@
+{
+  "files": {
+    "tesla-trooper.glb": {
+      "author": "Borut Balazek",
+      "source": "source/tesla-trooper.bricks.json"
+    },
+    "tesla-trooper.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/tesla-trooper.bricks.json"
+    }
+  }
+}
