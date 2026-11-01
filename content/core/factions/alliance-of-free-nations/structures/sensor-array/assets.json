@@ -1,0 +1,16 @@
+{
+  "files": {
+    "sensor-array.glb": {
+      "author": "Borut Balazek",
+      "source": "source/sensor-array.bricks.json"
+    },
+    "sensor-array.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/sensor-array.bricks.json"
+    },
+    "sensor-array.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/sensor-array.bricks.json"
+    }
+  }
+}

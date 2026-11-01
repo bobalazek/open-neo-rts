@@ -19,6 +19,7 @@
     "icon": "sensor-array.icon.png",
     "wreck": "sensor-array.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }
