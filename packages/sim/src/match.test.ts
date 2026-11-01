@@ -109,6 +109,20 @@ test("canonical map serialization ignores object key order and hashes actual ter
   expect(hash({ ...map, spawns: [{ ...westSpawn, facing: 1 }] })).not.toBe(hash(map));
 });
 
+test("repeated hashes reuse the owned immutable map without reading its arrays again", () => {
+  const map = mapWithObjects();
+  const kernel = createMatch({ ...setup, map });
+  const expected = checkpointHash(kernel);
+  expect(Object.isFrozen(kernel.map?.terrain.level)).toBe(true);
+  expect(Reflect.set(map.terrain.level, "0", 7)).toBe(true);
+  Object.defineProperty(kernel, "map", {
+    get() {
+      throw new Error("A repeated hash must not traverse immutable map input");
+    },
+  });
+  for (let i = 0; i < 20; i++) expect(checkpointHash(kernel)).toBe(expected);
+});
+
 const validMap = mapWithObjects();
 for (const [name, map, error] of [
   ["identity", { ...validMap, id: "fixture" }, ".id"],

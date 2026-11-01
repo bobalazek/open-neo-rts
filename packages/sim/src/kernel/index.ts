@@ -19,7 +19,9 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
-import { type MatchMap, serializeMatchMap } from "../match-map";
+import { copyMatchMap, type MatchMap } from "../match-map";
+
+const MAP_SERIALIZATION = Symbol("mapSerialization");
 
 /**
  * Tick phases in run order (architecture.md §5). Command handlers run at the start of `ingest` and
@@ -92,6 +94,8 @@ export interface Kernel {
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
+  /** Immutable canonical input, retained privately so debug publication never recopies terrain. */
+  readonly [MAP_SERIALIZATION]: string | undefined;
   /** u32. */
   readonly seed: number;
   readonly debug: boolean;
@@ -113,9 +117,11 @@ export function createKernel(match: { seed: number; debug: boolean; map?: MatchM
   const { seed, debug } = match;
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff)
     throw new RangeError(`Match seed must be a u32 integer, got ${seed}`);
+  const map = match.map ? copyMatchMap(match.map) : undefined;
   return {
     world: new World(),
-    map: match.map,
+    map,
+    [MAP_SERIALIZATION]: map && JSON.stringify(map),
     seed,
     debug,
     tick: 0,
@@ -210,7 +216,8 @@ export function checkpointHash(kernel: Kernel): string {
         ((bytes[i + 2] ?? 0) << 16) |
         ((bytes[i + 3] ?? 0) << 24),
     );
-  if (kernel.map) addString(h, serializeMatchMap(kernel.map));
+  const map = kernel[MAP_SERIALIZATION];
+  if (map !== undefined) addString(h, map);
   return digest(h).hex;
 }
 

@@ -3,7 +3,7 @@ import type { Grant } from "./commands";
 import { type Definition, entitiesFeature } from "./features/entities";
 import { movementFeature } from "./features/movement";
 import { createKernel, type Kernel, register } from "./kernel";
-import { checkMatchMap, copyMatchMap, type MatchMap, matchMapSchema } from "./match-map";
+import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
 
 export { type MatchMap, serializeMatchMap } from "./match-map";
 
@@ -31,7 +31,7 @@ export function createMatch(setup: MatchSetup): Kernel {
     throw new Error(
       `Invalid match map:\n${issues.map(({ path, message }) => `${path}: ${message}`).join("\n")}`,
     );
-  const kernel = createKernel({ ...setup, map: copyMatchMap(setup.map) });
+  const kernel = createKernel(setup);
   register(kernel, entitiesFeature(setup.definitions));
   register(kernel, movementFeature(setup));
   return kernel;
