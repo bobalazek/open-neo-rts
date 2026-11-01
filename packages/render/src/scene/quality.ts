@@ -16,11 +16,14 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
   const engine = scene.getEngine();
   const nativeScale = engine.getHardwareScalingLevel();
   let shadows: ShadowGenerator | undefined;
+  let releaseShadowFit: (() => void) | undefined;
   let pipeline: DefaultRenderingPipeline | undefined;
   let ao: SSAO2RenderingPipeline | undefined;
   let focus: ReturnType<typeof scene.onBeforeRenderObservable.add>;
   let disposed = false;
   function clear() {
+    releaseShadowFit?.();
+    releaseShadowFit = undefined;
     setSceneShadows(scene, undefined, false);
     shadows?.dispose();
     shadows = undefined;
@@ -53,6 +56,27 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
       sun.autoCalcShadowZBounds = true;
       shadows.usePercentageCloserFiltering = quality === "ultra";
       setSceneShadows(scene, shadows, false);
+      const shadowMap = shadows.getShadowMap();
+      if (shadowMap) {
+        const previous = sun.autoUpdateExtends;
+        // Fit every refreshed map, then retain that same fit for its receiver passes.
+        const before = shadowMap.onBeforeBindObservable.add(() => {
+          sun.autoUpdateExtends = true;
+        });
+        const after = shadowMap.onAfterUnbindObservable.add(() => {
+          sun.autoUpdateExtends = false;
+        });
+        // A recreated map falls back to automatic fitting until quality is reapplied.
+        const disposedMap = shadowMap.onDisposeObservable.add(() => {
+          sun.autoUpdateExtends = previous;
+        });
+        releaseShadowFit = () => {
+          shadowMap.onBeforeBindObservable.remove(before);
+          shadowMap.onAfterUnbindObservable.remove(after);
+          shadowMap.onDisposeObservable.remove(disposedMap);
+          sun.autoUpdateExtends = previous;
+        };
+      }
       // SSAO2 supports both WebGL2 and WebGPU; omit it on devices without the required MRT support.
       if (quality !== "medium" && SSAO2RenderingPipeline.IsSupported) {
         ao = new SSAO2RenderingPipeline("quality AO", scene, quality === "ultra" ? 1 : 0.5, [
