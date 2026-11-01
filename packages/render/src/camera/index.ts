@@ -50,6 +50,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   const keys = new Set<string>();
   let pointer: { x: number; y: number } | null = null;
   let drag: { button: number; x: number; y: number } | null = null;
+  let selecting = false;
 
   // right and forward in metres, relative to the view direction on the ground.
   const pan = (right: number, forward: number) => {
@@ -80,6 +81,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "pointerdown",
     (e) => {
+      if (e.button === 0) selecting = true;
       if (e.button !== 1 && e.button !== 2) return;
       e.preventDefault();
       drag = { button: e.button, x: e.clientX, y: e.clientY };
@@ -106,8 +108,13 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     },
     { signal },
   );
-  canvas.addEventListener("pointerup", () => (drag = null), { signal });
-  canvas.addEventListener("pointercancel", () => (drag = null), { signal });
+  const release = () => {
+    drag = null;
+    selecting = false;
+  };
+  canvas.addEventListener("pointerup", release, { signal });
+  canvas.addEventListener("pointercancel", release, { signal });
+  window.addEventListener("blur", release, { signal });
   canvas.addEventListener("pointerleave", () => (pointer = null), { signal });
   canvas.addEventListener(
     "wheel",
@@ -129,7 +136,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
         forward += v[1];
       }
     }
-    if (pointer && !drag) {
+    if (pointer && !drag && !selecting) {
       if (pointer.x < EDGE) right -= 1;
       if (pointer.x > canvas.clientWidth - EDGE) right += 1;
       if (pointer.y < EDGE) forward += 1;

@@ -8,7 +8,7 @@ import {
 import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
-import { changeSelection } from "../match/selection";
+import { bindSelectionInput } from "../match/input";
 import { catalogEntry, resolveEntityModel } from "./catalog";
 import { createPresentationClock } from "./clock";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
@@ -269,11 +269,24 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const activeMatch = match;
       const activeRenderer = renderer;
       let busy = false;
+      const selectionInput = bindSelectionInput(
+        canvas,
+        {
+          enabled: () => current() && !busy && !inspector.busy() && !palette.spawning(),
+          selected: inspector.selected,
+          select: inspector.select,
+          pick: (x, y) => presentation.pick(x, y),
+          inRectangle: (left, top, right, bottom) =>
+            presentation.inRectangle(left, top, right, bottom),
+        },
+        clicks.signal,
+      );
       canvas.addEventListener(
         "keydown",
         (event) => {
           if (event.code !== "Escape") return;
           event.preventDefault();
+          selectionInput.cancel();
           if (!palette.cancel()) inspector.select([]);
         },
         { signal: clicks.signal },
@@ -282,16 +295,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         "click",
         async (event) => {
           if (!current() || busy || inspector.busy() || event.button !== 0) return;
-          if (!palette.spawning()) {
-            const bounds = canvas.getBoundingClientRect();
-            const picked = presentation.pick(
-              event.clientX - bounds.left,
-              event.clientY - bounds.top,
-            );
-            inspector.select(changeSelection(inspector.selected(), picked ? [picked] : [], event));
-            canvas.focus({ preventScroll: true });
-            return;
-          }
+          if (!palette.spawning()) return;
           const selection = palette.selection();
           const cell = activeRenderer.pickCell(event.clientX, event.clientY);
           if (!selection || !cell) {

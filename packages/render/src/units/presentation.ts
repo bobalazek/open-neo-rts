@@ -2,11 +2,13 @@ import {
   type AbstractMesh,
   type AssetContainer,
   Color3,
+  Matrix,
   Mesh,
   MeshBuilder,
   type Scene,
   StandardMaterial,
   TransformNode,
+  Vector3,
 } from "@babylonjs/core";
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
@@ -300,6 +302,39 @@ export function createEntityPresentation(
       });
       const mesh = hits[0]?.pickedMesh;
       return mesh ? (meshHandles.get(mesh) ?? null) : null;
+    },
+    /** Screen-space centres from the same rendered poses used for rings and picking. */
+    inRectangle(left: number, top: number, right: number, bottom: number): string[] {
+      const camera = scene.activeCamera;
+      const canvas = scene.getEngine().getRenderingCanvas();
+      if (!camera || !canvas) return [];
+      const viewport = camera.viewport.toGlobal(canvas.clientWidth, canvas.clientHeight);
+      const handles: string[] = [];
+      for (const [handle, entity] of entities) {
+        if (
+          !entity.root ||
+          !entity.root
+            .getChildMeshes()
+            .some((mesh) => mesh.isVisible && mesh.isEnabled() && mesh.getTotalVertices() > 0)
+        )
+          continue;
+        const point = Vector3.Project(
+          entity.root.position,
+          Matrix.IdentityReadOnly,
+          scene.getTransformMatrix(),
+          viewport,
+        );
+        if (
+          point.z >= 0 &&
+          point.z <= 1 &&
+          point.x >= left &&
+          point.x <= right &&
+          point.y >= top &&
+          point.y <= bottom
+        )
+          handles.push(handle);
+      }
+      return handles;
     },
     setPlaybackRate(rate: number) {
       if (!Number.isFinite(rate) || rate < 0) throw new RangeError("Invalid playback rate");
