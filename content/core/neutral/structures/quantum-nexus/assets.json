@@ -1,0 +1,16 @@
+{
+  "files": {
+    "quantum-nexus.glb": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-nexus.bricks.json"
+    },
+    "quantum-nexus.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-nexus.bricks.json"
+    },
+    "quantum-nexus.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/quantum-nexus.bricks.json"
+    }
+  }
+}
