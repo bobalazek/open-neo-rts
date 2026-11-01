@@ -12,6 +12,7 @@ import {
 } from "@babylonjs/core";
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
+import { registerModelShadows } from "../scene/shadows";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
 
@@ -256,6 +257,7 @@ export function createEntityPresentation(
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
                 meshHandles.set(mesh, handle);
               }
+              registerModelShadows(current.root);
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,
