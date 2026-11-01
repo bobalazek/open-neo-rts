@@ -1,0 +1,16 @@
+{
+  "files": {
+    "research-bunker.glb": {
+      "author": "Borut Balazek",
+      "source": "source/research-bunker.bricks.json"
+    },
+    "research-bunker.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/research-bunker.bricks.json"
+    },
+    "research-bunker.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/research-bunker.bricks.json"
+    }
+  }
+}
