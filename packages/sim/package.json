@@ -1,0 +1,17 @@
+{
+  "name": "@open-neo-rts/sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@open-neo-rts/content": "workspace:*",
+    "@open-neo-rts/deterministic": "workspace:*"
+  }
+}

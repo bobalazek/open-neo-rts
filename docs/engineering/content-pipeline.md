@@ -1,0 +1,59 @@
+# Content pipeline and validation
+
+Every unit, structure, weapon, ability, tech, faction, map and asset is described by metadata and checked automatically. Broken or stale content can't reach `main`.
+
+## Metadata for everything
+
+- **Definitions are JSON**, one file per definition, each with a `$schema` reference for editor autocomplete and inline errors. (JSON over YAML: one format, native in Bun and browsers, and the best schema tooling.)
+- **Schemas** live in `content/schemas/`. They're generated from the TypeScript types in `packages/content`, so code and schema never drift apart.
+- Every definition has at least: `id`, `kind`, `pack`, `name` and `description` locale keys, `tags`, `eras` (see below), `presentation` (model, icon, sounds), plus its kind-specific fields.
+- Every asset folder has an `assets.json` with each file's author and editable source ([assets.md](../contributing/assets.md)).
+- **Models declare their parts:** a unit's `presentation.parts` lists the node names the sim and renderer use (`hull`, `turret`, `barrel`, `muzzle`, `rotor`…), and the GLB must contain exactly those nodes.
+
+## Checks
+
+`bun run validate-content` (definitions) and `bun run validate-assets` (files) run locally, in a pre-push hook, and in CI on every PR that touches `content/`.
+
+**Definitions:**
+
+| Check      | Catches                                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------------------------------- |
+| Schema     | Missing or wrong fields, wrong types, floats where integers are required                                   |
+| References | Unknown IDs (weapons, techs, structures, locale keys, assets)                                              |
+| Graphs     | Tech-tree cycles, unreachable techs, units nobody can build, campaign missions nobody can unlock           |
+| Uniqueness | Duplicate IDs across packs, hotkey conflicts within a command card                                         |
+| Rules      | Footprints that fit the grid, a population cost on every unit, every faction covering every structure role |
+| Locales    | Missing translations (warning), unused keys (warning)                                                      |
+| Eras       | Every definition valid for each era it claims; per-era overrides reference existing assets                 |
+
+**Assets:**
+
+| Check            | Catches                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| glTF conformance | Unreadable or invalid GLB files (Khronos glTF validator)                                                                                       |
+| Structure        | Required part nodes present and named as declared; origin at ground centre; Y-up; scale in metres within the expected bounds for its footprint |
+| Budgets          | Triangle counts, LOD count, texture sizes, material count (palette material only)                                                              |
+| Animations       | Clip names match what the definition references; skeletons within joint and influence limits                                                   |
+| Provenance       | Every file has an `assets.json` entry                                                                                                          |
+| Formats          | Allowed extensions only; binaries tracked by Git LFS                                                                                           |
+
+**Staleness:**
+
+| Check               | Catches                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| Orphans             | Asset files no definition references                                                        |
+| Missing             | Definitions pointing at files that don't exist                                              |
+| Dead provenance     | `assets.json` entries for deleted files                                                     |
+| Out-of-date exports | A `source/` file newer than its exported runtime asset (warning)                            |
+| Generated files     | Schemas, the balance report and the Field Manual index are up to date (regenerate and diff) |
+
+## Previews and reports
+
+- The validator writes a machine-readable report, which CI posts as a PR comment along with playtest preview links ([CONTRIBUTING.md](../../CONTRIBUTING.md#previews)).
+- Turntable thumbnails of changed models are rendered headlessly and attached to the comment (later).
+
+## Implementation
+
+- `packages/content` holds the types, the generated schemas, a loader that resolves packs and dependencies, and the validators. These are our own, per [build vs. use](architecture.md#build-vs-use).
+- **glTF conformance** uses the official Khronos validator (tooling, not a game dependency). Our own checks for parts, budgets and clips read the GLB with a small parser in `packages/content`.
+- The same validators run in the map editor, in the game when loading mods, and on the server when accepting custom content.

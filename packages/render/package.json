@@ -1,0 +1,17 @@
+{
+  "name": "@open-neo-rts/render",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.33.1",
+    "@open-neo-rts/sim": "workspace:*"
+  }
+}

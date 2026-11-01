@@ -1,0 +1,16 @@
+{
+  "name": "@open-neo-rts/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun ./index.html",
+    "build": "bun build ./index.html --outdir=dist --minify",
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@open-neo-rts/net": "workspace:*",
+    "@open-neo-rts/render": "workspace:*"
+  }
+}
