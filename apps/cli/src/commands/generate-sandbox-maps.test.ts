@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkTerrain, RAMP, WATER } from "@open-neo-rts/content";
+import { BIOMES, checkTerrain, RAMP, SURFACES, WATER } from "@open-neo-rts/content";
 import { mapPreview, SANDBOX_MAPS } from "./generate-sandbox-maps";
 
 for (const [id, build] of Object.entries(SANDBOX_MAPS)) {
@@ -45,8 +45,36 @@ test("the CLI writes only the requested map and rejects invalid selection before
       author: "Borut Balazek",
       source: "apps/cli/src/commands/generate-sandbox-maps.ts",
     });
+    expect(run("sandbox-biomes").exitCode).toBe(0);
+    expect(readdirSync(join(cwd, "content/core/maps"))).toEqual(["sandbox-biomes", "sandbox-flat"]);
+    const biomes = SANDBOX_MAPS["sandbox-biomes"]?.().terrain;
+    expect(readFileSync(join(cwd, "content/core/maps/sandbox-biomes/biome.r8"))).toEqual(
+      Buffer.from(biomes?.biome ?? []),
+    );
+    expect(readFileSync(join(cwd, "content/core/maps/sandbox-biomes/surface.r8"))).toEqual(
+      Buffer.from(biomes?.surface ?? []),
+    );
   } finally {
     rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("sandbox-biomes is 128 square with four equal, correctly painted quadrants", () => {
+  const t = SANDBOX_MAPS["sandbox-biomes"]?.().terrain;
+  expect(t).toBeDefined();
+  if (!t) return;
+  expect([t.width, t.height]).toEqual([128, 128]);
+  expect(BIOMES).toEqual(["temperate", "desert", "arctic", "urban"]);
+  const surface = (name: (typeof SURFACES)[number]) => SURFACES.indexOf(name);
+  for (let y = 0; y < 128; y++) {
+    expect([...t.biome.subarray(y * 128, (y + 1) * 128)]).toEqual([
+      ...Array(64).fill(y < 64 ? 0 : 2),
+      ...Array(64).fill(y < 64 ? 1 : 3),
+    ]);
+    expect([...t.surface.subarray(y * 128, (y + 1) * 128)]).toEqual([
+      ...Array(64).fill(surface(y < 64 ? "grass" : "snow")),
+      ...Array(64).fill(surface(y < 64 ? "sand" : "road")),
+    ]);
   }
 });
 
