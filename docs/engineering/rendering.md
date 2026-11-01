@@ -15,6 +15,19 @@ The built-in registry in `client/features/debug/maps.ts` is temporary until phas
 Low renders at 75% of the normal canvas resolution, with flat per-model blob shadows and no postprocessing. Medium uses a 1024-pixel directional sun shadow map and mild contrast grading. High uses 2048-pixel sun shadows, half-resolution SSAO2 (8 samples), grading and bloom. Ultra keeps 100% resolution, adds filtered soft sun shadows, full-resolution SSAO2 (16 samples and expensive blur), and the optional depth of field. SSAO is omitted on engines without Babylon's SSAO2 support. Particle density settings await the effects system; these presets do not claim to implement particles.
 
 Terrain and visible model instances explicitly register as casters/receivers. Hidden shared GLB templates, water and selection overlays never enter the shadow render list. Babylon instances receive shadows through their shared source mesh but cast through their visible instances. Registration follows asynchronous model creation and disposal. Low's blobs follow model roots on a flat local plane; they are a cheap fallback rather than projected terrain shadows. Terrain materials remain unfrozen so shadow, prepass and depth shader variants can change safely. Preset replacement releases shadow maps, postprocess pipelines, AO prepass and optional depth-renderer resources. The isolated model preview retains its neutral scene and does not use match presets.
+### Water and shoreline foam
+
+Water chunks share an original 64×64 procedural ripple texture. A second scrolling texture breaks up
+feathered foam strips on the wet side of dry cardinal neighbours. Shallow/deep transitions and the
+interior of a ford receive no shore foam. The 8-cell border repeats authored edge cells, so a sea
+continues across the map edge without an invented foam boundary. Texture coordinates use world
+positions across chunks. Water stays at the existing `waterHeight`; this is surface detail, not wave
+displacement or simulated flow.
+
+`createTerrain` creates the two textures and one render observer only when water exists. Disposing
+its returned root releases that observer, the textures and its materials as well as child meshes;
+replacing it with dry terrain leaves no water resources. Foam meshes do not participate in picking.
+Colours remain provisional with the existing biome palettes; this does not imply art-direction approval.
 
 ## Static map art
 
