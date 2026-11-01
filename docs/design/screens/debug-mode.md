@@ -38,6 +38,22 @@ The first thing anyone can see of the game, and the tool every later feature is 
 - **Overlays:** grid, height levels, footprint cell rules, the nav grid for one movement domain, current paths, fog.
 - **State hash** at the current tick, the same value `bun neo run` prints for that tick.
 
+## Model check
+
+The first asset-inspection stage is available at `/debug?models=1` after `bun run dev`. Open a local `.glb`, change **Team colour**, and select a named **Animation**. **Rest pose** restores the model's authored transforms. Drag the canvas to orbit and scroll to zoom. The controls stay above the canvas and wrap on narrow screens.
+
+```text
+┌───────────────────────────────────────────────────────────────────────┐
+│ Model check                                                           │
+│ Model [ Choose GLB ]  Team colour [ ■ ]  Animation [ Rest pose ▾ ]     │
+│ filename · clip count                              Terrain view       │
+├───────────────────────────────────────────────────────────────────────┤
+│                      orbitable 3D model                               │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+The file is read in the browser. Team slots change while palette, metal and glass retain their colours. Idle, move and active clips loop; attack, death and door clips play once. A bad file leaves the previous valid model available and asks for another GLB. This checks assets directly; map spawning, commands and per-seat simulation projection still belong to the full debug mode above.
+
 ## How it stays honest
 
 - **Debug actions are sim commands**, accepted only when the match was started with `debug: true` (otherwise rejected as `debug_only`). That flag is their only gate: they skip grant checks, because debug mode acts for any Force. They go through the command log like any order, so a session replays exactly. Payloads ([commands](../../../packages/sim/src/commands/index.ts)):

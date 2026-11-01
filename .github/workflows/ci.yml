@@ -55,6 +55,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Pull model-check fixtures
+        run: git lfs pull --include="content/core/factions/eastern-collective/units/infiltrator/infiltrator.glb,content/core/factions/eastern-collective/units/flame-tank/flame-tank.glb"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
