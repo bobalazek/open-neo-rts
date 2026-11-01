@@ -9,15 +9,17 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
-import { BIOMES, type Biome } from "./biomes";
 import { buildTerrainGeometry, type Geometry } from "./mesh";
 
-export { BIOMES, type Biome, type Palette } from "./biomes";
+export { PALETTES, type Palette } from "./biomes";
 export { createDemoGrid } from "./demo";
 export { BORDER, CELL_SIZE, CHUNK_SIZE, LEVEL_HEIGHT } from "./mesh";
 
-/** Terrain meshes (one per chunk, plus one water mesh per chunk with water) under one node. */
-export function createTerrain(scene: Scene, grid: TerrainGrid, biome: Biome): TransformNode {
+/**
+ * Terrain meshes (one per chunk, plus one water mesh per chunk with water) under one node, each cell in its
+ * biome's palette.
+ */
+export function createTerrain(scene: Scene, grid: TerrainGrid): TransformNode {
   const root = new TransformNode("terrain", scene);
   const ground = new StandardMaterial("terrain", scene);
   ground.specularColor = new Color3(0.06, 0.06, 0.06);
@@ -37,7 +39,7 @@ export function createTerrain(scene: Scene, grid: TerrainGrid, biome: Biome): Tr
     m.material = material;
     m.freezeWorldMatrix();
   };
-  for (const chunk of buildTerrainGeometry(grid, BIOMES[biome])) {
+  for (const chunk of buildTerrainGeometry(grid)) {
     mesh(`terrain ${chunk.cx},${chunk.cy}`, chunk.terrain, ground);
     if (chunk.water) mesh(`water ${chunk.cx},${chunk.cy}`, chunk.water, water);
   }

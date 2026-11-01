@@ -282,7 +282,7 @@ function checkMap(
   }
   if (!complete) return;
   try {
-    for (const m of checkTerrain(parseTerrain(w, h, layers))) error(m);
+    for (const m of checkTerrain(parseTerrain(w, h, layers, String(map.biome)))) error(m);
   } catch (e) {
     error((e as Error).message);
   }

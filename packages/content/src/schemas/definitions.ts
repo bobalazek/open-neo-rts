@@ -391,6 +391,7 @@ export const SCHEMAS = {
         ramps: opt(str(FILE)),
         surface: opt(str(FILE)),
         water: opt(str(FILE)),
+        biome: opt(str(FILE)),
       }),
     ),
   }),

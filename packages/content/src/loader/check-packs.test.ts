@@ -236,4 +236,15 @@ describe("checkPacks", () => {
       "level above 7 at (1, 1)",
     ]);
   });
+  test("biomes: the base must be a known biome, and so must every biome layer value", () => {
+    expect(errors(mapPack({ biome: "volcanic" }))).toEqual([
+      'biome "volcanic" isn\'t one of temperate, desert, arctic, urban',
+    ]);
+    const biome = new Uint8Array(1024).fill(3);
+    biome[0] = 4;
+    const layers = new Map([["maps/test-map/biome.r8", biome]]);
+    expect(errors(mapPack({ layers: { biome: "biome.r8" } }, layers))).toEqual([
+      "unknown biome at (0, 0)",
+    ]);
+  });
 });
