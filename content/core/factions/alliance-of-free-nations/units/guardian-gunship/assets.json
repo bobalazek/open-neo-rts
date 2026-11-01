@@ -1,0 +1,16 @@
+{
+  "files": {
+    "guardian-gunship.glb": {
+      "author": "Borut Balazek",
+      "source": "source/guardian-gunship.bricks.json"
+    },
+    "guardian-gunship.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/guardian-gunship.bricks.json"
+    },
+    "guardian-gunship.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/guardian-gunship.bricks.json"
+    }
+  }
+}
