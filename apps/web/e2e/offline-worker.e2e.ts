@@ -163,3 +163,51 @@ for (const production of [false, true]) {
     }
   });
 }
+
+test("a throwing projection consumer cannot strand a worker acknowledgement", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+  });
+  await page.goto("http://localhost:4320");
+  const result = await page.evaluate(
+    async ({ code, setup }) => {
+      const url = URL.createObjectURL(new Blob([code], { type: "text/javascript" }));
+      const { createOfflineMatch } = (await import(
+        url
+      )) as typeof import("../../../packages/client/src/worker");
+      URL.revokeObjectURL(url);
+      let calls = 0;
+      let tick = -1;
+      const match = createOfflineMatch((state) => {
+        tick = state.snapshot.tick;
+        if (++calls === 1) throw new Error("Projection consumer failed once");
+      });
+      let timeout: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          match.init({ setup, seat: 1, mode: "debug-no-fog" }),
+          new Promise((_, reject) => {
+            timeout = setTimeout(
+              () => reject(new Error("Initialization acknowledgement stranded")),
+              1000,
+            );
+          }),
+        ]);
+        const initializedTick = tick;
+        await match.step();
+        const steppedTick = tick;
+        match.dispose();
+        const disposed = await match.step().catch((error: Error) => error.message);
+        return { initializedTick, steppedTick, calls, disposed };
+      } finally {
+        clearTimeout(timeout);
+        match.dispose();
+      }
+    },
+    { code: clientCode, setup },
+  );
+  expect(result).toMatchObject({ initializedTick: 0, steppedTick: 1, disposed: "Match disposed" });
+  expect(result.calls).toBeGreaterThan(1);
+  expect(errors).toEqual(["Projection consumer failed once"]);
+});

@@ -34,12 +34,13 @@ export function createOfflineMatch(onState: (state: OfflineState) => void) {
     }
     const reply = data;
     if (reply.id !== 0 && !pending.has(reply.id)) return;
-    if (reply.state) onState(reply.state);
     const request = pending.get(reply.id);
-    if (!request) return;
-    pending.delete(reply.id);
-    if (reply.error) request.reject(new Error(reply.error));
-    else request.resolve(reply.result);
+    if (request) {
+      pending.delete(reply.id);
+      if (reply.error) request.reject(new Error(reply.error));
+      else request.resolve(reply.result);
+    }
+    if (reply.state) onState(reply.state);
   };
   function request(message: WorkerRequest): Promise<unknown> {
     if (disposed) return Promise.reject(new Error("Match disposed"));
