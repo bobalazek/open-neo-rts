@@ -1,0 +1,16 @@
+{
+  "files": {
+    "artillery-platform.glb": {
+      "author": "Borut Balazek",
+      "source": "source/artillery-platform.bricks.json"
+    },
+    "artillery-platform.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/artillery-platform.bricks.json"
+    },
+    "artillery-platform.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/artillery-platform.bricks.json"
+    }
+  }
+}

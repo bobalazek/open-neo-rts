@@ -49,6 +49,8 @@
     "icon": "artillery-platform.icon.png",
     "wreck": "artillery-platform.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_muzzle"]
+    "sockets": ["socket_smoke", "socket_muzzle"],
+    "animations": ["active", "attack"],
+    "parts": ["turret", "barrel"]
   }
 }
