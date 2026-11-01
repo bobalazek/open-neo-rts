@@ -29,9 +29,9 @@
     "model": "heavy-transport.glb",
     "icon": "heavy-transport.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "rotor"],
     "sockets": [],
-    "animations": [],
+    "animations": ["idle", "move", "open", "close"],
     "wreck": "heavy-transport.wreck.glb"
   }
 }

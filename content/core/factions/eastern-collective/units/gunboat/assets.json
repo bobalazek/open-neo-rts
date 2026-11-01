@@ -1,0 +1,16 @@
+{
+  "files": {
+    "gunboat.glb": {
+      "author": "Borut Balazek",
+      "source": "source/gunboat.bricks.json"
+    },
+    "gunboat.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/gunboat.bricks.json"
+    },
+    "gunboat.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/gunboat.bricks.json"
+    }
+  }
+}

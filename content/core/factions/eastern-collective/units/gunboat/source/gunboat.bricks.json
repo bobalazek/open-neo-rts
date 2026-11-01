@@ -1,0 +1,191 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hull",
+      "bricks": [
+        {
+          "at": [-3, 0, -5],
+          "size": [6, 1.3, 9],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-3, 0, 4],
+          "size": [6, 1.3, 3],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-3.3, 1.3, -5.5],
+          "size": [6.6, 0.7, 9.5],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-2.6, 1.3, 4],
+          "size": [5.2, 0.7, 2.2],
+          "slot": "team",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-2, 2, -3.8],
+          "size": [4, 2.6, 4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-1.9, 3.5, 0.15],
+          "size": [3.8, 0.75, 0.12],
+          "slot": "glass",
+          "studs": false
+        },
+        {
+          "at": [-2.2, 4.6, -4],
+          "size": [4.4, 0.4, 4.4],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [1.9, 2.1, 1],
+          "size": [0.3, 0.5, 3],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705",
+          "mirror": true
+        },
+        {
+          "at": [1.3, 5, -3],
+          "size": [0.6, 1.7, 0.6],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-0.18, 5, -2],
+          "size": [0.36, 3, 0.36],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [2.1, 2, -0.8],
+          "size": [0.65, 0.65, 2.4],
+          "slot": "team_dark",
+          "shape": "cyl-z",
+          "mirror": true,
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "turret",
+      "bricks": [
+        {
+          "at": [-1.2, 0, -1.1],
+          "size": [2.4, 0.8, 2.2],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-1, 0.8, -0.8],
+          "size": [2, 0.9, 1.6],
+          "slot": "team",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [0, 2, 3]
+    },
+    {
+      "name": "barrel",
+      "bricks": [
+        {
+          "at": [-0.18, -0.18, 0],
+          "size": [0.36, 0.36, 2.6],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.3, -0.3, 2.1],
+          "size": [0.6, 0.6, 0.5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        }
+      ],
+      "parent": "turret",
+      "at": [0, 1.2, 0.8]
+    },
+    {
+      "name": "propeller",
+      "bricks": [
+        {
+          "at": [-0.2, -0.8, -0.1],
+          "size": [0.4, 1.6, 0.2],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.8, -0.2, -0.1],
+          "size": [1.6, 0.4, 0.2],
+          "slot": "metal",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [0, 0.9, -5.7]
+    },
+    {
+      "name": "socket_muzzle",
+      "parent": "barrel",
+      "at": [0, 0, 2.7]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "turret",
+          "rotation": [[0, [0, 0, 0]], [1.5, [0, 15, 0]], [3, [0, 0, 0]]]
+        }
+      ]
+    },
+    "move": {
+      "duration": 0.8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "propeller",
+          "rotation": [
+            [0.0, [0, 0, 0.0]],
+            [0.2, [0, 0, 90.0]],
+            [0.4, [0, 0, 180.0]],
+            [0.6000000000000001, [0, 0, 270.0]],
+            [0.8, [0, 0, 360.0]]
+          ]
+        },
+        {
+          "node": "hull",
+          "rotation": [[0, [0, 0, 0]], [0.4, [0, 0, 2]], [0.8, [0, 0, 0]]]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.5,
+      "tracks": [
+        {
+          "node": "barrel",
+          "translation": [[0, [0, 0, 0]], [0.08333333333333333, [0, 0, -0.3]], [0.5, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "darken": 0.65
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "heavy-transport.glb": {
+      "author": "Borut Balazek",
+      "source": "source/heavy-transport.bricks.json"
+    },
+    "heavy-transport.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/heavy-transport.bricks.json"
+    },
+    "heavy-transport.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/heavy-transport.bricks.json"
+    }
+  }
+}

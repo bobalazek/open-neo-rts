@@ -44,7 +44,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": ["socket_exhaust"],
-    "animations": [],
+    "animations": ["idle", "move", "open", "close"],
     "wreck": "mobile-factory-complex.wreck.glb"
   }
 }
