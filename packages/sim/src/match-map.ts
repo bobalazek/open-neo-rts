@@ -6,9 +6,12 @@ import {
   idOf,
   int,
   MAX_LEVEL,
+  oneOf,
+  opt,
   RAMP,
   SURFACES,
   str,
+  validate,
   WATER,
 } from "@open-neo-rts/content";
 import type { Definition } from "./features/entities";
@@ -32,6 +35,8 @@ export interface MatchMap {
     /** Binary angle units. */
     readonly facing: number;
   }[];
+  /** Authored resource centres/radii in integer subcells. Absence means an empty resource layer. */
+  readonly resources?: readonly MatchResource[];
   /** Static authored input only; occupancy and spawning are separate features. */
   readonly objects: readonly {
     readonly definition: string;
@@ -42,9 +47,64 @@ export interface MatchMap {
   }[];
 }
 
+export interface MatchResource {
+  readonly kind: "ore" | "materials";
+  readonly position: readonly [number, number];
+  readonly amount: number;
+  readonly radius?: number;
+}
+
 const position = () => arr(int(0, 512 * 1024 - 1), 2, 2);
 const spawnId = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const definitionId = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
+const resourceSchema = strictObject({
+  kind: oneOf(["ore", "materials"]),
+  position: position(),
+  amount: int(1, 0x7fffffff),
+  radius: opt(int(0, 20 * 1024)),
+});
+
+/** Content units are converted once; resource geometry follows the existing map preview. */
+export function toMatchResources(
+  resources: readonly {
+    kind: string;
+    position: readonly number[];
+    amount: number;
+    radius?: number;
+  }[],
+): MatchResource[] {
+  return resources.map((resource) => {
+    const result = {
+      kind: resource.kind,
+      position: resource.position.map((coordinate) => Math.round(coordinate * 1024)),
+      amount: resource.amount,
+      ...(resource.radius !== undefined && { radius: Math.round(resource.radius * 1024) }),
+    };
+    const issues = validate(resourceSchema, result);
+    if (issues.length)
+      throw new Error(
+        `Invalid resource: ${issues.map((i) => `${i.path}: ${i.message}`).join("; ")}`,
+      );
+    return result as unknown as MatchResource;
+  });
+}
+
+/** Ore uses the accepted inclusive integer-cell disc; material nodes are centred 2×2 footprints. */
+export function resourceOccupies(resource: MatchResource, x: number, y: number): boolean {
+  const [px, py] = resource.position;
+  if (resource.kind === "materials")
+    return (
+      x >= Math.floor(px / 1024) - 1 &&
+      x <= Math.floor(px / 1024) &&
+      y >= Math.floor(py / 1024) - 1 &&
+      y <= Math.floor(py / 1024)
+    );
+  const dx = x * 1024 - px;
+  const dy = y * 1024 - py;
+  const radius = resource.radius ?? 1024;
+  return dx * dx + dy * dy <= radius * radius;
+}
+
 export const matchMapSchema = strictObject({
   id: idOf("map"),
   terrain: strictObject({
@@ -56,6 +116,7 @@ export const matchMapSchema = strictObject({
     water: arr(int(0, WATER.deep), 1, 512 * 512),
     biome: arr(int(0, BIOMES.length - 1), 1, 512 * 512),
   }),
+  resources: opt(arr(resourceSchema)),
   spawns: arr(
     strictObject({ id: str(spawnId), position: position(), facing: int(0, 0xffff) }),
     0,
@@ -103,6 +164,10 @@ export function checkMatchMap(
     if (position[0] >= width * 1024 || position[1] >= height * 1024)
       issues.push({ path: `${at}.position`, message: "outside map bounds" });
   };
+  for (const [i, resource] of (map.resources ?? []).entries()) {
+    const at = `${path}.resources[${i}]`;
+    bounds(resource.position, at);
+  }
   const spawnIds = new Set<string>();
   for (const [i, spawn] of spawns.entries()) {
     const at = `${path}.spawns[${i}]`;
@@ -118,6 +183,28 @@ export function checkMatchMap(
       issues.push({ path: `${at}.rotation`, message: "must be a multiple of 90" });
     if (object.owner !== "neutral" && !spawnIds.has(object.owner))
       issues.push({ path: `${at}.owner`, message: `undeclared spawn ${object.owner}` });
+    const definition = definitions.find((d) => d.id === object.definition);
+    if (definition && !/(^|\.)unit:/.test(definition.id)) {
+      if (!definition.footprint || (/prop:/.test(definition.id) && !definition.blocks))
+        issues.push({
+          path: `${at}.definition`,
+          message: "static object requires footprint metadata",
+        });
+      else {
+        if (object.position.some((coordinate) => coordinate % 1024 !== 0))
+          issues.push({
+            path: `${at}.position`,
+            message: "static objects must align to the cell grid",
+          });
+        const [w, d] = definition.footprint;
+        const turned = object.rotation % 180 !== 0;
+        if (
+          object.position[0] + (turned ? d : w) * 1024 > width * 1024 ||
+          object.position[1] + (turned ? w : d) * 1024 > height * 1024
+        )
+          issues.push({ path: `${at}.position`, message: "static footprint outside map bounds" });
+      }
+    }
     if (!definitionIds.has(object.definition))
       issues.push({
         path: `${at}.definition`,
@@ -141,6 +228,18 @@ export function copyMatchMap(map: MatchMap): MatchMap {
       surface: Object.freeze([...terrain.surface]),
       water: Object.freeze([...terrain.water]),
       biome: Object.freeze([...terrain.biome]),
+    }),
+    ...(map.resources && {
+      resources: Object.freeze(
+        map.resources.map((resource) =>
+          Object.freeze({
+            kind: resource.kind,
+            position: position(resource.position),
+            amount: resource.amount,
+            ...(resource.radius !== undefined && { radius: resource.radius }),
+          }),
+        ),
+      ),
     }),
     spawns: Object.freeze(
       map.spawns.map((spawn) =>

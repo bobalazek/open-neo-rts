@@ -80,6 +80,7 @@ export const REJECTIONS = {
   debug_only: "debug.* commands are accepted only in matches started with debug: true.",
   bad_payload:
     "Payload fields are missing, unexpected, not integers, or out of range for this type.",
+  placement_failed: "The authoritative spawn placement check refused the position.",
   duplicate: "Another command has the same tick and sequence; all of them are rejected.",
   no_grant: "The seat holds no grant with this scope on this Force at this tick.",
 } as const;

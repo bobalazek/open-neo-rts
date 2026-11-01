@@ -1,17 +1,17 @@
 import type { MatchMap } from "../match";
 
 /** Fresh, tiny flat input, including explicit zero-valued terrain layers. */
-export function flatMap(): MatchMap {
+export function flatMap(width = 8, height = width): MatchMap {
   return {
     id: "map:fixture-flat",
     terrain: {
-      width: 8,
-      height: 8,
-      level: Array(64).fill(0),
-      ramp: Array(64).fill(0),
-      surface: Array(64).fill(0),
-      water: Array(64).fill(0),
-      biome: Array(64).fill(0),
+      width,
+      height,
+      level: Array(width * height).fill(0),
+      ramp: Array(width * height).fill(0),
+      surface: Array(width * height).fill(0),
+      water: Array(width * height).fill(0),
+      biome: Array(width * height).fill(0),
     },
     spawns: [],
     objects: [],
