@@ -47,8 +47,9 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
         return;
       }
       shadows = new ShadowGenerator(quality === "medium" ? 1024 : 2048, sun);
-      shadows.bias = 0.001;
-      shadows.normalBias = 0.04;
+      // Medium's coarser shadow texels need larger offsets to avoid cliff self-shadow acne.
+      shadows.bias = quality === "medium" ? 0.002 : 0.001;
+      shadows.normalBias = quality === "medium" ? 0.08 : 0.04;
       sun.autoCalcShadowZBounds = true;
       shadows.usePercentageCloserFiltering = quality === "ultra";
       setSceneShadows(scene, shadows, false);
