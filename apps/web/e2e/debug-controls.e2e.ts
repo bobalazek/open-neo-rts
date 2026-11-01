@@ -1,10 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import type { OfflineState } from "../../../packages/client/src/worker";
 
-test("debug controls share the real worker, projected selection and granted orders", async ({
-  page,
-}) => {
-  test.setTimeout(60_000);
+async function openDebug(page: Page) {
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
     window.Worker = class extends OriginalWorker {
@@ -41,6 +38,13 @@ test("debug controls share the real worker, projected selection and granted orde
   const count = page.locator('[aria-label="Selection count"]');
   const inspected = page.locator('[aria-label="Integer components"]');
   const time = page.locator('[aria-label="Simulation time"]');
+  return { canvas, state, definitions, point, click, spawnResult, count, inspected, time };
+}
+
+test("debug selection and focused controls preserve the projected worker state", async ({
+  page,
+}) => {
+  const { state, definitions, point, click, spawnResult, count } = await openDebug(page);
   await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
   await click(0.4, 0.55);
   await expect(spawnResult).toContainText("Spawned");
@@ -77,6 +81,28 @@ test("debug controls share the real worker, projected selection and granted orde
   await page.getByLabel("Seed", { exact: true }).focus();
   await page.keyboard.press("s");
   expect(await state()).toEqual(beforeOrders);
+});
+
+test("debug orders use selection handles and preserve right-drag camera input", async ({
+  page,
+}) => {
+  const { canvas, state, definitions, point, click, spawnResult, count } = await openDebug(page);
+  await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
+  await click(0.4, 0.55);
+  await expect(spawnResult).toContainText("Spawned");
+  await click(0.6, 0.55);
+  await expect(page.getByRole("status", { name: "Model status" })).toContainText(
+    "Models ready · 2",
+  );
+  await page.getByLabel("Map action", { exact: true }).selectOption("select");
+  const start = point(0.8, 0.85);
+  const end = point(0.2, 0.2);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y);
+  await page.mouse.up();
+  await expect(count).toHaveText("2 selected");
+  const beforeOrders = await state();
   await canvas.focus();
   const pan = point(0.5, 0.7);
   await page.mouse.move(pan.x, pan.y);
@@ -106,6 +132,12 @@ test("debug controls share the real worker, projected selection and granted orde
     (await state()).snapshot.entities.every((entity) => entity.order?.type === "attackMove"),
   ).toBe(true);
   await page.getByRole("button", { name: "Stop (S)", exact: true }).click();
+});
+
+test("debug time controls pace the worker and remain reachable on narrow screens", async ({
+  page,
+}) => {
+  const { state, time } = await openDebug(page);
   const beforeStep = await state();
   await page.getByRole("button", { name: "Step one tick", exact: true }).click();
   await expect(time).toContainText(`Tick ${beforeStep.snapshot.tick + 1} · Paused`);
@@ -125,6 +157,28 @@ test("debug controls share the real worker, projected selection and granted orde
     .poll(async () => (await state()).snapshot.tick)
     .toBeGreaterThan(paused.snapshot.tick + 2);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 720 });
+  await page.getByRole("button", { name: "Step one tick", exact: true }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: "Step one tick", exact: true })).toBeInViewport();
+  await page.screenshot({
+    path: test.info().outputPath("controls-narrow.png"),
+  });
+  const finalState = await state();
+  expect(finalState.hash).toMatch(/^[a-f0-9]{16}$/);
+  await expect(time).toContainText(finalState.hash ?? "missing hash");
+});
+
+test("debug inspector mutates through commands and orders enforce Force grants", async ({
+  page,
+}) => {
+  const { state, definitions, click, spawnResult, count, inspected } = await openDebug(page);
+  await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
+  await click(0.4, 0.55);
+  await expect(spawnResult).toContainText("Spawned");
+  await click(0.6, 0.55);
+  await expect(page.getByRole("status", { name: "Model status" })).toContainText(
+    "Models ready · 2",
+  );
   const selected = (await state()).snapshot.entities[0];
   if (!selected) throw new Error("Missing entity");
   await page.getByLabel("Inspect entity", { exact: true }).selectOption(selected.handle);
@@ -159,13 +213,4 @@ test("debug controls share the real worker, projected selection and granted orde
   expect(
     (await state()).snapshot.entities.find(({ handle }) => handle === enemy.handle)?.order,
   ).toBeNull();
-  await page.setViewportSize({ width: 390, height: 720 });
-  await page.getByRole("button", { name: "Step one tick", exact: true }).scrollIntoViewIfNeeded();
-  await expect(page.getByRole("button", { name: "Step one tick", exact: true })).toBeInViewport();
-  await page.screenshot({
-    path: test.info().outputPath("controls-narrow.png"),
-  });
-  const finalState = await state();
-  expect(finalState.hash).toMatch(/^[a-f0-9]{16}$/);
-  await expect(time).toContainText(finalState.hash ?? "missing hash");
 });
