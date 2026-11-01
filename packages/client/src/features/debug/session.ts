@@ -4,7 +4,7 @@ import {
   createRenderer,
   resourceInstances,
 } from "@open-neo-rts/render";
-import { toMatchResources } from "@open-neo-rts/sim";
+import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
 import { mapDecorations, resolveMapModel } from "./map-visuals";
