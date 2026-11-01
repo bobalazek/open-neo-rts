@@ -41,6 +41,20 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     scene,
     camera,
     terrain,
+    /** Pick only authored ground/water, never a model that covers the intended cell. */
+    pickCell(clientX: number, clientY: number) {
+      const bounds = canvas.getBoundingClientRect();
+      const hit = scene.pick(
+        clientX - bounds.left,
+        clientY - bounds.top,
+        (mesh) => mesh.parent === terrain,
+      );
+      const point = hit?.pickedPoint;
+      if (!point) return null;
+      const x = Math.floor(point.x / CELL_SIZE);
+      const y = Math.floor(point.z / CELL_SIZE);
+      return x >= 0 && y >= 0 && x < grid.width && y < grid.height ? { x, y } : null;
+    },
     dispose() {
       removeEventListener("resize", resize);
       engine.stopRenderLoop(render);

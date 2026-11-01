@@ -4,6 +4,8 @@ import {
   checkpointHash,
   createMatch,
   createProjection,
+  type DebugSpawn,
+  debugSpawnPlacement,
   type Kernel,
   type MatchSetup,
   type ProjectionMode,
@@ -95,6 +97,19 @@ port.onmessage = ({ data }) => {
     }
     if (!kernel) throw new Error("Initialize the match first");
     switch (data.type) {
+      case "placement": {
+        const validation = validateCommands(
+          [{ tick: kernel.tick, seat, sequence: 0, type: "debug.spawn", payload: data.spawn }],
+          kernel,
+        )[0];
+        if (!validation?.accepted || validation.command.type !== "debug.spawn")
+          throw new Error("Invalid placement request");
+        publish(
+          id,
+          debugSpawnPlacement(kernel, setup.definitions, validation.command.payload as DebugSpawn),
+        );
+        return;
+      }
       case "command": {
         if (!isRecord(data.command) || Object.keys(data.command).length !== 2)
           throw new Error("Invalid command request");

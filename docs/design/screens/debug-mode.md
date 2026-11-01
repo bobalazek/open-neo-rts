@@ -40,7 +40,9 @@ The first thing anyone can see of the game, and the tool every later feature is 
 
 ## Model check
 
-The initial terrain view at `/debug` has a **Map** picker for the five sandbox maps and Training Grounds. Its deep link is `?map=core.map:sandbox-terrain`; invalid maps show an error with the picker available. This loads authored terrain layers and camera bounds. Forces, spawning and simulation controls below remain later debug-mode work.
+The current `/debug` session runs the real worker and copied entity presentation, initially paused with an empty setup and explicit debug no-fog. Choose any of the five sandbox maps or Training Grounds, an unsigned integer seed, and Forces with original factions and chosen colours. Pick the controlled Force and **Reload session** to apply the setup; reload reconstructs the same world. The existing `?map=core.map:sandbox-terrain` map link still works, and invalid maps leave the picker available for retry.
+
+The searchable palette lists every existing unit, structure and prop definition, including definitions whose model is unavailable. Choose a spawn Force and quarter-turn rotation, then left-click a map cell to submit `debug.spawn`. Each click advances one paused tick. The worker reports placement refusals; model failures are shown separately and leave the session usable. Selection/orders, time controls, inspector, placement overlays, command-log export and full session deep links remain later tasks.
 
 The first asset-inspection stage is available at `/debug?models=1` after `bun run dev`. Open a local `.glb`, change **Team colour**, and select a named **Animation**. **Rest pose** restores the model's authored transforms. Drag the canvas to orbit and scroll to zoom. The controls stay above the canvas and wrap on narrow screens.
 
@@ -54,7 +56,7 @@ The first asset-inspection stage is available at `/debug?models=1` after `bun ru
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
-The file is read in the browser. Team slots change while palette, metal and glass retain their colours. Idle, move and active clips loop; attack, death and door clips play once. A bad file leaves the previous valid model available and asks for another GLB. This checks assets directly; map spawning, commands and per-seat simulation projection still belong to the full debug mode above.
+The file is read in the browser. Team slots change while palette, metal and glass retain their colours. Idle, move and active clips loop; attack, death and door clips play once. A bad file leaves the previous valid model available and asks for another GLB. This checks assets directly; the `/debug` session above uses commands and per-seat simulation projection.
 
 ## How it stays honest
 

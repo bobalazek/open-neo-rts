@@ -21,6 +21,7 @@ interface Entity {
 interface Template {
   force: number;
   movementDomain: (typeof DOMAINS)[number] | null;
+  footprint?: readonly [number, number];
   visibility: Map<string, boolean>;
   model?: AssetContainer;
   loading: Promise<AssetContainer | undefined>;
@@ -33,9 +34,11 @@ const poseOf = ({ x, y, facing }: Pose): Pose => ({ x, y, facing });
 export function createEntityPresentation(
   scene: Scene,
   terrain: TerrainGrid,
-  resolveModel: (
-    definition: string,
-  ) => Promise<{ bytes: Uint8Array; movementDomain: (typeof DOMAINS)[number] | null }>,
+  resolveModel: (definition: string) => Promise<{
+    bytes: Uint8Array;
+    movementDomain: (typeof DOMAINS)[number] | null;
+    footprint?: readonly [number, number];
+  }>,
 ) {
   const entities = new Map<string, Entity>();
   const templates = new Map<string, Template>();
@@ -45,6 +48,7 @@ export function createEntityPresentation(
   let duration = 50;
   let frameAt = 0;
   let disposed = false;
+  let accepted = Promise.resolve();
 
   function remove(entity: Entity) {
     const morphs = entity.root
@@ -65,7 +69,7 @@ export function createEntityPresentation(
       visibility: new Map(),
       loading: Promise.resolve()
         .then(async () => {
-          const { bytes, movementDomain } = await resolveModel(definition);
+          const { bytes, movementDomain, footprint } = await resolveModel(definition);
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
           const model = await loadModelContainer(scene, bytes);
@@ -82,6 +86,7 @@ export function createEntityPresentation(
               mesh.isVisible = false;
             }
             template.movementDomain = movementDomain;
+            template.footprint = footprint;
             template.model = model;
             return model;
           } catch (error) {
@@ -107,10 +112,16 @@ export function createEntityPresentation(
       if (!entity.root || !entity.playback) continue;
       const a = entity.previous;
       const b = entity.current;
-      const x = (a.x + (b.x - a.x) * alpha) / 1024;
-      const y = (a.y + (b.y - a.y) * alpha) / 1024;
+      let x = (a.x + (b.x - a.x) * alpha) / 1024;
+      let y = (a.y + (b.y - a.y) * alpha) / 1024;
       const turn = ((b.facing - a.facing + 0x8000) & 0xffff) - 0x8000;
       const template = templates.get(keyFor(entity.definition, entity.force));
+      if (template?.footprint) {
+        const [width, depth] = template.footprint;
+        const turned = (((b.facing >>> 14) + 3) & 1) !== 0;
+        x += (turned ? depth : width) / 2;
+        y += (turned ? width : depth) / 2;
+      }
       const height =
         template?.movementDomain === "naval"
           ? waterHeight(terrain, x, y)
@@ -134,7 +145,7 @@ export function createEntityPresentation(
   return {
     async accept(snapshot: SeatSnapshot, nowMs: number): Promise<void> {
       if (disposed) throw new Error("Entity presentation is disposed");
-      if (tick !== undefined && snapshot.tick <= tick) return;
+      if (tick !== undefined && snapshot.tick <= tick) return accepted;
       duration = tick === undefined ? 50 : (snapshot.tick - tick) * 50;
       tick = snapshot.tick;
       receivedAt = nowMs;
@@ -218,7 +229,8 @@ export function createEntityPresentation(
         }
       }
       render(nowMs);
-      await Promise.all(pending);
+      accepted = Promise.all(pending).then(() => undefined);
+      await accepted;
     },
     render,
     setForceColor(force: number, hex: string) {
