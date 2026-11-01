@@ -1,0 +1,16 @@
+{
+  "files": {
+    "recon-drone.glb": {
+      "author": "Borut Balazek",
+      "source": "source/recon-drone.bricks.json"
+    },
+    "recon-drone.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/recon-drone.bricks.json"
+    },
+    "recon-drone.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/recon-drone.bricks.json"
+    }
+  }
+}

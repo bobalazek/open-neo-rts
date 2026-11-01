@@ -27,7 +27,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": [],
-    "animations": [],
+    "animations": ["idle", "move"],
     "wreck": "recon-drone.wreck.glb"
   }
 }
