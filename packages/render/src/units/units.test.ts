@@ -114,19 +114,23 @@ test("team recolouring preserves fixed materials and another model's colour", ()
     const other = new PBRMaterial("team", scene);
     const fixed = materials.slice(4).map((m) => m.albedoColor.clone());
     setTeamColor([other], "#ff0000");
+    const otherColor = other.albedoColor.clone();
     setTeamColor(materials, "#0080ff");
-    expect(materials[0]?.albedoColor.equals(Color3.FromHexString("#0080ff").toLinearSpace())).toBe(
-      true,
-    );
     expect(
-      materials[1]?.albedoColor.equals(Color3.FromHexString("#0080ff").scale(0.55).toLinearSpace()),
+      materials[0]?.albedoColor.equals(Color3.FromHexString("#0080ff").toLinearSpace(true)),
     ).toBe(true);
-    expect(materials[2]?.albedoColor.b).toBe(1);
+    expect(
+      materials[1]?.albedoColor.equals(
+        Color3.FromHexString("#0080ff").scale(0.55).toLinearSpace(true),
+      ),
+    ).toBe(true);
+    expect(materials[2]?.albedoColor.b).toBeCloseTo(1, 7);
+    expect(materials[0]?.albedoColor.g).toBeCloseTo(0.2158605, 6);
     expect(materials[3]?.emissiveColor.equals(materials[0]?.albedoColor ?? Color3.Black())).toBe(
       true,
     );
     expect(materials.slice(4).map((m) => m.albedoColor)).toEqual(fixed);
-    expect(other.albedoColor.equals(new Color3(1, 0, 0))).toBe(true);
+    expect(other.albedoColor.equals(otherColor)).toBe(true);
     const before = materials.map((m) => m.albedoColor.clone());
     expect(() => setTeamColor(materials, "blue")).toThrow("#RRGGBB");
     expect(materials.map((m) => m.albedoColor)).toEqual(before);

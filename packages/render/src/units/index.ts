@@ -19,17 +19,17 @@ export function setTeamColor(materials: readonly Material[], hex: string): void 
     if (!(material instanceof PBRMaterial)) continue;
     switch (material.name) {
       case "team":
-        material.albedoColor = color.toLinearSpace();
+        material.albedoColor = color.toLinearSpace(true);
         break;
       case "team_dark":
-        material.albedoColor = color.scale(0.55).toLinearSpace();
+        material.albedoColor = color.scale(0.55).toLinearSpace(true);
         break;
       case "team_light":
-        material.albedoColor = Color3.Lerp(color, Color3.White(), 0.4).toLinearSpace();
+        material.albedoColor = Color3.Lerp(color, Color3.White(), 0.4).toLinearSpace(true);
         break;
       case "team_emissive":
-        material.albedoColor = color.toLinearSpace();
-        material.emissiveColor = color.toLinearSpace();
+        material.albedoColor = color.toLinearSpace(true);
+        material.emissiveColor = color.toLinearSpace(true);
         break;
     }
   }
