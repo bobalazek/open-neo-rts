@@ -76,9 +76,9 @@
     "model": "destroyer.glb",
     "icon": "destroyer.icon.png",
     "materials": {},
-    "parts": ["hull"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle"],
-    "animations": [],
+    "animations": ["idle", "move", "attack"],
     "wreck": "destroyer.wreck.glb"
   }
 }
