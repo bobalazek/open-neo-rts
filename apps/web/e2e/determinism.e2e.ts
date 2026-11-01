@@ -1,5 +1,6 @@
 // Cross-engine determinism: run modules in each browser and compare with the goldens Bun is held to.
 import { execFileSync } from "node:child_process";
+import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
 import { GOLDEN } from "../../../packages/deterministic/src/golden";
@@ -29,12 +30,32 @@ test("packages/deterministic matches its golden digests", async ({ page }) => {
   ).toEqual(GOLDEN);
 });
 
-test("the two-Force 10,000-tick scenario matches all goldens twice", async ({ page }) => {
-  expect(
-    await runInBrowser(
-      page,
-      "../../cli/scenarios/check-eastern-collective-two-forces.ts",
-      "scenarioGoldens",
-    ),
-  ).toEqual([scenarioGolden, scenarioGolden]);
+test("the two-Force 10,000-tick scenario matches all goldens twice", async ({ page }, testInfo) => {
+  const entry = "../../cli/scenarios/check-eastern-collective-two-forces.ts";
+  const actual = await runInBrowser(page, entry, "scenarioGoldens");
+  const expected = [scenarioGolden, scenarioGolden];
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    const traces = await runInBrowser(page, entry, "scenarioTraces");
+    if (!Array.isArray(traces)) throw new Error("Browser trace helper must return two traces");
+    for (const [i, trace] of traces.entries()) {
+      const name = `browser-${i + 1}.trace.json`;
+      const path = testInfo.outputPath(name);
+      await writeFile(path, JSON.stringify(trace));
+      await testInfo.attach(name, { path, contentType: "application/json" });
+    }
+    const baseline = testInfo.outputPath("bun.trace.json");
+    execFileSync("bun", [
+      fileURLToPath(new URL("../../cli/src/index.ts", import.meta.url)),
+      "run",
+      fileURLToPath(
+        new URL("../../cli/scenarios/eastern-collective-two-forces.json", import.meta.url),
+      ),
+      "--ticks",
+      "10000",
+      "--trace",
+      baseline,
+    ]);
+    await testInfo.attach("bun.trace.json", { path: baseline, contentType: "application/json" });
+  }
+  expect(actual).toEqual(expected);
 });

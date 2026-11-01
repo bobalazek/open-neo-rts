@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import fixture from "../../scenarios/smoke.json";
@@ -86,6 +86,9 @@ test("fails without printing hashes when two same-process runs differ", () => {
     let calls = 0;
     mock.module("@open-neo-rts/sim", () => ({
       parseScenario: value => value,
+      compareTraces: () => null,
+      parseTrace: value => value,
+      traceScenario: () => ({}),
       runScenario: () => [{ tick: 1, hash: String(calls++) }],
     }));
     const { run } = await import(${JSON.stringify(new URL("./run.ts", import.meta.url).pathname)});
@@ -96,3 +99,59 @@ test("fails without printing hashes when two same-process runs differ", () => {
   expect(result.stdout.toString()).toBe("");
   expect(result.stderr.toString()).toContain("Scenario runs diverged in the same process");
 });
+
+test("writes portable traces and compares the first divergent command's entity and component", () => {
+  const a = join(directory, "a.trace.json");
+  const b = join(directory, "b.trace.json");
+  const changed = join(directory, "changed.json");
+  expect(execute(["run", scenario, "--trace", a]).status).toBe(0);
+  const trace = JSON.parse(readFileSync(a, "utf8"));
+  expect(trace.hashes).toHaveLength(201);
+  expect(trace.events).toHaveLength(3);
+  expect(execute(["run", "--compare", a, a])).toEqual({
+    status: 0,
+    out: "Traces match\n",
+    error: "",
+  });
+  writeFileSync(
+    changed,
+    JSON.stringify({
+      ...fixture,
+      commands: fixture.commands.map((command) =>
+        command.type === "unit.move"
+          ? { ...command, payload: { entities: [1], x: 0, y: 1024 } }
+          : command,
+      ),
+    }),
+  );
+  expect(execute(["run", changed, "--trace", b]).status).toBe(0);
+  const comparison = execute(["run", "--compare", a, b]);
+  expect(comparison.status).toBe(1);
+  expect(comparison.error).toBe("");
+  expect(comparison.out).toStartWith("First divergent tick: 2\n");
+  const report = JSON.parse(comparison.out.slice(comparison.out.indexOf("{")));
+  expect(report.events.a[0].tick).toBe(1);
+  expect(report.events.b[0].tick).toBe(1);
+  expect(report.state).toContainEqual({
+    entity: 1,
+    component: "Transform",
+    field: "x",
+    a: 92,
+    b: 0,
+  });
+  writeFileSync(b, JSON.stringify({ ...trace, simVersion: 99 }));
+  expect(execute(["run", "--compare", a, b]).error).toContain("$.simVersion");
+  writeFileSync(b, "{");
+  expect(execute(["run", "--compare", a, b]).status).toBe(1);
+});
+
+for (const args of [
+  [scenario, "--trace"],
+  [scenario, "--trace", "a", "--trace", "b"],
+  ["--compare"],
+  ["--compare", "a", "b", "extra"],
+]) {
+  test(`rejects malformed trace arguments ${args.join(" ")}`, () => {
+    expect(execute(["run", ...args]).status).toBe(1);
+  });
+}
