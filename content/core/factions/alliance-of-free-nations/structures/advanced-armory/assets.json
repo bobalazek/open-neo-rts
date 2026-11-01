@@ -1,0 +1,16 @@
+{
+  "files": {
+    "advanced-armory.glb": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-armory.bricks.json"
+    },
+    "advanced-armory.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-armory.bricks.json"
+    },
+    "advanced-armory.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-armory.bricks.json"
+    }
+  }
+}
