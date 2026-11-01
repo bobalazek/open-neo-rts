@@ -57,6 +57,10 @@ Replay uses the comparing engine. The report includes `replayHashes` so a browse
 
 On a browser scenario golden mismatch, Playwright attaches two browser traces and a Bun baseline trace under `test-results/`. CI's `browsers` job uploads that directory as `determinism-traces` on failure for 14 days. Download the JSON attachments and pass a browser trace and the Bun trace to `--compare`.
 
+### Offline worker checks (phase 1b)
+
+`apps/web/e2e/offline-worker.e2e.ts` exercises real module workers from both the development route and production bundle. It initializes, spawns and moves through presentation handles, rejects malformed handles and missing grants, exports the canonical log, and compares the current hash with headless replay. It also checks pacing, disposal, stale callbacks, normal-mode debug rejection and the absence of full-state hashes in normal snapshots. `sim/projection` tests independently cover copied data, seat-isolated handles, restricted Force visibility and grant expiry. These tests do not claim phase-2 fog security or the later debug UI spawn-and-move flow.
+
 ## 3. Invariants checked every tick in test builds
 
 - No negative resources; production refunds match costs.
