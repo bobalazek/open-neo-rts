@@ -2,10 +2,30 @@ import { expect, test } from "bun:test";
 import dragon from "../../../../../content/core/factions/eastern-collective/units/dragon-tank/unit.json";
 import { catalogEntry } from "./catalog";
 import { debugLink, parseDebugLink } from "./links";
+import { oppositeBase } from "./performance-scene";
 
 const maps = [{ id: "core.map:sandbox-flat", width: 64, height: 64 }];
 const catalog = [catalogEntry(dragon)];
 const definition = "core.unit:eastern-collective/dragon-tank";
+
+test("the explicit performance scene fixes 200 unique original spawns and opposite-base targets", () => {
+  const sceneMaps = [{ id: "core.map:training-grounds", width: 128, height: 128 }];
+  const setup = parseDebugLink("?scene=terrain-200", sceneMaps, catalog);
+  expect(setup.spawns).toHaveLength(200);
+  expect(new Set(setup.spawns.map(({ x, y }) => `${x},${y}`)).size).toBe(200);
+  expect(setup.forces[0]?.faction).toBe("core.faction:eastern-collective");
+  expect(setup.spawns.every((spawn) => spawn.definition === definition)).toBe(true);
+  expect(oppositeBase(12, 12)).toEqual({ x: 115 * 1024 + 512, y: 115 * 1024 + 512 });
+  expect(
+    parseDebugLink(new URL(debugLink("https://example.test", setup)).search, sceneMaps, catalog),
+  ).toEqual(setup);
+  for (const query of [
+    "?scene=other",
+    "?scene=terrain-200&seed=2",
+    "?scene=terrain-200&scene=terrain-200",
+  ])
+    expect(() => parseDebugLink(query, sceneMaps, catalog)).toThrow();
+});
 
 test("initial debug links preserve full factions, colours, controller and spawns", () => {
   const initial = parseDebugLink(
