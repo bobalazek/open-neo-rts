@@ -167,10 +167,10 @@ export function createEntityPresentation(
         x += (turned ? depth : width) / 2;
         y += (turned ? width : depth) / 2;
       }
-      const height =
-        template?.movementDomain === "naval"
-          ? waterHeight(terrain, x, y)
-          : terrainHeight(terrain, x, y);
+      let height = terrainHeight(terrain, x, y);
+      const domain = template?.movementDomain;
+      if (domain === "naval" || domain === "hover" || domain === "amphibious")
+        height = Math.max(height, waterHeight(terrain, x, y));
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
       if (selected.has(handle)) {
         if (!ringModel) {
