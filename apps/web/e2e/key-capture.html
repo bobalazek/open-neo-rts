@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<title>Browser key capture probe</title>
+<style>
+  body { max-width: 1000px; margin: 24px auto; padding: 0 16px; font: 16px/1.5 system-ui; color: #162532; }
+  button, input, textarea { font: inherit; margin: 4px; padding: 6px; }
+  #surface { display: block; width: 100%; border: 3px solid #315e84; padding: 20px; margin: 16px 0; background: #edf5fb; }
+  :focus-visible { outline: 3px solid #c78000; outline-offset: 3px; }
+  pre { overflow: auto; max-height: 35vh; background: #edf1f4; padding: 12px; font-size: 12px; }
+</style>
+<h1>Browser key capture probe</h1>
+<p>This measures DOM event delivery and cancellation. Virtual keyboard events, even when <code>isTrusted</code> is true, do not establish native browser/OS accelerator capture. This page does not change game bindings.</p>
+<label><input id="cancel" type="checkbox" checked />Request preventDefault for events on the probe surface</label>
+<button id="surface" type="button" aria-label="Key probe surface">Focus this surface and press a key. Other inputs and buttons keep their normal DOM behavior.</button>
+<label>Focused input <input id="input" /></label>
+<p><button id="fullscreen" type="button">Request fullscreen</button><button id="keyboard" type="button">Request Keyboard Lock</button><button id="pointer" type="button">Request pointer lock</button><button id="release" type="button">Release locks/fullscreen</button><button id="download" type="button">Download observations</button></p>
+<p>Keyboard Lock requests Escape and Digit1–Digit9. Native Ctrl/Cmd shortcuts, fullscreen exit by holding Escape, permission UI, OS shortcuts and physical keyboard layouts require separate human observation.</p>
+<label>Native browser/OS observations (operator supplied)<br /><textarea id="notes" rows="2" cols="80"></textarea></label>
+<h2>Capability results</h2><pre id="status"></pre>
+<h2>Delivered key events</h2><pre id="events"></pre>
+<script>
+  const surface = document.querySelector("#surface");
+  const rows = [];
+  const capabilities = {
+    secureContext: window.isSecureContext,
+    fullscreenAvailable: typeof document.documentElement.requestFullscreen === "function",
+    fullscreenEnabled: document.fullscreenEnabled,
+    keyboardLockAvailable: typeof navigator.keyboard?.lock === "function",
+    pointerLockAvailable: typeof surface.requestPointerLock === "function",
+    fullscreenRequest: "not requested", keyboardRequest: "not requested", pointerRequest: "not requested",
+    keyboardPermission: "not queried", pointerPermission: "not queried"
+  };
+  function show() {
+    document.querySelector("#status").textContent = JSON.stringify({ ...capabilities, fullscreenActive: !!document.fullscreenElement, pointerLockActive: !!document.pointerLockElement }, null, 2);
+    document.querySelector("#events").textContent = JSON.stringify(rows.slice(-12), null, 2);
+  }
+  for (const type of ["keydown", "keyup"]) window.addEventListener(type, event => {
+    const before = event.defaultPrevented;
+    if (event.target === surface && document.querySelector("#cancel").checked) event.preventDefault();
+    rows.push({ type, key: event.key, code: event.code, ctrl: event.ctrlKey, alt: event.altKey, shift: event.shiftKey, meta: event.metaKey, target: event.target.id || event.target.tagName, cancelable: event.cancelable, before, prevented: event.defaultPrevented, trusted: event.isTrusted, fullscreen: !!document.fullscreenElement, pointerLock: !!document.pointerLockElement });
+    show();
+  });
+  document.querySelector("#fullscreen").onclick = async () => {
+    capabilities.fullscreenRequest = "pending"; show();
+    try { await document.documentElement.requestFullscreen(); capabilities.fullscreenRequest = "resolved"; }
+    catch (error) { capabilities.fullscreenRequest = error.name; }
+    show();
+  };
+  document.querySelector("#keyboard").onclick = async () => {
+    if (!capabilities.keyboardLockAvailable) { capabilities.keyboardRequest = "unavailable"; show(); return; }
+    capabilities.keyboardRequest = "pending"; show();
+    try { await navigator.keyboard.lock(["Escape", ...Array.from({length: 9}, (_, i) => `Digit${i + 1}`)]); capabilities.keyboardRequest = "resolved"; }
+    catch (error) { capabilities.keyboardRequest = error.name; }
+    show();
+  };
+  document.querySelector("#pointer").onclick = async () => {
+    if (!capabilities.pointerLockAvailable) { capabilities.pointerRequest = "unavailable"; show(); return; }
+    capabilities.pointerRequest = "pending"; show();
+    try { await surface.requestPointerLock(); }
+    catch (error) { capabilities.pointerRequest = error.name; }
+    show();
+  };
+  document.addEventListener("pointerlockchange", () => { capabilities.pointerRequest = document.pointerLockElement ? "active" : "released"; show(); });
+  document.addEventListener("pointerlockerror", () => { capabilities.pointerRequest = "pointerlockerror"; show(); });
+  document.addEventListener("fullscreenchange", show);
+  async function release() {
+    navigator.keyboard?.unlock?.();
+    document.exitPointerLock?.();
+    if (document.fullscreenElement) await document.exitFullscreen();
+    show();
+  }
+  document.querySelector("#release").onclick = release;
+  window.keyProbe = {
+    provenance: "interactive source not verified",
+    clear() { rows.length = 0; show(); },
+    snapshot() { return { provenance: this.provenance, userAgent: navigator.userAgent, capabilities: { ...capabilities, fullscreenActive: !!document.fullscreenElement, pointerLockActive: !!document.pointerLockElement }, rows: [...rows], operatorNotes: document.querySelector("#notes").value }; },
+    async permissions() {
+      for (const [name, field] of [["keyboard-lock", "keyboardPermission"], ["pointer-lock", "pointerPermission"]]) {
+        try { capabilities[field] = (await navigator.permissions.query({ name })).state; }
+        catch (error) { capabilities[field] = error.name; }
+      }
+      show();
+    },
+    release
+  };
+  document.querySelector("#download").onclick = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(window.keyProbe.snapshot(), null, 2)], {type:"application/json"}));
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = "key-capture-observations.json"; anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  show();
+</script>
+</html>
