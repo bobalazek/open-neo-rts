@@ -5,10 +5,11 @@ import {
   isWorkerReply,
   type OfflineSetup,
   type OfflineState,
+  type PlacementDiagnostic,
   type WorkerRequest,
 } from "./protocol";
 
-export type { OfflineSetup, OfflineState } from "./protocol";
+export type { OfflineSetup, OfflineState, PlacementDiagnostic } from "./protocol";
 
 /** One worker per match. Disposal rejects outstanding requests and ignores late replies. */
 export function createOfflineMatch(
@@ -71,7 +72,8 @@ export function createOfflineMatch(
       request({ type: "command", command: { type, payload } }),
     pause: (paused: boolean) => request({ type: "pause", paused }),
     step: () => request({ type: "step" }),
-    placement: (spawn: DebugSpawn) => request({ type: "placement", spawn }),
+    placement: (spawn: DebugSpawn) =>
+      request({ type: "placement", spawn }) as Promise<PlacementDiagnostic>,
     speed: (speed: number) => request({ type: "speed", speed }),
     exportLog: () => request({ type: "export" }),
     exportSession: () =>

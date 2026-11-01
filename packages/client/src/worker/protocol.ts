@@ -7,7 +7,13 @@ import type {
   ProjectionMode,
   Scenario,
   SeatSnapshot,
+  SpawnPlacement,
 } from "@open-neo-rts/sim";
+
+export interface PlacementDiagnostic extends SpawnPlacement {
+  /** Tick evaluated by the authoritative checker. */
+  tick: number;
+}
 
 export interface OfflineSetup {
   setup: MatchSetup;
