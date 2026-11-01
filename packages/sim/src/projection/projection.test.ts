@@ -1,9 +1,11 @@
 import { expect, test } from "bun:test";
 import { step } from "../kernel";
 import { createMatch } from "../match";
+import { flatMap } from "../testing";
 import { createProjection } from ".";
 
 const setup = {
+  map: flatMap(),
   seed: 1,
   debug: true,
   forces: [

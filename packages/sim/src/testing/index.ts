@@ -1,4 +1,4 @@
-// Browser-safe fixtures for tests and scenarios. Phase 1a; terrain maps arrive in phase 1b.
+// Browser-safe fixtures for tests and scenarios; no file I/O or global mutable state.
 import collectiveSoldier from "../../../../content/core/factions/eastern-collective/units/collective-soldier/unit.json";
 import dragonTank from "../../../../content/core/factions/eastern-collective/units/dragon-tank/unit.json";
 import droneHunter from "../../../../content/core/factions/eastern-collective/units/drone-hunter/unit.json";
@@ -9,6 +9,8 @@ import supplyTruck from "../../../../content/core/factions/eastern-collective/un
 import type { Command } from "../commands";
 import { type Definition, toDefinition } from "../features/entities";
 import type { Controller, ControllerCommand } from "../kernel";
+
+export { flatMap, terrainMap } from "./maps";
 
 /** The tier-1 roster from the Eastern Collective tech tree, in stable ID order; fresh per call. */
 export function easternCollectiveTier1Definitions(): Definition[] {

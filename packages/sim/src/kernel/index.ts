@@ -19,6 +19,9 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
+import { copyMatchMap, type MatchMap } from "../match-map";
+
+const MAP_SERIALIZATION = Symbol("mapSerialization");
 
 /**
  * Tick phases in run order (architecture.md §5). Command handlers run at the start of `ingest` and
@@ -89,6 +92,10 @@ export interface LogEntry {
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
   readonly world: World;
+  /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
+  readonly map: MatchMap | undefined;
+  /** Immutable canonical input, retained privately so debug publication never recopies terrain. */
+  readonly [MAP_SERIALIZATION]: string | undefined;
   /** u32. */
   readonly seed: number;
   readonly debug: boolean;
@@ -106,12 +113,15 @@ export interface Kernel {
   readonly checkpoints: { tick: number; hash: string }[];
 }
 
-export function createKernel(match: { seed: number; debug: boolean }): Kernel {
+export function createKernel(match: { seed: number; debug: boolean; map?: MatchMap }): Kernel {
   const { seed, debug } = match;
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff)
     throw new RangeError(`Match seed must be a u32 integer, got ${seed}`);
+  const map = match.map ? copyMatchMap(match.map) : undefined;
   return {
     world: new World(),
+    map,
+    [MAP_SERIALIZATION]: map && JSON.stringify(map),
     seed,
     debug,
     tick: 0,
@@ -184,7 +194,7 @@ export function step(kernel: Kernel, inputs: readonly unknown[]): LogEntry[] {
 /**
  * State hash as 16 hex characters: the tick; the stream count, then per stream in name order its
  * name and sfc32 words a, b, c, d; the world's serialized byte length, then those bytes as
- * little-endian words, zero-padded.
+ * little-endian words, zero-padded; then the canonical static map when present.
  */
 export function checkpointHash(kernel: Kernel): string {
   const h = createHasher();
@@ -206,6 +216,8 @@ export function checkpointHash(kernel: Kernel): string {
         ((bytes[i + 2] ?? 0) << 16) |
         ((bytes[i + 3] ?? 0) << 24),
     );
+  const map = kernel[MAP_SERIALIZATION];
+  if (map !== undefined) addString(h, map);
   return digest(h).hex;
 }
 

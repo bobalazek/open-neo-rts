@@ -89,6 +89,7 @@ open-neo-rts/
 │   ├── sim/                       the deterministic simulation
 │   │   └── src/
 │   │       ├── match.ts           setup, simulation version, fixed feature registration
+│   │       ├── match-map.ts       integer static map input, validation, canonical serialization
 │   │       ├── kernel/            world, phase scheduler and hooks, tick
 │   │       ├── commands/          envelopes, canonical order, validation
 │   │       ├── ecs/               our ECS
@@ -168,7 +169,7 @@ Boundaries are enforced by declared dependencies (Bun's isolated installs reject
 
 ## 5. Determinism contract
 
-`SIM_VERSION` is exported from `packages/sim` and starts at 1. `MatchSetup` supplies the u32 seed, debug flag, declared Forces (index and faction ID), player/bot seat indices, grants and an ordered definition table in integer sim units. Seat 0 is reserved for system commands. `createMatch(setup)` always registers entities, then movement. There is no map in phase 1a; the world is a flat, empty plane.
+`SIM_VERSION` is exported from `packages/sim` and is 2. `MatchSetup` supplies an explicit map, the u32 seed, debug flag, declared Forces (index and faction ID), player/bot seat indices, grants and an ordered definition table in integer sim units. Seat 0 is reserved for system commands. `createMatch(setup)` validates and freezes a private copy of the map before registering entities, then movement, in that fixed order. `kernel.map` holds static terrain/spawn/object input; it creates no ECS entities and currently applies no placement or navigation policy. Version-1 flat setups are rejected by the scenario parser. See [the current scenario contract](testing.md#map-aware-command-log-format-version-2).
 
 - Exactly one `step(world, validatedCommands)` per **fixed 50 ms tick (20 Hz)** initially. The tick counter is an integer; the rendering frame rate is independent of it.
 - Only sim commands change game state. A command envelope carries `matchId, playerId, seatId, requestId, requestedTick, sequence, payload`. The server chooses the canonical target tick and order; `requestedTick` is only a hint.
@@ -199,7 +200,7 @@ The order is a versioned contract: changing a phase bumps the simulation version
 
 ### Offline worker foundation (phase 1b)
 
-`createOfflineMatch(onState)` in `client/worker` owns one module Web Worker served at `/sim-worker.js`. Its `init({ setup, seat, mode })` uses the existing flat-world `MatchSetup` and scenario validator. The worker owns the kernel, assigns canonical tick/sequence/seat, resolves presentation handles to ECS IDs, and executes through `step`. Only copied presentation packets cross back to the main thread: tick, definition ID, owner Force, integer transform, current/max health and current move order. The main-thread lifecycle module has no runtime sim import.
+`createOfflineMatch(onState)` in `client/worker` owns one module Web Worker served at `/sim-worker.js`. Its `init({ setup, seat, mode })` uses the map-aware `MatchSetup` and scenario validator. The worker owns the kernel, assigns canonical tick/sequence/seat, resolves presentation handles to ECS IDs, and executes through `step`. Only copied presentation packets cross back to the main thread: tick, definition ID, owner Force, integer transform, current/max health and current move order. The main-thread lifecycle module has no runtime sim import.
 
 `controlled` projection currently exposes only Forces on which that seat has an active `unit.orders` grant. Unknown seats fail closed. This is a restrictive foundation, not phase-2 fog, shared vision, shroud or ghost memory. `debug-no-fog` explicitly exposes the entire world and current full-state hash, and requires `debug: true`. Each projection allocates its own opaque handles independently of ECS IDs; commands referencing unavailable handles are rejected.
 

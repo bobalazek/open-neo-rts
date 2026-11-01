@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import type { OfflineState } from "../../../packages/client/src/worker";
 import type { MatchSetup } from "../../../packages/sim/src/match";
 import { runScenario, type Scenario } from "../../../packages/sim/src/snapshots";
+import { terrainMap } from "../../../packages/sim/src/testing/maps";
 
 const app = fileURLToPath(new URL("..", import.meta.url));
 const clientCode = execFileSync(
@@ -12,6 +13,7 @@ const clientCode = execFileSync(
   { cwd: app, encoding: "utf8" },
 );
 const setup: MatchSetup = {
+  map: terrainMap(),
   seed: 1,
   debug: true,
   forces: [
@@ -113,6 +115,16 @@ for (const production of [false, true]) {
           const unknownSeat = await normal
             .init({ setup, seat: 99, mode: "controlled" })
             .catch((e: Error) => e.message);
+          const invalidMap = await normal
+            .init({
+              setup: {
+                ...setup,
+                map: { ...setup.map, terrain: { ...setup.map.terrain, level: [0] } },
+              },
+              seat: 1,
+              mode: "controlled",
+            })
+            .catch((e: Error) => e.message);
           await normal.init({ setup: { ...setup, debug: false }, seat: 1, mode: "controlled" });
           const privateView = state.snapshot.entities.length === 0 && state.hash === undefined;
           const gated = await normal.command("debug.spawn", {
@@ -126,6 +138,7 @@ for (const production of [false, true]) {
           return {
             noFogGate,
             unknownSeat,
+            invalidMap,
             bad,
             spawned,
             moved,
@@ -158,6 +171,8 @@ for (const production of [false, true]) {
       expect(runScenario(result.log as Scenario, { ticks: result.tick }).at(-1)?.hash).toBe(
         result.hash,
       );
+      expect((result.log as Scenario).setup.map).toEqual(setup.map);
+      expect(result.invalidMap).toContain("$.setup.map.terrain.level: expected 64 cells");
     } finally {
       server?.kill();
     }

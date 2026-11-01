@@ -19,7 +19,7 @@ function execute(args: string[]) {
 }
 
 test("runs a scenario through the CLI with expected checkpoints and a single final line", () => {
-  const expected = "100 7328e7f340aea063\n200 61714c376b59450c\n";
+  const expected = "100 50c762cc804105f3\n200 b736c888ce4bf13a\n";
   const first = execute(["run", scenario]);
   expect(first).toEqual({ status: 0, out: expected, error: "" });
   expect(execute(["run", scenario])).toEqual(first);
@@ -68,7 +68,7 @@ test("reports unreadable files, malformed JSON and incompatible scenarios", () =
   writeFileSync(file, JSON.stringify({ ...fixture, simVersion: 99 }));
   expect(execute(["run", file]).error).toContain("$.simVersion");
   writeFileSync(file, JSON.stringify({ ...fixture, setup: { ...fixture.setup, map: "future" } }));
-  expect(execute(["run", file]).error).toContain("$.setup.map: unknown field");
+  expect(execute(["run", file]).error).toContain("$.setup.map: must be an object");
 });
 
 test("empty logs end at zero and tick-zero commands require one step", () => {

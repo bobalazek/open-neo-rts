@@ -44,7 +44,7 @@ A map is a folder in a pack: `map.json` plus its terrain layers ([content-format
 - **Units:** positions are in cells and facings in degrees, decimals allowed; the loader converts them to subcells and binary angle units once ([numerics.md](numerics.md#content-units)).
 - **Scenario data** (pre-placed Forces, regions, objectives, triggers) goes in a separate `scenario.json` ([authoring-scenarios.md](../contributing/authoring-scenarios.md)).
 
-A compiled runtime map (later) adds the map source hash, pack dependencies and compiler version.
+Phase 1b's `MatchMap` is the resolved integer terrain/spawn/object input described in the [scenario contract](testing.md#map-aware-command-log-format-version-2). Client/CLI loaders resolve layer files and convert positions/facings before simulation setup. `createMatch` validates, copies and freezes it; static objects do not yet become entities or occupancy. A compiled runtime map (later) adds the map source hash, pack dependencies and compiler version.
 
 ## 4. Terrain and movement domains
 
