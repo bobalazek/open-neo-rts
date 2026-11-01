@@ -1,4 +1,12 @@
-import type { DebugSpawn, MatchSetup, ProjectionMode, SeatSnapshot } from "@open-neo-rts/sim";
+import { WATER_PASSABLE } from "@open-neo-rts/content";
+import type {
+  DebugOverlayData,
+  DebugOverlayOptions,
+  DebugSpawn,
+  MatchSetup,
+  ProjectionMode,
+  SeatSnapshot,
+} from "@open-neo-rts/sim";
 
 export interface OfflineSetup {
   setup: MatchSetup;
@@ -11,6 +19,7 @@ export interface OfflineState {
   speed: number;
   /** Full-state hash is a debug inspection tool, never part of a normal seat view. */
   hash?: string;
+  overlays?: DebugOverlayData;
 }
 export type WorkerRequest =
   | { type: "init"; options: OfflineSetup }
@@ -18,6 +27,7 @@ export type WorkerRequest =
   | { type: "pause"; paused: boolean }
   | { type: "speed"; speed: number }
   | { type: "placement"; spawn: DebugSpawn }
+  | { type: "overlays"; options: DebugOverlayOptions }
   | { type: "step" | "export" };
 
 export interface WorkerReply {
@@ -28,6 +38,80 @@ export interface WorkerReply {
 }
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const integerArray = (value: unknown, length: number, max: number) =>
+  Array.isArray(value) &&
+  value.length === length &&
+  [...value].every((n) => Number.isInteger(n) && n >= 0 && n <= max);
+const point = (value: unknown) =>
+  isRecord(value) &&
+  [value.x, value.y].every((n) => Number.isInteger(n) && Number(n) >= 0 && Number(n) < 524288);
+
+export function isOverlayData(value: unknown): value is DebugOverlayData {
+  if (!isRecord(value) || !Number.isSafeInteger(value.tick) || Number(value.tick) < 0) return false;
+  for (const [key, layers] of [
+    ["terrain", ["level", "ramp", "surface", "water", "biome"]],
+    ["navigation", ["cost", "connections", "speedPercent"]],
+  ] as const) {
+    const grid = value[key];
+    if (grid === undefined) continue;
+    if (
+      !isRecord(grid) ||
+      !Number.isInteger(grid.width) ||
+      !Number.isInteger(grid.height) ||
+      Number(grid.width) < 1 ||
+      Number(grid.width) > 512 ||
+      Number(grid.height) < 1 ||
+      Number(grid.height) > 512
+    )
+      return false;
+    const cells = Number(grid.width) * Number(grid.height);
+    if (
+      !layers.every((layer) =>
+        integerArray(
+          grid[layer],
+          cells,
+          {
+            level: 7,
+            ramp: 4,
+            surface: 7,
+            water: 2,
+            biome: 3,
+            cost: 65535,
+            connections: 255,
+            speedPercent: 255,
+          }[layer],
+        ),
+      )
+    )
+      return false;
+    if (
+      key === "navigation" &&
+      (typeof grid.domain !== "string" ||
+        !Object.hasOwn(WATER_PASSABLE, grid.domain) ||
+        !Number.isSafeInteger(grid.revision) ||
+        Number(grid.revision) < 1 ||
+        !Number.isInteger(grid.radiusSubcells) ||
+        Number(grid.radiusSubcells) < 0 ||
+        Number(grid.radiusSubcells) > 8192)
+    )
+      return false;
+  }
+  return (
+    value.paths === undefined ||
+    (Array.isArray(value.paths) &&
+      [...value.paths].every(
+        (path) =>
+          isRecord(path) &&
+          typeof path.handle === "string" &&
+          typeof path.searching === "boolean" &&
+          point(path.target) &&
+          Array.isArray(path.points) &&
+          path.points.length <= 262145 &&
+          [...path.points].every(point),
+      ))
+  );
 }
 
 /** Validate the copied wire shape before a consumer sees it. */
@@ -43,6 +127,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     ![0.25, 0.5, 1, 2, 4, 8].includes(state.speed)
   )
     return false;
+  if (state.overlays !== undefined && !isOverlayData(state.overlays)) return false;
   if (
     state.hash !== undefined &&
     (typeof state.hash !== "string" || !/^[a-f0-9]{16}$/.test(state.hash))
@@ -55,6 +140,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     Number(snapshot.tick) < 0 ||
     !["controlled", "debug-no-fog"].includes(String(snapshot.mode)) ||
     !Array.isArray(snapshot.entities)
+  )
+    return false;
+  if (
+    state.overlays !== undefined &&
+    (state.overlays.tick !== snapshot.tick || snapshot.mode !== "debug-no-fog")
   )
     return false;
   return snapshot.entities.every((entity: unknown) => {

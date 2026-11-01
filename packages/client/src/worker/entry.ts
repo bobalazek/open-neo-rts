@@ -15,6 +15,7 @@ import {
   step,
   validateCommands,
 } from "@open-neo-rts/sim";
+import { createDebugDiagnostics, isOverlayOptions } from "./diagnostics";
 import { isRecord, type WorkerReply } from "./protocol";
 
 const port = globalThis as unknown as {
@@ -31,14 +32,18 @@ let speed = 1;
 let sequence = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let queued: { id: number; command: Command }[] = [];
+let diagnostics: ReturnType<typeof createDebugDiagnostics>;
 
 function publish(id: number, result?: unknown) {
   if (!kernel) throw new Error("Initialize the match first");
+  const snapshot = projection.snapshot(kernel);
+  const overlays = diagnostics.copy(snapshot);
   port.postMessage({
     id,
     result,
     state: {
-      snapshot: projection.snapshot(kernel),
+      snapshot,
+      ...(overlays ? { overlays } : {}),
       paused,
       speed,
       ...(mode === "debug-no-fog" ? { hash: checkpointHash(kernel) } : {}),
@@ -92,11 +97,18 @@ port.onmessage = ({ data }) => {
       mode = options.mode;
       projection = createProjection(setup, seat, mode);
       kernel = createMatch(setup);
+      diagnostics = createDebugDiagnostics(kernel, setup.definitions, projection.resolve);
       publish(id);
       return;
     }
     if (!kernel) throw new Error("Initialize the match first");
     switch (data.type) {
+      case "overlays":
+        if (!setup.debug || mode !== "debug-no-fog")
+          throw new Error("Overlays require debug no-fog mode");
+        if (!isOverlayOptions(data.options)) throw new Error("Invalid overlay options");
+        diagnostics.configure(data.options);
+        break;
       case "placement": {
         const validation = validateCommands(
           [{ tick: kernel.tick, seat, sequence: 0, type: "debug.spawn", payload: data.spawn }],

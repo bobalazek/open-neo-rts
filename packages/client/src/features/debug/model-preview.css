@@ -79,6 +79,15 @@
 .debug-session fieldset {
   min-width: 0;
 }
+.debug-overlays .model-check-controls label {
+  display: flex;
+  align-items: center;
+  width: auto;
+}
+.debug-overlays input[type="checkbox"] {
+  width: 20px;
+  min-height: 20px;
+}
 .selection-box {
   position: fixed;
   z-index: 2;
