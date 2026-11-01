@@ -1,6 +1,10 @@
 # Neutral structures and map objects
 
-Things on a map that belong to nobody at the start. They give maps character and reasons to fight over specific spots. All are content definitions placed in the map editor.
+Map objects that belong to nobody at the start, plus shared structure designs available to every faction. They give maps character and reasons to fight over specific spots. Map objects are content definitions placed in the editor; a shared buildable design belongs to the Force that constructs it.
+
+## Shared node extractor (_Addition_)
+
+The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md), built by any faction on raw-material or oil nodes. It replaces the earlier separate pre-placed oil-derrick and material-mine alternatives. The existing design assigns raw materials to material nodes and credits to oil sites; footprint, power, rates, depletion and lifecycle details are under [fit review](../project/neutral-extractor-plan.md). This does not settle general capture or sell rules for other neutral structures.
 
 ## Capturable tech structures
 
@@ -8,14 +12,10 @@ Builders capture them; the capturer gets the bonus while holding it. Captured te
 
 | Structure      | Bonus while held               |
 | -------------- | ------------------------------ |
-| Oil derrick    | +credits per minute            |
 | Field hospital | Heals nearby infantry          |
 | Machine shop   | Repairs nearby vehicles        |
 | Comm tower     | Reveals a large area around it |
 | Airstrip ruin  | Lets aircraft rearm            |
-| Material mine  | Raw materials per minute       |
-
-The oil derrick sits on an oil well and the material mine on a material node ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). Whether node structures are neutral ones placed by the map, as here, or built by builders is a pending decision ([human-tasks.md](../project/human-tasks.md)).
 
 ## Civilian buildings
 
