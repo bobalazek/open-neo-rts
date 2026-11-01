@@ -58,6 +58,22 @@ function fixture() {
   };
 }
 
+test("static model origins follow the rotated authoritative footprint anchor", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes(),
+    movementDomain: null,
+    footprint: [2, 4],
+  }));
+  await layer.accept(snapshot(0, [entity("building", { facing: 0x4000 })]), 0);
+  expect(root(f.scene, "building").position.asArray()).toEqual([4, 0, 6]);
+  await layer.accept(snapshot(1, [entity("building", { facing: 0x8000 })]), 50);
+  layer.render(100);
+  expect(root(f.scene, "building").position.asArray()).toEqual([6, 0, 4]);
+  layer.dispose();
+  f.dispose();
+});
+
 test("200 actual rigid GLBs share geometry and Force materials, with independent clips", async () => {
   const f = fixture();
   let loads = 0;
@@ -284,6 +300,34 @@ test("removed, replaced and disposed async loads never resurrect stale entities"
     requests.get("disposed")?.({ bytes: data, movementDomain: "foot" });
     await disposed;
     expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("duplicate snapshots retain the pending model load and its failure", async () => {
+  const f = fixture();
+  let rejectModel: ((error: Error) => void) | undefined;
+  const model = new Promise<never>((_resolve, reject) => {
+    rejectModel = reject;
+  });
+  let loads = 0;
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => {
+    loads++;
+    return model;
+  });
+  try {
+    const first = layer.accept(snapshot(0, [entity("held")]), 0);
+    const duplicate = layer.accept(snapshot(0, [entity("held")]), 0);
+    const settled = Promise.allSettled([first, duplicate]);
+    if (!rejectModel) throw new Error("Missing model rejection control");
+    rejectModel(new Error("held missing model"));
+    expect((await settled).map((result) => result.status)).toEqual(["rejected", "rejected"]);
+    await expect(layer.accept(snapshot(0, [entity("held")]), 0)).rejects.toThrow(
+      "held missing model",
+    );
+    expect(loads).toBe(1);
   } finally {
     layer.dispose();
     f.dispose();

@@ -1,4 +1,5 @@
 // Main-thread lifecycle only; gameplay imports belong exclusively in entry.ts.
+import type { DebugSpawn } from "@open-neo-rts/sim";
 import {
   isWorkerReply,
   type OfflineSetup,
@@ -9,7 +10,10 @@ import {
 export type { OfflineSetup, OfflineState } from "./protocol";
 
 /** One worker per match. Disposal rejects outstanding requests and ignores late replies. */
-export function createOfflineMatch(onState: (state: OfflineState) => void) {
+export function createOfflineMatch(
+  onState: (state: OfflineState) => void,
+  onError?: (error: Error) => void,
+) {
   const worker = new Worker("/sim-worker.js", { type: "module" });
   let nextId = 1;
   let disposed = false;
@@ -24,12 +28,17 @@ export function createOfflineMatch(onState: (state: OfflineState) => void) {
     for (const request of pending.values()) request.reject(new Error(reason));
     pending.clear();
   }
-  worker.onerror = () => dispose("Simulation worker failed");
-  worker.onmessageerror = () => dispose("Invalid simulation worker message");
+  function fail(reason: string) {
+    if (disposed) return;
+    dispose(reason);
+    onError?.(new Error(reason));
+  }
+  worker.onerror = () => fail("Simulation worker failed");
+  worker.onmessageerror = () => fail("Invalid simulation worker message");
   worker.onmessage = ({ data }: MessageEvent<unknown>) => {
     if (disposed) return;
     if (!isWorkerReply(data)) {
-      dispose("Invalid simulation worker reply");
+      fail("Invalid simulation worker reply");
       return;
     }
     const reply = data;
@@ -61,6 +70,7 @@ export function createOfflineMatch(onState: (state: OfflineState) => void) {
       request({ type: "command", command: { type, payload } }),
     pause: (paused: boolean) => request({ type: "pause", paused }),
     step: () => request({ type: "step" }),
+    placement: (spawn: DebugSpawn) => request({ type: "placement", spawn }),
     speed: (speed: number) => request({ type: "speed", speed }),
     exportLog: () => request({ type: "export" }),
     dispose,

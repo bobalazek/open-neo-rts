@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": { "types": ["bun"] },
-  "include": ["build.ts", "dev.ts"]
+  "include": ["build.ts", "dev.ts", "catalog-plugin.ts"]
 }

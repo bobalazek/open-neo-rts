@@ -1,5 +1,11 @@
 /// <reference path="../../assets.d.ts" />
-import { checkTerrain, parseTerrain, type TerrainLayers } from "@open-neo-rts/content";
+import {
+  checkTerrain,
+  parseTerrain,
+  SCHEMAS,
+  type TerrainLayers,
+  validate,
+} from "@open-neo-rts/content";
 import type { MapDecoration, MapResource } from "@open-neo-rts/render";
 import biomeLayer from "../../../../../content/core/maps/sandbox-biomes/biome.r8";
 import biomes from "../../../../../content/core/maps/sandbox-biomes/map.json";
@@ -22,7 +28,8 @@ interface MapEntry {
     biome: string;
     size: { width: number; height: number };
     objects: readonly MapDecoration[];
-    resources: readonly MapResource[];
+    resources: readonly (MapResource & { amount: number })[];
+    spawns: readonly { id: string; position: readonly number[]; facing: number }[];
   };
   layers: Partial<Record<keyof TerrainLayers, string>>;
 }
@@ -40,6 +47,9 @@ export const MAPS: readonly MapEntry[] = [
 export async function loadMap(id: string) {
   const entry = MAPS.find(({ definition }) => `core.${definition.id}` === id);
   if (!entry) throw new Error(`Unknown map: ${id}`);
+  const issues = validate(SCHEMAS.map, entry.definition);
+  if (issues.length)
+    throw new Error(`Invalid map: ${issues.map((i) => `${i.path}: ${i.message}`).join("; ")}`);
   const layers: TerrainLayers = {};
   await Promise.all(
     Object.entries(entry.layers).map(async ([key, url]) => {
