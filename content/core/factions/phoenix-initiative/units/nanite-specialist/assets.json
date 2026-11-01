@@ -1,0 +1,12 @@
+{
+  "files": {
+    "nanite-specialist.glb": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-specialist.bricks.json"
+    },
+    "nanite-specialist.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/nanite-specialist.bricks.json"
+    }
+  }
+}
