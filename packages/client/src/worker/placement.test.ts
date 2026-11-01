@@ -22,6 +22,7 @@ test("placement replies validate ticks, cell fields and refusal consistency", ()
     { tick: 1, ok: true, cells: [{ ...cell, rule: "unknown" }] },
     { tick: 1, ok: false, cells: [{ ...cell, failure: "unknown" }] },
     { tick: 1, ok: true, cells: Array(65).fill(cell) },
+    { tick: 1, ok: true, cells: Array(1) },
   ])
     expect(isPlacementDiagnostic(malformed)).toBe(false);
 });

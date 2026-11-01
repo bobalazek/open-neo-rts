@@ -41,7 +41,7 @@ export function isPlacementDiagnostic(value: unknown): value is PlacementDiagnos
     (!Array.isArray(value.cells) ||
       // Content footprints are bounded to 8×8 cells.
       value.cells.length > 64 ||
-      !value.cells.every(
+      ![...value.cells].every(
         (cell: unknown) =>
           isRecord(cell) &&
           Number.isSafeInteger(cell.x) &&
