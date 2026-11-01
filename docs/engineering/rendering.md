@@ -60,6 +60,24 @@ One subcell becomes 2/1,024 metres. Map x/y become world x/z; binary facing zero
 
 Rigid model parts use Babylon hardware instances, sharing one geometry/material template per (definition, Force). Each entity owns its transform hierarchy and animation groups, so its idle/move clip can run independently. Actual position changes select `move`; otherwise `idle` or rest. Force recolouring changes only team slots. Morph or skinned meshes use Babylon's shared-geometry clone path with independent animation state; vertex animation textures and cross-Force thin instancing remain later work. Templates are released when their last projected entity leaves. The isolated model preview shares the self-contained GLB loader and rest-pose playback code.
 
+Optional model LOD uses unambiguous, disjoint authored branches named `<node>` or `<node>_LOD0`
+and `<node>_LOD1`. Only mesh visibility changes; parent transforms, sockets, team materials,
+animation targets and independent morph/skin state stay in place. Authored hidden meshes remain
+hidden. Both branches must contain geometry; missing, duplicate, overlapping or ambiguous pairs
+retain their authored visibility. Unpaired parts retain their authored visibility at either distance. Author both
+variants under the appropriate animated parent, or animate each variant explicitly: the renderer
+does not invent animation channels for a distant branch.
+
+**Addition — provisional engineering distance:** LOD1 is selected at 96 metres from the active
+camera to the rendered entity origin. `presentation.setLodDistance(metres)` accepts a positive
+distance; `Infinity` keeps near variants. With no active camera, near variants are selected. This
+API is for the debug/performance harness; it does not add a preference or art-direction approval.
+Babylon's existing bounds/frustum culling still decides which visible mesh instances enter the
+colour pass. Offscreen entities and both LOD variants remain resident and keep their animation
+state; this introduces no animation culling or new culling framework. Current original brick models
+have no authored LOD1, so their triangle counts are unchanged. Frame cost and the phase exit scene
+remain a separate measured gate.
+
 ## Frame loop
 
 - The sim ticks at a fixed 20 Hz (in a Web Worker offline, on the server online). The renderer draws at display rate and **interpolates** positions, rotations and turret angles between the last two ticks, without extrapolating.
@@ -90,8 +108,8 @@ Hundreds of units and thousands of props only work with instancing.
   chunk centre, Medium at 96, High at 128 and Ultra at 160. `renderer.setQuality` updates both effects and
   terrain thresholds; a standalone terrain root also exposes `setQuality`. These are initial detail
   thresholds, not an art-direction or performance sign-off.
-- Both near and distant geometry stay resident. This reduces submitted triangles, not chunk draw calls,
-  startup work or memory. Model LOD selection remains with the entity presentation task.
+- Both near and distant terrain geometry stay resident. This reduces submitted triangles, not chunk draw calls,
+  startup work or memory. Model LOD selection is described in the entity presentation section above.
 - Entities in fog aren't sent to the client at all ([fog-of-war.md](../design/fog-of-war.md)), so they cost nothing.
 
 ## Construction and destruction
