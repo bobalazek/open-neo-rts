@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/mobile-workshop",
   "name": "Mobile Workshop",
   "description": "Field repairs and unit modifications on the move.",
+  "role": "support",
   "family": "vehicle",
   "tags": ["vehicle", "engineer"],
   "cost": {

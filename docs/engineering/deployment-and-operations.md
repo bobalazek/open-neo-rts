@@ -2,12 +2,12 @@
 
 ## Environments
 
-| Environment | What                                                                                     | Where                                              |
-| ----------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Local       | `bun run dev`: web client, plus a local match server when multiplayer exists             | Developer machine                                  |
-| PR preview  | Web build per PR with playtest links ([CONTRIBUTING.md](../../CONTRIBUTING.md#previews)) | Static host with per-PR URLs                       |
-| Staging     | `main` deployed automatically: web, match server, TURN                                   | Same setup as production, smaller                  |
-| Production  | Tagged releases                                                                          | Static CDN for web; match servers in a few regions |
+| Environment | What                                                                                       | Where                                              |
+| ----------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Local       | `bun run dev`: web client, plus a local match server when multiplayer exists               | Developer machine                                  |
+| PR preview  | Web build per PR with debug mode links ([CONTRIBUTING.md](../../CONTRIBUTING.md#previews)) | Static host with per-PR URLs                       |
+| Staging     | `main` deployed automatically: web, match server, TURN                                     | Same setup as production, smaller                  |
+| Production  | Tagged releases                                                                            | Static CDN for web; match servers in a few regions |
 
 ## What runs where
 

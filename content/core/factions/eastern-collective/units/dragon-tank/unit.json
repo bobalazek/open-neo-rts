@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/dragon-tank",
   "name": "Dragon Tank",
   "description": "Heavy main battle tank, the Collective's Metamorphic Battle Tank: switches between assault and siege mode.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -23,15 +24,40 @@
   "weapons": [
     {
       "id": "heavy-cannon",
-      "damageType": "armorPiercing",
-      "damage": 90,
+      "targets": ["ground", "structure"],
       "range": [0, 7],
       "reload": 3,
+      "accuracy": 0.2,
+      "aim": "turret",
       "projectile": {
-        "kind": "direct",
-        "speed": 20
+        "kind": "bullet",
+        "speed": 20,
+        "blockedBy": ["terrain", "structures"]
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 90,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "aircraft": 0,
+            "structure": 80
+          },
+          "tags": ["explosive"]
+        },
+        {
+          "type": "damage",
+          "amount": 15,
+          "radius": 0.5,
+          "falloff": [100, 50],
+          "versus": {
+            "default": 0,
+            "infantry": 100
+          },
+          "tags": ["explosive"]
+        }
+      ]
     }
   ],
   "abilities": [

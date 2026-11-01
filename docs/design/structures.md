@@ -6,17 +6,20 @@ How every building works: construction by builders, placement, what clicking one
 
 ## Roles
 
-| Role              | Does                                                                  | Examples (Alliance of Free Nations)                     |
-| ----------------- | --------------------------------------------------------------------- | ------------------------------------------------------- |
-| Headquarters      | Trains builders; the base's anchor; the Phoenix Initiative's can move | Command Hub                                             |
-| Power             | Produces power that other structures use                              | Power Matrix                                            |
-| Economy           | Harvester drop-off, resource processing                               | Supply Relay                                            |
-| Production        | Trains or builds units: infantry, vehicles, aircraft, ships           | Advanced Barracks, Vehicle Factory                      |
-| Tech and research | Unlocks tiers; researches upgrades                                    | Quantum Research Lab, Advanced Armory                   |
-| Support           | Radar, detection, healing, repair, buffs                              | Sensor Array, Cyber Operations Center                   |
-| Defence           | Turrets, anti-air, shields, walls                                     | Smart Turret, Anti-Air Matrix, Photon Barrier Generator |
-| Superweapon       | One per Force                                                         | Satellite Strike Uplink                                 |
-| Wonder            | Wins the Wonder Race mode                                             | (shared by every faction; see below)                    |
+Every structure has exactly one `role`. Roles are engine code (`packages/content/src/rules/roles.ts`): behaviour that depends on a role keys off it, never off names.
+
+| Role           | Does                                                                                                                | Examples (Alliance of Free Nations unless noted)                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `headquarters` | Trains builders; the base's anchor; counts for the headquarters elimination rule. The Phoenix Initiative's can move | Command Hub                                                                  |
+| `power`        | Produces power that other structures use                                                                            | Power Matrix                                                                 |
+| `dropoff`      | Harvesters unload here                                                                                              | Supply Relay                                                                 |
+| `production`   | Trains or builds units: infantry, vehicles, aircraft, ships                                                         | Advanced Barracks, Vehicle Factory                                           |
+| `research`     | Unlocks tiers; researches upgrades                                                                                  | Quantum Research Lab, Advanced Armory                                        |
+| `support`      | Radar, detection, healing, repair, buffs                                                                            | Sensor Array, Cyber Operations Center                                        |
+| `defense`      | Turrets, anti-air, shields                                                                                          | Smart Turret, Anti-Air Matrix, Photon Barrier Generator                      |
+| `wall`         | Walls and gates, placed by dragging                                                                                 | The Eastern Collective's Fortress Wall, the Phoenix Initiative's Nanite Wall |
+| `superweapon`  | One per Force; announced to every player                                                                            | Satellite Strike Uplink                                                      |
+| `wonder`       | Wins the Wonder Race mode                                                                                           | (shared by every faction; see below)                                         |
 
 ## Construction and builders
 
@@ -38,18 +41,21 @@ Structures are built **on site by builder units**: the Alliance's Combat Enginee
 Structures snap to the map grid. Free-form placement doesn't exist.
 
 - **Footprint:** every structure is W×D cells and can be rotated in 90° steps. Each footprint cell has a **cell rule**:
-  - `land`: flat, buildable land on one height level (most structures, every cell);
+  - `land`: dry land, not a ramp, on a buildable surface (every surface except rubble);
   - `water`: deep water;
-  - `shore`: either land or shallow water.
-- **Shore structures** (shipyards, naval docks, sea walls) mix rules. A typical shipyard is 4×4 with the back row `land`, the middle rows `shore` and the front row `water`, so it sits half on the beach, half in the sea, and launches ships into deep water. The placement grid shows each cell's rule: green where it's satisfied, red where it isn't.
+  - `shore`: land by the same rules, or shallow water;
+  - `node`: a resource node of the structure's kind. Node-bound structures (an oil derrick on an oil well) can be placed nowhere else ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)).
+- **Every footprint cell** is on the same height level, so nothing straddles a cliff, and the whole footprint stays out of the map's 4-cell edge margin.
+- **Rotation:** at 0 the footprint's first row is at the back and the front faces south; each step turns it a quarter clockwise, as seen from above with north up.
+- **Shore structures** (shipyards, naval docks, sea walls) mix rules. A shipyard is 4×4 with the back row `land`, two middle rows `shore` and the front row `water`, so it sits half on the beach, half in the sea, and launches ships into deep water. Two `shore` rows fit both one- and two-cell shallow bands. The placement grid shows each cell's rule: green where it's satisfied, red with the reason where it isn't.
 - **Build radius:** new structures must be within a few cells of an existing structure of the same Force (defences have a smaller radius). In territory rulesets, own territory replaces the radius.
 - **Clearance:** units standing in the footprint are asked to move. Placement waits briefly, then fails with a message if they can't.
-- **Exits and docks:** production structures have an exit cell (`socket_exit`) that must not be blocked; refineries and pads have docking cells (`socket_dock`). Both are part of the footprint and shown while placing.
+- **Exits and docks:** production structures have an exit cell (`socket_exit`) that must not be blocked; drop-off structures and pads have docking cells (`socket_dock`). Both are part of the footprint and shown while placing.
 - **Placing** creates a construction site that builders then work on (see Construction and builders). Shift-placing queues several sites for the same builders.
 
 ## Clicking a structure: the info panel
 
-Selecting a structure fills the **selection panel** (bottom centre of the HUD, the same place unit details appear) and the **command card** (bottom right). See [match-hud.md](screens/match-hud.md).
+Selecting a structure fills the **selection panel** (bottom centre of the HUD, the same place unit details appear) and the **command card** (between the selection panel and the build panel; see [HUD zones](ui-style.md#hud-zones)). See [match-hud.md](screens/match-hud.md).
 
 ```text
 ┌ SELECTION ──────────────────────────────────┐ ┌ COMMANDS ──────────┐
@@ -62,7 +68,7 @@ Selecting a structure fills the **selection panel** (bottom centre of the HUD, t
 ```
 
 - **Always:** name, portrait, tier, health, power use or output, active adjacency bonuses and their sources.
-- **Production structures:** current item with progress, queue, and the rally point. The **build panel** (right side of the HUD) switches to this structure's production tab.
+- **Production structures:** current item with progress, queue, and the rally point. The **build panel** (bottom right) switches to this structure's production tab.
 - **Defences:** weapon, range (also drawn as a circle on the map), current target, powered or not.
 - **Research structures:** current research, queue, available upgrades.
 - **Garrisonable structures:** slots, occupants (click one to eject it).
@@ -96,12 +102,12 @@ Every structure has a power value (+ produced, − used). Below supply, **browno
 ## Defences
 
 - Defences use weapons like units do, with the same targeting rules and stances. Many need power.
-- **Walls** are placed by dragging a line; corners and gates fit automatically. Gates open for own and allied units. Walls block movement and line of fire for direct weapons; ballistic weapons arc over them.
+- **Walls** are placed by dragging a line; corners and gates fit automatically. Gates open for own and allied units. Walls block movement, and projectiles whose `blockedBy` includes `structures`; `arc`, `grenade` and `dropped` projectiles pass over them ([combat-and-balance.md](combat-and-balance.md#projectile-how-the-shot-travels)).
 - **Detection** structures (sensor arrays, radar) reveal stealthed units in their radius.
 
 ## Superweapons
 
-- One strategic structure per Force (a setting can disable them). Building one is **announced to every player**, with its location revealed briefly.
+- One superweapon per Force (a setting can disable them). Building one is **announced to every player**, with its location revealed briefly.
 - It charges on a visible timer that every player can see (in the HUD's top bar). When it's ready, the owner targets it like an ability. The target area gets a few seconds of warning, with visual and audio cues, before impact.
 - Destroying the structure cancels the charge. Superweapons count towards the Technical Superiority victory ([objectives-and-victory.md](objectives-and-victory.md)).
 
@@ -124,7 +130,7 @@ A wonder is a huge structure that wins the match in the **Wonder Race** mode ([o
 
 ## Non-happy paths
 
-- **Placement blocked mid-placement** (a unit walks in): placement waits, then fails with a reason. The structure stays ready to place.
+- **Placement blocked** (a unit walks in): placement waits, then fails with a reason, and no construction site is created.
 - **Rally point unreachable** for a domain (an aircraft factory rallying into a building): each unit goes as close as it can.
 - **Selling a structure with units in its queue:** queued items are refunded, then the sale completes.
 - **Brownout during a superweapon charge:** the charge pauses until power returns.

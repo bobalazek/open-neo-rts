@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun ./index.html",
     "build": "bun build ./index.html --outdir=dist --minify",
-    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "typecheck": "tsc && tsc -p tsconfig.test.json && tsc -p e2e/tsconfig.json",
     "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {

@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/propaganda-center",
   "name": "Propaganda Center",
   "description": "Battlefield buffs and morale: nearby units fight harder.",
+  "role": "support",
   "cost": {
     "credits": 1100
   },
   "buildTime": 15,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/radar-tower"],
   "health": 1200,
   "armor": "structure",

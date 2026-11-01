@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/tesla-trooper",
   "name": "Tesla Trooper",
   "description": "Infantry with EMP weapons that disable vehicles.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -24,14 +25,30 @@
   "weapons": [
     {
       "id": "arc",
-      "damageType": "emp",
-      "damage": 45,
+      "targets": ["ground"],
       "range": [0, 5],
       "reload": 2,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 45,
+          "versus": {
+            "default": 50,
+            "infantry": 0,
+            "aircraft": 100,
+            "structure": 25
+          },
+          "tags": ["emp"]
+        },
+        {
+          "type": "disable",
+          "duration": 1,
+          "tags": ["emp"]
+        }
+      ]
     }
   ],
   "presentation": {

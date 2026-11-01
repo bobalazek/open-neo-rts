@@ -4,7 +4,7 @@ What a reviewer checks on every PR, whether the reviewer is a person or an agent
 
 ## Every PR
 
-- [ ] **CI** green: `check`, `typecheck`, `test`, `build`, `bun neo validate-assets`.
+- [ ] **CI** green: `check`, `typecheck`, `test`, `build`, `bun neo generate-schemas --check`, `bun run test:browsers`, and `bun neo validate` when content changes.
 - [ ] The change is in scope for the current phase ([roadmap](../project/roadmap.md#what-each-phase-builds)), and the PR is exactly one [type](pull-requests.md), or the PR says why it isn't.
 - [ ] One concern per PR. Unrelated changes are split out.
 - [ ] Names and structure follow [conventions.md](conventions.md).
@@ -28,8 +28,8 @@ What a reviewer checks on every PR, whether the reviewer is a person or an agent
 - [ ] **Balance changes** state the reason; once available, the balance report and AI-vs-AI diff are attached.
 - [ ] **Assets are original work**; `assets.json` names a real author and source file.
 - [ ] The model was checked in the [content editor](../design/screens/content-editor.md): sockets point the right way, team colour lands on the right parts, damage states and destruction look right.
-- [ ] Locale strings are present and read well in English.
-- [ ] The playtest preview link from the PR bot was opened, and the unit behaves as described.
+- [ ] The English name and description are present and read well.
+- [ ] The debug mode preview link from the PR bot was opened, and the unit behaves as described.
 
 ## Docs
 

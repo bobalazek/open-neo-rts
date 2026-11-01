@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/emp-research-lab",
   "name": "EMP Research Lab",
   "description": "Develops electromagnetic weapons; required for Tesla Troopers and the Mobile EMP.",
+  "role": "research",
   "cost": {
     "credits": 1800
   },
   "buildTime": 25,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/technology-center"],
   "health": 1400,
   "armor": "structure",

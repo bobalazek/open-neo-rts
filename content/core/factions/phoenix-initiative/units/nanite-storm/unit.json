@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/nanite-storm",
   "name": "Nanite Storm",
   "description": "Area-denial air unit: a cloud of nanites that damages everything beneath it.",
+  "role": "combat",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 3.0
+    "speed": 3
   },
   "radius": 1.2,
   "vision": 8,
@@ -24,18 +25,23 @@
   "weapons": [
     {
       "id": "nanite-cloud",
-      "damageType": "armorPiercing",
-      "damage": 15,
+      "targets": ["ground"],
       "range": [0, 2],
       "reload": 0.5,
       "projectile": {
         "kind": "beam"
       },
-      "targets": ["ground"],
-      "splash": {
-        "radius": 2,
-        "edgePercent": 100
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 15,
+          "versus": {
+            "default": 100
+          },
+          "radius": 2,
+          "tags": ["nanite"]
+        }
+      ]
     }
   ],
   "presentation": {

@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/underground-barracks",
   "name": "Underground Barracks",
   "description": "Concealed infantry training: hidden from enemy vision unless detected.",
+  "role": "production",
   "cost": {
     "credits": 500
   },
   "buildTime": 10,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 1000,
   "armor": "structure",
   "footprint": [2, 2],

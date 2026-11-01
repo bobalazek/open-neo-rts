@@ -1,6 +1,6 @@
 # Conventions
 
-How everything in this repo is named and written. These rules are checked in review ([review-checklists.md](review-checklists.md)), and where possible by CI (Biome, typecheck, `bun neo validate-assets`). If something isn't covered here, follow the nearest existing example and add the rule in the same PR.
+How everything in this repo is named and written. These rules are checked in review ([review-checklists.md](review-checklists.md)), and where possible by CI (Biome, typecheck, tests, `bun neo validate`). If something isn't covered here, follow the nearest existing example and add the rule in the same PR.
 
 ## Names at a glance
 
@@ -20,18 +20,18 @@ How everything in this repo is named and written. These rules are checked in rev
 | Sound                                   | `<name>.<event>.ogg`; variations `<name>.<event>.<n>.ogg`                                                                                    | `dragon-tank.fire.1.ogg`                                     |
 | Editable source                         | `source/<name>.blend` in the definition's folder                                                                                             | `source/dragon-tank.blend`                                   |
 | GLB node names                          | `snake_case`; fixed part names (`hull`, `turret`, `barrel`, `rotor`, `legs`)                                                                 | `turret`                                                     |
-| Sockets                                 | `socket_<name>` or `socket_<name>_<n>`                                                                                                       | `socket_muzzle_0`                                            |
+| Sockets                                 | `socket_<name>`, lowercase letters only                                                                                                      | `socket_muzzle`                                              |
 | LOD meshes                              | `<node>` or `<node>_LOD0`, `<node>_LOD1`                                                                                                     | `hull_LOD1`                                                  |
 | Damage-state nodes                      | `state_damaged`, `state_critical`                                                                                                            |                                                              |
 | Material slots                          | `palette`, `team`, `team_dark`, `team_light`, `team_emissive`, `metal`, `glass`, `emissive`                                                  |                                                              |
 | Animation clips                         | `snake_case`                                                                                                                                 | `idle`, `fire_recoil`                                        |
-| Maps                                    | `<pack>/maps/<name>/map.json` plus layer files `height.r8`, `ramps.r8`, `surface.r8`, `preview.webp`                                         | `core/maps/test-valley/map.json`                             |
+| Maps                                    | `<pack>/maps/<name>/map.json` plus layer files `height.r8`, `ramps.r8`, `surface.r8`, `water.r8` and `preview.webp`                          | `core/maps/training-grounds/map.json`                        |
 | Campaigns and missions                  | `<pack>/campaigns/<name>/campaign.json`, `…/missions/<name>/mission.json`                                                                    | `core/campaigns/ghost-protocol/`                             |
 | Sim commands                            | `<area>.<verb>`                                                                                                                              | `unit.move`, `production.queue`                              |
 | Git branches                            | `<type>/<short-description>`                                                                                                                 | `feat/fixed-point-trig`                                      |
 | Commits                                 | [Conventional Commits](https://www.conventionalcommits.org/) with a scope                                                                    | `feat(sim): add path budget per force`                       |
 
-`<kinds>` is the plural folder for a definition kind: `units`, `structures`, `weapons`, `abilities`, `research`, `factions`, `maps`, `campaigns`, `locales`. The full content layout and a template for every kind are in [content-format.md](content-format.md).
+Weapons, abilities and research have no folders of their own: they're inline in their unit or structure, with local IDs. The full content layout and a template for every kind are in [content-format.md](content-format.md).
 
 ## TypeScript
 
@@ -74,7 +74,7 @@ How everything in this repo is named and written. These rules are checked in rev
 ## Content
 
 - Data files use **human units** (seconds, cells, percent, decimals allowed). The loader converts them to integer sim units once at load, which is exact on every engine ([numerics.md](../engineering/numerics.md#content-units)).
-- Every player-visible string is a locale key in a pack's `locales/<lang>.json`; UI strings live in `core` ([localization.md](../engineering/localization.md)).
+- English text is written inline in each definition. Translations go in the pack's `locales/<lang>.json`, and interface strings live in the client ([localization.md](../engineering/localization.md)).
 - Every runtime asset has an `assets.json` entry with its author and source ([assets.md](assets.md)).
 - One definition per file, so diffs, reviews and mod overrides stay small.
 

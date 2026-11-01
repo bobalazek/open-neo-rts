@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/ghost-recon",
   "name": "Ghost Recon",
   "description": "Stealth infantry with active camouflage; marks targets for precision strikes.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -24,14 +25,26 @@
   "weapons": [
     {
       "id": "sniper-rifle",
-      "damageType": "smallArms",
-      "damage": 80,
+      "targets": ["ground"],
       "range": [0, 10],
       "reload": 4,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 80,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "abilities": [

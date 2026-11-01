@@ -8,6 +8,10 @@
     "structures": ["structure:phoenix-initiative/command-node"],
     "units": [
       {
+        "unit": "unit:phoenix-initiative/nanite-constructor",
+        "count": 2
+      },
+      {
         "unit": "unit:phoenix-initiative/salvage-crawler",
         "count": 1
       },

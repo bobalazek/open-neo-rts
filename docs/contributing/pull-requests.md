@@ -2,6 +2,14 @@
 
 Every change reaches `main` through a pull request of exactly **one type**. The type decides the branch prefix, the commit scope, the label, what CI runs, and what the reviewer checks ([review-checklists.md](review-checklists.md)). Tasks in [tasks.md](../project/tasks.md) say which type they are.
 
+## From task to merge
+
+1. Pick one task from [tasks.md](../project/tasks.md). Work that isn't listed starts as an issue; work waiting on a decision stays in [human-tasks.md](../project/human-tasks.md).
+2. Branch from `main` with the type's prefix (below).
+3. Run `bun run fix`, `typecheck` and `test`, plus `bun neo validate` for content.
+4. Open the PR with the template. In the same PR, remove the task's line from `tasks.md`, add any follow-up tasks it uncovered, and update the docs it changes.
+5. Merge when CI is green and a reviewer approves ([Merging](#merging)).
+
 ## Types
 
 | Type              | What changes                                                                         | Branch                               | Commit example                                           | Label               |

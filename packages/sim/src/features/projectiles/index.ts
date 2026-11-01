@@ -1,2 +1,2 @@
-// Hitscan, direct, ballistic and homing projectiles. Phase 2.
+// Instant, bullet, arc, grenade, missile, beam and dropped projectiles (docs/design/combat-and-balance.md). Phase 2.
 export {};

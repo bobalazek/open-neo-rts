@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/scout-helicopter",
   "name": "Scout Helicopter",
   "description": "Fast reconnaissance helicopter.",
+  "role": "scout",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {
@@ -14,7 +15,7 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 6.0
+    "speed": 6
   },
   "radius": 0.7,
   "vision": 13,
@@ -22,14 +23,26 @@
   "weapons": [
     {
       "id": "machine-gun",
-      "damageType": "smallArms",
-      "damage": 8,
+      "targets": ["ground", "air"],
       "range": [0, 5],
       "reload": 0.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

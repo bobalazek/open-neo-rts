@@ -1,6 +1,6 @@
 # Maps, terrain, navigation and integrated editor
 
-**Status:** proposed. Map file format examples are illustrative.
+**Status:** proposed. The map format in §3 is what the loader reads today; the rest is the target design.
 
 ## 1. Goals
 
@@ -14,33 +14,37 @@ Creators must be able to make a custom map **without writing code**, validate it
 
 A runtime game must not depend on the editor's current unsaved brush state. Map compilation is repeatable for the same source, tool version and content registry. Preserve unknown future-format fields only in compatible, namespaced extension sections.
 
-## 3. Editable map schema
+## 3. Map format
 
-```yaml
-id: map:test-valley
-version: 1
-formatVersion: 1
-packs: [core]
-size: { widthCells: 128, heightCells: 128, metersPerCell: 2 }
-terrain:
-  heightLevels: height.r8 # discrete level per cell (0-7)
-  rampLayer: ramps.r8 # ramp cells and direction
-  biomeLayer: biome.r8
-  surfaceLayer: surface.r8
-  waterLevel: 0
-  domainMasks: { foot: foot.r8, tracked: tracked.r8 } # per movement domain, optional overrides
-spawnSlots:
-  - { id: north, x: 20, y: 20, facing: 135, teamsAllowed: [1, 2] }
-  - { id: south, x: 108, y: 108, facing: 315, teamsAllowed: [1, 2] }
-resourceNodes:
-  - { id: ore-north, resource: materials, position: [32, 26], quantity: 20000 }
-objects: []
-regions: []
-objectives: []
-editor: { symmetry: rotational-2, notes: "" }
+A map is a folder in a pack: `map.json` plus its terrain layers ([content-format.md](../contributing/content-format.md#faction-map-and-props)). This is what the loader reads today (`packages/content/src/maps/`), shown with [`core/maps/sandbox-terrain`](../../content/core/maps/sandbox-terrain/map.json):
+
+```json
+{
+  "$schema": "../../../schemas/map.schema.json",
+  "id": "map:sandbox-terrain",
+  "name": "Sandbox: Terrain",
+  "description": "Plateaus on levels 0 to 3 with ramps rising north, east, south and west…",
+  "size": { "width": 96, "height": 96 },
+  "biome": "temperate",
+  "players": { "min": 1, "max": 2 },
+  "spawns": [
+    { "id": "south-west", "position": [16, 84], "facing": 0 },
+    { "id": "east", "position": [76, 48], "facing": 270 }
+  ],
+  "start": "empty",
+  "resources": [],
+  "objects": [],
+  "layers": { "height": "height.r8", "ramps": "ramps.r8" }
+}
 ```
 
-The example syntax is a design sketch, not a currently supported runtime format. Coordinates should be integer grid or quantized world values with documented units; orientation must map to stable integer angle representation. Compiled bundles include map source hash, pack dependencies and compiler version.
+- **Layers:** `layers` has the keys `height`, `ramps`, `surface` and `water`. Each names a file next to `map.json` with one byte per cell, row-major (cell (x, y) at index `y * width + x`, y growing southward), no header, exactly width × height bytes.
+- **Missing layers** are all zeros: level 0, no ramp, grass, no water.
+- **Values** come from [`rules/terrain.ts`](../../packages/content/src/rules/terrain.ts): height levels, ramp directions, surface types and water depths.
+- **Units:** positions are in cells and facings in degrees, decimals allowed; the loader converts them to subcells and binary angle units once ([numerics.md](numerics.md#content-units)).
+- **Scenario data** (pre-placed Forces, regions, objectives, triggers) goes in a separate `scenario.json` ([authoring-scenarios.md](../contributing/authoring-scenarios.md)).
+
+A compiled runtime map (later) adds the map source hash, pack dependencies and compiler version.
 
 ## 4. Terrain and movement domains
 
@@ -67,17 +71,17 @@ Use command-based editor transactions with reversible actions and stable object 
 - Traversability connectivity/chokepoints and bridges.
 - Team spawn fairness and starting resources.
 - Territorial influence from cities, forts, command hubs and custom sources.
-- Supply connectivity, expected attrition zones and trade routes for relevant profiles.
+- Supply connectivity, expected attrition zones and trade routes, when the match settings enable them.
 - Fog-of-war preview, stealth detection ranges, high-ground visibility.
 - Capturable points, victory regions, wonder placement and scenario triggers.
 
-None should require a separate hand-coded editor implementation for each content pack. Overlays query the same authoritative map rules and game-profile definitions used at runtime.
+None should require a separate hand-coded editor implementation for each content pack. Overlays query the same authoritative map rules and match settings used at runtime.
 
 ## 7. Validation and fairness
 
 Structural checks: schema valid, safe file names and sizes, compatible content pack IDs, valid asset paths, unique IDs, valid coordinates, non-overlapping reserved spawn footprints, no impossible bridge intersections, map hash reproducible.
 
-Gameplay checks: reachable resource deposits from each spawn, adequate start area for chosen headquarters, each team can reach relevant objectives, no unintentional completely isolated terrain classes, no infinite production exploit from special placements, correct resource names for active profile, and predictable influence/city capture behavior.
+Gameplay checks: reachable resource deposits from each spawn, adequate start area for chosen headquarters, each team can reach relevant objectives, no unintentional completely isolated terrain classes, no infinite production exploit from special placements, resource kinds the engine knows, and predictable influence/city capture behavior.
 
 Fairness hints: compare spawn-to-node distance, defensible terrain, high-ground advantages, strategic points and multi-route access. Make hints informative rather than blocking all asymmetric maps. Players can intentionally author imbalanced scenarios.
 
@@ -94,7 +98,7 @@ Never execute a file's embedded JavaScript. Scenario triggers are restricted dec
 - Exporting and importing a map retains height, paint, spawns, resources and authored objects.
 - Compiling identical inputs twice yields the same runtime hash.
 - Rebuilding navigation after a new building footprint changes path results deterministically.
-- One map works unchanged in Web Worker skirmish and headless Node match server.
+- One map works unchanged in Web Worker skirmish and the headless Bun match server.
 - Editor flags unreachable spawn resources and missing content definitions with actionable locations.
 - Territory preview matches simulated influence for same initialization.
 - A map editor change can be undone/redone and produces the exact pre-change hash after undo.

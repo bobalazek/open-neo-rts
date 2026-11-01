@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/scavenger-vtol",
   "name": "Scavenger VTOL",
   "description": "Resource collection aircraft: lifts salvage from anywhere.",
+  "role": "harvester",
   "family": "aircraft",
   "tags": ["aircraft", "harvester"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "aircraft",
   "movement": {
     "domain": "air",
-    "speed": 4.0
+    "speed": 4
   },
   "radius": 0.9,
   "vision": 8,

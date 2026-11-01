@@ -8,17 +8,17 @@ How aircraft and ships work, how they interact with ground forces, fog and struc
 
 **Kinds of aircraft**
 
-| Kind                                | Moves                                                        | Typical role                                      |
-| ----------------------------------- | ------------------------------------------------------------ | ------------------------------------------------- |
-| **Drones**                          | Low altitude, hover and strafe, small and cheap              | Scouting, swarming, harvesting (AFN Supply Drone) |
-| **Rotorcraft** (helicopters, VTOLs) | Hover anywhere, turn in place, land anywhere flat            | Gunships, transports, scouts                      |
-| **Fixed-wing** (jets, bombers)      | Minimum speed and a turning circle; can't hover; attack runs | Strikes, bombing, air superiority                 |
+| Kind                                | Moves                                                        | Typical role                                                                |
+| ----------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| **Drones**                          | Low altitude, hover and strafe, small and cheap              | Scouting, swarming, harvesting (the Alliance of Free Nations' Supply Drone) |
+| **Rotorcraft** (helicopters, VTOLs) | Hover anywhere, turn in place, land anywhere flat            | Gunships, transports, scouts                                                |
+| **Fixed-wing** (jets, bombers)      | Minimum speed and a turning circle; can't hover; attack runs | Strikes, bombing, air superiority                                           |
 
 **Altitude and targeting**
 
-- Aircraft fly in an altitude band above the terrain. The `air` target domain is separate from `ground`: a tank's cannon can't hit aircraft, and anti-air can't hit tanks (or only weakly). See the damage matrix in [combat-and-balance.md](combat-and-balance.md#damage-against-armour).
+- Aircraft fly in an altitude band above the terrain. The `air` target domain is separate from `ground`: a tank's cannon can't hit aircraft, and anti-air can't hit tanks (or only weakly). How much a weapon deals to aircraft is its warheads' `versus` for the `aircraft` armour class ([combat-and-balance.md](combat-and-balance.md#damage-against-armour)).
 - **Air-to-air:** fighters carry weapons that target `air`. Gunships target `ground` and some `air`. Bombers target `ground` and `structure` only.
-- Drones fly low enough that small arms can hit them (armour class `aircraft`, but within reach of `smallArms`).
+- Drones fly low enough that small arms can hit them: any weapon that lists `air` in its `targets` and has a non-zero `versus` for `aircraft` can.
 
 **Ammunition and rearming**
 
@@ -67,6 +67,6 @@ Sunk ships leave no salvageable wreck by default (they sink). A ruleset can turn
 
 ## Non-happy paths
 
-- **All pads destroyed:** fixed-wing aircraft circle over the last pad's location, then over the HQ, waiting for a new airfield; they can still fight with remaining ammunition.
+- **All pads destroyed:** fixed-wing aircraft circle over the last pad's location, then over the headquarters, waiting for a new airfield; they can still fight with remaining ammunition.
 - **Transport destroyed over water:** infantry and vehicles in it are lost; hover and amphibious cargo is ejected.
 - **Naval rally point on land:** ships go to the nearest deep-water cell.

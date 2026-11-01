@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/flame-tank",
   "name": "Flame Tank",
   "description": "Area-denial vehicle that clears infantry and garrisons.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "medium",
   "movement": {
     "domain": "tracked",
-    "speed": 2.0
+    "speed": 2
   },
   "radius": 0.75,
   "vision": 6,
@@ -24,18 +25,33 @@
   "weapons": [
     {
       "id": "flamethrower",
-      "damageType": "fire",
-      "damage": 25,
+      "targets": ["ground"],
       "range": [0, 3],
       "reload": 0.5,
       "projectile": {
         "kind": "beam"
       },
-      "targets": ["ground"],
-      "splash": {
-        "radius": 1,
-        "edgePercent": 50
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 25,
+          "versus": {
+            "default": 20,
+            "infantry": 160,
+            "light": 60,
+            "structure": 80
+          },
+          "radius": 1,
+          "falloff": [100, 50],
+          "tags": ["fire"]
+        },
+        {
+          "type": "burn",
+          "amount": 5,
+          "duration": 3,
+          "tags": ["fire"]
+        }
+      ]
     }
   ],
   "presentation": {

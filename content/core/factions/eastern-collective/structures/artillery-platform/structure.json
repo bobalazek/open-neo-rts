@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/artillery-platform",
   "name": "Artillery Platform",
   "description": "Fixed long-range artillery position.",
+  "role": "defense",
   "cost": {
     "credits": 1400
   },
   "buildTime": 18,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/radar-tower"],
   "health": 1800,
   "armor": "structure",
@@ -17,19 +17,31 @@
   "weapons": [
     {
       "id": "platform-gun",
-      "damageType": "explosive",
-      "damage": 110,
+      "targets": ["ground"],
       "range": [5, 18],
       "reload": 6,
       "projectile": {
-        "kind": "ballistic",
+        "kind": "arc",
         "speed": 10
       },
-      "targets": ["ground"],
-      "splash": {
-        "radius": 2,
-        "edgePercent": 25
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 110,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 2,
+          "falloff": [100, 25],
+          "tags": ["explosive"]
+        }
+      ]
     }
   ],
   "presentation": {

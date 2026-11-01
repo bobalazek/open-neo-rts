@@ -3,12 +3,12 @@
   "id": "structure:eastern-collective/fortress-wall",
   "name": "Fortress Wall",
   "description": "Heavy wall segment with mounted guns. Placed by dragging.",
+  "role": "wall",
   "tags": ["wall"],
   "cost": {
     "credits": 150
   },
   "buildTime": 3,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "health": 1200,
   "armor": "structure",
   "footprint": [1, 1],
@@ -17,14 +17,26 @@
   "weapons": [
     {
       "id": "machine-gun",
-      "damageType": "smallArms",
-      "damage": 8,
+      "targets": ["ground", "air"],
       "range": [0, 5],
       "reload": 0.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

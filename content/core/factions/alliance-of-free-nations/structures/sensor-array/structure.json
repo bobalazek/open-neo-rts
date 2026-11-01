@@ -3,11 +3,11 @@
   "id": "structure:alliance-of-free-nations/sensor-array",
   "name": "Sensor Array",
   "description": "Detects stealth units and infantry in a wide radius.",
+  "role": "support",
   "cost": {
     "credits": 600
   },
   "buildTime": 10,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
   "health": 800,
   "armor": "structure",

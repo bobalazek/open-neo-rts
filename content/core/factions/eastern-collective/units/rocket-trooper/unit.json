@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/rocket-trooper",
   "name": "Rocket Trooper",
   "description": "Anti-vehicle specialist.",
+  "role": "combat",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -22,15 +23,33 @@
   "weapons": [
     {
       "id": "rocket",
-      "damageType": "armorPiercing",
-      "damage": 50,
+      "targets": ["ground", "air"],
       "range": [0, 6],
       "reload": 3,
+      "accuracy": 0.3,
+      "aim": "forward",
       "projectile": {
-        "kind": "direct",
-        "speed": 14
+        "kind": "missile",
+        "speed": 14,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 50,
+          "versus": {
+            "infantry": 25,
+            "light": 100,
+            "heavy": 100,
+            "aircraft": 60,
+            "structure": 50
+          },
+          "radius": 0.5,
+          "falloff": [100, 50]
+        }
+      ]
     }
   ],
   "presentation": {

@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/supply-drone",
   "name": "Supply Drone",
   "description": "Automated resource collector; hovers to ore fields and back to a Supply Relay.",
+  "role": "harvester",
   "family": "aircraft",
   "tags": ["drone", "harvester"],
   "cost": {
@@ -14,7 +15,7 @@
   "armor": "light",
   "movement": {
     "domain": "hover",
-    "speed": 2.0
+    "speed": 2
   },
   "radius": 0.7,
   "vision": 6,

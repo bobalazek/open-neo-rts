@@ -12,14 +12,14 @@ Every unit and structure of each faction is a definition in `content/core/factio
 
 ## Resources
 
-| Resource                             | Comes from                                                 | Used for                                                       |
-| ------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------- |
-| **Credits**                          | Harvesters bring ore to their faction's drop-off structure | Everything                                                     |
-| **Raw materials**                    | Material nodes captured and held on the map                | Heavy vehicles, aircraft, naval units, tier 3 and 4 structures |
-| **Power**                            | Power structures (a capacity, not a stock)                 | Every structure uses some; shortage causes brownout            |
-| **Quantum processing** (Alliance)    | Quantum Research Labs                                      | Research                                                       |
-| **Industrial capacity** (Collective) | Producing units                                            | Production surges, mode switches                               |
-| **Salvage points** (Phoenix)         | Wrecks processed at the Salvage Center                     | Black Market, field modifications, reconstruction              |
+| Resource                             | Comes from                                                                                              | Used for                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Credits**                          | Harvesters bring ore to their faction's drop-off structure                                              | Everything                                                     |
+| **Raw materials**                    | Material nodes on the map ([terrain-and-biomes.md](../terrain-and-biomes.md#resource-fields-and-nodes)) | Heavy vehicles, aircraft, naval units, tier 3 and 4 structures |
+| **Power**                            | Power structures (a capacity, not a stock)                                                              | Every structure uses some; shortage causes brownout            |
+| **Quantum processing** (Alliance)    | Quantum Research Labs                                                                                   | Research                                                       |
+| **Industrial capacity** (Collective) | Producing units                                                                                         | Production surges, mode switches                               |
+| **Salvage points** (Phoenix)         | Wrecks processed at the Salvage Center                                                                  | Black Market, field modifications, reconstruction              |
 
 Harvesting, spending and brownout are in [economy.md](../economy.md).
 

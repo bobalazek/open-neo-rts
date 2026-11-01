@@ -1,6 +1,6 @@
 # AI players
 
-**Status:** proposed. Rules from the spec kit (multiplayer §7, architecture §5) are binding; the structure below is a starting design to validate with the first bot.
+**Status:** proposed. The rules in [multiplayer.md](../design/multiplayer.md) §7 and [architecture.md §5](architecture.md#5-determinism-contract) are binding; the structure below is a starting design to validate with the first bot.
 
 ## 1. Ground rules
 

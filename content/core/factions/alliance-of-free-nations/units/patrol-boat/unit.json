@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/patrol-boat",
   "name": "Patrol Boat",
   "description": "Fast patrol craft. (Addition.)",
+  "role": "combat",
   "family": "naval",
   "tags": ["naval"],
   "cost": {
@@ -15,7 +16,7 @@
   "armor": "naval",
   "movement": {
     "domain": "naval",
-    "speed": 4.0
+    "speed": 4
   },
   "radius": 0.8,
   "vision": 8,
@@ -23,14 +24,26 @@
   "weapons": [
     {
       "id": "machine-gun",
-      "damageType": "smallArms",
-      "damage": 8,
+      "targets": ["ground", "air"],
       "range": [0, 5],
       "reload": 0.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "presentation": {

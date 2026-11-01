@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/striker-ifv",
   "name": "Striker IFV",
   "description": "Infantry fighting vehicle with drone support; carries 4 infantry.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -15,7 +16,7 @@
   "armor": "medium",
   "movement": {
     "domain": "wheeled",
-    "speed": 3.0
+    "speed": 3
   },
   "radius": 0.7,
   "vision": 8,
@@ -23,15 +24,25 @@
   "weapons": [
     {
       "id": "autocannon",
-      "damageType": "armorPiercing",
-      "damage": 20,
+      "targets": ["ground", "air"],
       "range": [0, 6],
       "reload": 0.8,
       "projectile": {
-        "kind": "direct",
+        "kind": "bullet",
         "speed": 25
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 20,
+          "versus": {
+            "default": 100,
+            "infantry": 30,
+            "structure": 80,
+            "aircraft": 50
+          }
+        }
+      ]
     }
   ],
   "transport": {

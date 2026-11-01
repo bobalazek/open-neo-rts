@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/mobile-factory-complex",
   "name": "Mobile Factory Complex",
   "description": "Signature unit: drives to the front and deploys into a forward War Factory.",
+  "role": "support",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -16,7 +17,7 @@
   "armor": "heavy",
   "movement": {
     "domain": "tracked",
-    "speed": 1.0
+    "speed": 1
   },
   "radius": 1.4,
   "vision": 7,

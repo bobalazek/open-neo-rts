@@ -3,11 +3,11 @@
   "id": "structure:eastern-collective/airfield",
   "name": "Airfield",
   "description": "Builds and rearms aircraft. (Addition: the world document lists EC aircraft but no airfield.)",
+  "role": "production",
   "cost": {
     "credits": 1500
   },
   "buildTime": 18,
-  "producedBy": ["structure:eastern-collective/command-center"],
   "requires": ["structure:eastern-collective/radar-tower"],
   "health": 1700,
   "armor": "structure",

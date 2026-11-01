@@ -1,28 +1,28 @@
 # Economy
 
-How resources flow in the base game. Resource kinds and other eras' economies are in [content-and-eras.md §2](content-and-eras.md#2-resource-model-no-hardcoded-four-resource-economy); faction twists are in [factions/](factions/README.md#resources).
+How resources flow in the base game. The resources themselves are engine code (`packages/content/src/rules/resources.ts`; see [content-and-eras.md §2](content-and-eras.md#2-resources)); faction twists are in [factions/](factions/README.md#resources).
 
 ## The loop
 
 ```text
-Ore field ──harvester──► Refinery ──► credits ──► build, research, repair
-Rare-metal node ─────────► materials ─┘
-Wrecks ──salvage──► materials (+ some credits)
+Ore field ──harvester──► drop-off ──► credits ─────────┬──► build, research, repair
+Material node ──node-bound structure──► raw materials ─┘
+Wrecks ──salvage──► raw materials (+ some credits)
 Power structures ──► power capacity ──► keeps everything running
 ```
 
 ## Starting a match
 
-- Each faction's definition sets its start (`start` in the faction file): structures, units and resources. Default: an HQ, one harvester and a few infantry, plus the match's starting credits setting.
-- PI starts with its Command Node packed up as a vehicle and deploys it wherever it likes; everyone else starts with their HQ placed at the spawn.
+- Each faction's definition sets its start (`start` in the faction file): structures, units and resources. Every faction starts with its headquarters, two builders, one harvester and three basic infantry, plus the match's starting credits setting ([factions/](factions/README.md#starting-a-match)).
+- The Phoenix Initiative starts with its Command Node packed up as a vehicle and deploys it wherever it likes ([phoenix-initiative.md](factions/phoenix-initiative.md)); every other faction starts with its headquarters placed at the spawn.
 - Every spawn has at least one ore field nearby (the map validator checks this).
 
 ## Harvesting
 
-- **Ore fields** are clusters of ore cells. Each cell holds a finite amount and **regrows slowly** (per profile) up to its cap; fully mined cells regrow from neighbours. Rich fields hold more and regrow faster.
-- **Harvesters** carry a fixed load (e.g. 500 credits worth), mine one cell at a time, then drive to the nearest friendly refinery. When their field is empty they move to the nearest reachable field on their own.
-- **Refinery docking:** one harvester unloads at a time; others queue in arrival order (deterministic). Unloading takes a few seconds.
-- **Rare-metal nodes** are single points worked by a derrick-type structure built on top, producing materials at a fixed rate until depleted.
+- **Ore fields** are clusters of ore cells. Each cell holds a finite amount and **regrows slowly** up to its cap; fully mined cells regrow from neighbours. Rich fields hold more and regrow faster.
+- **Harvesters** carry a fixed load (e.g. 500 credits worth), mine one cell at a time, then drive to the nearest friendly drop-off structure. When their field is empty they move to the nearest reachable field on their own.
+- **Drop-off docking:** one harvester unloads at a time; others queue in arrival order (deterministic). Unloading takes a few seconds.
+- **Material nodes** are single spots worked by a node-bound structure on top, producing raw materials at a fixed rate until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). Which structure works them is a pending decision ([human-tasks.md](../project/human-tasks.md)).
 - **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's builders can clear a wreck for a small amount; the Phoenix Initiative's Salvage Crawlers and Scavenger VTOLs get the full value, plus salvage points ([phoenix-initiative.md](factions/phoenix-initiative.md)).
 
 ## Spending
@@ -34,9 +34,9 @@ Power structures ──► power capacity ──► keeps everything running
 ## Production and construction queues
 
 - **Units:** each production structure builds one unit at a time from a queue of up to 5. Several structures of the same kind build in parallel; there is no speed bonus for owning more beyond that. The cost is paid when that unit **starts** building, not when it's queued.
-- **Structures:** the HQ (or a builder unit, depending on the faction) builds one structure at a time. When it's finished it waits until the player places it on the grid. Placing is instant.
+- **Structures:** builders construct them on site, and more builders build faster ([structures.md](structures.md#construction-and-builders)). Shift-placing queues several sites for the same builders.
 - **Cancel:** an item that hasn't started costs nothing to remove. Cancelling an item in progress refunds 100%.
-- **Destroyed mid-build:** if a production structure dies, its in-progress unit is refunded in full and the rest of the queue is dropped. If the HQ dies while a finished structure waits for placement, that structure is refunded.
+- **Destroyed mid-build:** if a production structure dies, its in-progress unit is refunded in full and the rest of the queue is dropped. A destroyed construction site loses what was spent on it ([structures.md](structures.md#construction-and-builders)).
 - **Low funds:** the next item waits at the head of the queue until it's affordable. Nothing is cancelled automatically.
 
 ## Power
@@ -85,6 +85,6 @@ These are design targets checked by AI-vs-AI runs ([combat-and-balance.md](comba
 
 ## Non-happy paths
 
-- **No refinery left:** harvesters wait at their last field; the HUD warns.
-- **All fields depleted:** income falls to salvage and derricks only; long games shift to a tighter economy by design.
+- **No drop-off structure left:** harvesters wait at their last field; the HUD warns.
+- **All fields depleted:** income falls to salvage and nodes only; long games shift to a tighter economy by design.
 - **Ally leaves:** their Force's bank stays with the Force (bot takeover or remaining co-controllers); nothing is redistributed automatically.

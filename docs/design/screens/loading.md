@@ -4,13 +4,16 @@
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│ (map key art / brick diorama of the map)                            │
+│ (map key art / brick diorama of the map)                           │
 │                                                                    │
-│   IRON VALLEY · 2v2 · Standard                                      │
+│   IRON VALLEY · 2v2 · Standard                                     │
 │                                                                    │
-│   Team A                         Team B                             │
-│   Mara  AFN  ████████████ 100%   Ozzy  PI  ████████░░░░  70%        │
-│   Bob   AFN  ██████████░░  85%   Bot   EC  ready                    │
+│   Team A                                                           │
+│   Mara  Alliance of Free Nations  ████████████ 100%                │
+│   Bob   Alliance of Free Nations  ██████████░░  85%                │
+│   Team B                                                           │
+│   Ozzy  Phoenix Initiative        ████████░░░░  70%                │
+│   Bot   Eastern Collective        ready                            │
 │                                                                    │
 │   Tip: Shift-queue orders to plan a whole attack route.            │
 └────────────────────────────────────────────────────────────────────┘

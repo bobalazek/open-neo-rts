@@ -6,19 +6,22 @@ Campaign missions show the [debriefing](campaign.md#debriefing) instead.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                         ★  VICTORY  ★                                       │
-│              Team A won · Conquest · 34:12                                  │
+│                         ★  VICTORY  ★                                      │
+│             Team A won · Last Man Standing · 34:12                         │
 │                                                                            │
-│ [ Summary ] [ Economy ] [ Military ] [ Structures ] [ Territory ] [ APM ]   │
+│ [ Summary ] [ Economy ] [ Military ] [ Structures ] [ Territory ] [ APM ]  │
 │ ┌────────────────────────────────────────────────────────────────────────┐ │
 │ │ Force           Score  Units built/lost  Destroyed  Gathered  Spent    │ │
-│ │ 1 Mara+Bob AFN  18 420      142 / 61        97       38 200   36 900  │ │
-│ │ 2 Bot EC        12 100      120 / 88        40       30 100   29 400  │ │
-│ │ 3 Ozzy PI        6 870       90 / 90        51       21 000   20 800  │ │
+│ │ 1 Mara+Bob      18 420      142 / 61        97       38 200   36 900   │ │
+│ │   Alliance of Free Nations                                             │ │
+│ │ 2 Bot           12 100      120 / 88        40       30 100   29 400   │ │
+│ │   Eastern Collective                                                   │ │
+│ │ 3 Ozzy           6 870       90 / 90        51       21 000   20 800   │ │
+│ │   Phoenix Initiative                                                   │ │
 │ │                                                                        │ │
 │ │ (Economy and Territory tabs: line charts over match time)              │ │
 │ └────────────────────────────────────────────────────────────────────────┘ │
-│  [ Watch replay ]  [ Save replay ]   [ Rematch ]   [ Back to lobby ▸ ]      │
+│  [ Watch replay ]  [ Save replay ]   [ Rematch ]   [ Back to lobby ▸ ]     │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 

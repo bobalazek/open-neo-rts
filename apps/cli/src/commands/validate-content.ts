@@ -1,4 +1,4 @@
-// bun neo validate-content [packs-dir]: manifests, schemas, IDs, references, locales, and each model against its definition.
+// bun neo validate-content [packs-dir]: manifests, schemas, IDs, references, locales, map layers, and each model against its definition.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -26,7 +26,12 @@ export async function validateContent(args: string[]): Promise<number> {
           console.log(`✖ ${id}/${f}: invalid JSON (${(e as Error).message})`);
         }
       }
-      return { id, files, json };
+      const layers = new Map(
+        files
+          .filter((f) => f.endsWith(".r8"))
+          .map((f) => [f, new Uint8Array(readFileSync(join(dir, f)))] as const),
+      );
+      return { id, files, json, layers };
     });
 
   const { issues, models } = checkPacks(packs);

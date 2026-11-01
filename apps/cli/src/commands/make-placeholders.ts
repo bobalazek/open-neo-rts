@@ -3,7 +3,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { deflateSync } from "node:zlib";
+import { ARRAY_BUFFER, ELEMENT_ARRAY_BUFFER, glbWriter, outline, png } from "../glb-writer";
 
 type Vec3 = [number, number, number];
 interface Part {
@@ -236,45 +236,14 @@ function glb(parts: Part[], clips: string[]): Uint8Array {
     indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
   const times = [0, 0.5, 1];
-  const bin: Uint8Array[] = [];
-  let offset = 0;
-  const views: { buffer: number; byteOffset: number; byteLength: number; target?: number }[] = [];
-  const push = (data: Float32Array | Uint16Array, target?: number) => {
-    const bytes = new Uint8Array(data.buffer.slice(0));
-    const padded = new Uint8Array(Math.ceil(bytes.length / 4) * 4);
-    padded.set(bytes);
-    views.push({
-      buffer: 0,
-      byteOffset: offset,
-      byteLength: bytes.length,
-      ...(target && { target }),
-    });
-    bin.push(padded);
-    offset += padded.length;
-    return views.length - 1;
-  };
-  const accessors: Record<string, unknown>[] = [
-    {
-      bufferView: push(new Float32Array(positions), 34962),
-      componentType: 5126,
-      count: 24,
-      type: "VEC3",
-      min: [-0.5, -0.5, -0.5],
-      max: [0.5, 0.5, 0.5],
-    },
-    {
-      bufferView: push(new Float32Array(normals), 34962),
-      componentType: 5126,
-      count: 24,
-      type: "VEC3",
-    },
-    {
-      bufferView: push(new Uint16Array(indices), 34963),
-      componentType: 5123,
-      count: 36,
-      type: "SCALAR",
-    },
-  ];
+  const w = glbWriter();
+  w.accessor(new Float32Array(positions), "VEC3", {
+    target: ARRAY_BUFFER,
+    min: [-0.5, -0.5, -0.5],
+    max: [0.5, 0.5, 0.5],
+  });
+  w.accessor(new Float32Array(normals), "VEC3", { target: ARRAY_BUFFER });
+  w.accessor(new Uint16Array(indices), "SCALAR", { target: ELEMENT_ARRAY_BUFFER });
   const names = parts.map((p) => p.name);
   const nodes = parts.map((p) => ({
     name: p.name,
@@ -286,31 +255,20 @@ function glb(parts: Part[], clips: string[]): Uint8Array {
   }));
   const animated = names.findIndex((n) => n.endsWith("_mesh"));
   const animations = clips.map((clip, i) => {
-    const input = accessors.length;
-    accessors.push({
-      bufferView: push(new Float32Array(times)),
-      componentType: 5126,
-      count: 3,
-      type: "SCALAR",
-      min: [0],
-      max: [1],
-    });
+    const input = w.accessor(new Float32Array(times), "SCALAR", { min: [0], max: [1] });
     const rest = parts[animated]?.at ?? [0, 0, 0];
     const lift = 0.02 * (i + 1);
-    const output = accessors.length;
-    accessors.push({
-      bufferView: push(new Float32Array([...rest, rest[0], rest[1] + lift, rest[2], ...rest])),
-      componentType: 5126,
-      count: 3,
-      type: "VEC3",
-    });
+    const output = w.accessor(
+      new Float32Array([...rest, rest[0], rest[1] + lift, rest[2], ...rest]),
+      "VEC3",
+    );
     return {
       name: clip,
       samplers: [{ input, output, interpolation: "LINEAR" }],
       channels: [{ sampler: 0, target: { node: animated, path: "translation" } }],
     };
   });
-  const json = {
+  return w.encode({
     asset: { version: "2.0", generator: "open-neo-rts make-placeholders" },
     scene: 0,
     scenes: [{ nodes: parts.flatMap((p, i) => (p.parent ? [] : [i])) }],
@@ -344,30 +302,7 @@ function glb(parts: Part[], clips: string[]): Uint8Array {
       },
     ],
     ...(animations.length > 0 && { animations }),
-    accessors,
-    bufferViews: views,
-    buffers: [{ byteLength: offset }],
-  };
-  const jsonBytes = new TextEncoder().encode(JSON.stringify(json));
-  const jsonChunk = new Uint8Array(Math.ceil(jsonBytes.length / 4) * 4).fill(0x20);
-  jsonChunk.set(jsonBytes);
-  const out = new Uint8Array(12 + 8 + jsonChunk.length + 8 + offset);
-  const view = new DataView(out.buffer);
-  view.setUint32(0, 0x46546c67, true);
-  view.setUint32(4, 2, true);
-  view.setUint32(8, out.length, true);
-  view.setUint32(12, jsonChunk.length, true);
-  view.setUint32(16, 0x4e4f534a, true);
-  out.set(jsonChunk, 20);
-  let at = 20 + jsonChunk.length;
-  view.setUint32(at, offset, true);
-  view.setUint32(at + 4, 0x004e4942, true);
-  at += 8;
-  for (const b of bin) {
-    out.set(b, at);
-    at += b.length;
-  }
-  return out;
+  });
 }
 
 // --- Icon: the model's boxes in a shaded three-quarter view, outlined, on a transparent 128 × 128 tile
@@ -453,30 +388,7 @@ function icon(parts: Part[]): Uint8Array {
       }
     }
   }
-  // Dark outline around the silhouette, so icons read on any background.
-  const solid = (x: number, y: number) =>
-    x >= 0 && y >= 0 && x < ICON && y < ICON && rgba[(y * ICON + x) * 4 + 3] === 255;
-  const out = rgba.slice();
-  for (let y = 0; y < ICON; y++) {
-    for (let x = 0; x < ICON; x++) {
-      if (solid(x, y)) continue;
-      if (
-        [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1],
-          [2, 0],
-          [-2, 0],
-          [0, 2],
-          [0, -2],
-        ].some(([dx, dy]) => solid(x + (dx ?? 0), y + (dy ?? 0)))
-      ) {
-        out.set([20, 22, 26, 255], (y * ICON + x) * 4);
-      }
-    }
-  }
-  return png(out, ICON);
+  return png(outline(rgba, ICON, 2), ICON);
 }
 
 function inside(poly: [number, number][], x: number, y: number): boolean {
@@ -487,46 +399,4 @@ function inside(poly: [number, number][], x: number, y: number): boolean {
     if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
   }
   return hit;
-}
-
-function png(rgba: Uint8Array, size: number): Uint8Array {
-  const rows = new Uint8Array(size * (size * 4 + 1));
-  for (let y = 0; y < size; y++)
-    rows.set(rgba.subarray(y * size * 4, (y + 1) * size * 4), y * (size * 4 + 1) + 1);
-  const chunk = (type: string, data: Uint8Array) => {
-    const out = new Uint8Array(12 + data.length);
-    const view = new DataView(out.buffer);
-    view.setUint32(0, data.length);
-    out.set(new TextEncoder().encode(type), 4);
-    out.set(data, 8);
-    view.setUint32(8 + data.length, crc32(out.subarray(4, 8 + data.length)));
-    return out;
-  };
-  const header = new Uint8Array(13);
-  const hv = new DataView(header.buffer);
-  hv.setUint32(0, size);
-  hv.setUint32(4, size);
-  header.set([8, 6, 0, 0, 0], 8);
-  const parts = [
-    new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]),
-    chunk("IHDR", header),
-    chunk("IDAT", new Uint8Array(deflateSync(rows))),
-    chunk("IEND", new Uint8Array()),
-  ];
-  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
-  let at = 0;
-  for (const p of parts) {
-    out.set(p, at);
-    at += p.length;
-  }
-  return out;
-}
-
-function crc32(data: Uint8Array): number {
-  let c = 0xffffffff;
-  for (const byte of data) {
-    c ^= byte;
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  }
-  return (c ^ 0xffffffff) >>> 0;
 }

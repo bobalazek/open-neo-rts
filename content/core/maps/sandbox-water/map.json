@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/map.schema.json",
+  "id": "map:sandbox-water",
+  "name": "Sandbox: Water",
+  "description": "A deep lake with a shallow shore in the middle, a river with a shallow ford (x 40 to 49) between two deep sections, and deep sea along the east coast.",
+  "size": {
+    "width": 96,
+    "height": 96
+  },
+  "biome": "temperate",
+  "players": {
+    "min": 1,
+    "max": 2
+  },
+  "spawns": [
+    {
+      "id": "north-west",
+      "position": [16, 16],
+      "facing": 135
+    },
+    {
+      "id": "south",
+      "position": [64, 88],
+      "facing": 315
+    }
+  ],
+  "start": "empty",
+  "resources": [],
+  "objects": [],
+  "layers": {
+    "water": "water.r8"
+  }
+}

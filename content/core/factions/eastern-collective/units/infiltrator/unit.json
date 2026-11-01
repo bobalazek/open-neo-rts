@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/infiltrator",
   "name": "Infiltrator",
   "description": "Stealth reconnaissance unit.",
+  "role": "scout",
   "family": "infantry",
   "tags": ["infantry"],
   "cost": {
@@ -23,14 +24,26 @@
   "weapons": [
     {
       "id": "pistol",
-      "damageType": "smallArms",
-      "damage": 12,
+      "targets": ["ground"],
       "range": [0, 4],
       "reload": 1,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 12,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "abilities": [

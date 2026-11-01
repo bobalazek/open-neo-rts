@@ -3,12 +3,12 @@
   "id": "structure:alliance-of-free-nations/power-matrix",
   "name": "Power Matrix",
   "description": "Quantum-assisted power generation.",
+  "role": "power",
   "tags": ["power"],
   "cost": {
     "credits": 700
   },
   "buildTime": 10,
-  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
   "health": 900,
   "armor": "structure",
   "footprint": [2, 2],

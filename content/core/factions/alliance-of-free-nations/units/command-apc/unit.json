@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/command-apc",
   "name": "Command APC",
   "description": "Infantry transport that buffs nearby units; carries 6 infantry.",
+  "role": "transport",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -24,14 +25,26 @@
   "weapons": [
     {
       "id": "machine-gun",
-      "damageType": "smallArms",
-      "damage": 8,
+      "targets": ["ground", "air"],
       "range": [0, 5],
       "reload": 0.5,
       "projectile": {
-        "kind": "hitscan"
+        "kind": "instant"
       },
-      "targets": ["ground", "air"]
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 8,
+          "versus": {
+            "default": 100,
+            "medium": 30,
+            "heavy": 10,
+            "aircraft": 50,
+            "naval": 25,
+            "structure": 10
+          }
+        }
+      ]
     }
   ],
   "abilities": [

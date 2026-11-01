@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/research-bunker",
   "name": "Research Bunker",
   "description": "Experimental technology. Unlocks tier 2 and the Guerrilla Operation power.",
+  "role": "research",
   "cost": {
     "credits": 1300
   },
   "buildTime": 16,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 1300,
   "armor": "structure",
   "footprint": [2, 2],

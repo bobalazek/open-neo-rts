@@ -25,7 +25,7 @@ Fixed positions on the card: **A** attack-move, **S** stop, **H** hold position 
 | Jump to last alert              | Space                                                                  |
 | Jump to base                    | Home                                                                   |
 | Camera positions                | Unbound by default (F-keys are reserved by browsers); bind in settings |
-| Cycle idle workers              | . (period)                                                             |
+| Cycle idle builders             | . (period)                                                             |
 | Cycle idle production           | , (comma)                                                              |
 | Chat                            | Enter (team), Shift + Enter (all)                                      |
 | Ping wheel                      | Hold G                                                                 |

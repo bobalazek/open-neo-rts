@@ -36,7 +36,7 @@ The announcer speaks for the player's Force. Every line also appears in the HUD'
 | Harvester under attack      | High     | 20 s     | A harvester is hit                                                  |
 | Unit lost                   | Low      | 10 s     | One of your units dies (aggregated in big battles)                  |
 | Structure lost              | High     | 5 s      | One of your structures is destroyed                                 |
-| Construction complete       | Medium   | none     | A structure is ready to place                                       |
+| Construction complete       | Medium   | none     | A structure finishes building on site                               |
 | Unit ready                  | Low      | 3 s      | A unit is produced (aggregated)                                     |
 | Research complete           | Medium   | none     | An upgrade or tech finishes                                         |
 | Insufficient funds          | Medium   | 10 s     | A queue stalls for money                                            |
@@ -53,14 +53,14 @@ The announcer speaks for the player's Force. Every line also appears in the HUD'
 
 ## Effects
 
-| Group        | Examples                                                                              |
-| ------------ | ------------------------------------------------------------------------------------- |
-| Weapons      | Per weapon: fire, plus a distant variant beyond a range                               |
-| Impacts      | Per damage type and surface: bullet on metal, explosion on ground, brick-shatter      |
-| Movement     | Engine loops for vehicles and aircraft, footsteps for squads (quiet), water for ships |
-| Construction | Brick-snap clicks while a structure assembles, a finishing chime                      |
-| Destruction  | Brick collapse, explosion, wreck settle                                               |
-| UI           | Click, hover, error, build-panel ready, chat message, ping                            |
+| Group        | Examples                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Weapons      | Per weapon: fire, plus a distant variant beyond a range                                              |
+| Impacts      | Per projectile kind or warhead tag, and surface: bullet on metal, explosion on ground, brick-shatter |
+| Movement     | Engine loops for vehicles and aircraft, footsteps for squads (quiet), water for ships                |
+| Construction | Brick-snap clicks while a structure assembles, a finishing chime                                     |
+| Destruction  | Brick collapse, explosion, wreck settle                                                              |
+| UI           | Click, hover, error, chat message, ping                                                              |
 
 **Spatial rules:** positional audio relative to the camera, distance falloff and culling, at most N simultaneous instances per sound (e.g. 6 identical rifle shots), lowest-priority instances dropped first.
 

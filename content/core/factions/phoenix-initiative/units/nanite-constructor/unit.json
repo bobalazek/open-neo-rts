@@ -3,6 +3,7 @@
   "id": "unit:phoenix-initiative/nanite-constructor",
   "name": "Nanite Constructor",
   "description": "Signature unit: mobile repair and building, and rebuilds wrecks from debris.",
+  "role": "builder",
   "family": "vehicle",
   "tags": ["vehicle", "engineer"],
   "cost": {
@@ -10,13 +11,12 @@
     "materials": 150
   },
   "buildTime": 18,
-  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
-  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 700,
   "armor": "medium",
   "movement": {
     "domain": "tracked",
-    "speed": 2.0
+    "speed": 2
   },
   "radius": 0.8,
   "vision": 7,

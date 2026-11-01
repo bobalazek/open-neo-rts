@@ -3,6 +3,7 @@
   "id": "structure:phoenix-initiative/command-node",
   "name": "Command Node",
   "description": "Mobile command centre: packs up and relocates. Builds structures.",
+  "role": "headquarters",
   "health": 2800,
   "armor": "structure",
   "footprint": [3, 3],

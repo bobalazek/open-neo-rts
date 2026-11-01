@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/stealth-generator",
   "name": "Stealth Generator",
   "description": "Cloaks friendly structures and units in a radius.",
+  "role": "support",
   "cost": {
     "credits": 1400
   },
   "buildTime": 18,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "requires": ["structure:phoenix-initiative/research-bunker"],
   "health": 900,
   "armor": "structure",

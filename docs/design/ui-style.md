@@ -47,7 +47,7 @@ Every unit, structure, ability, upgrade and command has an icon, and they follow
 
 ## Build panel pages
 
-The build panel (bottom right) has **tabs** per category: Structures, Defences, Infantry, Vehicles, Aircraft, Naval. A tab shows a 4 × 3 grid. When a category has more than 12 items, the grid gets **pages**, switched with arrows or the scroll wheel, and items keep a fixed position so hotkeys stay stable. Tabs without anything buildable are hidden; tabs with something ready to place flash.
+The build panel (bottom right) has **tabs** per category: Structures, Defences, Infantry, Vehicles, Aircraft, Naval. A tab shows a 4 × 3 grid. When a category has more than 12 items, the grid gets **pages**, switched with arrows or the scroll wheel, and items keep a fixed position so hotkeys stay stable. Tabs without anything buildable are hidden.
 
 ## Selection and feedback
 

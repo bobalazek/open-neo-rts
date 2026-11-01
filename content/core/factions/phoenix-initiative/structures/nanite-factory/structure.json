@@ -3,11 +3,11 @@
   "id": "structure:phoenix-initiative/nanite-factory",
   "name": "Nanite Factory",
   "description": "Produces vehicles and aircraft from nanite-assembled scrap, and researches nanite technology.",
+  "role": "production",
   "cost": {
     "credits": 1800
   },
   "buildTime": 20,
-  "producedBy": ["structure:phoenix-initiative/command-node"],
   "health": 1700,
   "armor": "structure",
   "footprint": [3, 3],

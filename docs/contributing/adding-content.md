@@ -22,7 +22,7 @@ You can write the JSON by hand or use the [content editor](../design/screens/con
 4. **Assets** (when art exists): model, wreck, icon and sounds in the same folder, plus `assets.json` ([assets.md](assets.md)). The model needs the parts, sockets and clips that `presentation` lists, including a muzzle socket for every weapon.
 5. **Faction doc:** add the unit to its faction's table, with its role and counters.
 6. **Validate:** `bun neo validate`. It checks the schema, references, manifest, and the model against the definition.
-7. **Preview:** open it in the content editor, or with the playtest link the PR preview posts.
+7. **Preview:** open it in the content editor, or with the debug mode link the PR preview posts.
 
 You don't write tests per unit: a generic content suite spawns every definition headlessly, makes it move, attack, take damage and die, and checks determinism.
 
@@ -32,13 +32,13 @@ Same steps, in `factions/<faction>/structures/<name>/structure.json`, listed und
 
 ## Other content
 
-| Content           | Where                             | Notes                                                                                                  |
-| ----------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Faction           | `factions/<faction>/faction.json` | Colour, start kit, bot personality; needs one `headquarters` structure and at least one `builder` unit |
-| Neutral structure | `neutral/structures/<name>/`      | Tech buildings, quantum computing facilities, the wonder                                               |
-| Prop              | `props/<biome>/<name>/prop.json`  | Trees, rocks, ruins                                                                                    |
-| Map               | `maps/<name>/map.json`            | Made in the map editor ([map-editor.md](../engineering/map-editor.md))                                 |
-| Translation       | `locales/<lang>.json`             | Keyed by definition ID and field                                                                       |
+| Content           | Where                             | Notes                                                                                                             |
+| ----------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Faction           | `factions/<faction>/faction.json` | Colour, start kit, bot personality; needs exactly one `headquarters` structure and a `builder` unit trained there |
+| Neutral structure | `neutral/structures/<name>/`      | Tech buildings, quantum computing facilities, the wonder                                                          |
+| Prop              | `props/<biome>/<name>/prop.json`  | Trees, rocks, ruins                                                                                               |
+| Map               | `maps/<name>/map.json`            | Made in the map editor ([map-editor.md](../engineering/map-editor.md))                                            |
+| Translation       | `locales/<lang>.json`             | Keyed by definition ID and field                                                                                  |
 
 ## Balance changes
 

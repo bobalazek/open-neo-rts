@@ -1,2 +1,2 @@
-// Room browser. Phase 3.
+// Room browser. Phase 5.
 export {};

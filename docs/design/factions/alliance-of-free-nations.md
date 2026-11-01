@@ -89,7 +89,7 @@ Command Hub ── Combat Engineer
 
 ## Commander powers
 
-From the world document: **global satellite strikes** and **cyber attacks**.
+From the original world design ([story.md](../story.md)): **global satellite strikes** and **cyber attacks**.
 
 | Power            | Unlocked by             | Effect                                                            |
 | ---------------- | ----------------------- | ----------------------------------------------------------------- |

@@ -3,6 +3,7 @@
   "id": "unit:eastern-collective/heavy-transport",
   "name": "Heavy Transport",
   "description": "Armoured transport aircraft for 10 infantry or 2 vehicles.",
+  "role": "transport",
   "family": "aircraft",
   "tags": ["aircraft"],
   "cost": {

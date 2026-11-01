@@ -28,7 +28,7 @@ Hundreds of units and thousands of props only work with instancing.
 
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
-- **Packing up and deploying** (PI mobile structures) shuffles the bricks into the vehicle form and back.
+- **Packing up and deploying** (Phoenix Initiative mobile structures such as the Command Node) shuffles the bricks into the vehicle form and back.
 - **Damage states:** below 66% and 33% health, models show missing bricks, smoke and sparks.
 - **Destruction:** on a death event, the model breaks into instanced brick chunks with simple visual-only ballistics. Vehicles then settle into the **wreck** pile, which is a real sim entity (salvage). Structures crumble top-down into rubble.
 - **Selling** plays the construction animation in reverse.
@@ -36,7 +36,7 @@ Hundreds of units and thousands of props only work with instancing.
 ## Health bars and labels
 
 - Drawn as instanced billboard quads in a single draw call, not DOM elements, so 500 bars cost almost nothing.
-- **Units:** a segmented health bar, with a shield bar (AFN) above it and veterancy chevrons.
+- **Units:** a segmented health bar, with a shield bar (Alliance of Free Nations) above it and veterancy chevrons.
 - **Structures:** a wider bar, a construction or production progress bar, and power and repair icons.
 - **Visibility** follows the setting (always / damaged / selected). Colour goes green → yellow → red, with a pattern for colour-blind modes.
 - Floating labels (names, rally lines, waypoints) use the same instanced approach.

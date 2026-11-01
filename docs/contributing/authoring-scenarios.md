@@ -18,7 +18,7 @@ Everything here is data. A campaign mission and a skirmish are the same simulati
 1. **Make the map** in the [map editor](../design/screens/map-editor.md).
 2. **Open the scenario editor** (the Triggers tool). Place the Forces (player, enemy bots, neutrals), pre-placed units and structures, and regions (named areas used by objectives and triggers).
 3. **Write objectives and triggers**; see below.
-4. **Write the briefing and dialogue** strings in the pack's locale files, and add voice lines as assets if there are any.
+4. **Write the briefing and dialogue** in English in the mission's files (translations go in the pack's `locales/`), and add voice lines as assets if there are any.
 5. **Playtest** from the editor at every difficulty.
 6. **Add the mission to the campaign graph.**
 
@@ -26,45 +26,56 @@ Everything here is data. A campaign mission and a skirmish are the same simulati
 
 ```json
 {
-  "$schema": "../../../../schemas/mission.schema.json",
-  "id": "mission:afn-04-cold-front",
+  "$schema": "../../../../../schemas/mission.schema.json",
+  "id": "mission:ghost-protocol/mission-04",
   "map": "map:cold-front",
   "forces": [
-    { "id": "player", "faction": "faction:afn", "seat": "human", "start": "region:player-base" },
     {
-      "id": "ec-garrison",
-      "faction": "faction:ec",
+      "id": "player",
+      "faction": "faction:alliance-of-free-nations",
+      "seat": "human",
+      "start": "region:player-base"
+    },
+    {
+      "id": "garrison",
+      "faction": "faction:eastern-collective",
       "seat": "bot",
       "ai": "ai:defensive",
       "start": "region:dam"
     }
   ],
   "difficulty": {
-    "easy": { "ec-garrison": { "aiLevel": "easy", "startingUnits": "units:garrison-small" } },
-    "normal": { "ec-garrison": { "aiLevel": "normal", "startingUnits": "units:garrison-medium" } },
-    "hard": { "ec-garrison": { "aiLevel": "hard", "startingUnits": "units:garrison-large" } }
+    "easy": { "garrison": { "aiLevel": "easy", "startingUnits": "units:garrison-small" } },
+    "normal": { "garrison": { "aiLevel": "normal", "startingUnits": "units:garrison-medium" } },
+    "hard": { "garrison": { "aiLevel": "hard", "startingUnits": "units:garrison-large" } }
   },
   "objectives": [
-    { "id": "capture-dam", "kind": "primary", "condition": { "capture": "structure:dam-control" } },
+    {
+      "id": "capture-dam",
+      "kind": "primary",
+      "condition": { "capture": "structure:neutral/dam-control" }
+    },
     { "id": "convoy", "kind": "primary", "fail": { "allDead": "group:convoy" } },
     {
       "id": "radar",
       "kind": "secondary",
-      "condition": { "destroy": "structure:ec-radar", "beforeTick": 12000 }
+      "condition": { "destroy": "structure:eastern-collective/radar-tower", "beforeTick": 12000 }
     }
   ],
   "triggers": [
     {
       "on": { "event": "regionEntered", "region": "region:bridge", "force": "player" },
       "do": [
-        { "dialogue": "dlg:vale-bridge" },
-        { "spawn": "units:ec-counterattack", "at": "region:east-road", "force": "ec-garrison" },
+        { "dialogue": "dlg:chen-bridge" },
+        { "spawn": "units:counterattack", "at": "region:east-road", "force": "garrison" },
         { "revealObjective": "radar" }
       ],
       "once": true
     }
   ],
-  "rewards": { "unlock": ["mission:afn-05", "unit:afn-raptor"] }
+  "rewards": {
+    "unlock": ["mission:ghost-protocol/mission-05", "unit:alliance-of-free-nations/raptor-vtol"]
+  }
 }
 ```
 
@@ -78,7 +89,7 @@ What counts as a win or a loss is defined in [objectives-and-victory.md](../desi
   - spawn units, change owner, set a bot's AI posture, change diplomacy, reveal the map or an area;
   - add, complete, fail or reveal objectives;
   - dialogue and subtitles, camera rail, play music, set a campaign variable, end the mission.
-- **No scripts.** Triggers are declarative and run inside the sim, so missions are deterministic and replayable. If a mission needs an effect that doesn't exist, add a general effect to the engine (see the `add-sim-feature` skill).
+- **No scripts.** Triggers are declarative and run inside the sim, so missions are deterministic and replayable. If a mission needs an effect that doesn't exist, add a general effect to the engine in an engine PR ([pull-requests.md](pull-requests.md)).
 
 ## Campaigns
 
@@ -93,6 +104,6 @@ A skirmish needs nothing beyond a map: its `map.json` (example: [core/maps/train
 
 ## Testing
 
-- `bun run validate-content` checks mission references: objectives, regions, groups, dialogue keys and unlock targets.
+- `bun neo validate-content` checks mission references: objectives, regions, groups, dialogue and unlock targets.
 - **Mission smoke test:** in CI, every mission loads headless and runs a few thousand ticks with bots on both sides, without errors.
 - **Autoplay** (later): a scripted bot plays a mission to completion, to catch unwinnable missions after balance changes.

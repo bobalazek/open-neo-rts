@@ -3,6 +3,7 @@
   "id": "unit:alliance-of-free-nations/mobile-artillery",
   "name": "Mobile Artillery",
   "description": "Long-range precision strike platform.",
+  "role": "combat",
   "family": "vehicle",
   "tags": ["vehicle"],
   "cost": {
@@ -24,19 +25,34 @@
   "weapons": [
     {
       "id": "guided-shell",
-      "damageType": "explosive",
-      "damage": 90,
+      "targets": ["ground"],
       "range": [4, 16],
       "reload": 6,
       "projectile": {
-        "kind": "homing",
-        "speed": 12
+        "kind": "missile",
+        "speed": 12,
+        "turnRate": 120,
+        "flightTime": 2,
+        "interceptable": true
       },
-      "targets": ["ground"],
-      "splash": {
-        "radius": 1,
-        "edgePercent": 30
-      }
+      "warheads": [
+        {
+          "type": "damage",
+          "amount": 90,
+          "versus": {
+            "default": 100,
+            "infantry": 125,
+            "light": 80,
+            "medium": 60,
+            "heavy": 40,
+            "aircraft": 0,
+            "naval": 75
+          },
+          "radius": 1,
+          "falloff": [100, 30],
+          "tags": ["explosive"]
+        }
+      ]
     }
   ],
   "presentation": {
