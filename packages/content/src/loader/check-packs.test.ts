@@ -156,6 +156,27 @@ describe("checkPacks", () => {
       'weapon "rifle" fires from "socket_muzzle", which presentation.sockets doesn\'t list',
     );
   });
+  test("requires unit clips by capability even when presentation lists none", () => {
+    const requirements = (extra: Record<string, unknown>) => {
+      const p = pack({ [UNIT]: unit(["socket_muzzle"], extra) });
+      p.files.push(UNIT.replace("unit.json", "collective-soldier.glb"));
+      return checkPacks([p]).models[0]?.requires;
+    };
+    expect(requirements({})).toMatchObject({
+      animations: ["idle", "move", "attack", "death"],
+      teamColor: true,
+    });
+    expect(requirements({ family: "vehicle", weapons: [] })?.animations).toEqual(["idle", "move"]);
+    expect(
+      requirements({
+        presentation: {
+          model: "collective-soldier.glb",
+          animations: ["idle", "repair"],
+          sockets: ["socket_muzzle"],
+        },
+      })?.animations,
+    ).toEqual(["idle", "move", "attack", "death", "repair"]);
+  });
   test("the ID must match the folder", () => {
     expect(
       errors(pack({ [UNIT]: unit(["socket_muzzle"], { id: "unit:eastern-collective/soldier" }) })),

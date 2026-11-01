@@ -8,7 +8,11 @@ export interface Gltf {
   meshes?: { name?: string; primitives: GltfPrimitive[] }[];
   accessors?: { count: number; min?: number[]; max?: number[] }[];
   materials?: { name?: string }[];
-  animations?: { name?: string }[];
+  animations?: {
+    name?: string;
+    samplers?: { input: number; output: number; interpolation?: string }[];
+    channels?: { sampler: number; target: { node?: number; path: string } }[];
+  }[];
   skins?: { joints: number[] }[];
 }
 
@@ -23,6 +27,7 @@ export interface GltfNode {
 
 export interface GltfPrimitive {
   attributes: Record<string, number>;
+  material?: number;
   indices?: number;
   mode?: number;
 }

@@ -337,7 +337,17 @@ function requirements(def: Def, pres: Def, kind: ModelKind): ModelRequirements {
   return {
     parts: list(pres.parts),
     sockets: list(pres.sockets),
-    animations: list(pres.animations),
+    animations: [
+      ...new Set([
+        ...(kind === "unit" ? ["idle", "move"] : []),
+        ...(kind === "unit" && Array.isArray(def.weapons) && def.weapons.length > 0
+          ? ["attack"]
+          : []),
+        ...(kind === "unit" && def.family === "infantry" ? ["death"] : []),
+        ...list(pres.animations),
+      ]),
+    ],
+    teamColor: kind === "unit" || kind === "structure",
     ...(materials && { materials }),
     ...(size && kind !== "prop" && { size }),
   };
