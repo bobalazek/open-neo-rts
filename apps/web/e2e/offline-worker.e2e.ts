@@ -165,6 +165,12 @@ for (const production of [false, true]) {
 }
 
 test("a throwing projection consumer cannot strand a worker acknowledgement", async ({ page }) => {
+  let workerRequests = 0;
+  await page.route("**/sim-worker.js", async (route) => {
+    workerRequests++;
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.continue();
+  });
   const errors: string[] = [];
   page.on("pageerror", (error) => {
     errors.push(error.message);
@@ -179,14 +185,21 @@ test("a throwing projection consumer cannot strand a worker acknowledgement", as
       URL.revokeObjectURL(url);
       let calls = 0;
       let tick = -1;
+      let received!: () => void;
+      const firstState = new Promise<void>((resolve) => {
+        received = resolve;
+      });
       const match = createOfflineMatch((state) => {
         tick = state.snapshot.tick;
+        received();
         if (++calls === 1) throw new Error("Projection consumer failed once");
       });
       let timeout: ReturnType<typeof setTimeout> | undefined;
       try {
+        const initialized = match.init({ setup, seat: 1, mode: "debug-no-fog" });
+        await Promise.race([firstState, initialized]);
         await Promise.race([
-          match.init({ setup, seat: 1, mode: "debug-no-fog" }),
+          initialized,
           new Promise((_, reject) => {
             timeout = setTimeout(
               () => reject(new Error("Initialization acknowledgement stranded")),
@@ -210,4 +223,5 @@ test("a throwing projection consumer cannot strand a worker acknowledgement", as
   expect(result).toMatchObject({ initializedTick: 0, steppedTick: 1, disposed: "Match disposed" });
   expect(result.calls).toBeGreaterThan(1);
   expect(errors).toEqual(["Projection consumer failed once"]);
+  expect(workerRequests).toBe(1);
 });
