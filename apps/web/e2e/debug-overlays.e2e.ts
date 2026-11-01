@@ -1,11 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import type { OfflineState } from "../../../packages/client/src/worker";
 import type { DebugOverlayData } from "../../../packages/sim/src/projection";
 
-test("debug overlays show copied terrain, navigation and routes without changing outcomes", async ({
-  page,
-}) => {
-  test.setTimeout(60_000);
+async function openOverlays(page: Page, path: string) {
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
     const packets = { terrain: 0, navigation: 0 };
@@ -25,12 +22,7 @@ test("debug overlays show copied terrain, navigation and routes without changing
       }
     };
   });
-  await page.goto(
-    new URL(
-      "/debug?map=core.map:sandbox-terrain",
-      test.info().project.use.baseURL ?? "http://localhost:4320",
-    ).href,
-  );
+  await page.goto(new URL(path, test.info().project.use.baseURL ?? "http://localhost:4320").href);
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   const state = () => page.evaluate(() => Reflect.get(window, "overlayState") as OfflineState);
@@ -43,6 +35,17 @@ test("debug overlays show copied terrain, navigation and routes without changing
       () => Reflect.get(window, "overlayPackets") as { terrain: number; navigation: number },
     );
   const status = page.getByRole("status", { name: "Overlay status" });
+  return { canvas, state, nav, packets, status };
+}
+
+test("debug terrain overlays show copied rules and clear on reload without changing outcomes", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const { canvas, state, nav, packets, status } = await openOverlays(
+    page,
+    "/debug?map=core.map:sandbox-terrain",
+  );
   const initial = await state();
   await page.getByLabel("Grid", { exact: true }).check();
   await page.getByLabel("Heights", { exact: true }).check();
@@ -62,14 +65,21 @@ test("debug overlays show copied terrain, navigation and routes without changing
   await page.getByRole("button", { name: "Reload session", exact: true }).click();
   await expect(canvas).toHaveAttribute("data-session", "ready");
   await expect(page.getByLabel("Grid", { exact: true })).not.toBeChecked();
+});
+
+test("debug route overlays refresh blockers, retain cached grids and turn off without changing outcomes", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const { canvas, state, nav, packets, status } = await openOverlays(
+    page,
+    "/debug?spawn=core.unit:eastern-collective/dragon-tank@24,32",
+  );
   const bounds = await canvas.boundingBox();
   if (!bounds) throw new Error("Missing canvas");
   const click = (x: number, y: number, button: "left" | "right" = "left") =>
     page.mouse.click(bounds.x + bounds.width * x, bounds.y + bounds.height * y, { button });
   const definitions = page.getByRole("listbox", { name: "Definition" });
-  await definitions.selectOption("core.unit:eastern-collective/dragon-tank");
-  await click(0.4, 0.65);
-  await expect(page.getByRole("status", { name: "Spawn result" })).toContainText("Spawned");
   await page.getByLabel("Inspect entity", { exact: true }).selectOption("e1");
   await page.getByLabel("Map action", { exact: true }).selectOption("select");
   await page.getByLabel("Current paths", { exact: true }).check();

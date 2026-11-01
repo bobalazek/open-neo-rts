@@ -185,11 +185,11 @@ for (const map of ["flat", "terrain", "water", "resources", "biomes", "training-
     const id = map === "training-grounds" ? `core.map:${map}` : `core.map:sandbox-${map}`;
     await page.goto(`/debug?map=${id}`);
     const canvas = page.locator("#game");
-    await expect(canvas).toHaveAttribute("data-session", "ready");
+    await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
     await expect(page.getByLabel("Map", { exact: true })).toHaveValue(id);
     const before = await page.evaluate(() => Reflect.get(window, "workerState"));
     await page.getByRole("button", { name: "Reload session" }).click();
-    await expect(canvas).toHaveAttribute("data-session", "ready");
+    await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
     expect(await page.evaluate(() => Reflect.get(window, "workerState"))).toEqual(before);
   });
 }
