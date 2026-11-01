@@ -31,6 +31,7 @@ export async function startModelCheck(canvas: HTMLCanvasElement) {
     const selected = file.files?.[0];
     if (!selected) return;
     const ticket = ++request;
+    preview.cancelLoad();
     status.textContent = `Loading ${selected.name}…`;
     clips.disabled = true;
     try {
@@ -48,7 +49,7 @@ export async function startModelCheck(canvas: HTMLCanvasElement) {
       status.classList.remove("model-check-error");
     } catch {
       if (ticket !== request) return;
-      status.textContent = `Could not open ${selected.name}. Choose a valid GLB.`;
+      status.textContent = `Could not open ${selected.name}. Choose a valid GLB with embedded resources.`;
       status.classList.add("model-check-error");
       clips.disabled = clips.options.length <= 1;
     }

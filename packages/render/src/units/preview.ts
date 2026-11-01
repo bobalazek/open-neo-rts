@@ -40,6 +40,9 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
   window.addEventListener("resize", resize);
 
   return {
+    cancelLoad: () => {
+      request++;
+    },
     async load(bytes: Uint8Array, teamColor: string) {
       const ticket = ++request;
       const next = await loadModel(scene, bytes);
