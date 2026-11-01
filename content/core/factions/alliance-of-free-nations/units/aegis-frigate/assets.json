@@ -1,0 +1,16 @@
+{
+  "files": {
+    "aegis-frigate.glb": {
+      "author": "Borut Balazek",
+      "source": "source/aegis-frigate.bricks.json"
+    },
+    "aegis-frigate.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/aegis-frigate.bricks.json"
+    },
+    "aegis-frigate.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/aegis-frigate.bricks.json"
+    }
+  }
+}

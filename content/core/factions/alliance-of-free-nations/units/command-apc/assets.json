@@ -1,0 +1,16 @@
+{
+  "files": {
+    "command-apc.glb": {
+      "author": "Borut Balazek",
+      "source": "source/command-apc.bricks.json"
+    },
+    "command-apc.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/command-apc.bricks.json"
+    },
+    "command-apc.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/command-apc.bricks.json"
+    }
+  }
+}
