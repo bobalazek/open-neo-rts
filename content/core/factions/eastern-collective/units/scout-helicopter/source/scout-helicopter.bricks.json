@@ -1,0 +1,227 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hull",
+      "bricks": [
+        {
+          "at": [-1.88, 1.41, -2.632],
+          "size": [3.76, 2.256, 5.076],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.504, 1.974, 2.444],
+          "size": [3.008, 1.692, 1.692],
+          "slot": "glass",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-1.598, 3.666, -2.256],
+          "size": [3.196, 0.47, 4.324],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.564, 2.35, -7.05],
+          "size": [1.128, 1.034, 4.512],
+          "slot": "palette",
+          "studs": false,
+          "color": "#2f3338"
+        },
+        {
+          "at": [-0.282, 3.29, -7.05],
+          "size": [0.564, 2.444, 1.316],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope-z"
+        },
+        {
+          "at": [1.974, 0.0, -2.82],
+          "size": [0.329, 0.376, 6.58],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [1.88, 0.376, -1.41],
+          "size": [0.235, 1.222, 0.282],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [1.88, 0.376, 1.88],
+          "size": [0.235, 1.222, 0.282],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [1.692, 2.068, -1.692],
+          "size": [0.329, 0.47, 0.94],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "rotor",
+      "bricks": [
+        {
+          "at": [-0.329, 0.0, -0.329],
+          "size": [0.658, 0.94, 0.658],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-5.64, 0.752, -0.282],
+          "size": [11.28, 0.1692, 0.564],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        },
+        {
+          "at": [-0.282, 0.752, -5.64],
+          "size": [0.564, 0.1692, 11.28],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        },
+        {
+          "at": [4.512, 0.752, -0.2914],
+          "size": [1.128, 0.188, 0.5828],
+          "slot": "team_light",
+          "studs": false,
+          "mirror": true
+        }
+      ],
+      "parent": "hull",
+      "at": [0.0, 4.136, -0.47]
+    },
+    {
+      "name": "tail_rotor",
+      "bricks": [
+        {
+          "at": [-0.094, -1.598, -0.141],
+          "size": [0.188, 3.196, 0.282],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        },
+        {
+          "at": [-0.094, -0.141, -1.598],
+          "size": [0.188, 0.282, 3.196],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [0.658, 3.572, -6.58]
+    },
+    {
+      "name": "barrel",
+      "bricks": [
+        {
+          "at": [-0.376, -0.282, -0.564],
+          "size": [0.752, 0.564, 1.316],
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-0.1128, -0.047, 0.752],
+          "size": [0.2256, 0.2256, 1.034],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        }
+      ],
+      "parent": "hull",
+      "at": [0.0, 1.692, 1.88]
+    },
+    {
+      "name": "socket_muzzle",
+      "parent": "barrel",
+      "at": [0.0, 0.0658, 1.833]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 0.5,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "rotor",
+          "rotation": [
+            [0.0, [0, 0.0, 0]],
+            [0.125, [0, 90.0, 0]],
+            [0.25, [0, 180.0, 0]],
+            [0.375, [0, 270.0, 0]],
+            [0.5, [0, 360.0, 0]]
+          ]
+        },
+        {
+          "node": "tail_rotor",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.125, [90.0, 0, 0]],
+            [0.25, [180.0, 0, 0]],
+            [0.375, [270.0, 0, 0]],
+            [0.5, [360.0, 0, 0]]
+          ]
+        }
+      ]
+    },
+    "move": {
+      "duration": 0.4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "rotor",
+          "rotation": [
+            [0.0, [0, 0.0, 0]],
+            [0.1, [0, 90.0, 0]],
+            [0.2, [0, 180.0, 0]],
+            [0.30000000000000004, [0, 270.0, 0]],
+            [0.4, [0, 360.0, 0]]
+          ]
+        },
+        {
+          "node": "tail_rotor",
+          "rotation": [
+            [0.0, [0.0, 0, 0]],
+            [0.1, [90.0, 0, 0]],
+            [0.2, [180.0, 0, 0]],
+            [0.30000000000000004, [270.0, 0, 0]],
+            [0.4, [360.0, 0, 0]]
+          ]
+        },
+        {
+          "node": "hull",
+          "rotation": [[0, [0, 0, 0]], [0.2, [5, 0, 0]], [0.4, [0, 0, 0]]]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.5,
+      "tracks": [
+        {
+          "node": "barrel",
+          "translation": [
+            [0, [0.0, 0.0, 0.0]],
+            [0.08333333333333333, [0.0, 0.0, -0.1692]],
+            [0.5, [0.0, 0.0, 0.0]]
+          ]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["rotor", "tail_rotor"],
+    "darken": 0.65
+  }
+}

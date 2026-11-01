@@ -1,0 +1,202 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "hull",
+      "bricks": [
+        {
+          "at": [-1.4, 0.8, -6.5],
+          "size": [2.8, 1.8, 12],
+          "slot": "team",
+          "studs": false
+        },
+        {
+          "at": [-1.4, 0.8, 5.5],
+          "size": [2.8, 1.8, 2.2],
+          "slot": "team",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [-1, 2.6, 1],
+          "size": [2, 1.2, 3.4],
+          "slot": "glass",
+          "studs": false,
+          "shape": "slope+z"
+        },
+        {
+          "at": [1.4, 1, -4],
+          "size": [5, 0.45, 6.4],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope+z",
+          "mirror": true
+        },
+        {
+          "at": [5.7, 1.1, -3.4],
+          "size": [0.6, 0.3, 2.5],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705",
+          "mirror": true
+        },
+        {
+          "at": [-0.25, 2.6, -6.2],
+          "size": [0.5, 3, 2.8],
+          "slot": "team_dark",
+          "studs": false,
+          "shape": "slope-z"
+        },
+        {
+          "at": [1.5, 0.9, -6],
+          "size": [2, 0.4, 2],
+          "slot": "team",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [0.3, 1, -7],
+          "size": [0.9, 0.9, 0.8],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "name": "engine",
+      "bricks": [
+        {
+          "at": [-0.15, -0.7, -0.05],
+          "size": [0.3, 1.4, 0.1],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [-0.7, -0.15, -0.05],
+          "size": [1.4, 0.3, 0.1],
+          "slot": "palette",
+          "studs": false,
+          "color": "#1c1d20"
+        }
+      ],
+      "parent": "hull",
+      "at": [0, 1.7, -6.8]
+    },
+    {
+      "name": "aileron_l",
+      "bricks": [
+        {
+          "at": [0, -0.1, -0.3],
+          "size": [3, 0.25, 0.8],
+          "slot": "team_light",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [2.5, 1.3, -4]
+    },
+    {
+      "name": "aileron_r",
+      "bricks": [
+        {
+          "at": [-3, -0.1, -0.3],
+          "size": [3, 0.25, 0.8],
+          "slot": "team_light",
+          "studs": false
+        }
+      ],
+      "parent": "hull",
+      "at": [-2.5, 1.3, -4]
+    },
+    {
+      "name": "launcher",
+      "bricks": [
+        {
+          "at": [2.7, 0.25, -1.5],
+          "size": [0.5, 0.5, 3.6],
+          "slot": "metal",
+          "studs": false,
+          "shape": "cyl-z",
+          "mirror": true
+        },
+        {
+          "at": [2.65, 0.2, 2.1],
+          "size": [0.6, 0.6, 0.8],
+          "slot": "palette",
+          "studs": false,
+          "color": "#f2b705",
+          "shape": "slope+z",
+          "mirror": true
+        }
+      ],
+      "parent": "hull"
+    },
+    {
+      "name": "socket_muzzle_0",
+      "parent": "launcher",
+      "at": [3, 0.5, 3]
+    },
+    {
+      "name": "socket_muzzle_1",
+      "parent": "launcher",
+      "at": [-3, 0.5, 3]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 1,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "engine",
+          "rotation": [
+            [0.0, [0, 0, 0.0]],
+            [0.25, [0, 0, 90.0]],
+            [0.5, [0, 0, 180.0]],
+            [0.75, [0, 0, 270.0]],
+            [1.0, [0, 0, 360.0]]
+          ]
+        }
+      ]
+    },
+    "move": {
+      "duration": 0.8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "engine",
+          "rotation": [
+            [0.0, [0, 0, 0.0]],
+            [0.2, [0, 0, 90.0]],
+            [0.4, [0, 0, 180.0]],
+            [0.6000000000000001, [0, 0, 270.0]],
+            [0.8, [0, 0, 360.0]]
+          ]
+        },
+        {
+          "node": "aileron_l",
+          "rotation": [[0, [0, 0, 0]], [0.4, [12, 0, 0]], [0.8, [0, 0, 0]]]
+        },
+        {
+          "node": "aileron_r",
+          "rotation": [[0, [0, 0, 0]], [0.4, [-12, 0, 0]], [0.8, [0, 0, 0]]]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.5,
+      "tracks": [
+        {
+          "node": "launcher",
+          "translation": [[0, [0, 0, 0]], [0.08333333333333333, [0, 0, -0.35]], [0.5, [0, 0, 0]]]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["launcher"],
+    "darken": 0.65
+  }
+}
