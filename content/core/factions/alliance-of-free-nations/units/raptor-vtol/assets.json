@@ -1,0 +1,16 @@
+{
+  "files": {
+    "raptor-vtol.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raptor-vtol.bricks.json"
+    },
+    "raptor-vtol.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/raptor-vtol.bricks.json"
+    },
+    "raptor-vtol.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raptor-vtol.bricks.json"
+    }
+  }
+}
