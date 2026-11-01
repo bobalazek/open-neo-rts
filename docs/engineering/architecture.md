@@ -197,6 +197,16 @@ The order is a versioned contract: changing a phase bumps the simulation version
 
 **Registration, not imports:** the sim exposes a phase scheduler with hooks. Features (`register(world)`) and controllers such as bots (`registerController(world, seat, controller)`) plug into it, so `ai` depends on `sim` and never the other way round.
 
+### Offline worker foundation (phase 1b)
+
+`createOfflineMatch(onState)` in `client/worker` owns one module Web Worker served at `/sim-worker.js`. Its `init({ setup, seat, mode })` uses the existing flat-world `MatchSetup` and scenario validator. The worker owns the kernel, assigns canonical tick/sequence/seat, resolves presentation handles to ECS IDs, and executes through `step`. Only copied presentation packets cross back to the main thread: tick, definition ID, owner Force, integer transform, current/max health and current move order. The main-thread lifecycle module has no runtime sim import.
+
+`controlled` projection currently exposes only Forces on which that seat has an active `unit.orders` grant. Unknown seats fail closed. This is a restrictive foundation, not phase-2 fog, shared vision, shroud or ghost memory. `debug-no-fog` explicitly exposes the entire world and current full-state hash, and requires `debug: true`. Each projection allocates its own opaque handles independently of ECS IDs; commands referencing unavailable handles are rejected.
+
+Matches start paused. `command(type, payload)` accepts presentation handles in `entity`/`entities` and resolves after its next tick, so queue it before awaiting `step()` while paused. `pause`, `step` and `speed` (×0.25, ×0.5, ×1, ×2, ×4, ×8) control only the worker's real-time 50 ms pacing; simulation arithmetic remains unchanged. `exportLog()` is debug-only and returns the existing scenario envelope with accepted canonical commands; supply the current snapshot tick to `bun neo run --ticks` to reproduce trailing empty ticks. `dispose()` terminates the worker and rejects pending requests; reload creates a new host, preventing old replies from reaching the replacement.
+
+Bun 1.3.9 serves an explicitly browser-bundled worker route in `apps/web/dev.ts`; `apps/web/build.ts` emits the same entry as a separate `dist/sim-worker.js`. This follows Bun's [HTML route](https://bun.sh/docs/runtime/http/server) and [build API](https://bun.sh/docs/bundler) patterns. The sim worker is not a copied TypeScript source asset. Terrain-aware initialization, renderer consumption and debug UI controls remain separate tasks.
+
 ## 6. ECS conventions
 
 The ECS holds simulation objects: entities, components, queries and systems. Definitions such as `unit:alliance-of-free-nations/panther-mbt` are data templates that spawn entities with component values. Game units are not TypeScript classes. Entity IDs are u32 values starting at 1 (0 means "none" in fields), never reused within a world, and the next ID is part of snapshots.
