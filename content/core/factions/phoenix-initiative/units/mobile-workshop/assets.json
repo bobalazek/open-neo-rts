@@ -1,0 +1,16 @@
+{
+  "files": {
+    "mobile-workshop.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-workshop.bricks.json"
+    },
+    "mobile-workshop.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-workshop.bricks.json"
+    },
+    "mobile-workshop.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/mobile-workshop.bricks.json"
+    }
+  }
+}
