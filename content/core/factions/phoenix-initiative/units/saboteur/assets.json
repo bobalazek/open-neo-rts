@@ -1,0 +1,12 @@
+{
+  "files": {
+    "saboteur.glb": {
+      "author": "Borut Balazek",
+      "source": "source/saboteur.bricks.json"
+    },
+    "saboteur.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/saboteur.bricks.json"
+    }
+  }
+}

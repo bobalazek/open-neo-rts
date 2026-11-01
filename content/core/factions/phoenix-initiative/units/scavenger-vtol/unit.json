@@ -32,7 +32,7 @@
     "materials": {},
     "parts": ["hull"],
     "sockets": [],
-    "animations": [],
+    "animations": ["idle", "move"],
     "wreck": "scavenger-vtol.wreck.glb"
   }
 }

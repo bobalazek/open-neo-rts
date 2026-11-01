@@ -1,0 +1,16 @@
+{
+  "files": {
+    "strike-drone.glb": {
+      "author": "Borut Balazek",
+      "source": "source/strike-drone.bricks.json"
+    },
+    "strike-drone.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/strike-drone.bricks.json"
+    },
+    "strike-drone.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/strike-drone.bricks.json"
+    }
+  }
+}

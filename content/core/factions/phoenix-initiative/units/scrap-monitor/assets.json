@@ -1,0 +1,16 @@
+{
+  "files": {
+    "scrap-monitor.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scrap-monitor.bricks.json"
+    },
+    "scrap-monitor.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/scrap-monitor.bricks.json"
+    },
+    "scrap-monitor.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scrap-monitor.bricks.json"
+    }
+  }
+}
