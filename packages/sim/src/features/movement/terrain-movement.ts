@@ -190,9 +190,12 @@ export class TerrainMovement {
       return;
     }
     const attempts = route.repaths + (stuck ? 1 : 0);
+    const attackMove = this.kernel.world.get(id, MoveIntent, "attackMove");
     this.cancel(id);
     this.kernel.world.remove(id, MoveIntent);
     this.plan(id, route.requested, "repath", attempts);
+    if (this.kernel.world.has(id, MoveIntent))
+      this.kernel.world.set(id, MoveIntent, "attackMove", attackMove);
   }
 
   order(id: number, target: Point): void {

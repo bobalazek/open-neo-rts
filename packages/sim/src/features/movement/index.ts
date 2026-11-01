@@ -1,5 +1,4 @@
-// Orders, pathfinding, steering, formations. Phase 1a: move and stop on a flat grid, no terrain,
-// collision or pathfinding yet (pathfinding.md).
+// Granted move, attack-move and stop orders; map movement uses the terrain path follower.
 
 import { atan2, divFloor, isqrt } from "@open-neo-rts/deterministic";
 import { type Grant, hasGrant, type Rejection } from "../../commands";
@@ -14,7 +13,7 @@ export * from "./path-search";
 export * from "./reachability";
 
 /** Where a unit is moving, in subcells. Present only while it has a move order. */
-export const MoveIntent = defineComponent("MoveIntent", { x: "i32", y: "i32" });
+export const MoveIntent = defineComponent("MoveIntent", { x: "i32", y: "i32", attackMove: "u8" });
 /** Terminal map movement failure: 1 = no clear start/destination, 2 = bounded stuck retries exhausted. */
 export const MovementFailure = defineComponent("MovementFailure", { reason: "u8" });
 
@@ -39,6 +38,7 @@ export function movementFeature(match: {
     seat: number,
     entities: readonly number[],
     target?: { x: number; y: number },
+    attackMove = 0,
   ): Rejection | undefined {
     const { world, tick } = kernel;
     // Units may have died since the order was issued; IDs are never reused, so skip them.
@@ -54,6 +54,7 @@ export function movementFeature(match: {
       if (target && speedOf(world, id) > 0) {
         if (kernel.movement) kernel.movement.order(id, target);
         else world.add(id, MoveIntent, target);
+        if (world.has(id, MoveIntent)) world.set(id, MoveIntent, "attackMove", attackMove);
       }
     }
   }
@@ -75,6 +76,8 @@ export function movementFeature(match: {
     handlers: {
       "unit.move": (kernel, { seat, payload: { entities, x, y } }) =>
         order(kernel, seat, entities, { x, y }),
+      "unit.attackMove": (kernel, { seat, payload: { entities, x, y } }) =>
+        order(kernel, seat, entities, { x, y }, 1),
       "unit.stop": (kernel, { seat, payload: { entities } }) => order(kernel, seat, entities),
     },
   };

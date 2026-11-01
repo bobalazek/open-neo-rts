@@ -73,7 +73,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     return (
       entity.order === null ||
       (isRecord(entity.order) &&
-        entity.order.type === "move" &&
+        (entity.order.type === "move" || entity.order.type === "attackMove") &&
         Number.isInteger(entity.order.x) &&
         Number.isInteger(entity.order.y))
     );

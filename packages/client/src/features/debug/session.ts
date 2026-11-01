@@ -9,6 +9,7 @@ import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { toMatchResources } from "@open-neo-rts/sim/maps";
 import { createOfflineMatch } from "../../worker";
 import { bindSelectionInput } from "../match/input";
+import { bindOrderInput } from "../match/orders";
 import { catalogEntry, resolveEntityModel } from "./catalog";
 import { createPresentationClock } from "./clock";
 import { type DebugForce, FACTIONS, parseDebugSeed, validateDebugForces } from "./configuration";
@@ -269,10 +270,38 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       const activeMatch = match;
       const activeRenderer = renderer;
       let busy = false;
+      const orders = bindOrderInput(
+        canvas,
+        panel,
+        {
+          ready: () => current() && !busy && !inspector.busy(),
+          selectMode: () => {
+            palette.cancel();
+          },
+          pickCell: (x, y) => activeRenderer.pickCell(x, y),
+          order: async (type, cell) => {
+            const handles = inspector.selected();
+            if (!handles.length) return "Select an entity first.";
+            let result = "Control busy.";
+            await inspector.perform(async (active, state) => {
+              const command = active.command(type, {
+                entities: handles,
+                ...(cell ? { x: cell.x * 1024 + 512, y: cell.y * 1024 + 512 } : {}),
+              });
+              if (state.paused) await active.step();
+              result = String(await command);
+              return result;
+            });
+            return result;
+          },
+        },
+        clicks.signal,
+      );
       const selectionInput = bindSelectionInput(
         canvas,
         {
-          enabled: () => current() && !busy && !inspector.busy() && !palette.spawning(),
+          enabled: () =>
+            current() && !busy && !inspector.busy() && !palette.spawning() && !orders.targeting(),
           selected: inspector.selected,
           select: inspector.select,
           pick: (x, y) => presentation.pick(x, y),
@@ -295,7 +324,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         "click",
         async (event) => {
           if (!current() || busy || inspector.busy() || event.button !== 0) return;
-          if (!palette.spawning()) return;
+          if (!palette.spawning() || orders.targeting()) return;
           const selection = palette.selection();
           const cell = activeRenderer.pickCell(event.clientX, event.clientY);
           if (!selection || !cell) {

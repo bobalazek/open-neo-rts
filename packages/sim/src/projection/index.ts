@@ -15,7 +15,7 @@ export interface PresentedEntity {
   facing: number;
   health: number;
   maxHealth: number;
-  order: { type: "move"; x: number; y: number } | null;
+  order: { type: "move" | "attackMove"; x: number; y: number } | null;
 }
 export interface SeatSnapshot {
   tick: number;
@@ -61,7 +61,11 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
           order: world.has(id, MoveIntent)
-            ? { type: "move", x: world.get(id, MoveIntent, "x"), y: world.get(id, MoveIntent, "y") }
+            ? {
+                type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",
+                x: world.get(id, MoveIntent, "x"),
+                y: world.get(id, MoveIntent, "y"),
+              }
             : null,
         });
       }

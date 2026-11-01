@@ -48,5 +48,6 @@ export async function resolveEntityModel(entry: CatalogEntry) {
     bytes: new Uint8Array(await response.arrayBuffer()),
     movementDomain: entry.movementDomain,
     footprint: entry.definition.footprint,
+    radiusSubcells: entry.definition.radiusSubcells,
   };
 }

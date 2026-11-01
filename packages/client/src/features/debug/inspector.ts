@@ -18,6 +18,7 @@ export function createInspector(
       <output aria-label="Simulation time">Waiting for worker</output>
     </div>
     <label>Inspect entity <select name="entity" aria-label="Inspect entity"></select></label>
+    <output aria-label="Selection count">0 selected</output>
     <pre aria-label="Integer components">No entity selected.</pre>
     <div class="model-check-controls">
       <label>Health <input name="health" type="text" inputmode="numeric" /></label>
@@ -39,6 +40,7 @@ export function createInspector(
   const time = required<HTMLOutputElement>("output");
   const picker = required<HTMLSelectElement>('[name="entity"]');
   const components = required<HTMLElement>("pre");
+  const count = required<HTMLOutputElement>('[aria-label="Selection count"]');
   const health = required<HTMLInputElement>('[name="health"]');
   const setHealth = required<HTMLButtonElement>('[name="set-health"]');
   const kill = required<HTMLButtonElement>('[name="kill"]');
@@ -59,6 +61,7 @@ export function createInspector(
       time.textContent = `Tick ${state.snapshot.tick} · ${state.paused ? "Paused" : "Running"} · ×${state.speed} · Hash ${state.hash ?? "unavailable"}`;
     }
     const entity = inspected();
+    count.textContent = `${selected.length} selected`;
     picker.value = entity?.handle ?? "";
     components.textContent = entity
       ? `${catalog.find((entry) => entry.definition.id === entity.definition)?.name ?? entity.definition}\nHandle ${entity.handle} · Force ${entity.force + 1}\n${JSON.stringify(entity, null, 2)}`

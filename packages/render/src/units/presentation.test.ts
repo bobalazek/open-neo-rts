@@ -183,6 +183,7 @@ test("poses convert subcells to metres, follow ramps, and interpolate wrapped fa
   const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
     bytes: await bytes("dragon-tank"),
     movementDomain: "tracked",
+    radiusSubcells: 870,
   }));
   try {
     const initial = snapshot(0, [entity("tank", { x: 1024, y: 1536, facing: 65500 })]);
@@ -217,10 +218,20 @@ test("poses convert subcells to metres, follow ramps, and interpolate wrapped fa
     layer.setPlaybackRate(0);
     layer.render(200);
     expect(tank.position.x).toBe(6);
-    expect(f.scene.animationGroups.every((group) => group.speedRatio === 0)).toBe(true);
+    const tankClips = f.scene.animationGroups.filter((group) =>
+      group.targetedAnimations.some(({ target }) => target.isDescendantOf(tank)),
+    );
+    expect(tankClips.length).toBeGreaterThan(0);
+    expect(tankClips.every((group) => group.speedRatio === 0)).toBe(true);
     layer.setPlaybackRate(8);
-    expect(f.scene.animationGroups.every((group) => group.speedRatio === 8)).toBe(true);
+    expect(tankClips.every((group) => group.speedRatio === 8)).toBe(true);
     expect(() => layer.setPlaybackRate(-1)).toThrow("Invalid playback rate");
+    layer.select(["tank"]);
+    const ring = f.scene.getMeshByName("selected entity");
+    expect(ring?.scaling.x).toBeCloseTo((870 * 2) / 1024 + 0.2);
+    expect(ring?.isPickable).toBe(false);
+    layer.select([]);
+    expect(f.scene.getMeshByName("selected entity")).toBeNull();
   } finally {
     layer.dispose();
     f.dispose();

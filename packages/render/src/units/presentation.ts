@@ -34,6 +34,7 @@ interface Template {
   force: number;
   movementDomain: (typeof DOMAINS)[number] | null;
   footprint?: readonly [number, number];
+  radiusSubcells?: number;
   visibility: Map<string, boolean>;
   model?: AssetContainer;
   loading: Promise<AssetContainer | undefined>;
@@ -50,6 +51,7 @@ export function createEntityPresentation(
     bytes: Uint8Array;
     movementDomain: (typeof DOMAINS)[number] | null;
     footprint?: readonly [number, number];
+    radiusSubcells?: number;
   }>,
 ) {
   const entities = new Map<string, Entity>();
@@ -88,7 +90,8 @@ export function createEntityPresentation(
       visibility: new Map(),
       loading: Promise.resolve()
         .then(async () => {
-          const { bytes, movementDomain, footprint } = await resolveModel(definition);
+          const { bytes, movementDomain, footprint, radiusSubcells } =
+            await resolveModel(definition);
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
           const model = await loadModelContainer(scene, bytes);
@@ -106,6 +109,7 @@ export function createEntityPresentation(
             }
             template.movementDomain = movementDomain;
             template.footprint = footprint;
+            template.radiusSubcells = radiusSubcells;
             template.model = model;
             return model;
           } catch (error) {
@@ -151,11 +155,11 @@ export function createEntityPresentation(
         if (!ringModel) {
           ringModel = MeshBuilder.CreateTorus(
             "selection ring template",
-            { diameter: 2, thickness: 0.06, tessellation: 32 },
+            { diameter: 2, thickness: 0.14, tessellation: 32 },
             scene,
           );
           ringMaterial = new StandardMaterial("selection ring", scene);
-          ringMaterial.emissiveColor = new Color3(0.4, 1, 0.65);
+          ringMaterial.emissiveColor = Color3.FromHexString("#f5cf60");
           ringMaterial.disableLighting = true;
           ringModel.material = ringMaterial;
           ringModel.isVisible = ringModel.isPickable = false;
@@ -167,7 +171,7 @@ export function createEntityPresentation(
         }
         const size = template?.footprint
           ? (Math.max(...template.footprint) * CELL_SIZE) / 2 + 0.2
-          : CELL_SIZE * 0.65;
+          : ((template?.radiusSubcells ?? 666) * CELL_SIZE) / 1024 + 0.2;
         entity.ring.scaling.set(size, 1, size);
         entity.ring.position.set(x * CELL_SIZE, height + 0.08, y * CELL_SIZE);
       } else if (entity.ring) {
@@ -312,9 +316,8 @@ export function createEntityPresentation(
       const handles: string[] = [];
       for (const [handle, entity] of entities) {
         if (
-          !entity.root ||
           !entity.root
-            .getChildMeshes()
+            ?.getChildMeshes()
             .some((mesh) => mesh.isVisible && mesh.isEnabled() && mesh.getTotalVertices() > 0)
         )
           continue;
