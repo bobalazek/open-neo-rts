@@ -1,0 +1,51 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/hypersonic-strike-jet",
+  "name": "Hypersonic Strike Jet",
+  "description": "Signature strike aircraft: one devastating run, then back to rearm.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 2600,
+    "materials": 600
+  },
+  "buildTime": 30,
+  "producedBy": ["structure:alliance-of-free-nations/drone-assembly-plant"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 400,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 12.0
+  },
+  "radius": 0.9,
+  "vision": 8,
+  "pop": 4,
+  "weapons": [
+    {
+      "id": "bombs",
+      "damageType": "explosive",
+      "damage": 200,
+      "range": [0, 1],
+      "reload": 6,
+      "projectile": {
+        "kind": "delivered"
+      },
+      "targets": ["ground", "structure"],
+      "splash": {
+        "radius": 2,
+        "edgePercent": 30
+      }
+    }
+  ],
+  "ammo": 1,
+  "presentation": {
+    "model": "hypersonic-strike-jet.glb",
+    "icon": "hypersonic-strike-jet.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "hypersonic-strike-jet.wreck.glb"
+  }
+}

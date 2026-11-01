@@ -1,6 +1,6 @@
 // bun neo generate-schemas [--check]: writes content/schemas/*.schema.json from packages/content. --check fails if they're stale.
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { SCHEMAS, toJsonSchema } from "@open-neo-rts/content";
 
@@ -9,6 +9,14 @@ const DIR = "content/schemas";
 export async function generateSchemas(args: string[]): Promise<number> {
   const check = args.includes("--check");
   let stale = 0;
+  for (const file of readdirSync(DIR)) {
+    if (!(file.replace(".schema.json", "") in SCHEMAS)) {
+      if (check) {
+        console.log(`✖ ${join(DIR, file)} has no schema definition; run bun neo generate-schemas`);
+        stale++;
+      } else rmSync(join(DIR, file));
+    }
+  }
   for (const [name, schema] of Object.entries(SCHEMAS)) {
     const file = join(DIR, `${name}.schema.json`);
     const text = `${JSON.stringify(toJsonSchema(schema, name), null, 2)}\n`;

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/scavenger-vtol",
+  "name": "Scavenger VTOL",
+  "description": "Resource collection aircraft: lifts salvage from anywhere.",
+  "family": "aircraft",
+  "tags": ["aircraft", "harvester"],
+  "cost": {
+    "credits": 1400,
+    "materials": 100
+  },
+  "buildTime": 16,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 450,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 4.0
+  },
+  "radius": 0.9,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [],
+  "harvest": {
+    "capacity": 300
+  },
+  "presentation": {
+    "model": "scavenger-vtol.glb",
+    "icon": "scavenger-vtol.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": [],
+    "animations": [],
+    "wreck": "scavenger-vtol.wreck.glb"
+  }
+}

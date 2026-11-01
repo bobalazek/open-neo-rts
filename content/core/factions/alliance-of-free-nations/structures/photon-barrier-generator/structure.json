@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/photon-barrier-generator",
+  "name": "Photon Barrier Generator",
+  "description": "Creates an energy shield that absorbs damage to nearby structures.",
+  "cost": {
+    "credits": 1800
+  },
+  "buildTime": 25,
+  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 1200,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -60,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "overcharge",
+      "name": "Overcharge",
+      "description": "Doubles shield strength for 8 seconds.",
+      "target": "self",
+      "cooldown": 45,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "shieldStrength",
+          "percent": 200,
+          "duration": 8
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "photon-barrier-generator.glb",
+    "icon": "photon-barrier-generator.icon.png",
+    "wreck": "photon-barrier-generator.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

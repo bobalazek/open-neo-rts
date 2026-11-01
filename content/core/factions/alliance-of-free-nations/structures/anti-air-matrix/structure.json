@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/anti-air-matrix",
+  "name": "Anti-Air Matrix",
+  "description": "Anti-air defence with predictive targeting; also shoots down missiles.",
+  "cost": {
+    "credits": 900
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
+  "health": 1200,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -25,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "aa-missile",
+      "damageType": "antiAir",
+      "damage": 40,
+      "range": [0, 8],
+      "reload": 2,
+      "projectile": {
+        "kind": "homing",
+        "speed": 25
+      },
+      "targets": ["air"]
+    },
+    {
+      "id": "point-defence",
+      "damageType": "antiAir",
+      "damage": 20,
+      "range": [0, 5],
+      "reload": 0.3,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["projectile"]
+    }
+  ],
+  "presentation": {
+    "model": "anti-air-matrix.glb",
+    "icon": "anti-air-matrix.icon.png",
+    "wreck": "anti-air-matrix.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

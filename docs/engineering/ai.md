@@ -32,7 +32,7 @@ Faction and personality differences (aggressive, turtle, tech-rush) are **conten
 | Situation                       | Behaviour                                                                                                         |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Skirmish opponent               | Full bot controlling its own Force                                                                                |
-| AI teammate (Hybrid preset)     | Separate allied Force; follows team pings and objectives                                                          |
+| AI teammate (Hybrid setup)      | Separate allied Force; follows team pings and objectives                                                          |
 | Co-controller of a shared Force | A bot holds a scoped grant (e.g. `economy.build` + `production.queue`) while humans run the army.                 |
 | Disconnect takeover             | Takes over a seat at a canonical tick after the grace timer; hands back at a tick boundary when the human returns |
 | Survival / PvE waves            | Scenario-driven attackers; scripted spawns plus tactical layer                                                    |
@@ -46,4 +46,4 @@ Faction and personality differences (aggressive, turtle, tech-rush) are **conten
 
 ## 5. First bot (first playable)
 
-Plays the mirrored test faction: fixed build order, harvests, builds a few combat units, attacks in waves, retreats damaged units. Good enough to make skirmish testable, and to start AI-vs-AI determinism runs.
+Plays the Eastern Collective's tier-1 roster in a mirror match: fixed build order, harvests, builds a few combat units, attacks in waves, retreats damaged units. Good enough to make skirmish testable, and to start AI-vs-AI determinism runs.

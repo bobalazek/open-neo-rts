@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/scout-helicopter",
+  "name": "Scout Helicopter",
+  "description": "Fast reconnaissance helicopter.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 600
+  },
+  "buildTime": 9,
+  "producedBy": ["structure:eastern-collective/airfield"],
+  "health": 250,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 6.0
+  },
+  "radius": 0.7,
+  "vision": 13,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "scout-helicopter.glb",
+    "icon": "scout-helicopter.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "scout-helicopter.wreck.glb"
+  }
+}

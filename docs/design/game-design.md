@@ -2,13 +2,13 @@
 
 ## The world of 2035
 
-Three asymmetric factions, plus a mirrored test faction for balancing. Each faction's look, economy, structures, tech tree, units and powers are in [factions/](factions/README.md).
+Three asymmetric factions: the Alliance of Free Nations, the Eastern Collective and the Phoenix Initiative ([story.md](story.md)). Each faction's look, economy, structures, tech tree, units and powers are in [factions/](factions/README.md).
 
-| Faction                | Identity                                                              |
-| ---------------------- | --------------------------------------------------------------------- |
-| [AFN](factions/afn.md) | Technology and precision: drones, stealth, shields, precision strikes |
-| [EC](factions/ec.md)   | Industrial superiority: mass production, heavy armour, EMP            |
-| [PI](factions/pi.md)   | Salvage and adaptation: mobile bases, wreck salvage, field upgrades   |
+| Faction                                                          | Identity                                                                         |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [Alliance of Free Nations](factions/alliance-of-free-nations.md) | Technology and precision: drones, stealth, shields, precision strikes, air power |
+| [Eastern Collective](factions/eastern-collective.md)             | Industrial superiority: mass production, heavy armour, EMP                       |
+| [Phoenix Initiative](factions/phoenix-initiative.md)             | Salvage and adaptation: mobile base, salvage, nanites, the Black Market          |
 
 ## Battlefield salvage
 
@@ -35,7 +35,7 @@ Skirmish (single player and multiplayer) now, campaign later, and the map editor
 
 ## Teams, control and diplomacy
 
-Shared Command, Allied Command, Last Stand, lobby presets, permission grants, diplomacy and victory rules are specified in [multiplayer.md](multiplayer.md).
+Shared Command, Allied Command, Last Stand, lobby templates, permission grants, diplomacy and victory rules are specified in [multiplayer.md](multiplayer.md).
 
 ## Optional rule modules and eras
 

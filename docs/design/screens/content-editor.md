@@ -10,7 +10,7 @@ Editing units and structures by hand-writing JSON is error-prone, and checking a
 │ ┌ DEFINITIONS ──┐ ┌──────────────────────────────────┐ ┌ unit:panther ──────────────┐ │
 │ │ ▾ AFN         │ │                                  │ │ [General][Combat][Visuals] │ │
 │ │   Panther  ◀  │ │   (3D model on the grid, with a  │ │ [Production][Upgrades]     │ │
-│ │   Striker     │ │    test-faction Rifleman for     │ │ [Eras]                     │ │
+│ │   Striker     │ │    Collective Soldier for     │ │ [Eras]                     │ │
 │ │   Raptor      │ │    scale; sockets as labelled    │ │                            │ │
 │ │ ▾ EC          │ │    gizmos; damage states,        │ │ (form generated from the   │ │
 │ │   Dragon Tank │ │    firing and destruction        │ │  JSON schema; see tabs     │ │

@@ -2,7 +2,7 @@
 
 **Route:** `/lobby/:code` · **From:** Room browser, invite link, rematch · **To:** Loading → Match
 
-The rules behind the lobby (presets, seats, grants, post-defeat policy) are in [multiplayer.md](../multiplayer.md#2-lobby-models-and-presets).
+The rules behind the lobby (templates, seats, grants, post-defeat policy) are in [multiplayer.md](../multiplayer.md#2-lobby-models-and-templates).
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
@@ -13,7 +13,7 @@ The rules behind the lobby (presets, seats, grants, post-defeat policy) are in [
 │ │   ├ Mara ★   🎤  ✔ ready   grants: full          │ │ Iron Valley       │ │
 │ │   └ Bob      🔇  … not ready grants: army ▾      │ │ [Change map]      │ │
 │ │ Force 2  EC ▾   ■ blue  Spawn W                  │ ├───────────────────┤ │
-│ │   └ Bot (Hard) ⚙                                 │ │ Preset: Hybrid ▾  │ │
+│ │   └ Bot (Hard) ⚙                                 │ │ Setup: Hybrid ▾   │ │
 │ │ TEAM B                                           │ │ Victory: Conquest │ │
 │ │ Force 3  PI ▾   ■ green Spawn S                  │ │ Fog: Standard     │ │
 │ │   └ [ open seat ]  [ + bot ]                     │ │ Diplomacy: Locked │ │
@@ -29,7 +29,7 @@ The rules behind the lobby (presets, seats, grants, post-defeat policy) are in [
 
 - **Forces and seats:** each Force lists its seats. Several humans (or humans and a bot) can sit in one Force; each seat shows its grants (full, army, economy…). Players drag themselves onto open seats, or the host assigns them.
 - **Per-seat indicators:** host star, voice state (🎤 speaking, 🔇 muted), ready check, ping.
-- **Settings panel:** preset, map, profile and the common rules, plus an **Advanced rules** button that opens every configurable setting (caps per faction or Force, per-type limits, bans, economy multipliers, speed, combat toggles, handicaps), generated from the setting definitions in [match-rules.md](../match-rules.md). Custom presets can be saved and shared. Only the host can edit them; changes are highlighted for everyone, and any change resets everyone's ready state.
+- **Settings panel:** quick setup, map, enabled packs and the common rules, plus an **Advanced rules** button that opens every configurable setting (caps per faction or Force, per-type limits, bans, economy multipliers, speed, combat toggles, handicaps), generated from the setting definitions in [match-rules.md](../match-rules.md). Custom presets can be saved and shared. Only the host can edit them; changes are highlighted for everyone, and any change resets everyone's ready state.
 - **Content check:** a green check when everyone's content, map and version hashes match. Otherwise it names the player and what's missing, with a download prompt for custom maps and packs.
 - **Chat:** lobby chat with All or Team scope. Voice chat is opt-in (a mic button per player); once on, it uses team scope; mute per player by clicking their mic icon.
 - **Host tools** (right-click a player): kick, move to seat, change grants, make host.

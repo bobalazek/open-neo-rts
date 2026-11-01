@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "map",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?map:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+      "description": "map ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^.{1,400}$",
+      "description": "English description"
+    },
+    "size": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 512,
+          "description": "cells"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 512,
+          "description": "cells"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "biome": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "players": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "spawns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 512,
+              "description": "cells"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "facing": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 360,
+            "description": "degrees"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "facing"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "teams": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "minItems": 1,
+        "maxItems": 4
+      },
+      "minItems": 2,
+      "maxItems": 4
+    },
+    "start": {
+      "enum": [
+        "faction",
+        "empty"
+      ],
+      "description": "faction: each spawn gets its faction's start kit; empty: only pre-placed objects"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "ore",
+              "materials"
+            ]
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 512,
+              "description": "cells"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "cells"
+          }
+        },
+        "required": [
+          "kind",
+          "position",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "definition": {
+            "type": "string",
+            "pattern": "^([a-z0-9-]+\\.)?[a-z]+:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+            "description": "any definition ID"
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 512,
+              "description": "cells"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "rotation": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 270,
+            "description": "degrees, multiples of 90"
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^(neutral|[a-z0-9]+(-[a-z0-9]+)*)$",
+            "description": "neutral, or a spawn ID"
+          }
+        },
+        "required": [
+          "definition",
+          "position",
+          "owner"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "layers": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+        },
+        "ramps": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+        },
+        "surface": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+        },
+        "water": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "size",
+    "biome",
+    "players",
+    "spawns",
+    "start",
+    "resources",
+    "objects"
+  ],
+  "additionalProperties": false
+}

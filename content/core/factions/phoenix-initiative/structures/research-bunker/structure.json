@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/research-bunker",
+  "name": "Research Bunker",
+  "description": "Experimental technology. Unlocks tier 2 and the Guerrilla Operation power.",
+  "cost": {
+    "credits": 1300
+  },
+  "buildTime": 16,
+  "producedBy": ["structure:phoenix-initiative/command-node"],
+  "health": 1300,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -30,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "guerrilla-operation",
+      "name": "Guerrilla Operation",
+      "description": "All units in an area become stealthed until they fire.",
+      "target": "area",
+      "cooldown": 180,
+      "effects": [
+        {
+          "type": "stealth",
+          "radius": 8,
+          "duration": 30
+        }
+      ],
+      "range": 200
+    }
+  ],
+  "research": [
+    {
+      "id": "experimental-weapons",
+      "name": "Experimental Weapons",
+      "description": "+15% damage for all units.",
+      "cost": {
+        "credits": 2200,
+        "salvage-points": 40
+      },
+      "researchTime": 60,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "damage",
+          "percent": 115
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "research-bunker.glb",
+    "icon": "research-bunker.icon.png",
+    "wreck": "research-bunker.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

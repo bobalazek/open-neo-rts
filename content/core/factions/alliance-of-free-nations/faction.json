@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/faction.schema.json",
+  "id": "faction:alliance-of-free-nations",
+  "name": "Alliance of Free Nations",
+  "description": "A coalition of Western democracies that kept their technological edge through the 2032 collapse. Superior drones, stealth and precision strikes; few soldiers and expensive losses.",
+  "color": "#3a8fd8",
+  "start": {
+    "structures": ["structure:alliance-of-free-nations/command-hub"],
+    "units": [
+      {
+        "unit": "unit:alliance-of-free-nations/supply-drone",
+        "count": 1
+      },
+      {
+        "unit": "unit:alliance-of-free-nations/tactical-operator",
+        "count": 3
+      }
+    ],
+    "resources": {
+      "credits": 5000
+    }
+  },
+  "ai": {
+    "personality": "tech-and-precision"
+  }
+}

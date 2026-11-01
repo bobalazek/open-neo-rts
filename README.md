@@ -46,9 +46,7 @@ open-neo-rts/
 │   └── server/               match server: rooms, lobby, match hosting
 ├── content/                  game data, no code (see docs/contributing/content-format.md)
 │   ├── schemas/              JSON schemas generated from packages/content
-│   └── packs/
-│       ├── core/             the base game: rules, factions, maps, UI strings, assets
-│       └── dev/              test faction, test maps, debug presets (hidden in release builds)
+│   └── core/                 the base game: factions, units, structures, maps, assets
 ├── tools/biome/              lint plugin enforcing the determinism rules
 ├── docs/                     design, engineering and contributing docs
 ├── .github/                  PR template, CI workflow

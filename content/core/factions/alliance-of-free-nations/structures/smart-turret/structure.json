@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:alliance-of-free-nations/smart-turret",
+  "name": "Smart Turret",
+  "description": "AI-controlled defence that adapts its targeting to enemy tactics.",
+  "cost": {
+    "credits": 800
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/command-hub"],
+  "health": 1400,
+  "armor": "structure",
+  "footprint": [1, 1],
+  "power": -20,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "adaptive-cannon",
+      "damageType": "armorPiercing",
+      "damage": 35,
+      "range": [0, 7],
+      "reload": 1.2,
+      "projectile": {
+        "kind": "direct",
+        "speed": 20
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "presentation": {
+    "model": "smart-turret.glb",
+    "icon": "smart-turret.icon.png",
+    "wreck": "smart-turret.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/striker-ifv",
+  "name": "Striker IFV",
+  "description": "Infantry fighting vehicle with drone support; carries 4 infantry.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 900,
+    "materials": 50
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "health": 450,
+  "armor": "medium",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 3.0
+  },
+  "radius": 0.7,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "autocannon",
+      "damageType": "armorPiercing",
+      "damage": 20,
+      "range": [0, 6],
+      "reload": 0.8,
+      "projectile": {
+        "kind": "direct",
+        "speed": 25
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "transport": {
+    "slots": 4
+  },
+  "turret": {
+    "turnRate": 140
+  },
+  "presentation": {
+    "model": "striker-ifv.glb",
+    "icon": "striker-ifv.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "striker-ifv.wreck.glb"
+  }
+}

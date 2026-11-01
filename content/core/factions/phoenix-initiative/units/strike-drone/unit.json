@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/strike-drone",
+  "name": "Strike Drone",
+  "description": "Automated attack aircraft.",
+  "family": "aircraft",
+  "tags": ["drone"],
+  "cost": {
+    "credits": 700,
+    "materials": 50
+  },
+  "buildTime": 9,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 220,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 6.0
+  },
+  "radius": 0.5,
+  "vision": 8,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "drone-gun",
+      "damageType": "smallArms",
+      "damage": 6,
+      "range": [0, 4],
+      "reload": 0.4,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    },
+    {
+      "id": "rocket",
+      "damageType": "armorPiercing",
+      "damage": 50,
+      "range": [0, 6],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 14
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "strike-drone.glb",
+    "icon": "strike-drone.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "strike-drone.wreck.glb"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/underground-barracks",
+  "name": "Underground Barracks",
+  "description": "Concealed infantry training: hidden from enemy vision unless detected.",
+  "cost": {
+    "credits": 500
+  },
+  "buildTime": 10,
+  "producedBy": ["structure:phoenix-initiative/command-node"],
+  "health": 1000,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -10,
+  "vision": 6,
+  "presentation": {
+    "model": "underground-barracks.glb",
+    "icon": "underground-barracks.icon.png",
+    "wreck": "underground-barracks.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_exit"]
+  }
+}

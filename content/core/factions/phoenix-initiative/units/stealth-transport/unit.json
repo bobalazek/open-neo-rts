@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/stealth-transport",
+  "name": "Stealth Transport",
+  "description": "Cloaked transport for 6 infantry.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 1200,
+    "materials": 150
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 450,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 5.0
+  },
+  "radius": 1.0,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "cloak",
+      "name": "Cloak",
+      "description": "Invisible while moving or landed.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "stealth"
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "transport": {
+    "slots": 6
+  },
+  "presentation": {
+    "model": "stealth-transport.glb",
+    "icon": "stealth-transport.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": [],
+    "animations": [],
+    "wreck": "stealth-transport.wreck.glb"
+  }
+}

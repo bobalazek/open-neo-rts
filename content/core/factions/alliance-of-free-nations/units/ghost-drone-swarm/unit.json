@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/ghost-drone-swarm",
+  "name": "Ghost Drone Swarm",
+  "description": "AI-controlled attack drones; immune to EMP after Ghost Protocol.",
+  "family": "aircraft",
+  "tags": ["drone"],
+  "cost": {
+    "credits": 900,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/drone-assembly-plant"],
+  "health": 250,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 5.5
+  },
+  "radius": 0.6,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "drone-gun",
+      "damageType": "smallArms",
+      "damage": 6,
+      "range": [0, 4],
+      "reload": 0.4,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "presentation": {
+    "model": "ghost-drone-swarm.glb",
+    "icon": "ghost-drone-swarm.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "ghost-drone-swarm.wreck.glb"
+  }
+}

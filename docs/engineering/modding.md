@@ -1,12 +1,12 @@
 # Modding
 
-A mod is a **content pack**: the same JSON definitions, assets, maps, locales and presets the official game uses ([content-pipeline.md](content-pipeline.md)). There is no mod scripting; anything a mod can do, the official content does the same way.
+A mod is a **content pack**: the same JSON definitions, assets, maps and locales the official game uses ([content-pipeline.md](content-pipeline.md)). There is no mod scripting; anything a mod can do, the official content does the same way.
 
 ## What a mod can do
 
-- Add units, structures, weapons, abilities, techs, factions, maps, campaigns, presets, biomes and languages.
+- Add units, structures, weapons, abilities, techs, factions, maps, campaigns, biomes and languages.
 - Change existing definitions through **overrides**: a mod declares which base definitions it patches and how (field-level patches, validated like everything else).
-- Add new game profiles (e.g. a different era) built on the same rule modules.
+- Add new eras built on the same rule modules.
 
 What it can't do: run code, change engine behaviour, or override UI strings and screens. When a mod needs new behaviour, that's an engine feature request.
 
@@ -15,8 +15,8 @@ What it can't do: run code, change engine behaviour, or override UI strings and 
 ```text
 my-mod/
 ├── manifest.json        id, name, version, authors, licence, engine range, dependencies
-├── units/  structures/  weapons/  abilities/  research/  factions/
-├── maps/   presets/     locales/
+├── factions/<faction>/{faction.json, units/<name>/, structures/<name>/}
+├── maps/   campaigns/   locales/
 └── assets/              with assets.json per folder
 ```
 
@@ -42,4 +42,4 @@ A mod registry: browse, rate, subscribe and update mods in-game, backed by a sim
 ## Tooling
 
 - `packages/mod-sdk`: schema exports, a `create-mod` template, and a CLI to validate and package a mod.
-- A reference mod (`content/packs/example-mod/`) is added with the modding SDK in phase 5, and validated in CI from then on.
+- A reference mod (`content/example-mod/`) is added with the modding SDK in phase 5, and validated in CI from then on.

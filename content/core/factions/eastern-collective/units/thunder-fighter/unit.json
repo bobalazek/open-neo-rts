@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/thunder-fighter",
+  "name": "Thunder Fighter",
+  "description": "Multi-role jet: air superiority and strafing runs.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 1600,
+    "materials": 300
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:eastern-collective/airfield"],
+  "health": 450,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 10.0
+  },
+  "radius": 0.9,
+  "vision": 10,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "missiles",
+      "damageType": "armorPiercing",
+      "damage": 40,
+      "range": [0, 7],
+      "reload": 1.5,
+      "projectile": {
+        "kind": "homing",
+        "speed": 20
+      },
+      "targets": ["ground", "air"],
+      "burst": 2
+    }
+  ],
+  "ammo": 4,
+  "presentation": {
+    "model": "thunder-fighter.glb",
+    "icon": "thunder-fighter.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "thunder-fighter.wreck.glb"
+  }
+}

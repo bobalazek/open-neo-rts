@@ -8,7 +8,7 @@ Home
 │   ├── Skirmish            vs bots, any team arrangement
 │   ├── Campaign            story missions, then the world-map layer        [later]
 │   └── Load game
-├── Multiplayer             skirmish online: rooms, lobby, presets
+├── Multiplayer             skirmish online: rooms, lobby, chat
 ├── Map editor              build maps and playtest them with god tools
 ├── Replays
 └── Settings
@@ -16,13 +16,13 @@ Home
 
 ## Skirmish
 
-The core mode. One or more Forces per team, any mix of humans and bots, on any map, with the rules from the game profile (victory condition, fog, resources, diplomacy, game speed). Team arrangements (Shared Command, Allied Command, Last Stand), presets and diplomacy are in [multiplayer.md](multiplayer.md). Optional rule modules (territory, eras, trade…) come from the game profile; see [content-and-eras.md](content-and-eras.md).
+The core mode. One or more Forces per team, any mix of humans and bots, on any map, with the lobby's settings (victory condition, fog, resources, diplomacy, game speed). Team arrangements (Shared Command, Allied Command, Last Stand), presets and diplomacy are in [multiplayer.md](multiplayer.md). Optional rule modules (territory, eras, trade…) come from the game profile; see [content-and-eras.md](content-and-eras.md).
 
 Single-player skirmish and multiplayer use the same setup screen and rules; multiplayer just adds rooms, a lobby, chat and voice.
 
 ## Multiplayer
 
-Skirmish with other people: PvP, co-op against bots, Shared Command, FFA with diplomacy, Survival waves. Setups are **lobby presets**, which are data in each pack's `presets/` folder. See [multiplayer.md](multiplayer.md) and the [lobby screen](screens/lobby.md).
+Skirmish with other people: PvP, co-op against bots, Shared Command, FFA with diplomacy, Survival waves. Built-in **lobby templates** fill in common setups from the map's spawns. See [multiplayer.md](multiplayer.md) and the [lobby screen](screens/lobby.md).
 
 ## Campaign (later)
 
@@ -43,7 +43,7 @@ Playtest tools are ordinary sim commands (`playtest.*`), accepted only in editor
 **Content preview:** playtest is also how contributors and reviewers try new content. Deep links open it ready to go:
 
 ```text
-/editor/playtest?map=core.map:flat-test&spawn=core.unit:panther&vs=core.unit:tactical-operator
+/editor/playtest?map=core.map:training-grounds&spawn=core.unit:panther&vs=core.unit:tactical-operator
 ```
 
 For a single model, the [content editor](screens/content-editor.md) shows sockets, damage states, team colours and destruction without a match. PR preview builds post these links for every changed definition; see [CONTRIBUTING.md](../../CONTRIBUTING.md#previews). Screens: [map-editor.md](screens/map-editor.md).

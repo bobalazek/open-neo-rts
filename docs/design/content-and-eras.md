@@ -10,7 +10,7 @@
 
 **Content pack:** Namespaced data and assets: faction descriptions, prefabs for units/buildings, weapons, abilities, upgrades, resources, era definitions, maps, localization and audiovisual material.
 
-**Game profile:** Resolved `ruleset + content pack list + economy configuration + era model + lobby defaults + victory preset`. Examples `standard` (the world of 2035), `ancient-kingdoms`, `epoch-wars`, `cross-era-sandbox`. A match pins the profile, manifest hashes, map and seed.
+**Game profile (later):** only needed once there's more than one era or game built on the engine. Today a match is simply `core` plus enabled packs and lobby settings. Resolved `ruleset + content pack list + economy configuration + era model + lobby defaults + victory preset`. Examples `standard` (the world of 2035), `ancient-kingdoms`, `epoch-wars`, `cross-era-sandbox`. A match pins the profile, manifest hashes, map and seed.
 
 **Force:** Runtime owner of units, structures, economy, tech and most territory. Players/AI control Forces via permissions. Teams and treaties exist separately. **Nation/civilization/faction** are content archetypes, not authoritative ownership entities.
 
@@ -109,6 +109,6 @@ Do not attempt to make a medieval archer fight a fighter jet fairly without an e
 
 ## 8. Planned 2035 content coverage
 
-The source concept defines AFN, EC and PI, each with production buildings, defenses, infantry, vehicles and aircraft. It includes original 2035–2038 phases, commander powers and three story campaigns. Keep its exact unit names in [world-2035.md](factions/world-2035.md). Use only a tiny starter roster for first playable and add unique mechanics after skirmish loop proves fun.
+The three factions, their rosters and their powers are in [factions/](factions/README.md); the story and campaigns are in [story.md](story.md).
 
-For a first balance prototype, use one mirrored generic test faction instead of building all faction assets. Then pick one official faction to ship as first vertical slice. This maintains test symmetry while faction asymmetry is being developed.
+The first playable is an Eastern Collective mirror match with its tier-1 roster, so balance tests stay symmetric while the other factions are finished. Then pick one official faction to ship as first vertical slice. This maintains test symmetry while faction asymmetry is being developed.

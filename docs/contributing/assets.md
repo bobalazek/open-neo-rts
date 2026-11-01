@@ -1,86 +1,76 @@
 # Assets
 
-**Status:** proposed. Budgets and formats get tightened once the art direction settles.
+Models, icons, textures and sounds. All of them are original work, live **in this repository** next to the definition that uses them, and are stored with Git LFS. The art style is in [art-and-audio.md](../design/art-and-audio.md).
 
-All game assets live **in this repository**, next to the content that uses them, so a checkout plus `bun install` gives you a complete, playable game.
+**Status:** no real art yet. The first finished reference model per faction is a [human task](../project/human-tasks.md); `bun neo make-placeholders` can generate temporary block models locally for testing, but they aren't committed.
 
 ## Where assets go
 
+Assets sit in the same folder as the definition that uses them:
+
 ```text
-content/packs/<pack>/
-├── units/panther.json                 definition (data)
-├── assets/
-│   ├── units/panther/
-│   │   ├── panther.glb                runtime model
-│   │   ├── panther.icon.png          build-menu icon
-│   │   └── assets.json                provenance for this folder
-│   ├── audio/…
-│   └── textures/…
-└── source/                            optional editable sources
-    └── units/panther/panther.blend
+content/core/factions/eastern-collective/units/dragon-tank/
+├── unit.json                     the definition: stats, weapons, abilities, presentation
+├── dragon-tank.glb               runtime model
+├── dragon-tank.wreck.glb         wreck model (vehicles)
+├── dragon-tank.icon.png          icon, 128 × 128
+├── dragon-tank.fire.1.ogg        sounds: <name>.<event>[.<n>].ogg
+├── assets.json                   author and source of every file in this folder
+└── source/
+    └── dragon-tank.blend         editable original
 ```
 
-- `assets/` holds what the game loads at runtime. `source/` holds editable originals (Blender, layered images, uncompressed audio) so others can modify the work.
-- Folder and file names are lowercase kebab-case and match the definition ID (`unit:panther` → `units/panther/`).
+Structures are the same, with `structure.json` and `<name>.rubble.glb`. Neutral structures live in `content/core/neutral/structures/<name>/`, and map props (trees, rocks, ruins) in `content/core/props/<biome>/<name>/` with a `prop.json`. A definition's `presentation` refers to its files by name only (`"model": "dragon-tank.glb"`).
 
 ## Git LFS
 
-Binary files are stored with **Git LFS** (configured in [.gitattributes](../../.gitattributes)). Run `git lfs install` once after cloning.
+Binary files are stored with **Git LFS** ([.gitattributes](../../.gitattributes)). Run `git lfs install` once after cloning.
 
-- If you add a new binary file type, add its extension to `.gitattributes` in the same PR.
-- GitHub's LFS storage and bandwidth quotas are limited on free plans. Keep files within budget, don't commit throwaway iterations, and squash big asset rework into one commit where possible. If quotas become a problem, `source/` can move to a separate asset repository; runtime assets stay here.
+- Adding a new binary file type means adding its extension to `.gitattributes` in the same PR.
+- LFS storage and bandwidth are metered on GitHub. Don't commit throwaway iterations; squash big rework into one commit. CI only downloads LFS files in the content job.
 
-## Originality and authorship
+## Authorship
 
-Every asset folder has an `assets.json`:
+Every folder with assets has an `assets.json`:
 
 ```json
 {
   "files": {
-    "panther.glb": {
-      "author": "Jane Doe",
-      "source": "source/units/panther/panther.blend"
-    }
+    "dragon-tank.glb": { "author": "Jane Doe", "source": "source/dragon-tank.blend" }
   }
 }
 ```
 
-- **Every asset is original work made for open-neo-rts**, contributed under the repository's MIT licence. No downloaded, purchased, ripped or traced assets.
-- `author` feeds the in-game credits screen; `source` points at the editable original when there is one.
-- CI rejects files without an `assets.json` entry.
+- **Every asset is original work** made for this game, contributed under the repository's MIT licence. No downloaded, purchased, ripped or traced assets.
+- `author` feeds the credits screen; `source` points at the editable original.
+- CI rejects runtime files without an entry, and entries without a file.
 
 ## Formats and budgets
 
-| Kind       | Format                                                                                     | Draft budget                                                    |
-| ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Models     | glTF binary (`.glb`), Y-up, metres, origin at ground centre                                | Infantry ≤ 1k tris, vehicles ≤ 3k, buildings ≤ 6k; up to 2 LODs |
-| Textures   | Shared palette texture per pack (`.png`); vertex colours where possible                    | 256² palette; detail decals ≤ 512²                              |
-| Animations | Embedded in the `.glb`, named clips (`idle`, `move`, `attack`, `death`); skeletons allowed | Only clips the definition references                            |
-| Audio      | `.ogg` (Opus or Vorbis)                                                                    | Short SFX mono; music stereo                                    |
-| Icons      | `.webp`, square                                                                            | 256²                                                            |
-
-The style is blocky, toy-brick low-poly; see [art-and-audio.md](../design/art-and-audio.md). Team colour comes only from the `team*` material slots, never baked into textures, so any model works for any team.
+| Kind       | Format                                                                      | Budget                                                                                                          |
+| ---------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Models     | glTF binary (`.glb`), Y-up, metres, origin at ground centre, front faces +Z | Infantry about 1k triangles, vehicles 3k, structures 6k, props 1k, wrecks 2k; up to 2 LODs                      |
+| Textures   | One shared palette texture per pack (`.png`); vertex colours where possible | 256² palette; decals at most 512²                                                                               |
+| Animations | Inside the `.glb`, named clips; skeletons allowed                           | Only the clips the definition lists                                                                             |
+| Icons      | `.png` with transparency, square                                            | Drawn at 128², shown at 64 or 48                                                                                |
+| Audio      | `.ogg` (Vorbis or Opus)                                                     | Effects mono, music stereo; loudness rules in [audio-events.md](../design/audio-events.md#formats-and-loudness) |
 
 ## Model conventions
 
-glTF has no standard for game attachment points, damage states or LODs, so these are ours. `bun run validate-assets` checks every rule marked ✓.
+glTF has no standard for game attachment points, damage states or LODs, so these are ours. `bun neo validate` checks every rule marked ✓, comparing each model with its definition.
 
-| Rule                   | Detail                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Checked                                                  |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Orientation and origin | Y-up, metres, front faces +Z (glTF convention), origin at ground centre, root nodes without offset                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ✓ (root offset)                                          |
-| Node names             | Every node named, names unique. Parts the sim or renderer drive use fixed names: `hull`, `turret`, `barrel`, `rotor`, `legs`… as listed in the definition's `presentation.parts`                                                                                                                                                                                                                                                                                                                                                                    | ✓                                                        |
-| Materials              | Every material maps to a **slot**: `palette` (fixed colours from the pack palette), `team`, `team_dark`, `team_light`, `team_emissive` (follow the owner's team colour), `metal`, `glass`, `emissive`. Either name materials after slots, or keep the artist's names and map them in the definition's `presentation.materials` (the content editor does this with a dropdown per material). Any number of materials can map to `team*` slots: a red team's tank is red wherever they're used, while metal, glass and palette parts stay as authored | ✓                                                        |
-| LODs                   | `<name>` or `<name>_LOD0` for full detail, `<name>_LOD1` for distance; at most two levels; LOD1 at most half the triangles of LOD0                                                                                                                                                                                                                                                                                                                                                                                                                  | ✓                                                        |
-| Triangle budget        | Per kind: unit 3,000 (infantry should stay near 1,000), structure 6,000, prop 1,000, wreck 2,000                                                                                                                                                                                                                                                                                                                                                                                                                                                    | ✓                                                        |
-| Sockets                | Empty nodes named `socket_<name>` or `socket_<name>_<n>`: `socket_muzzle_0` (one per weapon barrel), `socket_exhaust_0`, `socket_smoke_0`, `socket_fire_0`, `socket_exit` (production structures), `socket_dock` (refineries, pads), `socket_healthbar`                                                                                                                                                                                                                                                                                             | ✓ (format, emptiness, required list from the definition) |
-| Damage states          | Optional hidden nodes `state_damaged` (shown below 66% health) and `state_critical` (below 33%). Without them, the renderer uses missing-brick decals and particles at the smoke and fire sockets. Structures need at least one `socket_smoke_<n>`                                                                                                                                                                                                                                                                                                  | ✓                                                        |
-| Skeletons              | Allowed (infantry, walkers): at most 64 joints, at most 4 influences per vertex; rigid weights (one bone per brick) suit the style. Skinned units are baked to vertex animation textures at load, so they still instance                                                                                                                                                                                                                                                                                                                            | ✓                                                        |
-| Animations             | snake_case clip names, unique. Infantry: `idle`, `move`, `attack`, `death`. Vehicles: parts are driven by the sim, so clips are optional (`fire_recoil`). Structures: optional `active`, `open`, `close`                                                                                                                                                                                                                                                                                                                                            | ✓ (names; required clips from the definition)            |
-| Destruction            | Vehicles have a separate **wreck** model `<id>.wreck.glb` using the same part names, so the turret keeps its last angle. Structures have `<id>.rubble.glb`. Flying brick chunks are generated from the palette at runtime and need no asset                                                                                                                                                                                                                                                                                                         | ✓ (wreck has no animations)                              |
-| Collision              | Never from the mesh. Footprints and radii come from the definition                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | —                                                        |
+| Rule                   | Detail                                                                                                                                                                                                                                                                                                     | Checked |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Orientation and origin | Y-up, metres, front faces +Z, origin at ground centre, root nodes without offset                                                                                                                                                                                                                           | ✓       |
+| Size                   | The model's footprint matches the definition: a structure's `footprint` in cells (2 m each), a unit's collision `radius`                                                                                                                                                                                   | ✓       |
+| Node names             | Every node named, names unique. Parts the sim drives use fixed names listed in `presentation.parts`: `hull`, `turret`, `barrel`, `rotor`, `legs`                                                                                                                                                           | ✓       |
+| Materials              | Every material maps to a **slot**: `palette`, `team`, `team_dark`, `team_light`, `team_emissive`, `metal`, `glass`, `emissive`. Name materials after slots, or map the artist's names in `presentation.materials`. Any number of materials can follow the team colour                                      | ✓       |
+| Sockets                | Empty nodes `socket_<name>` or `socket_<name>_<n>`, listed in `presentation.sockets`: a muzzle for each weapon (`socket_muzzle_0`, `_1`…), `socket_exhaust`, `socket_smoke` and `socket_fire` (damage effects), `socket_exit` (production structures), `socket_dock` (drop-offs, pads), `socket_healthbar` | ✓       |
+| Damage states          | Optional hidden nodes `state_damaged` and `state_critical`, shown at the thresholds in `presentation.damageStates` (default 66% and 33%). Without them, the renderer uses missing-brick decals and smoke and fire at the sockets                                                                           | ✓       |
+| LODs                   | `<node>` or `<node>_LOD0`, and `<node>_LOD1` for distance; LOD1 at most half the triangles of LOD0                                                                                                                                                                                                         | ✓       |
+| Skeletons              | Allowed for infantry and walkers: at most 64 joints and 4 influences per vertex; rigid weights (one bone per brick) suit the style                                                                                                                                                                         | ✓       |
+| Animations             | snake_case clip names. Infantry: `idle`, `move`, `attack`, `death`. Vehicles: optional (`fire_recoil`); the sim drives parts. Structures: optional `active`, `open`, `close`                                                                                                                               | ✓       |
+| Destruction            | Vehicles: a wreck model with the same part names, so the turret keeps its last angle. Structures: a rubble model. Flying brick chunks are generated at runtime                                                                                                                                             | ✓       |
+| Collision              | Never from the mesh: footprints and radii come from the definition                                                                                                                                                                                                                                         | —       |
 
-How these are rendered (instancing, damage states, destruction) is in [rendering.md](../engineering/rendering.md).
-
-## Validation
-
-`bun run validate-assets` checks glTF validity (Khronos validator), the model conventions above, and provenance: every runtime file has an `assets.json` entry, and every entry has a file. Planned: orphaned files (no definition references them) and required parts, sockets and clips per definition, once content schemas exist. The full list is in [content-pipeline.md](../engineering/content-pipeline.md).
+How these are rendered (instancing, damage states, construction and destruction) is in [rendering.md](../engineering/rendering.md).

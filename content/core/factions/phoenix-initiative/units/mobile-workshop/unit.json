@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/mobile-workshop",
+  "name": "Mobile Workshop",
+  "description": "Field repairs and unit modifications on the move.",
+  "family": "vehicle",
+  "tags": ["vehicle", "engineer"],
+  "cost": {
+    "credits": 1200,
+    "materials": 100
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 600,
+  "armor": "medium",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 2.4
+  },
+  "radius": 0.8,
+  "vision": 7,
+  "pop": 2,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "field-mod",
+      "name": "Field Modification",
+      "description": "Bolts on armour: +25% health for a nearby vehicle.",
+      "target": "unit",
+      "cooldown": 30,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "health",
+          "percent": 125
+        }
+      ],
+      "range": 3,
+      "cost": {
+        "salvage-points": 10
+      }
+    }
+  ],
+  "presentation": {
+    "model": "mobile-workshop.glb",
+    "icon": "mobile-workshop.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_exhaust"],
+    "animations": [],
+    "wreck": "mobile-workshop.wreck.glb"
+  }
+}

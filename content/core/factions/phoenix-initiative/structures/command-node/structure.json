@@ -1,0 +1,34 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/command-node",
+  "name": "Command Node",
+  "description": "Mobile command centre: packs up and relocates. Builds structures.",
+  "health": 2800,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": 15,
+  "vision": 8,
+  "abilities": [
+    {
+      "id": "relocate",
+      "name": "Relocate",
+      "description": "Packs into a vehicle that can drive and redeploy elsewhere.",
+      "target": "self",
+      "cooldown": 5,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "mobile",
+          "percent": 100
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "command-node.glb",
+    "icon": "command-node.icon.png",
+    "wreck": "command-node.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

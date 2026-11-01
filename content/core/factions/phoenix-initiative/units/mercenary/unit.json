@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/mercenary",
+  "name": "Mercenary",
+  "description": "Powerful but expensive veteran infantry.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 900,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:phoenix-initiative/mercenary-camp"],
+  "health": 260,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.6
+  },
+  "radius": 0.3,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "heavy-rifle",
+      "damageType": "smallArms",
+      "damage": 25,
+      "range": [0, 6],
+      "reload": 0.8,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    },
+    {
+      "id": "rocket",
+      "damageType": "armorPiercing",
+      "damage": 50,
+      "range": [0, 6],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 14
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "mercenary.glb",
+    "icon": "mercenary.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

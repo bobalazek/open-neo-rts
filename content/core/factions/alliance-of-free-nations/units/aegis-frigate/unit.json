@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/aegis-frigate",
+  "name": "Aegis Frigate",
+  "description": "Missile frigate: anti-ship and anti-air. (Addition.)",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 1800,
+    "materials": 300
+  },
+  "buildTime": 22,
+  "producedBy": ["structure:alliance-of-free-nations/naval-yard"],
+  "health": 1100,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 2.6
+  },
+  "radius": 1.4,
+  "vision": 10,
+  "pop": 4,
+  "weapons": [
+    {
+      "id": "missiles",
+      "damageType": "armorPiercing",
+      "damage": 40,
+      "range": [0, 7],
+      "reload": 1.5,
+      "projectile": {
+        "kind": "homing",
+        "speed": 20
+      },
+      "targets": ["ground", "air"],
+      "burst": 2
+    },
+    {
+      "id": "aa-missile",
+      "damageType": "antiAir",
+      "damage": 40,
+      "range": [0, 8],
+      "reload": 2,
+      "projectile": {
+        "kind": "homing",
+        "speed": 25
+      },
+      "targets": ["air"]
+    }
+  ],
+  "presentation": {
+    "model": "aegis-frigate.glb",
+    "icon": "aegis-frigate.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "aegis-frigate.wreck.glb"
+  }
+}

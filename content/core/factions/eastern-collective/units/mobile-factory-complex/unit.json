@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/mobile-factory-complex",
+  "name": "Mobile Factory Complex",
+  "description": "Signature unit: drives to the front and deploys into a forward War Factory.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 3000,
+    "materials": 300
+  },
+  "buildTime": 35,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "requires": ["structure:eastern-collective/technology-center"],
+  "health": 1800,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 1.0
+  },
+  "radius": 1.4,
+  "vision": 7,
+  "pop": 6,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "deploy-factory",
+      "name": "Deploy",
+      "description": "Unpacks into a forward War Factory.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "spawn",
+          "unit": "unit:eastern-collective/supply-truck"
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "mobile-factory-complex.glb",
+    "icon": "mobile-factory-complex.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_exhaust"],
+    "animations": [],
+    "wreck": "mobile-factory-complex.wreck.glb"
+  }
+}

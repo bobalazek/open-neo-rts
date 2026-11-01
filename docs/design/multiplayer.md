@@ -17,9 +17,9 @@ Human D ─ Seat D ───── controls Force 3 [PI; own units/resources] �
 
 Teams determine initial joint victory and friendly-fire policy; treaties create additional, possibly temporary, relationships between Forces or Teams.
 
-## 2. Lobby models and presets
+## 2. Lobby models and templates
 
-| Preset                 | Force ownership and seats                                      | Typical use                            |
+| Template               | Force ownership and seats                                      | Typical use                            |
 | ---------------------- | -------------------------------------------------------------- | -------------------------------------- |
 | Duel                   | 2 humans, 2 forces, 2 teams                                    | 1v1 PvP                                |
 | Team PvP               | 4 humans, 4 forces, 2 teams                                    | Standard 2v2                           |
@@ -32,7 +32,7 @@ Teams determine initial joint victory and friendly-fire policy; treaties create 
 | Last Stand             | Eliminated controller joins surviving ally force               | Friendly comeback mechanic             |
 | Observe                | Spectator seat, no commands, visibility policy                 | Watch/replay                           |
 
-The lobby exposes a number of human/AI seats, force slots, team assignments, factions, optional starting eras, resource presets, map, allowed treaties, friendly-fire, victory type and eliminated-player policy. The host chooses whether teams are locked, dynamic diplomacy is enabled, and whether helping a surviving ally is possible. Lobby validates map spawn capacity, faction/ruleset compatibility and content hash before ready-state is accepted.
+Templates are built-in lobby shortcuts, not content files: they fill seats and teams from the map's spawns. The lobby exposes a number of human/AI seats, force slots, team assignments, factions, optional starting eras, resource presets, map, allowed treaties, friendly-fire, victory type and eliminated-player policy. The host chooses whether teams are locked, dynamic diplomacy is enabled, and whether helping a surviving ally is possible. Lobby validates map spawn capacity, faction/ruleset compatibility and content hash before ready-state is accepted.
 
 **Default friendly match:** Private room code, guest display name, one force per player initially, allow explicit Shared Command seats, fixed teams, post-defeat request-assist, team-only fog. **Default competitive preset:** locked teams, post-defeat team-limited spectator, no control transfers not predeclared, no omniscient observer during live play.
 
@@ -78,7 +78,7 @@ Use a headless authoritative match server. Transport command messages from clien
 Proposed wire messages:
 
 ```text
-Client -> Server: hello(version, profileHash, mapHash, contentHash)
+Client -> Server: hello(version, simHash, mapHash, packVersions)
 Server -> Client: welcome(session, serverTick, yourSeat, lobbySnapshot)
 Client -> Server: command(requestId, playerSeq, requestedTick, payload)
 Server -> Client: ack(requestId, accepted, canonicalTick, rejectionCode?)
@@ -138,7 +138,7 @@ Presence is **non-authoritative** and lives outside the sim. It travels as Colys
   - seats with human or bot assignment; multiple seats per Force for Shared Command;
   - team, faction, colour and start position per Force;
   - map preview with spawns;
-  - game profile and rule options: fog, resources, victory, diplomacy, post-defeat policy (§2, §4);
+  - enabled packs and rule options: fog, resources, victory, diplomacy, post-defeat policy (§2, §4);
   - lobby chat;
   - ready state.
 - **Host tools:** kick, lock or unlock seats, swap players, add bots and set their difficulty, transfer host.

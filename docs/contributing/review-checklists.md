@@ -5,7 +5,7 @@ What a reviewer checks on every PR, whether the reviewer is a person or an agent
 ## Every PR
 
 - [ ] **CI** green: `check`, `typecheck`, `test`, `build`, `bun neo validate-assets`.
-- [ ] The change is in scope for the current phase ([roadmap](../roadmap.md#what-each-phase-builds)), or the PR says why it isn't.
+- [ ] The change is in scope for the current phase ([roadmap](../project/roadmap.md#what-each-phase-builds)), and the PR is exactly one [type](pull-requests.md), or the PR says why it isn't.
 - [ ] One concern per PR. Unrelated changes are split out.
 - [ ] Names and structure follow [conventions.md](conventions.md).
 - [ ] Docs are updated where behaviour, workflow or conventions changed.

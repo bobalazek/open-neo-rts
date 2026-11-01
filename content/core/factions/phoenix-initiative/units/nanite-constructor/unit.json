@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/nanite-constructor",
+  "name": "Nanite Constructor",
+  "description": "Signature unit: mobile repair and building, and rebuilds wrecks from debris.",
+  "family": "vehicle",
+  "tags": ["vehicle", "engineer"],
+  "cost": {
+    "credits": 1500,
+    "materials": 150
+  },
+  "buildTime": 18,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 700,
+  "armor": "medium",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2.0
+  },
+  "radius": 0.8,
+  "vision": 7,
+  "pop": 2,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "reconstruct",
+      "name": "Reconstruct",
+      "description": "Rebuilds a nearby wreck into a working PI vehicle at half cost.",
+      "target": "unit",
+      "cooldown": 20,
+      "effects": [
+        {
+          "type": "spawn",
+          "unit": "unit:phoenix-initiative/raider-buggy"
+        }
+      ],
+      "range": 3,
+      "cost": {
+        "salvage-points": 30
+      }
+    }
+  ],
+  "presentation": {
+    "model": "nanite-constructor.glb",
+    "icon": "nanite-constructor.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_exhaust"],
+    "animations": [],
+    "wreck": "nanite-constructor.wreck.glb"
+  }
+}

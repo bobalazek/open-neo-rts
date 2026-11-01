@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/recovery-vehicle",
+  "name": "Recovery Vehicle",
+  "description": "Field repairs and wreck salvage.",
+  "family": "vehicle",
+  "tags": ["vehicle", "engineer"],
+  "cost": {
+    "credits": 800
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "health": 500,
+  "armor": "medium",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2.2
+  },
+  "radius": 0.75,
+  "vision": 7,
+  "pop": 2,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "field-repair",
+      "name": "Field Repair",
+      "description": "Repairs nearby vehicles.",
+      "target": "self",
+      "cooldown": 1,
+      "effects": [
+        {
+          "type": "heal",
+          "target": {
+            "tags": ["vehicle"]
+          },
+          "radius": 3,
+          "amount": 5
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "presentation": {
+    "model": "recovery-vehicle.glb",
+    "icon": "recovery-vehicle.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_exhaust"],
+    "animations": [],
+    "wreck": "recovery-vehicle.wreck.glb"
+  }
+}

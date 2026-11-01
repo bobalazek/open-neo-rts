@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/drone-hunter",
+  "name": "Drone Hunter",
+  "description": "Signature anti-air infantry: shreds drones and low aircraft.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 350
+  },
+  "buildTime": 8,
+  "producedBy": ["structure:eastern-collective/barracks-complex"],
+  "health": 100,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.4
+  },
+  "radius": 0.25,
+  "vision": 8,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "drone-shredder",
+      "damageType": "antiAir",
+      "damage": 25,
+      "range": [0, 7],
+      "reload": 1,
+      "projectile": {
+        "kind": "direct",
+        "speed": 30
+      },
+      "targets": ["air"]
+    }
+  ],
+  "presentation": {
+    "model": "drone-hunter.glb",
+    "icon": "drone-hunter.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

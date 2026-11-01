@@ -115,15 +115,15 @@ open-neo-rts/
 │   │                              multiplayer, lobby, campaign, map-editor, onboarding
 │   └── server/                    the match server: rooms, lobby, match hosting
 │       └── src/{rooms,match-host,matchmaking,presence,voice}/
-├── content/                       game data in packs (see content-format.md)
+├── content/                       game data (see content-format.md)
 │   ├── schemas/                   generated from packages/content
-│   └── packs/{core,dev}/
+│   └── core/                      the base game: factions/<faction>/{units,structures}/<name>/, maps/
 ├── tools/biome/                   lint plugin enforcing the determinism rules
 ├── docs/                          design, engineering, contributing
 └── .github/                       PR template and CI workflow
 ```
 
-Every folder under `src/` has an `index.ts` stating its purpose and phase; most are still empty. The [roadmap](../roadmap.md#what-each-phase-builds) says which ones get filled when.
+Every folder under `src/` has an `index.ts` stating its purpose and phase; most are still empty. The [roadmap](../project/roadmap.md#what-each-phase-builds) says which ones get filled when.
 
 ### Why each package exists
 

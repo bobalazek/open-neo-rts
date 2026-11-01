@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/nanite-factory",
+  "name": "Nanite Factory",
+  "description": "Produces vehicles and aircraft from nanite-assembled scrap, and researches nanite technology.",
+  "cost": {
+    "credits": 1800
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:phoenix-initiative/command-node"],
+  "health": 1700,
+  "armor": "structure",
+  "footprint": [3, 3],
+  "power": -30,
+  "vision": 6,
+  "research": [
+    {
+      "id": "nanite-repair",
+      "name": "Nanite Repair",
+      "description": "Vehicles slowly repair themselves.",
+      "cost": {
+        "credits": 1500,
+        "salvage-points": 20
+      },
+      "researchTime": 45,
+      "effects": [
+        {
+          "type": "heal",
+          "target": {
+            "tags": ["vehicle"]
+          },
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "pads": 3,
+  "presentation": {
+    "model": "nanite-factory.glb",
+    "icon": "nanite-factory.icon.png",
+    "wreck": "nanite-factory.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_exit"]
+  }
+}

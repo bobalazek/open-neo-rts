@@ -1,0 +1,67 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/command-apc",
+  "name": "Command APC",
+  "description": "Infantry transport that buffs nearby units; carries 6 infantry.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1100,
+    "materials": 100
+  },
+  "buildTime": 14,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 550,
+  "armor": "medium",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 2.6
+  },
+  "radius": 0.75,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "battlefield-link",
+      "name": "Battlefield Link",
+      "description": "+10% damage for units within 5 cells.",
+      "target": "self",
+      "cooldown": 1,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "damage",
+          "percent": 110,
+          "radius": 5
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "transport": {
+    "slots": 6
+  },
+  "presentation": {
+    "model": "command-apc.glb",
+    "icon": "command-apc.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "command-apc.wreck.glb"
+  }
+}

@@ -18,7 +18,7 @@
 
 - **Matchmaking queues:** 1v1, 2v2 and 2v2 Shared Command (two players, one Force). Arranged teams queue together and are matched against other arranged teams when possible.
 - **Rating:** Glicko-2 per queue, with a placement period. Displayed as divisions; the raw rating is visible in the profile.
-- **Ranked rules:** locked competitive presets ([match-rules.md](match-rules.md)), a ranked map pool, map vetoes, no pausing beyond the competitive limit, and leaving counts as a loss.
+- **Ranked rules:** locked competitive settings ([match-rules.md](match-rules.md)), a ranked map pool, map vetoes, no pausing beyond the competitive limit, and leaving counts as a loss.
 - **Seasons** reset ratings softly every few months.
 
 ## Progression

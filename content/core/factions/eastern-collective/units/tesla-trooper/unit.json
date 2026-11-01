@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/tesla-trooper",
+  "name": "Tesla Trooper",
+  "description": "Infantry with EMP weapons that disable vehicles.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 650,
+    "materials": 50
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:eastern-collective/barracks-complex"],
+  "requires": ["structure:eastern-collective/emp-research-lab"],
+  "health": 160,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.2
+  },
+  "radius": 0.3,
+  "vision": 7,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "arc",
+      "damageType": "emp",
+      "damage": 45,
+      "range": [0, 5],
+      "reload": 2,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "presentation": {
+    "model": "tesla-trooper.glb",
+    "icon": "tesla-trooper.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

@@ -59,7 +59,7 @@ CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) must pass before revie
 _(Planned.)_ Every PR gets a preview build of the web client at its own URL. A bot comment on the PR lists:
 
 - the preview URL;
-- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=core.map:flat-test&spawn=core.unit:panther&vs=core.unit:tactical-operator`;
+- a [map editor playtest](docs/design/modes.md#map-editor-and-playtest) deep link for every added or changed unit and structure, e.g. `/editor/playtest?map=core.map:training-grounds&spawn=core.unit:panther&vs=core.unit:tactical-operator`;
 - the content validation report and, later, rendered turntable thumbnails of new models.
 
 Reviewers use these links to try new content without checking out the branch. The hosting provider is still open; it needs per-PR preview URLs.

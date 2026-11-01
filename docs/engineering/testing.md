@@ -39,5 +39,5 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 - **Runner:** `bun test` for everything that runs in Bun. **Playwright** for browser runs; it's a test tool, not a game dependency.
 - **CI:** GitHub Actions running `bun run check`, `typecheck`, `test`, `build` and the determinism suite, with Turborepo caching. Nightly jobs run cross-browser, fuzz, AI-vs-AI and benchmarks.
-- **Fixtures:** `@open-neo-rts/sim/testing` provides tiny maps, the mirrored test faction, command-log builders and scripted bots.
+- **Fixtures:** `@open-neo-rts/sim/testing` provides tiny maps, small Eastern Collective armies, command-log builders and scripted bots.
 - No snapshot testing of rendered images until the art direction settles.

@@ -1,80 +1,74 @@
 import { describe, expect, test } from "bun:test";
 import { checkPacks, type PackInput, schemaRef } from "./check-packs";
 
-const manifest = (files: Record<string, string[]>) => ({
+const UNIT = "factions/eastern-collective/units/collective-soldier/unit.json";
+const STRUCTURE = "factions/eastern-collective/structures/barracks-complex/structure.json";
+
+const manifest = {
   $schema: schemaRef("manifest.json", "manifest"),
-  id: "demo",
+  id: "core",
   version: "0.1.0",
   engine: ">=0.1.0",
-  name: "pack.demo.name",
-  description: "pack.demo.description",
+  name: "Core",
+  description: "Test pack",
   dependencies: {},
-  files,
-});
-
-const weapon = {
-  $schema: schemaRef("weapons/gun.json", "weapon"),
-  id: "weapon:gun",
-  damageType: "smallArms",
-  damage: 10,
-  range: [0, 5],
-  reload: 1,
-  projectile: { kind: "hitscan" },
-  targets: ["ground"],
+  files: { units: [UNIT], structures: [STRUCTURE] },
 };
 
-const unit = (sockets: string[]) => ({
-  $schema: schemaRef("units/rifleman.json", "unit"),
-  id: "unit:rifleman",
-  name: "unit.rifleman.name",
-  description: "unit.rifleman.description",
-  faction: "faction:demo",
+const rifle = {
+  id: "rifle",
+  targets: ["ground"],
+  range: [0, 5],
+  reload: 1,
+  projectile: { kind: "instant" },
+  warheads: [{ type: "damage", amount: 10, versus: { heavy: 10 } }],
+};
+
+const unit = (sockets: string[], extra: Record<string, unknown> = {}) => ({
+  $schema: schemaRef(UNIT, "unit"),
+  id: "unit:eastern-collective/collective-soldier",
+  name: "Collective Soldier",
+  description: "Standard infantry.",
+  role: "combat",
   family: "infantry",
-  cost: { "resource:credits": 100 },
-  buildTime: 5,
-  producedBy: ["structure:barracks"],
+  cost: { credits: 100 },
+  buildTime: 4,
+  producedBy: ["structure:eastern-collective/barracks-complex"],
   health: 100,
   armor: "infantry",
   movement: { domain: "foot", speed: 1.5 },
   radius: 0.25,
   vision: 7,
   pop: 1,
-  weapons: ["weapon:gun"],
-  presentation: {
-    model: "assets/units/rifleman/rifleman.glb",
-    icon: "assets/units/rifleman/rifleman.icon.png",
-    materials: {},
-    sockets,
-  },
+  weapons: [rifle],
+  presentation: { model: "collective-soldier.glb", materials: {}, sockets },
+  ...extra,
 });
 
-function pack(
-  overrides: Partial<Record<string, unknown>> = {},
-  extraFiles: string[] = [],
-): PackInput {
+const structure = {
+  $schema: schemaRef(STRUCTURE, "structure"),
+  id: "structure:eastern-collective/barracks-complex",
+  name: "Barracks Complex",
+  description: "Trains infantry.",
+  role: "production",
+  cost: { credits: 500 },
+  buildTime: 10,
+  health: 1400,
+  armor: "structure",
+  footprint: [3, 2],
+  power: -10,
+  vision: 6,
+  presentation: { model: "barracks-complex.glb", materials: {} },
+};
+
+function pack(overrides: Record<string, unknown> = {}): PackInput {
   const json = new Map<string, unknown>([
-    [
-      "manifest.json",
-      manifest({
-        units: ["units/rifleman.json"],
-        weapons: ["weapons/gun.json"],
-        locales: ["locales/en.json"],
-      }),
-    ],
-    ["units/rifleman.json", unit(["socket_muzzle"])],
-    ["weapons/gun.json", weapon],
-    [
-      "locales/en.json",
-      {
-        "pack.demo.name": "Demo",
-        "pack.demo.description": "Demo",
-        "unit.rifleman.name": "Rifleman",
-        "unit.rifleman.description": "Basic",
-      },
-    ],
+    ["manifest.json", manifest],
+    [UNIT, unit(["socket_muzzle"])],
+    [STRUCTURE, structure],
   ]);
   for (const [k, v] of Object.entries(overrides)) json.set(k, v);
-  return { id: "demo", files: [...json.keys(), ...extraFiles], json };
+  return { id: "core", files: [...json.keys()], json };
 }
 
 const errors = (p: PackInput) =>
@@ -83,37 +77,36 @@ const errors = (p: PackInput) =>
     .map((i) => i.message);
 
 describe("checkPacks", () => {
-  test("reports only unresolved references in an otherwise valid pack", () => {
-    // faction:demo, structure:barracks and resource:credits aren't defined in this tiny pack
-    expect(errors(pack())).toEqual([
-      'unknown reference "faction:demo"',
-      'unknown reference "resource:credits"',
-      'unknown reference "structure:barracks"',
-    ]);
+  test("a valid pack has no errors", () => {
+    expect(errors(pack())).toEqual([]);
   });
   test("rejects JSON files the manifest doesn't list", () => {
-    const p = pack({ "units/tank.json": {} }, []);
+    const p = pack({ "factions/eastern-collective/units/dragon-tank/unit.json": {} });
     expect(errors(p)).toContain("not listed in manifest.json files");
   });
   test("rejects a wrong $schema path", () => {
     expect(
-      errors(pack({ "weapons/gun.json": { ...weapon, $schema: "schemas/weapon.schema.json" } }))[0],
+      errors(pack({ [UNIT]: unit(["socket_muzzle"], { $schema: "unit.schema.json" }) }))[0],
     ).toContain("$schema must be");
   });
   test("requires the socket each weapon fires from", () => {
-    expect(errors(pack({ "units/rifleman.json": unit([]) }))).toContain(
-      'weapon "weapon:gun" fires from "socket_muzzle", which presentation.sockets doesn\'t list',
+    expect(errors(pack({ [UNIT]: unit([]) }))).toContain(
+      'weapon "rifle" fires from "socket_muzzle", which presentation.sockets doesn\'t list',
     );
   });
-  test("requires English strings for names", () => {
+  test("the ID must match the folder", () => {
+    expect(
+      errors(pack({ [UNIT]: unit(["socket_muzzle"], { id: "unit:eastern-collective/soldier" }) })),
+    ).toContain('id must be "unit:eastern-collective/collective-soldier" to match its folder');
+  });
+  test("reports unknown references", () => {
     const p = pack({
-      "locales/en.json": { "pack.demo.name": "Demo", "pack.demo.description": "Demo" },
+      [UNIT]: unit(["socket_muzzle"], { producedBy: ["structure:eastern-collective/war-factory"] }),
     });
-    expect(errors(p)).toContain('name: no English string for "unit.rifleman.name"');
+    expect(errors(p)).toContain('unknown reference "structure:eastern-collective/war-factory"');
   });
-  test("ID must match the file name", () => {
-    expect(errors(pack({ "weapons/gun.json": { ...weapon, id: "weapon:cannon" } }))).toContain(
-      'ID must be "weapon:gun" to match the file',
-    );
+  test("requires a role", () => {
+    const { role: _, ...noRole } = unit(["socket_muzzle"]);
+    expect(errors(pack({ [UNIT]: noRole }))).toContain("$.role is required");
   });
 });

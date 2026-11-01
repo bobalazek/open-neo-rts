@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/emp-research-lab",
+  "name": "EMP Research Lab",
+  "description": "Develops electromagnetic weapons; required for Tesla Troopers and the Mobile EMP.",
+  "cost": {
+    "credits": 1800
+  },
+  "buildTime": 25,
+  "producedBy": ["structure:eastern-collective/command-center"],
+  "requires": ["structure:eastern-collective/technology-center"],
+  "health": 1400,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -50,
+  "vision": 6,
+  "research": [
+    {
+      "id": "hardened-circuits",
+      "name": "Hardened Circuits",
+      "description": "Own units resist EMP.",
+      "cost": {
+        "credits": 1500
+      },
+      "researchTime": 45,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "empResistance",
+          "percent": 50
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "model": "emp-research-lab.glb",
+    "icon": "emp-research-lab.icon.png",
+    "wreck": "emp-research-lab.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

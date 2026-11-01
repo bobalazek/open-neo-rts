@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/black-market-hub",
+  "name": "Black Market Hub",
+  "description": "Access to special units, upgrades, market manipulation and the black-market superweapon.",
+  "tags": ["superweapon"],
+  "cost": {
+    "credits": 1500
+  },
+  "buildTime": 18,
+  "producedBy": ["structure:phoenix-initiative/command-node"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 1200,
+  "armor": "structure",
+  "footprint": [2, 3],
+  "power": -30,
+  "vision": 6,
+  "abilities": [
+    {
+      "id": "market-manipulation",
+      "name": "Market Manipulation",
+      "description": "Converts 50 salvage points into 1,500 credits.",
+      "target": "self",
+      "cooldown": 60,
+      "effects": [
+        {
+          "type": "grantResource",
+          "amount": 1500
+        }
+      ],
+      "cost": {
+        "salvage-points": 50
+      }
+    },
+    {
+      "id": "black-market-superweapon",
+      "name": "Black-Market Superweapon",
+      "description": "Buys and launches a one-shot experimental warhead at any point. Announced to every player.",
+      "target": "area",
+      "cooldown": 420,
+      "effects": [
+        {
+          "type": "damageArea",
+          "amount": 1800,
+          "radius": 5
+        }
+      ],
+      "cost": {
+        "credits": 4000,
+        "salvage-points": 200
+      }
+    }
+  ],
+  "presentation": {
+    "model": "black-market-hub.glb",
+    "icon": "black-market-hub.icon.png",
+    "wreck": "black-market-hub.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke"]
+  }
+}

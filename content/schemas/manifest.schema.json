@@ -21,91 +21,80 @@
     },
     "name": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
-      "description": "locale key"
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
     },
     "description": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
-      "description": "locale key"
+      "pattern": "^.{1,400}$",
+      "description": "English description"
     },
     "dependencies": {
       "type": "object",
       "additionalProperties": {
-        "type": "string"
+        "type": "string",
+        "description": "semver range"
       },
       "propertyNames": {
         "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
       }
     },
+    "optionalDependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "description": "semver range"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "conflicts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "description": "semver range of incompatible versions"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "gameplay": {
+      "type": "boolean"
+    },
     "files": {
       "type": "object",
-      "description": "Every content file the pack includes. The loader reads exactly these; unlisted files are an error.",
+      "description": "Every definition file the pack includes. The loader reads exactly these; unlisted files are an error.",
       "properties": {
         "$schema": {
           "type": "string"
-        },
-        "rules": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^rules\\/[a-z0-9-]+\\.json$"
-          }
         },
         "factions": {
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^factions\\/[a-z0-9-]+\\.json$"
+            "pattern": "^factions\\/[a-z0-9-]+\\/faction\\.json$"
           }
         },
         "units": {
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^units\\/[a-z0-9-]+\\.json$"
+            "pattern": "^factions\\/[a-z0-9-]+\\/units\\/[a-z0-9-]+\\/unit\\.json$"
           }
         },
         "structures": {
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^structures\\/[a-z0-9-]+\\.json$"
+            "pattern": "^(factions\\/[a-z0-9-]+|neutral)\\/structures\\/[a-z0-9-]+\\/structure\\.json$"
           }
         },
-        "weapons": {
+        "props": {
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^weapons\\/[a-z0-9-]+\\.json$"
-          }
-        },
-        "abilities": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^abilities\\/[a-z0-9-]+\\.json$"
-          }
-        },
-        "research": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^research\\/[a-z0-9-]+\\.json$"
-          }
-        },
-        "profiles": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^profiles\\/[a-z0-9-]+\\.json$"
-          }
-        },
-        "presets": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^presets\\/[a-z0-9-]+\\.json$"
+            "pattern": "^props\\/[a-z0-9-]+\\/[a-z0-9-]+\\/prop\\.json$"
           }
         },
         "maps": {
@@ -132,9 +121,6 @@
       },
       "required": [],
       "additionalProperties": false
-    },
-    "hidden": {
-      "type": "boolean"
     }
   },
   "required": [

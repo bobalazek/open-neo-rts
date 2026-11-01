@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "prop",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z0-9-]+\\.)?prop:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
+      "description": "prop ID"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^.{1,400}$",
+      "description": "English description"
+    },
+    "footprint": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "blocks": {
+      "enum": [
+        "nothing",
+        "movement",
+        "movement-and-vision"
+      ]
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "foot",
+          "wheeled",
+          "tracked",
+          "hover",
+          "amphibious",
+          "naval",
+          "air"
+        ]
+      },
+      "minItems": 1
+    },
+    "destructible": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "health": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "crushable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "health"
+      ],
+      "additionalProperties": false
+    },
+    "harvest": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "resource": {
+          "enum": [
+            "credits",
+            "materials",
+            "power",
+            "quantum-processing",
+            "industrial-capacity",
+            "salvage-points"
+          ]
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "resource",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "presentation": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "runtime model (.glb) in the same folder"
+        },
+        "icon": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "icon (.png) in the same folder"
+        },
+        "wreck": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$",
+          "description": "rubble model (.rubble.glb)"
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "palette",
+              "team",
+              "team_dark",
+              "team_light",
+              "team_emissive",
+              "metal",
+              "glass",
+              "emissive"
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^.+$"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^socket_[a-z]+$"
+          }
+        },
+        "animations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "sounds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*\\.[a-z0-9]+$"
+          },
+          "propertyNames": {
+            "pattern": "^[a-z_]+$"
+          }
+        },
+        "damageStates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "below": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99,
+                "description": "health percent"
+              },
+              "show": {
+                "enum": [
+                  "state_damaged",
+                  "state_critical"
+                ]
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "smoke",
+                    "fire",
+                    "sparks",
+                    "leak"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "below"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "construction": {
+          "enum": [
+            "bricks",
+            "drop",
+            "unfold"
+          ]
+        },
+        "destruction": {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "type": "string"
+            },
+            "style": {
+              "enum": [
+                "explode",
+                "collapse",
+                "sink",
+                "crash"
+              ]
+            },
+            "size": {
+              "enum": [
+                "small",
+                "medium",
+                "large",
+                "huge"
+              ]
+            }
+          },
+          "required": [
+            "style",
+            "size"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "model",
+        "materials"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "footprint",
+    "blocks",
+    "presentation"
+  ],
+  "additionalProperties": false
+}

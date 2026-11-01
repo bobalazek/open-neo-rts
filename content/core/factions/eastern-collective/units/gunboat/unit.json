@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/gunboat",
+  "name": "Gunboat",
+  "description": "Cheap patrol boat. (Addition.)",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 800,
+    "materials": 100
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:eastern-collective/shipyard"],
+  "health": 550,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 3.6
+  },
+  "radius": 0.8,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    },
+    {
+      "id": "rocket",
+      "damageType": "armorPiercing",
+      "damage": 50,
+      "range": [0, 6],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 14
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "gunboat.glb",
+    "icon": "gunboat.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "gunboat.wreck.glb"
+  }
+}

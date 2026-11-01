@@ -1,4 +1,4 @@
-// bun neo make-placeholders <pack>: block-model GLBs, wrecks and PNG icons for every unit and structure that lacks them.
+// bun neo make-placeholders [pack]: block-model GLBs, wrecks and silhouette icons for every unit and structure without art.
 // Placeholders follow the model conventions exactly, so the pipeline, validators and renderer work before real art exists.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -22,8 +22,8 @@ const AUTHOR = {
 const CELL = 2; // metres
 
 export async function makePlaceholders(args: string[]): Promise<number> {
-  const pack = args[0] ?? "dev";
-  const root = join("content/packs", pack);
+  const pack = args[0] ?? "core";
+  const root = join("content", pack);
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
   let written = 0;
   for (const file of [
@@ -31,16 +31,17 @@ export async function makePlaceholders(args: string[]): Promise<number> {
     ...(manifest.files.structures ?? []),
   ] as string[]) {
     const def = JSON.parse(readFileSync(join(root, file), "utf8"));
-    const kind = file.startsWith("units/") ? "unit" : "structure";
+    const kind = file.includes("/units/") ? "unit" : "structure";
+    const here = dirname(join(root, file));
     const p = def.presentation;
     const parts = kind === "unit" ? unitParts(def) : structureParts(def);
     const outputs: [string, () => Uint8Array][] = [
       [p.model, () => glb(parts, def.presentation.animations ?? [])],
-      [p.icon, () => icon(kind === "unit" ? [138, 143, 152] : [96, 101, 110])],
+      [p.icon, () => icon(parts)],
     ];
     if (p.wreck) outputs.push([p.wreck, () => glb(wreckParts(parts), [])]);
     for (const [path, make] of outputs) {
-      const target = join(root, path);
+      const target = join(here, path);
       if (existsSync(target)) continue;
       mkdirSync(dirname(target), { recursive: true });
       writeFileSync(target, make());
@@ -48,7 +49,7 @@ export async function makePlaceholders(args: string[]): Promise<number> {
       const assets = existsSync(manifestPath)
         ? JSON.parse(readFileSync(manifestPath, "utf8"))
         : { files: {} };
-      assets.files[path.split("/").pop() as string] = AUTHOR;
+      assets.files[path] = AUTHOR;
       writeFileSync(manifestPath, `${JSON.stringify(assets, null, 2)}\n`);
       written++;
     }
@@ -369,19 +370,129 @@ function glb(parts: Part[], clips: string[]): Uint8Array {
   return out;
 }
 
-// --- PNG writer (64×64 icon: coloured tile with a darker border) ------------------------------
+// --- Icon: the model's boxes in a shaded three-quarter view, outlined, on a transparent 128 × 128 tile
 
-function icon([r, g, b]: [number, number, number]): Uint8Array {
-  const size = 64;
-  const rows: number[] = [];
-  for (let y = 0; y < size; y++) {
-    rows.push(0);
-    for (let x = 0; x < size; x++) {
-      const edge = x < 4 || y < 4 || x >= size - 4 || y >= size - 4;
-      const k = edge ? 0.55 : 1;
-      rows.push(Math.round(r * k), Math.round(g * k), Math.round(b * k), 255);
+const ICON = 128;
+const COLORS = { team: [154, 163, 178], palette: [72, 78, 88] } as const;
+
+function icon(parts: Part[]): Uint8Array {
+  const byName = new Map(parts.map((p) => [p.name, p]));
+  const world = (p: Part): Vec3 => {
+    const parent = p.parent ? byName.get(p.parent) : undefined;
+    const base = parent ? world(parent) : ([0, 0, 0] as Vec3);
+    return [base[0] + p.at[0], base[1] + p.at[1], base[2] + p.at[2]];
+  };
+  // Oblique projection: depth (z) to the right, height up, width (x) receding diagonally.
+  const project = ([x, y, z]: Vec3): [number, number] => [z + x * 0.45, -y + x * 0.3];
+  const faces: {
+    poly: [number, number][];
+    rgb: readonly number[];
+    shade: number;
+    depth: number;
+  }[] = [];
+  for (const p of parts) {
+    if (!p.size || !p.material) continue;
+    const [cx, cy, cz] = world(p);
+    const [w, h, d] = p.size;
+    const [x0, x1, y0, y1, z0, z1] = [
+      cx - w / 2,
+      cx + w / 2,
+      cy - h / 2,
+      cy + h / 2,
+      cz - d / 2,
+      cz + d / 2,
+    ];
+    const rgb = COLORS[p.material];
+    const quad = (pts: Vec3[], shade: number) =>
+      faces.push({ poly: pts.map(project), rgb, shade, depth: -x0 + y0 * 0.01 });
+    quad(
+      [
+        [x0, y0, z0],
+        [x0, y0, z1],
+        [x0, y1, z1],
+        [x0, y1, z0],
+      ],
+      1,
+    ); // side facing the viewer
+    quad(
+      [
+        [x0, y1, z0],
+        [x0, y1, z1],
+        [x1, y1, z1],
+        [x1, y1, z0],
+      ],
+      1.25,
+    ); // top
+    quad(
+      [
+        [x0, y0, z1],
+        [x1, y0, z1],
+        [x1, y1, z1],
+        [x0, y1, z1],
+      ],
+      0.8,
+    ); // front end
+  }
+  const pts = faces.flatMap((f) => f.poly);
+  const [minX, maxX] = [Math.min(...pts.map((q) => q[0])), Math.max(...pts.map((q) => q[0]))];
+  const [minY, maxY] = [Math.min(...pts.map((q) => q[1])), Math.max(...pts.map((q) => q[1]))];
+  const scale = (ICON * 0.8) / Math.max(maxX - minX, maxY - minY, 0.001);
+  const ox = (ICON - (maxX - minX) * scale) / 2 - minX * scale;
+  const oy = (ICON - (maxY - minY) * scale) / 2 - minY * scale;
+  const rgba = new Uint8Array(ICON * ICON * 4);
+  faces.sort((a, b) => b.depth - a.depth);
+  for (const f of faces) {
+    const poly = f.poly.map(([x, y]) => [x * scale + ox, y * scale + oy] as [number, number]);
+    for (let y = 0; y < ICON; y++) {
+      for (let x = 0; x < ICON; x++) {
+        if (!inside(poly, x + 0.5, y + 0.5)) continue;
+        const i = (y * ICON + x) * 4;
+        for (let c = 0; c < 3; c++)
+          rgba[i + c] = Math.min(255, Math.round((f.rgb[c] ?? 0) * f.shade));
+        rgba[i + 3] = 255;
+      }
     }
   }
+  // Dark outline around the silhouette, so icons read on any background.
+  const solid = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < ICON && y < ICON && rgba[(y * ICON + x) * 4 + 3] === 255;
+  const out = rgba.slice();
+  for (let y = 0; y < ICON; y++) {
+    for (let x = 0; x < ICON; x++) {
+      if (solid(x, y)) continue;
+      if (
+        [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+          [2, 0],
+          [-2, 0],
+          [0, 2],
+          [0, -2],
+        ].some(([dx, dy]) => solid(x + (dx ?? 0), y + (dy ?? 0)))
+      ) {
+        out.set([20, 22, 26, 255], (y * ICON + x) * 4);
+      }
+    }
+  }
+  return png(out, ICON);
+}
+
+function inside(poly: [number, number][], x: number, y: number): boolean {
+  let hit = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i] as [number, number];
+    const [xj, yj] = poly[j] as [number, number];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+function png(rgba: Uint8Array, size: number): Uint8Array {
+  const rows = new Uint8Array(size * (size * 4 + 1));
+  for (let y = 0; y < size; y++)
+    rows.set(rgba.subarray(y * size * 4, (y + 1) * size * 4), y * (size * 4 + 1) + 1);
   const chunk = (type: string, data: Uint8Array) => {
     const out = new Uint8Array(12 + data.length);
     const view = new DataView(out.buffer);
@@ -399,7 +510,7 @@ function icon([r, g, b]: [number, number, number]): Uint8Array {
   const parts = [
     new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk("IHDR", header),
-    chunk("IDAT", new Uint8Array(deflateSync(new Uint8Array(rows)))),
+    chunk("IDAT", new Uint8Array(deflateSync(rows))),
     chunk("IEND", new Uint8Array()),
   ];
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));

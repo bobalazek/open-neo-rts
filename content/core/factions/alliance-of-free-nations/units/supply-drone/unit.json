@@ -1,0 +1,35 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/supply-drone",
+  "name": "Supply Drone",
+  "description": "Automated resource collector; hovers to ore fields and back to a Supply Relay.",
+  "family": "aircraft",
+  "tags": ["drone", "harvester"],
+  "cost": {
+    "credits": 1200
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "health": 500,
+  "armor": "light",
+  "movement": {
+    "domain": "hover",
+    "speed": 2.0
+  },
+  "radius": 0.7,
+  "vision": 6,
+  "pop": 0,
+  "weapons": [],
+  "harvest": {
+    "capacity": 500
+  },
+  "presentation": {
+    "model": "supply-drone.glb",
+    "icon": "supply-drone.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": [],
+    "animations": [],
+    "wreck": "supply-drone.wreck.glb"
+  }
+}

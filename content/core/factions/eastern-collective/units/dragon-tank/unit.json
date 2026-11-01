@@ -1,0 +1,65 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/dragon-tank",
+  "name": "Dragon Tank",
+  "description": "Heavy main battle tank, the Collective's Metamorphic Battle Tank: switches between assault and siege mode.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1000,
+    "materials": 100
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "health": 900,
+  "armor": "heavy",
+  "movement": {
+    "domain": "tracked",
+    "speed": 1.8
+  },
+  "radius": 0.85,
+  "vision": 8,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "heavy-cannon",
+      "damageType": "armorPiercing",
+      "damage": 90,
+      "range": [0, 7],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 20
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "siege-mode",
+      "name": "Siege Mode",
+      "description": "Deploys: +3 range and +25% damage, but can't move.",
+      "target": "self",
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "modifyStat",
+          "stat": "range",
+          "percent": 150
+        }
+      ]
+    }
+  ],
+  "turret": {
+    "turnRate": 80
+  },
+  "presentation": {
+    "model": "dragon-tank.glb",
+    "icon": "dragon-tank.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "dragon-tank.wreck.glb"
+  }
+}

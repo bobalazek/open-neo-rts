@@ -8,18 +8,18 @@
     },
     "id": {
       "type": "string",
-      "pattern": "^([a-z0-9-]+\\.)?faction:[a-z0-9]+(-[a-z0-9]+)*$",
+      "pattern": "^([a-z0-9-]+\\.)?faction:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
       "description": "faction ID"
     },
     "name": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
-      "description": "locale key"
+      "pattern": "^.{1,60}$",
+      "description": "English name; translations go in locales/<lang>.json"
     },
     "description": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
-      "description": "locale key"
+      "pattern": "^.{1,400}$",
+      "description": "English description"
     },
     "color": {
       "type": "string",
@@ -36,7 +36,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9]+(-[a-z0-9]+)*$",
+            "pattern": "^([a-z0-9-]+\\.)?structure:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
             "description": "structure ID"
           }
         },
@@ -50,7 +50,7 @@
               },
               "unit": {
                 "type": "string",
-                "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9]+(-[a-z0-9]+)*$",
+                "pattern": "^([a-z0-9-]+\\.)?unit:[a-z0-9-]+(\\/[a-z0-9-]+)?$",
                 "description": "unit ID"
               },
               "count": {
@@ -73,7 +73,7 @@
             "minimum": 0
           },
           "propertyNames": {
-            "pattern": "^([a-z0-9-]+\\.)?resource:[a-z0-9-]+$"
+            "pattern": "^(credits|materials|power|quantum-processing|industrial-capacity|salvage-points)$"
           }
         }
       },

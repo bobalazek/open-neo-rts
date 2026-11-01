@@ -12,7 +12,7 @@ Because the sim is deterministic, saving is simple: a match is fully described b
 | **Profile save**   | Settings, campaign progress, unlocked missions, stats                                                                        | Player progress, not sim state         |
 | **Campaign state** | World-map regions, ownership, diplomacy, persistent modifiers                                                                | The Conquer the World layer            |
 
-Every file carries a header: format version, sim version, game profile and content hashes, map hash, and creation time. (Wall-clock time is fine here; it's metadata, not sim state.)
+Every file carries a header: format version, sim version, pack IDs, versions and hashes, map hash, and creation time. (Wall-clock time is fine here; it's metadata, not sim state.)
 
 ## Single player
 

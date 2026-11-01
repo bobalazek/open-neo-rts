@@ -19,4 +19,4 @@
 - Single player shows one progress bar; multiplayer shows each player's progress, and the match starts when everyone is loaded.
 - Loads content packs, map, compiled nav data and assets, and warms the renderer (shaders, instancing buffers).
 - **Timeouts:** a player still loading after 60 s is treated as a disconnect, following the match's leave/disconnect policy ([match-rules.md](../match-rules.md#leaving-and-disconnecting)).
-- Tips come from locale files and are filtered for the active game profile.
+- Tips come from locale files and are filtered for the loaded packs.

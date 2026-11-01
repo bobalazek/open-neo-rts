@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/heavy-gunner",
+  "name": "Heavy Gunner",
+  "description": "Anti-vehicle specialist in a powered exoskeleton.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 400
+  },
+  "buildTime": 9,
+  "producedBy": ["structure:alliance-of-free-nations/advanced-barracks"],
+  "health": 180,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.2
+  },
+  "radius": 0.3,
+  "vision": 7,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "rocket",
+      "damageType": "armorPiercing",
+      "damage": 50,
+      "range": [0, 6],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 14
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "heavy-gunner.glb",
+    "icon": "heavy-gunner.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

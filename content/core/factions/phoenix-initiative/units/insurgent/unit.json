@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/insurgent",
+  "name": "Insurgent",
+  "description": "Basic infantry with guerrilla tactics: fast and cheap.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 110
+  },
+  "buildTime": 4,
+  "producedBy": ["structure:phoenix-initiative/underground-barracks"],
+  "health": 95,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.8
+  },
+  "radius": 0.25,
+  "vision": 7,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "rifle",
+      "damageType": "smallArms",
+      "damage": 10,
+      "range": [0, 5],
+      "reload": 1,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "presentation": {
+    "model": "insurgent.glb",
+    "icon": "insurgent.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

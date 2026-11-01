@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/raider-skiff",
+  "name": "Raider Skiff",
+  "description": "Fast armed boat; carries 4 infantry. (Addition.)",
+  "family": "naval",
+  "tags": ["naval"],
+  "cost": {
+    "credits": 600,
+    "materials": 50
+  },
+  "buildTime": 10,
+  "producedBy": ["structure:phoenix-initiative/raft-dock"],
+  "health": 400,
+  "armor": "naval",
+  "movement": {
+    "domain": "naval",
+    "speed": 4.5
+  },
+  "radius": 0.7,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "transport": {
+    "slots": 4
+  },
+  "presentation": {
+    "model": "raider-skiff.glb",
+    "icon": "raider-skiff.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "raider-skiff.wreck.glb"
+  }
+}

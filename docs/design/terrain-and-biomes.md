@@ -15,10 +15,10 @@ The 3D world is built from bricks, in the same visual language as the units. Ter
   - infantry pass through slowly and get cover and concealment (forests block vision into them);
   - vehicles are blocked, except "crusher" vehicles that flatten trees;
   - artillery and fire clear them, and stumps become passable.
-- **Wood:** in profiles with a wood resource, trees are harvestable.
+- **Wood:** where the rules define a wood resource, trees are harvestable.
 - **Blocking props:** rocks, ruins, walls and fences, some of them destructible.
 - **Decorative props:** grass tufts, flowers, small debris. Visual only; the sim never sees them.
-- **Resource nodes:** ore fields, oil derricks, salvage yards and similar, defined by the profile's resources.
+- **Resource nodes:** ore fields, oil derricks, salvage yards and similar, defined by the rules' resources.
 
 ## Biomes
 

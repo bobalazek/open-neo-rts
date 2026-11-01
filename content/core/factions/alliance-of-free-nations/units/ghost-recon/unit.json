@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/ghost-recon",
+  "name": "Ghost Recon",
+  "description": "Stealth infantry with active camouflage; marks targets for precision strikes.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 900,
+    "materials": 100
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:alliance-of-free-nations/advanced-barracks"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 100,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.6
+  },
+  "radius": 0.25,
+  "vision": 10,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "sniper-rifle",
+      "damageType": "smallArms",
+      "damage": 80,
+      "range": [0, 10],
+      "reload": 4,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "active-camouflage",
+      "name": "Active Camouflage",
+      "description": "Invisible while not firing.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "stealth"
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "presentation": {
+    "model": "ghost-recon.glb",
+    "icon": "ghost-recon.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

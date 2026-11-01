@@ -1,4 +1,5 @@
-// Cross-file checks for packs: manifest file lists, $schema, schema validation, IDs, references, locales, assets.
+// Cross-file checks for packs: manifest file lists, $schema, schema validation, IDs from folders,
+// references, translations, maps, and co-located assets.
 
 import type { ModelKind, ModelRequirements } from "../assets/validate-model";
 import { GROUP_SCHEMA, SCHEMAS, type SchemaName } from "../schemas/definitions";
@@ -6,7 +7,7 @@ import { validate } from "../schemas/dsl";
 
 export interface PackInput {
   id: string;
-  /** Every file in the pack folder, relative to it (`units/tank.json`, `assets/units/tank/tank.glb`). */
+  /** Every file in the pack folder, relative to it. */
   files: string[];
   /** Parsed JSON for every `.json` file. */
   json: Map<string, unknown>;
@@ -20,98 +21,120 @@ export interface PackIssue {
 
 export interface ModelCheck {
   pack: string;
+  /** Model path relative to the pack. */
   file: string;
   kind: ModelKind;
   requires: ModelRequirements;
 }
 
-const ID = /^(?:([a-z0-9-]+)\.)?([a-z]+):([a-z0-9]+(?:-[a-z0-9]+)*)$/;
-const SINGULAR: Record<string, string> = {
-  factions: "faction",
-  units: "unit",
-  structures: "structure",
-  weapons: "weapon",
-  abilities: "ability",
-  research: "research",
-  profiles: "profile",
-  presets: "preset",
-};
+type Def = Record<string, unknown>;
+const ID = /^(?:([a-z0-9-]+)\.)?([a-z]+):([a-z0-9-]+(?:\/[a-z0-9-]+)?)$/;
+const CELL = 2; // metres
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v);
+/** The ID a definition must have, derived from where its file lives. */
+const EXPECTED_ID: [RegExp, (m: RegExpExecArray) => string][] = [
+  [/^factions\/([a-z0-9-]+)\/faction\.json$/, (m) => `faction:${m[1]}`],
+  [/^factions\/([a-z0-9-]+)\/units\/([a-z0-9-]+)\/unit\.json$/, (m) => `unit:${m[1]}/${m[2]}`],
+  [
+    /^factions\/([a-z0-9-]+)\/structures\/([a-z0-9-]+)\/structure\.json$/,
+    (m) => `structure:${m[1]}/${m[2]}`,
+  ],
+  [/^neutral\/structures\/([a-z0-9-]+)\/structure\.json$/, (m) => `structure:neutral/${m[1]}`],
+  [/^props\/([a-z0-9-]+)\/([a-z0-9-]+)\/prop\.json$/, (m) => `prop:${m[1]}/${m[2]}`],
+  [/^maps\/([a-z0-9-]+)\/map\.json$/, (m) => `map:${m[1]}`],
+];
 
+const isObject = (v: unknown): v is Def => typeof v === "object" && v !== null && !Array.isArray(v);
+const list = (v: unknown): string[] => (Array.isArray(v) ? (v as string[]) : []);
+const dir = (file: string) => file.slice(0, file.lastIndexOf("/") + 1);
+
+/** `$schema` value for a file: relative path from the file to content/schemas/. */
 export function schemaRef(file: string, name: SchemaName): string {
-  return `${"../".repeat(file.split("/").length + 1)}schemas/${name}.schema.json`;
+  return `${"../".repeat(file.split("/").length)}schemas/${name}.schema.json`;
 }
 
-/** Packs in dependency order; `dependencies` of each pack are resolved before it. */
+/** Packs in dependency order; each pack's dependencies come before it. */
 export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: ModelCheck[] } {
   const issues: PackIssue[] = [];
   const models: ModelCheck[] = [];
   const add = (level: PackIssue["level"], pack: string, file: string, message: string) =>
     issues.push({ level, file: `${pack}/${file}`, message });
 
-  const byId = new Map(packs.map((p) => [p.id, p]));
+  const known = new Set(packs.map((p) => p.id));
   const deps = new Map<string, string[]>();
-  const ids = new Map<string, Map<string, { file: string; def: Record<string, unknown> }>>();
-  const keys = new Map<string, Set<string>>();
+  const defs = new Map<string, Map<string, { file: string; def: Def }>>();
+  const translations = new Map<string, Map<string, string>>(); // pack -> key -> file
 
   for (const pack of packs) {
     const manifest = pack.json.get("manifest.json");
+    const local = new Map<string, { file: string; def: Def }>();
+    defs.set(pack.id, local);
     if (!isObject(manifest)) {
       add("error", pack.id, "manifest.json", "missing or not an object");
       continue;
     }
     for (const i of validate(SCHEMAS.manifest, manifest))
       add("error", pack.id, "manifest.json", `${i.path} ${i.message}`);
+    if (manifest.$schema !== schemaRef("manifest.json", "manifest")) {
+      add(
+        "error",
+        pack.id,
+        "manifest.json",
+        `$schema must be "${schemaRef("manifest.json", "manifest")}"`,
+      );
+    }
     if (manifest.id !== pack.id)
       add("error", pack.id, "manifest.json", `id "${manifest.id}" must equal the folder name`);
     const depList = Object.keys(isObject(manifest.dependencies) ? manifest.dependencies : {});
     for (const d of depList)
-      if (!byId.has(d)) add("error", pack.id, "manifest.json", `depends on unknown pack "${d}"`);
+      if (!known.has(d)) add("error", pack.id, "manifest.json", `depends on unknown pack "${d}"`);
     deps.set(pack.id, depList);
 
     const listed = new Set<string>();
-    const local = new Map<string, { file: string; def: Record<string, unknown> }>();
-    const localKeys = new Set<string>();
-    const groups = isObject(manifest.files) ? manifest.files : {};
-
-    for (const [group, list] of Object.entries(groups)) {
-      for (const file of Array.isArray(list) ? (list as string[]) : []) {
+    const keys = new Map<string, string>();
+    translations.set(pack.id, keys);
+    for (const [group, files] of Object.entries(isObject(manifest.files) ? manifest.files : {})) {
+      const schemaName = GROUP_SCHEMA[group];
+      for (const file of list(files)) {
         listed.add(file);
         const data = pack.json.get(file);
         if (data === undefined) {
           add("error", pack.id, file, "listed in manifest.json but missing");
           continue;
         }
-        const rule = GROUP_SCHEMA[group];
-        if (!rule) {
+        if (!schemaName) {
           add("warning", pack.id, file, `no schema for "${group}" yet; not validated`);
           continue;
         }
-        const name = typeof rule === "function" ? rule(file) : rule;
-        if (name === "locale") {
-          if (isObject(data)) for (const k of Object.keys(data)) localKeys.add(k);
-        } else if (!isObject(data) || data.$schema !== schemaRef(file, name)) {
-          add("error", pack.id, file, `$schema must be "${schemaRef(file, name)}"`);
-        }
-        for (const i of validate(SCHEMAS[name], data))
+        for (const i of validate(SCHEMAS[schemaName], data))
           add("error", pack.id, file, `${i.path} ${i.message}`);
-        collectIds(pack.id, file, group, data, local, add);
+        if (schemaName === "locale") {
+          if (isObject(data)) for (const k of Object.keys(data)) keys.set(k, file);
+          continue;
+        }
+        if (!isObject(data)) continue;
+        if (data.$schema !== schemaRef(file, schemaName))
+          add("error", pack.id, file, `$schema must be "${schemaRef(file, schemaName)}"`);
+        const rule = EXPECTED_ID.find(([re]) => re.test(file));
+        const expected = rule ? rule[1](rule[0].exec(file) as RegExpExecArray) : undefined;
+        if (expected && data.id !== expected)
+          add("error", pack.id, file, `id must be "${expected}" to match its folder`);
+        if (typeof data.id === "string") {
+          if (local.has(data.id)) add("error", pack.id, file, `duplicate ID "${data.id}"`);
+          local.set(data.id, { file, def: data });
+        }
       }
     }
     for (const file of pack.files) {
       if (
         file.endsWith(".json") &&
         file !== "manifest.json" &&
-        !listed.has(file) &&
-        !file.startsWith("assets/")
+        !file.endsWith("/assets.json") &&
+        !listed.has(file)
       ) {
         add("error", pack.id, file, "not listed in manifest.json files");
       }
     }
-    ids.set(pack.id, local);
-    keys.set(pack.id, localKeys);
   }
 
   const reachable = (pack: string): string[] => {
@@ -130,49 +153,59 @@ export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: M
     const [, prefix, kind, name] = m;
     const scope = prefix ? (reachable(pack).includes(prefix) ? [prefix] : []) : reachable(pack);
     for (const p of scope) {
-      const hit = ids.get(p)?.get(`${kind}:${name}`);
+      const hit = defs.get(p)?.get(`${kind}:${name}`);
       if (hit) return hit;
     }
     return undefined;
   };
 
   for (const pack of packs) {
-    const scopeKeys = new Set(reachable(pack.id).flatMap((p) => [...(keys.get(p) ?? [])]));
-    for (const [id, { file, def }] of ids.get(pack.id) ?? []) {
+    for (const [key, file] of translations.get(pack.id) ?? []) {
+      const id = key.slice(0, key.indexOf("."));
+      if (!resolve(pack.id, id))
+        add("warning", pack.id, file, `translation for unknown definition "${id}"`);
+    }
+    for (const [id, { file, def }] of defs.get(pack.id) ?? []) {
       for (const ref of references(def)) {
         if (ref !== id && !resolve(pack.id, ref))
           add("error", pack.id, file, `unknown reference "${ref}"`);
       }
-      for (const field of ["name", "description"]) {
-        const k = def[field];
-        if (typeof k === "string" && !scopeKeys.has(k))
-          add("error", pack.id, file, `${field}: no English string for "${k}"`);
-      }
+      if (id.startsWith("map:")) checkMap(def, (m) => add("error", pack.id, file, m));
       const pres = def.presentation;
       if (!isObject(pres)) continue;
-      for (const path of [pres.model, pres.icon, pres.wreck].filter(
+      const here = dir(file);
+      for (const name of [pres.model, pres.icon, pres.wreck].filter(
         (p): p is string => typeof p === "string",
       )) {
-        if (!pack.files.includes(path))
-          add("warning", pack.id, file, `asset "${path}" doesn't exist yet`);
+        if (!pack.files.includes(here + name))
+          add(
+            "warning",
+            pack.id,
+            file,
+            `asset "${name}" doesn't exist yet (bun neo make-placeholders)`,
+          );
       }
-      const kind = id.startsWith("structure:") ? "structure" : "unit";
-      const sockets = new Set(Array.isArray(pres.sockets) ? (pres.sockets as string[]) : []);
-      for (const w of Array.isArray(def.weapons) ? (def.weapons as string[]) : []) {
-        const weapon = resolve(pack.id, w)?.def;
-        const socket = typeof weapon?.socket === "string" ? weapon.socket : "socket_muzzle";
-        if (!sockets.has(socket))
+      const sockets = new Set(list(pres.sockets));
+      for (const w of Array.isArray(def.weapons) ? (def.weapons as Def[]) : []) {
+        const socket = typeof w.socket === "string" ? w.socket : "socket_muzzle";
+        if (!sockets.has(socket)) {
           add(
             "error",
             pack.id,
             file,
-            `weapon "${w}" fires from "${socket}", which presentation.sockets doesn't list`,
+            `weapon "${w.id}" fires from "${socket}", which presentation.sockets doesn't list`,
           );
+        }
       }
-      if (typeof pres.model === "string" && pack.files.includes(pres.model)) {
+      const kind: ModelKind = id.startsWith("structure:")
+        ? "structure"
+        : id.startsWith("prop:")
+          ? "prop"
+          : "unit";
+      if (typeof pres.model === "string" && pack.files.includes(here + pres.model)) {
         models.push({
           pack: pack.id,
-          file: pres.model,
+          file: here + pres.model,
           kind,
           requires: requirements(def, pres, kind),
         });
@@ -182,76 +215,63 @@ export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: M
   return { issues, models };
 }
 
-function collectIds(
-  pack: string,
-  file: string,
-  group: string,
-  data: unknown,
-  into: Map<string, { file: string; def: Record<string, unknown> }>,
-  add: (level: PackIssue["level"], pack: string, file: string, message: string) => void,
-) {
-  if (!isObject(data)) return;
-  const defs: Record<string, unknown>[] =
-    group === "rules" && Array.isArray(data.resources)
-      ? (data.resources as Record<string, unknown>[])
-      : [data];
-  for (const def of defs) {
-    if (typeof def.id !== "string") continue;
-    const local = def.id.replace(/^[a-z0-9-]+\./, "");
-    if (into.has(local))
-      add("error", pack, file, `duplicate ID "${local}" (also in ${into.get(local)?.file})`);
-    into.set(local, { file, def });
-    const kind = SINGULAR[group];
-    const base = file
-      .split("/")
-      .pop()
-      ?.replace(/\.json$/, "");
-    if (kind && local !== `${kind}:${base}`)
-      add("error", pack, file, `ID must be "${kind}:${base}" to match the file`);
+function checkMap(map: Def, error: (message: string) => void) {
+  const size = isObject(map.size) ? map.size : {};
+  const [w, h] = [Number(size.width ?? 0), Number(size.height ?? 0)];
+  const spawns = Array.isArray(map.spawns) ? (map.spawns as Def[]) : [];
+  const ids = spawns.map((s) => String(s.id));
+  const players = isObject(map.players) ? map.players : {};
+  const inside = (p: unknown) => Array.isArray(p) && Number(p[0]) <= w && Number(p[1]) <= h;
+  if (new Set(ids).size !== ids.length) error("spawn IDs must be unique");
+  if (spawns.length < Number(players.max ?? 0))
+    error(`players.max is ${players.max} but there are only ${spawns.length} spawns`);
+  if (Number(players.min ?? 0) > Number(players.max ?? 0))
+    error("players.min is larger than players.max");
+  for (const s of spawns)
+    if (!inside(s.position)) error(`spawn "${s.id}" is outside the ${w} × ${h} map`);
+  for (const r of Array.isArray(map.resources) ? (map.resources as Def[]) : []) {
+    if (!inside(r.position)) error(`resource at ${JSON.stringify(r.position)} is outside the map`);
+  }
+  for (const o of Array.isArray(map.objects) ? (map.objects as Def[]) : []) {
+    if (!inside(o.position)) error(`object "${o.definition}" is outside the map`);
+    if (o.owner !== "neutral" && !ids.includes(String(o.owner)))
+      error(`object owner "${o.owner}" isn't a spawn`);
+  }
+  for (const team of Array.isArray(map.teams) ? (map.teams as string[][]) : []) {
+    for (const s of team) if (!ids.includes(s)) error(`team layout names unknown spawn "${s}"`);
   }
 }
 
-/** Every string that looks like a definition ID, plus cost and resource keys. */
+/** Every string that looks like a definition ID. */
 function references(def: unknown): string[] {
   const out: string[] = [];
-  const walk = (v: unknown, k?: string) => {
-    if (k === "id" || k === "$schema" || k === "eraVariants") return;
+  const walk = (v: unknown, key?: string) => {
+    if (key === "id" || key === "$schema" || key === "eraVariants") return;
     if (typeof v === "string" && ID.test(v)) out.push(v);
     else if (Array.isArray(v)) for (const x of v) walk(x);
-    else if (isObject(v)) {
-      for (const [kk, x] of Object.entries(v)) {
-        if (ID.test(kk)) out.push(kk);
-        walk(x, kk);
-      }
-    }
+    else if (isObject(v)) for (const [k, x] of Object.entries(v)) walk(x, k);
   };
   walk(def);
   return out;
 }
 
-function requirements(
-  def: Record<string, unknown>,
-  pres: Record<string, unknown>,
-  kind: ModelKind,
-): ModelRequirements {
-  const list = (v: unknown) => (Array.isArray(v) ? (v as string[]) : []);
+function requirements(def: Def, pres: Def, kind: ModelKind): ModelRequirements {
   const materials =
     isObject(pres.materials) && Object.keys(pres.materials).length > 0
       ? (pres.materials as Record<string, string>)
       : undefined;
-  const cells = 2; // metres per cell
-  const footprint = list(def.footprint) as unknown as number[];
+  const footprint = Array.isArray(def.footprint) ? (def.footprint as number[]) : [];
   const size =
-    kind === "structure" && footprint.length === 2
-      ? { width: (footprint[0] ?? 1) * cells, depth: (footprint[1] ?? 1) * cells }
+    footprint.length === 2
+      ? { width: (footprint[0] ?? 1) * CELL, depth: (footprint[1] ?? 1) * CELL }
       : typeof def.radius === "number"
-        ? { width: def.radius * 2 * cells, depth: def.radius * 2 * cells }
+        ? { width: def.radius * 2 * CELL, depth: def.radius * 2 * CELL }
         : undefined;
   return {
     parts: list(pres.parts),
     sockets: list(pres.sockets),
     animations: list(pres.animations),
     ...(materials && { materials }),
-    ...(size && { size }),
+    ...(size && kind !== "prop" && { size }),
   };
 }

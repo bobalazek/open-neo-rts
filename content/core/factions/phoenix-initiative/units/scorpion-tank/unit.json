@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/scorpion-tank",
+  "name": "Scorpion Tank",
+  "description": "Light tank with stealth while stationary.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 800,
+    "materials": 50
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:phoenix-initiative/nanite-factory"],
+  "health": 500,
+  "armor": "medium",
+  "movement": {
+    "domain": "tracked",
+    "speed": 2.6
+  },
+  "radius": 0.7,
+  "vision": 8,
+  "pop": 2,
+  "weapons": [
+    {
+      "id": "cannon",
+      "damageType": "armorPiercing",
+      "damage": 60,
+      "range": [0, 6],
+      "reload": 2.5,
+      "projectile": {
+        "kind": "direct",
+        "speed": 20
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "ambush-mode",
+      "name": "Ambush Mode",
+      "description": "Invisible while stationary and not firing.",
+      "target": "self",
+      "cooldown": 0,
+      "effects": [
+        {
+          "type": "stealth"
+        }
+      ],
+      "autoCast": true
+    }
+  ],
+  "turret": {
+    "turnRate": 120
+  },
+  "presentation": {
+    "model": "scorpion-tank.glb",
+    "icon": "scorpion-tank.icon.png",
+    "materials": {},
+    "parts": ["hull", "turret", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "scorpion-tank.wreck.glb"
+  }
+}

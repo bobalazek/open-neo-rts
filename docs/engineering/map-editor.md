@@ -20,7 +20,7 @@ A runtime game must not depend on the editor's current unsaved brush state. Map 
 id: map:test-valley
 version: 1
 formatVersion: 1
-profileCompatibility: [standard]
+packs: [core]
 size: { widthCells: 128, heightCells: 128, metersPerCell: 2 }
 terrain:
   heightLevels: height.r8 # discrete level per cell (0-7)
@@ -52,7 +52,7 @@ A deterministic grid/A* with fixed tie-breaking is the first navigation approach
 
 | Milestone           | Creator tools                                                                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Prototype           | New/open/save, terrain height/paint, spawn placement, resources, camera, run validation                                                                |
+| First version       | New/open/save, terrain height/paint, spawn placement, resources, camera, run validation                                                                |
 | First usable editor | Raise/lower/flatten/smooth, terrain brushes, props, buildings, object inspector, grid snap/rotation, copy/paste, undo/redo, playtest                   |
 | Maps 1.0            | Water/cliffs/bridges/roads, path/blocking overlays, resource balance view, team slots, neutrality/capture, publishing/export, multiplayer verification |
 | Scenario editor     | Trigger graph, timed events, objective editor, dialogue, camera rails, mission previews and deterministic scenario validation                          |
@@ -83,7 +83,7 @@ Fairness hints: compare spawn-to-node distance, defensible terrain, high-ground 
 
 ## 8. Playtest loop
 
-`Editor draft -> validate -> compile runtime -> start local simulation with selected profile/map/AI -> play or inspect -> return -> edit`. Playtest is sandboxed and cannot alter source without explicit save. Map export must run the exact validation/compilation used by multiplayer hosts. Host may refuse invalid/untrusted imports or require pack hashes.
+`Editor draft -> validate -> compile runtime -> start local simulation with the map/AI -> play or inspect -> return -> edit`. Playtest is sandboxed and cannot alter source without explicit save. Map export must run the exact validation/compilation used by multiplayer hosts. Host may refuse invalid/untrusted imports or require pack hashes.
 
 ## 9. Security and file constraints
 

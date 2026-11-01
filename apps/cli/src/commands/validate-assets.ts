@@ -26,7 +26,7 @@ function manifestFiles(manifest: string): Record<string, unknown> {
 }
 
 export async function validateAssets(args: string[]): Promise<number> {
-  const root = args[0] ?? "content/packs";
+  const root = args[0] ?? "content";
   let errors = 0;
   let warnings = 0;
   const report = (file: string, level: "error" | "warning", message: string) => {
@@ -35,7 +35,7 @@ export async function validateAssets(args: string[]): Promise<number> {
     console.log(`${level === "error" ? "✖" : "⚠"} ${relative(".", file)}: ${message}`);
   };
 
-  const files = walk(root).filter((f) => f.includes("/assets/"));
+  const files = walk(root).filter((f) => !f.includes("/schemas/") && !f.endsWith(".gitkeep"));
 
   // Provenance: every runtime file has an assets.json entry, and every entry has a file.
   for (const manifest of files.filter((f) => basename(f) === "assets.json")) {

@@ -1,18 +1,17 @@
-# Authoring campaigns, missions and presets
+# Authoring campaigns, missions and skirmish maps
 
 **Status:** target workflow; the schemas and the scenario editor are not built yet.
 
-Everything here is data. A campaign mission and a skirmish setup are the same simulation, configured differently.
+Everything here is data. A campaign mission and a skirmish are the same simulation on a map, configured differently.
 
 ## Concepts
 
-| Thing               | What it is                                                                    | Lives in                                                |
-| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------- |
-| **Map**             | Terrain, props, spawns, resources                                             | `<pack>/maps/<name>/`                                   |
-| **Scenario**        | A map plus pre-placed Forces, objectives and triggers                         | inside a mission, or `<pack>/maps/<name>/scenario.json` |
-| **Mission**         | A scenario plus briefing, dialogue, difficulty settings and campaign metadata | `<pack>/campaigns/<campaign>/missions/<name>/`          |
-| **Campaign**        | A graph of missions with unlocks and carry-over                               | `<pack>/campaigns/<campaign>/campaign.json`             |
-| **Skirmish preset** | A lobby template: Force slots, teams, rules, victory                          | `<pack>/presets/<name>.json`                            |
+| Thing        | What it is                                                                    | Lives in                                                |
+| ------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Map**      | Terrain, props, spawns, resources                                             | `<pack>/maps/<name>/`                                   |
+| **Scenario** | A map plus pre-placed Forces, objectives and triggers                         | inside a mission, or `<pack>/maps/<name>/scenario.json` |
+| **Mission**  | A scenario plus briefing, dialogue, difficulty settings and campaign metadata | `<pack>/campaigns/<campaign>/missions/<name>/`          |
+| **Campaign** | A graph of missions with unlocks and carry-over                               | `<pack>/campaigns/<campaign>/campaign.json`             |
 
 ## Building a mission
 
@@ -30,7 +29,6 @@ Everything here is data. A campaign mission and a skirmish setup are the same si
   "$schema": "../../../../schemas/mission.schema.json",
   "id": "mission:afn-04-cold-front",
   "map": "map:cold-front",
-  "profile": "profile:standard",
   "forces": [
     { "id": "player", "faction": "faction:afn", "seat": "human", "start": "region:player-base" },
     {
@@ -89,27 +87,9 @@ What counts as a win or a loss is defined in [objectives-and-victory.md](../desi
 - **Carry-over:** campaign variables (e.g. `rescuedScientists: true`) and unlocks persist between missions in the campaign state. Missions can read them in conditions. Carrying veteran units between missions is optional per campaign.
 - **Medals:** defined per mission (difficulty completed, secondary objectives, time).
 
-## Skirmish presets
+## Skirmish maps
 
-A preset fills the [skirmish setup](../design/screens/skirmish-setup.md) and the multiplayer lobby:
-
-```json
-{
-  "id": "preset:hybrid-2v2",
-  "forces": [
-    { "team": "A", "seats": ["human", "human"] },
-    { "team": "A", "seats": ["bot"] },
-    { "team": "B", "seats": ["open"] }
-  ],
-  "rules": {
-    "victory": "conquest",
-    "elimination": "annihilation",
-    "fog": "standard",
-    "diplomacy": "locked",
-    "postDefeat": "requestAllyAssist"
-  }
-}
-```
+A skirmish needs nothing beyond a map: its `map.json` (example: [core/maps/training-grounds/map.json](../../content/core/maps/training-grounds/map.json)) declares the spawns, player count, suggested team layouts, start mode (`faction` start kits or `empty`), resource fields and pre-placed objects. The lobby does the rest ([content-format.md](content-format.md#faction-map-and-props)).
 
 ## Testing
 

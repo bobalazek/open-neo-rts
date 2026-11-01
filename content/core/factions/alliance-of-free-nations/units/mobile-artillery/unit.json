@@ -1,0 +1,51 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/mobile-artillery",
+  "name": "Mobile Artillery",
+  "description": "Long-range precision strike platform.",
+  "family": "vehicle",
+  "tags": ["vehicle"],
+  "cost": {
+    "credits": 1600,
+    "materials": 250
+  },
+  "buildTime": 20,
+  "producedBy": ["structure:alliance-of-free-nations/vehicle-factory"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 300,
+  "armor": "light",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 1.6
+  },
+  "radius": 0.75,
+  "vision": 7,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "guided-shell",
+      "damageType": "explosive",
+      "damage": 90,
+      "range": [4, 16],
+      "reload": 6,
+      "projectile": {
+        "kind": "homing",
+        "speed": 12
+      },
+      "targets": ["ground"],
+      "splash": {
+        "radius": 1,
+        "edgePercent": 30
+      }
+    }
+  ],
+  "presentation": {
+    "model": "mobile-artillery.glb",
+    "icon": "mobile-artillery.icon.png",
+    "materials": {},
+    "parts": ["hull", "barrel"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "mobile-artillery.wreck.glb"
+  }
+}

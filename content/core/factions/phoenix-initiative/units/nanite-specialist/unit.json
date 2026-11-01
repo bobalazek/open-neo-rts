@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/nanite-specialist",
+  "name": "Nanite Specialist",
+  "description": "Controls nanite swarms that eat through armour and repair allies.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 800,
+    "materials": 100
+  },
+  "buildTime": 14,
+  "producedBy": ["structure:phoenix-initiative/underground-barracks"],
+  "requires": ["structure:phoenix-initiative/research-bunker"],
+  "health": 120,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.4
+  },
+  "radius": 0.25,
+  "vision": 7,
+  "pop": 1,
+  "weapons": [
+    {
+      "id": "nanite-swarm",
+      "damageType": "armorPiercing",
+      "damage": 30,
+      "range": [0, 5],
+      "reload": 1.5,
+      "projectile": {
+        "kind": "beam"
+      },
+      "targets": ["ground"]
+    }
+  ],
+  "presentation": {
+    "model": "nanite-specialist.glb",
+    "icon": "nanite-specialist.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": ["socket_muzzle"],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

@@ -34,7 +34,7 @@
 
 | Element             | Behaviour                                                                                                                                                                |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Resource bar**    | Built from the game profile's resource schema. Hover shows income per minute. Power turns red on brownout. Also shows the match timer and the menu button                |
+| **Resource bar**    | Built from the resources the match's rules define. Hover shows income per minute. Power turns red on brownout. Also shows the match timer and the menu button            |
 | **Objectives**      | Primary, secondary and timers; collapsible. Updates are announced. See [objectives-and-victory.md](../objectives-and-victory.md)                                         |
 | **Team panel**      | Teammates, their roles and grants, voice indicator, and a resource-transfer button (when the ruleset allows). Diplomacy button in diplomacy modes                        |
 | **Event feed**      | Notifications and chat, with click-to-jump; fades after a few seconds. The announcer voice mirrors important lines                                                       |

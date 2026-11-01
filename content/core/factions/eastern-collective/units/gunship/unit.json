@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/gunship",
+  "name": "Gunship",
+  "description": "Close air support helicopter.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 1300,
+    "materials": 200
+  },
+  "buildTime": 16,
+  "producedBy": ["structure:eastern-collective/airfield"],
+  "health": 600,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 4.0
+  },
+  "radius": 0.9,
+  "vision": 9,
+  "pop": 3,
+  "weapons": [
+    {
+      "id": "rocket",
+      "damageType": "armorPiercing",
+      "damage": 50,
+      "range": [0, 6],
+      "reload": 3,
+      "projectile": {
+        "kind": "direct",
+        "speed": 14
+      },
+      "targets": ["ground", "air"]
+    },
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "gunship.glb",
+    "icon": "gunship.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "gunship.wreck.glb"
+  }
+}

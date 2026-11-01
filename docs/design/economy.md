@@ -1,6 +1,6 @@
 # Economy
 
-How resources flow in the 2035 game (`standard` profile). Resource kinds and other profiles' economies are in [content-and-eras.md §2](content-and-eras.md#2-resource-model-no-hardcoded-four-resource-economy); faction twists are in [factions/](factions/README.md#resources).
+How resources flow in the base game. Resource kinds and other eras' economies are in [content-and-eras.md §2](content-and-eras.md#2-resource-model-no-hardcoded-four-resource-economy); faction twists are in [factions/](factions/README.md#resources).
 
 ## The loop
 
@@ -23,7 +23,7 @@ Power structures ──► power capacity ──► keeps everything running
 - **Harvesters** carry a fixed load (e.g. 500 credits worth), mine one cell at a time, then drive to the nearest friendly refinery. When their field is empty they move to the nearest reachable field on their own.
 - **Refinery docking:** one harvester unloads at a time; others queue in arrival order (deterministic). Unloading takes a few seconds.
 - **Rare-metal nodes** are single points worked by a derrick-type structure built on top, producing materials at a fixed rate until depleted.
-- **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's engineers can clear a wreck for a small amount; PI Salvage Crawlers get the full value ([pi.md](factions/pi.md)).
+- **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's builders can clear a wreck for a small amount; the Phoenix Initiative's Salvage Crawlers and Scavenger VTOLs get the full value, plus salvage points ([phoenix-initiative.md](factions/phoenix-initiative.md)).
 
 ## Spending
 
@@ -45,11 +45,31 @@ Power structures ──► power capacity ──► keeps everything running
 - **Brownout** when used > produced: production and research run at 50%, powered defences go offline, radar is disabled. Selling or losing a power plant can trigger it mid-fight.
 - Structures can be **powered down** manually to free power for others.
 
-## Sharing between allies
+## Sharing, trading and markets
 
-- **Resource transfers:** send credits or materials to an ally (ruleset option; default allowed in team games, off in FFA until a treaty allows it).
-- **Shared Command:** one Force means one bank; every controller with `economy.*` grants spends from it.
-- **Teams never share a bank** unless the preset puts everyone in one Force.
+**Shared Command** means one Force and one bank: every controller with `economy.*` grants spends from it. Separate Forces never share a bank; they trade.
+
+### Sending resources to an ally
+
+The lobby's **transfer mode** decides how resources move between allied Forces:
+
+| Mode                                 | How it works                                                                                                                                                                                           | Feel                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| **Instant** (default for team games) | Pick an ally and an amount in the team panel; it arrives immediately, minus a 10% transfer fee (a setting, 0–50%)                                                                                      | Simple co-op                                    |
+| **Convoy**                           | The resources leave on a supply vehicle (the faction's harvester carrying a crate) that drives to the ally's drop-off. It can be attacked; if destroyed, the cargo drops as a crate anyone can pick up | Tactical: escort your convoys, raid the enemy's |
+| **Off**                              | No transfers (competitive 1v1, or until diplomacy allows it in free-for-all)                                                                                                                           |                                                 |
+
+- Every transfer is a command with the sender's grants checked, so it appears in replays.
+- Transfers of credits and raw materials are allowed. Faction-unique resources (quantum processing, industrial capacity, salvage points) can't be transferred.
+- In free-for-all with diplomacy, a **trade treaty** enables transfers between the two Forces ([multiplayer.md §5](multiplayer.md#5-diplomacy)).
+
+### Exchange markets
+
+Some structures exchange one resource for another: the Phoenix Initiative's Black Market Hub, and capturable neutral **trading posts** on some maps.
+
+- A market lists exchange pairs (credits ↔ raw materials, salvage points → credits) with a base rate.
+- **Rates move with use:** every trade worsens that direction's rate by a few percent, recovering slowly over time. Everyone uses the same deterministic rate, so dumping resources has a cost.
+- Market trades are commands, so they're validated, logged and replayed like everything else.
 
 ## Pacing targets (for balance)
 

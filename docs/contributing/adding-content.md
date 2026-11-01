@@ -1,37 +1,45 @@
 # Adding content
 
-**Status:** target workflow. The content schemas and validators don't exist yet; the steps and file layout below are what they'll implement. Update this guide when they land.
+Content is data: a unit, structure or map is a JSON file in its own folder, plus its assets. Adding one should never need engine code; if it does, the engine is missing a general capability, and that's a separate engine PR. The format is in [content-format.md](content-format.md); the PR rules are in [pull-requests.md](pull-requests.md).
 
-Content is **declarative data**: JSON files validated against schemas, plus assets. You can write the JSON by hand, or use the [content editor](../design/screens/content-editor.md) (`/tools/content`), which edits the same files through a form with a live 3D preview. Adding a unit, structure, weapon, ability or tech should never require engine code. If it does, the engine is missing a capability. Open an issue for that capability instead of special-casing the unit.
+You can write the JSON by hand or use the [content editor](../design/screens/content-editor.md), which edits the same files through a form with a live 3D preview.
 
 ## Adding a unit
 
-1. **Definition:** `content/packs/<pack>/units/<name>.json`, with a `$schema` reference so your editor autocompletes fields. Start from the closest existing unit; [dev/units/tank.json](../../content/packs/dev/units/tank.json) is the reference example, and [content-format.md](content-format.md) explains every field, the ID rules and the units of measure. A unit is a composition of components (see [content-and-eras.md](../design/content-and-eras.md#5-unit-families-and-composable-prefabs)).
-   Data uses human units (cells, seconds); the loader converts them to integers.
-2. **Weapons and abilities** it uses: `weapons/<id>.json`, `abilities/<id>.json`, unless it reuses existing ones.
-3. **Assets** under `assets/units/<id>/`, with provenance. See [assets.md](assets.md). Check the model in the [content editor](../design/screens/content-editor.md) (`/tools/content`): sockets, team colours, damage states, destruction.
-4. **Strings:** name and description in `locales/en.json`.
-5. **Wire it in:** add the file's path to the pack's `manifest.json` (`files.units`); set `producedBy` and `requires` in the unit itself. Build menus and tech trees are derived from those.
-6. **Validate:** `bun neo validate` checks the schema, references, locale strings, manifest, and the model against the definition (parts, a socket for each weapon, clips, material map, size). No art yet? `bun neo make-placeholders <pack>` generates block models with the right parts and sockets.
-7. **Preview:** open the map editor playtest deep link (`/editor/playtest?spawn=core.unit:tank`) locally, or use the link the PR preview posts.
+1. **Folder:** `content/core/factions/<faction>/units/<name>/`, named in kebab-case.
+2. **Definition:** `unit.json`. Start from the faction's closest existing unit. Set:
+   - `id` matching the folder (`unit:<faction>/<name>`);
+   - English `name` and `description`;
+   - `role` and `family`;
+   - cost, build time, `producedBy`, `requires`;
+   - health, armour class, `resist`, movement, radius, vision, population;
+   - weapons inline (launcher, projectile, warheads with `versus`);
+   - abilities inline;
+   - `presentation`.
 
-You don't write tests per unit. A generic content suite spawns **every** definition in a headless test arena, then makes it move, attack, take damage and die. It also checks the definition stays deterministic. Add a scenario test only for unusual behaviour.
+   Damage and health stay within the reference bands in [combat-and-balance.md](../design/combat-and-balance.md#damage-scale).
+3. **Manifest:** add the file's path to `files.units` in `content/core/manifest.json`.
+4. **Assets** (when art exists): model, wreck, icon and sounds in the same folder, plus `assets.json` ([assets.md](assets.md)). The model needs the parts, sockets and clips that `presentation` lists, including a muzzle socket for every weapon.
+5. **Faction doc:** add the unit to its faction's table, with its role and counters.
+6. **Validate:** `bun neo validate`. It checks the schema, references, manifest, and the model against the definition.
+7. **Preview:** open it in the content editor, or with the playtest link the PR preview posts.
+
+You don't write tests per unit: a generic content suite spawns every definition headlessly, makes it move, attack, take damage and die, and checks determinism.
 
 ## Adding a structure
 
-Same steps, in `structures/<id>.json`. Structures also define a footprint, placement rules, construction stages, and what they produce, research or provide (power, territory, housing…). Structure families are listed in [content-and-eras.md](../design/content-and-eras.md#6-structures-and-construction).
+Same steps, in `factions/<faction>/structures/<name>/structure.json`, listed under `files.structures`. Structures also set `role`, `footprint` (and `cells` for coastal ones), `power`, and what they offer: production (via units' `producedBy`), research inline, abilities, garrison, pads, adjacency bonuses. Builders construct every structure, so there's no `producedBy`.
 
 ## Other content
 
-| Content         | Location                              | Notes                                                                     |
-| --------------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| Weapon          | `weapons/`                            | Projectile type, damage per armor class, range, reload, in ticks          |
-| Ability         | `abilities/`                          | Built from typed effects only; no scripting                               |
-| Tech            | `research/`                           | Requirements graph; validated for cycles and unreachable nodes            |
-| Faction         | `factions/<id>/`                      | Bonuses, starting units, tech overrides, AI personality weights           |
-| Map             | `<pack>/maps/<name>/`                 | Made in the map editor; see [map-editor.md](../engineering/map-editor.md) |
-| Profile, preset | `<pack>/profiles/`, `<pack>/presets/` | See [modes.md](../design/modes.md)                                        |
+| Content           | Where                             | Notes                                                                                                  |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Faction           | `factions/<faction>/faction.json` | Colour, start kit, bot personality; needs one `headquarters` structure and at least one `builder` unit |
+| Neutral structure | `neutral/structures/<name>/`      | Tech buildings, quantum computing facilities, the wonder                                               |
+| Prop              | `props/<biome>/<name>/prop.json`  | Trees, rocks, ruins                                                                                    |
+| Map               | `maps/<name>/map.json`            | Made in the map editor ([map-editor.md](../engineering/map-editor.md))                                 |
+| Translation       | `locales/<lang>.json`             | Keyed by definition ID and field                                                                       |
 
 ## Balance changes
 
-Changing numbers is a gameplay change. Say why in the PR. Once AI-vs-AI runs exist, attach the before and after win-rate report from `bun neo ai-vs-ai`.
+Changing numbers is a **balance** PR: state the reason, and attach the balance report diff (and AI-vs-AI results once they exist).

@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/cyber-specialist",
+  "name": "Cyber Specialist",
+  "description": "Hacks enemy systems and reveals the battlefield.",
+  "family": "infantry",
+  "tags": ["infantry"],
+  "cost": {
+    "credits": 700,
+    "materials": 50
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:alliance-of-free-nations/advanced-barracks"],
+  "requires": ["structure:alliance-of-free-nations/cyber-operations-center"],
+  "health": 90,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.5
+  },
+  "radius": 0.25,
+  "vision": 9,
+  "pop": 1,
+  "weapons": [],
+  "abilities": [
+    {
+      "id": "hack",
+      "name": "Hack",
+      "description": "Disables a vehicle or structure for 10 seconds.",
+      "target": "unit",
+      "cooldown": 30,
+      "effects": [
+        {
+          "type": "disable",
+          "duration": 10
+        }
+      ],
+      "range": 6
+    }
+  ],
+  "presentation": {
+    "model": "cyber-specialist.glb",
+    "icon": "cyber-specialist.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": [],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}

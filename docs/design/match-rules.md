@@ -8,15 +8,15 @@ Each layer overrides the one before it:
 
 ```text
 Engine hard limits         safety ceilings, never exceeded (below)
-  → Game profile defaults  e.g. standard: pop cap 200, normal speed, annihilation
-    → Preset               e.g. "Hybrid 2v2", "FFA diplomacy", or a saved custom preset
-      → Lobby overrides    the host's changes, within the ranges the profile allows
+  → Setting defaults       defined in code; packs may override defaults and ranges (rules/settings.json)
+    → Map                  player count, spawns, start mode
+      → Lobby choices      the host's settings, within the allowed ranges
         → Per-Force        handicaps and per-Force limits
 ```
 
 - The resolved settings are part of the match setup. They're shown in the lobby summary, included in the content hash handshake, saved in saves and replays, and deterministic like everything else.
-- Hosts can save any combination as a **custom preset** and share it as a file or link.
-- **Competitive presets** lock the settings that matter for fairness.
+- Hosts can save any combination as a **saved setup** (stored on their device) and share it as a link.
+- **Ranked play** locks the settings that matter for fairness.
 - The lobby shows common settings up front; everything else is in an **Advanced rules** panel ([lobby.md](screens/lobby.md)).
 
 ## Settings
@@ -47,11 +47,11 @@ Engine hard limits         safety ceilings, never exceeded (below)
 |                    | Starting positions                                                                 | Fixed                                   | Match                                                          |
 | **Victory**        | Conditions and parameters                                                          | Conquest                                | Match ([objectives-and-victory.md](objectives-and-victory.md)) |
 |                    | Elimination rule                                                                   | Annihilation                            | Match                                                          |
-| **Teams**          | Diplomacy mode, post-defeat policy, Shared Command grants, leave/disconnect policy | Per preset                              | Match ([multiplayer.md](multiplayer.md))                       |
+| **Teams**          | Diplomacy mode, post-defeat policy, Shared Command grants, leave/disconnect policy | Lobby                                   | Match ([multiplayer.md](multiplayer.md))                       |
 | **Bots**           | Difficulty, personality, handicap                                                  | Normal                                  | Per bot                                                        |
 | **Rule modules**   | Territory, supply, trade, wonders, eras                                            | Per profile                             | Match ([content-and-eras.md](content-and-eras.md))             |
 
-Settings are defined in content data, each with a type, default, allowed range and description. New settings don't need lobby UI work: the Advanced rules panel is generated from those definitions.
+Settings are defined once in code (`packages/content/src/rules/settings.ts`), each with a type, default, range and description. New settings don't need lobby UI work: the Advanced rules panel is generated from that list.
 
 ## Leaving and disconnecting
 

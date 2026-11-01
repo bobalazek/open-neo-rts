@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:alliance-of-free-nations/guardian-gunship",
+  "name": "Guardian Gunship",
+  "description": "Heavy air support with point-defence systems.",
+  "family": "aircraft",
+  "tags": ["aircraft"],
+  "cost": {
+    "credits": 2200,
+    "materials": 400
+  },
+  "buildTime": 25,
+  "producedBy": ["structure:alliance-of-free-nations/drone-assembly-plant"],
+  "requires": ["structure:alliance-of-free-nations/quantum-research-lab"],
+  "health": 800,
+  "armor": "aircraft",
+  "movement": {
+    "domain": "air",
+    "speed": 3.5
+  },
+  "radius": 1.1,
+  "vision": 9,
+  "pop": 4,
+  "weapons": [
+    {
+      "id": "chain-gun",
+      "damageType": "armorPiercing",
+      "damage": 25,
+      "range": [0, 6],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground"]
+    },
+    {
+      "id": "point-defence",
+      "damageType": "antiAir",
+      "damage": 20,
+      "range": [0, 4],
+      "reload": 0.3,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["projectile"]
+    }
+  ],
+  "presentation": {
+    "model": "guardian-gunship.glb",
+    "icon": "guardian-gunship.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle"],
+    "animations": [],
+    "wreck": "guardian-gunship.wreck.glb"
+  }
+}

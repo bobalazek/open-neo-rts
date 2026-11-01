@@ -49,7 +49,7 @@ Hold position is an order, not a stance, so it can sit in a queue.
 
 ## Automatic behaviour
 
-- **Target acquisition** follows the priority rules in [combat-and-balance.md](combat-and-balance.md#who-can-target-whom).
+- **Target acquisition** follows the priority rules in [combat-and-balance.md](combat-and-balance.md#targeting).
 - **Retaliation:** idle units on aggressive or defensive stance fire back at attackers they can hit. Units on hold fire never do.
 - **Harvesters** auto-return when full and auto-seek the nearest node when theirs runs out; see [economy.md](economy.md).
 - **Engineers and repair units** on aggressive stance repair damaged friendly units and structures nearby.

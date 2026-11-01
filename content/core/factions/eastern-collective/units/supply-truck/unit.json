@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:eastern-collective/supply-truck",
+  "name": "Supply Truck",
+  "description": "Armoured resource gatherer with a defensive machine gun.",
+  "family": "vehicle",
+  "tags": ["vehicle", "harvester"],
+  "cost": {
+    "credits": 1300
+  },
+  "buildTime": 15,
+  "producedBy": ["structure:eastern-collective/war-factory"],
+  "health": 900,
+  "armor": "heavy",
+  "movement": {
+    "domain": "wheeled",
+    "speed": 1.6
+  },
+  "radius": 0.8,
+  "vision": 6,
+  "pop": 0,
+  "weapons": [
+    {
+      "id": "machine-gun",
+      "damageType": "smallArms",
+      "damage": 8,
+      "range": [0, 5],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "hitscan"
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "harvest": {
+    "capacity": 500
+  },
+  "presentation": {
+    "model": "supply-truck.glb",
+    "icon": "supply-truck.icon.png",
+    "materials": {},
+    "parts": ["hull"],
+    "sockets": ["socket_muzzle", "socket_exhaust"],
+    "animations": [],
+    "wreck": "supply-truck.wreck.glb"
+  }
+}

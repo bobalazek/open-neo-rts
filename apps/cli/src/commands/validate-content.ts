@@ -12,9 +12,9 @@ function walk(dir: string, root = dir): string[] {
 }
 
 export async function validateContent(args: string[]): Promise<number> {
-  const root = args[0] ?? "content/packs";
+  const root = args[0] ?? "content";
   const packs: PackInput[] = readdirSync(root)
-    .filter((id) => statSync(join(root, id)).isDirectory())
+    .filter((id) => statSync(join(root, id)).isDirectory() && id !== "schemas")
     .map((id) => {
       const dir = join(root, id);
       const files = walk(dir).filter((f) => !f.endsWith(".gitkeep"));

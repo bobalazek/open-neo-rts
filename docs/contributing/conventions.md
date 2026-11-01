@@ -4,34 +4,34 @@ How everything in this repo is named and written. These rules are checked in rev
 
 ## Names at a glance
 
-| Thing                                   | Convention                                                                                                                          | Example                                 |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Folders and files (code, docs, content) | `kebab-case`                                                                                                                        | `power-plant.json`, `validate-model.ts` |
-| Packages                                | `@open-neo-rts/<name>`, folder = name                                                                                               | `@open-neo-rts/sim` in `packages/sim`   |
-| Apps                                    | `@open-neo-rts/app-<name>`, folder = name                                                                                           | `@open-neo-rts/app-web` in `apps/web`   |
-| Content packs                           | `kebab-case` ID = folder name                                                                                                       | `core`, `dev`                           |
-| Definition IDs                          | `<kind>:<name>` within a pack; `<pack>.<kind>:<name>` across packs                                                                  | `unit:tank`, `core.resource:credits`    |
-| Definition files                        | `<pack>/<kinds>/<name>.json`, one definition per file, file name = ID name                                                          | `dev/units/tank.json`                   |
-| JSON fields                             | `camelCase`                                                                                                                         | `buildTime`, `producedBy`               |
-| Locale keys                             | kebab-case segments joined by dots: `<kind>.<name>.<field>` for content; `ui.<screen>.<element>` for UI (UI strings live in `core`) | `unit.tank.name`, `ui.lobby.ready`      |
-| Runtime model                           | `<pack>/assets/<kinds>/<name>/<name>.glb`                                                                                           | `dev/assets/units/tank/tank.glb`        |
-| Wreck / rubble model                    | `<name>.wreck.glb`, `<name>.rubble.glb`                                                                                             | `tank.wreck.glb`                        |
-| Icon                                    | `<name>.icon.png`                                                                                                                   | `tank.icon.png`                         |
-| Sound                                   | `<name>.<event>.ogg`; variations `<name>.<event>.<n>.ogg`                                                                           | `tank.fire.1.ogg`                       |
-| Editable source                         | `<pack>/source/<kinds>/<name>/<name>.blend`                                                                                         | `core/source/units/tank/tank.blend`     |
-| GLB node names                          | `snake_case`; fixed part names (`hull`, `turret`, `barrel`, `rotor`, `legs`)                                                        | `turret`                                |
-| Sockets                                 | `socket_<name>` or `socket_<name>_<n>`                                                                                              | `socket_muzzle_0`                       |
-| LOD meshes                              | `<node>` or `<node>_LOD0`, `<node>_LOD1`                                                                                            | `hull_LOD1`                             |
-| Damage-state nodes                      | `state_damaged`, `state_critical`                                                                                                   |                                         |
-| Material slots                          | `palette`, `team`, `team_dark`, `team_light`, `team_emissive`, `metal`, `glass`, `emissive`                                         |                                         |
-| Animation clips                         | `snake_case`                                                                                                                        | `idle`, `fire_recoil`                   |
-| Maps                                    | `<pack>/maps/<name>/map.json` plus layer files `height.r8`, `ramps.r8`, `surface.r8`, `preview.webp`                                | `core/maps/test-valley/map.json`        |
-| Campaigns and missions                  | `<pack>/campaigns/<name>/campaign.json`, `…/missions/<name>/mission.json`                                                           | `core/campaigns/ghost-protocol/`        |
-| Sim commands                            | `<area>.<verb>`                                                                                                                     | `unit.move`, `production.queue`         |
-| Git branches                            | `<type>/<short-description>`                                                                                                        | `feat/fixed-point-trig`                 |
-| Commits                                 | [Conventional Commits](https://www.conventionalcommits.org/) with a scope                                                           | `feat(sim): add path budget per force`  |
+| Thing                                   | Convention                                                                                                                                   | Example                                                      |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Folders and files (code, docs, content) | `kebab-case`                                                                                                                                 | `power-plant.json`, `validate-model.ts`                      |
+| Packages                                | `@open-neo-rts/<name>`, folder = name                                                                                                        | `@open-neo-rts/sim` in `packages/sim`                        |
+| Apps                                    | `@open-neo-rts/app-<name>`, folder = name                                                                                                    | `@open-neo-rts/app-web` in `apps/web`                        |
+| Content packs                           | `kebab-case` ID = folder name                                                                                                                | `core`, `my-mod`                                             |
+| Definition IDs                          | Mirror the folder: `<kind>:<faction>/<name>`; `<pack>.<id>` across packs                                                                     | `unit:eastern-collective/dragon-tank`                        |
+| Definition files                        | `factions/<faction>/units/<name>/unit.json`, `…/structures/<name>/structure.json`, `factions/<faction>/faction.json`, `maps/<name>/map.json` | `factions/eastern-collective/units/dragon-tank/unit.json`    |
+| JSON fields                             | `camelCase`                                                                                                                                  | `buildTime`, `producedBy`                                    |
+| Translation keys                        | `<definition ID>.<field>` in `locales/<lang>.json`; interface keys `ui.<screen>.<element>` in the client                                     | `unit:eastern-collective/dragon-tank.name`, `ui.lobby.ready` |
+| Runtime model                           | `<name>.glb` in the definition's folder                                                                                                      | `dragon-tank.glb`                                            |
+| Wreck / rubble model                    | `<name>.wreck.glb`, `<name>.rubble.glb`                                                                                                      | `dragon-tank.wreck.glb`                                      |
+| Icon                                    | `<name>.icon.png`                                                                                                                            | `dragon-tank.icon.png`                                       |
+| Sound                                   | `<name>.<event>.ogg`; variations `<name>.<event>.<n>.ogg`                                                                                    | `dragon-tank.fire.1.ogg`                                     |
+| Editable source                         | `source/<name>.blend` in the definition's folder                                                                                             | `source/dragon-tank.blend`                                   |
+| GLB node names                          | `snake_case`; fixed part names (`hull`, `turret`, `barrel`, `rotor`, `legs`)                                                                 | `turret`                                                     |
+| Sockets                                 | `socket_<name>` or `socket_<name>_<n>`                                                                                                       | `socket_muzzle_0`                                            |
+| LOD meshes                              | `<node>` or `<node>_LOD0`, `<node>_LOD1`                                                                                                     | `hull_LOD1`                                                  |
+| Damage-state nodes                      | `state_damaged`, `state_critical`                                                                                                            |                                                              |
+| Material slots                          | `palette`, `team`, `team_dark`, `team_light`, `team_emissive`, `metal`, `glass`, `emissive`                                                  |                                                              |
+| Animation clips                         | `snake_case`                                                                                                                                 | `idle`, `fire_recoil`                                        |
+| Maps                                    | `<pack>/maps/<name>/map.json` plus layer files `height.r8`, `ramps.r8`, `surface.r8`, `preview.webp`                                         | `core/maps/test-valley/map.json`                             |
+| Campaigns and missions                  | `<pack>/campaigns/<name>/campaign.json`, `…/missions/<name>/mission.json`                                                                    | `core/campaigns/ghost-protocol/`                             |
+| Sim commands                            | `<area>.<verb>`                                                                                                                              | `unit.move`, `production.queue`                              |
+| Git branches                            | `<type>/<short-description>`                                                                                                                 | `feat/fixed-point-trig`                                      |
+| Commits                                 | [Conventional Commits](https://www.conventionalcommits.org/) with a scope                                                                    | `feat(sim): add path budget per force`                       |
 
-`<kinds>` is the plural folder for a definition kind: `units`, `structures`, `weapons`, `abilities`, `research`, `factions`, `presets`, `profiles`, `maps`, `campaigns`. The full content layout and a template for every kind are in [content-format.md](content-format.md).
+`<kinds>` is the plural folder for a definition kind: `units`, `structures`, `weapons`, `abilities`, `research`, `factions`, `maps`, `campaigns`, `locales`. The full content layout and a template for every kind are in [content-format.md](content-format.md).
 
 ## TypeScript
 
@@ -81,6 +81,6 @@ How everything in this repo is named and written. These rules are checked in rev
 ## Docs
 
 - Docs live in `docs/design` (what the game is), `docs/engineering` (how it's built) and `docs/contributing` (how to add to it). The index is [docs/README.md](../README.md).
-- Every doc that describes future work states its phase, or is listed in the roadmap's [phase table](../roadmap.md#what-each-phase-builds).
+- Every doc that describes future work states its phase, or is listed in the roadmap's [phase table](../project/roadmap.md#what-each-phase-builds).
 - File and folder structures are shown as tree diagrams in `text` code blocks, not tables.
 - Plain language, short sentences, examples over abstractions.

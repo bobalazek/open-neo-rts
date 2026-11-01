@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:phoenix-initiative/adaptive-defense-tower",
+  "name": "Adaptive Defense Tower",
+  "description": "Morphs to the threat: switches between anti-ground and anti-air weapons.",
+  "cost": {
+    "credits": 900
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:phoenix-initiative/command-node"],
+  "health": 1200,
+  "armor": "structure",
+  "footprint": [1, 1],
+  "power": -20,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "adaptive-gun",
+      "damageType": "armorPiercing",
+      "damage": 30,
+      "range": [0, 7],
+      "reload": 1.2,
+      "projectile": {
+        "kind": "direct",
+        "speed": 20
+      },
+      "targets": ["ground", "air"]
+    }
+  ],
+  "presentation": {
+    "model": "adaptive-defense-tower.glb",
+    "icon": "adaptive-defense-tower.icon.png",
+    "wreck": "adaptive-defense-tower.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

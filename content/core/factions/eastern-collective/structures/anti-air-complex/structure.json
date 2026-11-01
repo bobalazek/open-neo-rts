@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/structure.schema.json",
+  "id": "structure:eastern-collective/anti-air-complex",
+  "name": "Anti-Air Complex",
+  "description": "Missile and gun anti-air defence.",
+  "cost": {
+    "credits": 900
+  },
+  "buildTime": 12,
+  "producedBy": ["structure:eastern-collective/command-center"],
+  "health": 1500,
+  "armor": "structure",
+  "footprint": [2, 2],
+  "power": -25,
+  "vision": 6,
+  "weapons": [
+    {
+      "id": "flak",
+      "damageType": "antiAir",
+      "damage": 15,
+      "range": [0, 7],
+      "reload": 0.5,
+      "projectile": {
+        "kind": "direct",
+        "speed": 30
+      },
+      "targets": ["air"],
+      "splash": {
+        "radius": 1,
+        "edgePercent": 50
+      }
+    },
+    {
+      "id": "aa-missile",
+      "damageType": "antiAir",
+      "damage": 40,
+      "range": [0, 8],
+      "reload": 2,
+      "projectile": {
+        "kind": "homing",
+        "speed": 25
+      },
+      "targets": ["air"]
+    }
+  ],
+  "presentation": {
+    "model": "anti-air-complex.glb",
+    "icon": "anti-air-complex.icon.png",
+    "wreck": "anti-air-complex.rubble.glb",
+    "materials": {},
+    "sockets": ["socket_smoke", "socket_muzzle"]
+  }
+}

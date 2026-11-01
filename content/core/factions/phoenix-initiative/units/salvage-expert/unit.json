@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../../../schemas/unit.schema.json",
+  "id": "unit:phoenix-initiative/salvage-expert",
+  "name": "Salvage Expert",
+  "description": "Gathers salvage, repairs, captures, and rebuilds enemy wrecks into PI units.",
+  "family": "infantry",
+  "tags": ["infantry", "engineer"],
+  "cost": {
+    "credits": 450
+  },
+  "buildTime": 8,
+  "producedBy": ["structure:phoenix-initiative/underground-barracks"],
+  "health": 100,
+  "armor": "infantry",
+  "movement": {
+    "domain": "foot",
+    "speed": 1.6
+  },
+  "radius": 0.25,
+  "vision": 7,
+  "pop": 1,
+  "weapons": [],
+  "presentation": {
+    "model": "salvage-expert.glb",
+    "icon": "salvage-expert.icon.png",
+    "materials": {},
+    "parts": [],
+    "sockets": [],
+    "animations": ["idle", "move", "attack", "death"]
+  }
+}
