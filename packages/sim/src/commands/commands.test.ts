@@ -140,6 +140,31 @@ describe("validateCommands", () => {
     expect(new Set(codes(validateCommands(inputs, DEBUG)))).toEqual(new Set(["bad_payload"]));
   });
 
+  test("checks unit orders' entity lists: 1 to 1,000 IDs, no holes", () => {
+    const order = (type: string, payload: object, sequence: number) => ({
+      ...remove(sequence),
+      type,
+      payload,
+    });
+    const move = (entities: unknown, i: number) =>
+      order("unit.move", { entities, x: 0, y: 2 ** 19 - 1 }, i);
+    const stop = (entities: unknown, i: number) => order("unit.stop", { entities }, i);
+    const ok = [move([1, 2, 2], 0), stop(Array(1000).fill(7), 1), move([0], 2)];
+    expect(codes(validateCommands(ok, { debug: false }))).toEqual(["ok", "ok", "ok"]);
+    const bad = [
+      move([], 0),
+      stop(Array(1001).fill(7), 1),
+      move([1, -1], 2),
+      move([1.5], 3),
+      move("1", 4),
+      move({ 0: 1, length: 1 }, 5),
+      // biome-ignore lint/suspicious/noSparseArray: a hole is what this checks
+      stop([1, , 2], 6),
+      order("unit.move", { entities: [1], x: 2 ** 19, y: 0 }, 7),
+    ];
+    expect(codes(validateCommands(bad, DEBUG))).toEqual(Array(bad.length).fill("bad_payload"));
+  });
+
   test("rejects every command sharing a tick and sequence", () => {
     const inputs = [spawn(1, 1, 0), spawn(1, 1, 0), spawn(1, 1, 1), spawn(2, 1, 0)];
     expect(codes(validateCommands(inputs, DEBUG))).toEqual(["duplicate", "duplicate", "ok", "ok"]);

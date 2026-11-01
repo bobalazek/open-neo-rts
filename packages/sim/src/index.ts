@@ -2,4 +2,6 @@
 export * from "./commands";
 export * from "./ecs";
 export * from "./features/construction";
+export * from "./features/entities";
+export * from "./features/movement";
 export * from "./kernel";
