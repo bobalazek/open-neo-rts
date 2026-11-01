@@ -1,0 +1,16 @@
+{
+  "files": {
+    "propaganda-center.glb": {
+      "author": "Borut Balazek",
+      "source": "source/propaganda-center.bricks.json"
+    },
+    "propaganda-center.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/propaganda-center.bricks.json"
+    },
+    "propaganda-center.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/propaganda-center.bricks.json"
+    }
+  }
+}
