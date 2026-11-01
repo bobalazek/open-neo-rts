@@ -20,6 +20,7 @@
     "icon": "raft-dock.icon.png",
     "wreck": "raft-dock.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["active", "open", "close"]
   }
 }

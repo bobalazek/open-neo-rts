@@ -1,0 +1,114 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    { "name": "raft-dock" },
+    {
+      "name": "foundation",
+      "parent": "raft-dock",
+      "bricks": [
+        { "at": [-12, 0, -16], "size": [24, 1.2, 9], "slot": "palette", "color": "#5e4630" },
+        { "at": [-12, 0, -7], "size": [5, 1.2, 23], "slot": "palette", "color": "#8a4a24" },
+        { "at": [7, 0, -7], "size": [5, 1.2, 23], "slot": "palette", "color": "#6b7078" },
+        {
+          "at": [-12, 1.2, -6],
+          "size": [1, 0.3, 21],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
+        },
+        {
+          "at": [-10, 1.2, -14],
+          "size": [10, 4, 6],
+          "slot": "palette",
+          "color": "#55663d",
+          "studs": false
+        },
+        { "at": [-10.5, 5.2, -14.5], "size": [11, 0.5, 7], "slot": "palette", "color": "#8a4a24" },
+        { "at": [-9, 3.5, -7.99], "size": [3, 1, 0.1], "slot": "glass", "studs": false },
+        { "at": [-4, 1.2, -7.99], "size": [2, 3, 0.1], "slot": "team_dark", "studs": false },
+        { "at": [-9, 5.7, -13], "size": [6, 0.2, 4], "slot": "team", "studs": false },
+        { "at": [8, 1.2, 2], "size": [3, 2, 4], "slot": "palette", "color": "#55663d" },
+        {
+          "at": [-10.5, 1.2, 3],
+          "size": [1, 1.5, 1],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [-10.5, 1.2, 12],
+          "size": [1, 1.5, 1],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [9.5, 1.2, 12],
+          "size": [1, 1.5, 1],
+          "slot": "metal",
+          "shape": "cyl-y",
+          "studs": false
+        },
+        {
+          "at": [8, 1.2, -12],
+          "size": [2, 11, 2],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        { "at": [-3, 11.2, -12], "size": [13, 1, 2], "slot": "team_dark", "studs": false },
+        { "at": [-2, 7, -11.3], "size": [0.25, 4.2, 0.25], "slot": "metal", "studs": false }
+      ]
+    },
+    {
+      "name": "hook",
+      "parent": "foundation",
+      "at": [-1.9, 7, -11.2],
+      "bricks": [
+        {
+          "at": [-0.4, -1, -0.3],
+          "size": [0.8, 1, 0.6],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        },
+        { "at": [-0.3, -1.5, -0.3], "size": [1.2, 0.5, 0.6], "slot": "metal", "studs": false }
+      ]
+    },
+    {
+      "name": "gate",
+      "parent": "foundation",
+      "at": [-7, 2, 8],
+      "bricks": [
+        { "at": [0, 0, -0.3], "size": [14, 0.6, 0.6], "slot": "team", "studs": false },
+        {
+          "at": [6, -0.8, -0.35],
+          "size": [2, 2, 0.7],
+          "slot": "palette",
+          "color": "#8a4a24",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_exit", "parent": "foundation", "at": [0, 0, 16] },
+    { "name": "socket_smoke", "parent": "foundation", "at": [-8, 5.7, -12] }
+  ],
+  "animations": {
+    "active": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        { "node": "hook", "translation": [[0, [0, 0, 0]], [1.5, [0, 1.5, 0]], [3, [0, 0, 0]]] }
+      ]
+    },
+    "open": {
+      "duration": 1.2,
+      "tracks": [{ "node": "gate", "rotation": [[0, [0, 0, 0]], [1.2, [0, 90, 0]]] }]
+    },
+    "close": {
+      "duration": 1.2,
+      "tracks": [{ "node": "gate", "rotation": [[0, [0, 90, 0]], [1.2, [0, 0, 0]]] }]
+    }
+  },
+  "destroyed": { "darken": 0.45 }
+}
