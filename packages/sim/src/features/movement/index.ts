@@ -10,6 +10,7 @@ import { type Definition, OwnerForce, Template, Transform } from "../entities";
 export * from "./navigation";
 export * from "./path-scheduler";
 export * from "./path-search";
+export * from "./reachability";
 
 /** Where a unit is moving, in subcells. Present only while it has a move order. */
 export const MoveIntent = defineComponent("MoveIntent", { x: "i32", y: "i32" });
