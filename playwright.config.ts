@@ -10,7 +10,6 @@ export default defineConfig({
   webServer: {
     command: "bun --port=4320 apps/web/index.html",
     url: "http://localhost:4320",
-    reuseExistingServer: !process.env.CI,
   },
   projects: [
     { name: "chromium", use: { browserName: "chromium" } },
