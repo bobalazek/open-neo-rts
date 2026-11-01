@@ -1,0 +1,425 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    { "name": "body" },
+    { "name": "hips", "parent": "body", "at": [0, 2.4, 0] },
+    {
+      "name": "leg_l",
+      "parent": "hips",
+      "at": [0.36, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.3, -1.95, -0.32],
+          "size": [0.6, 1.95, 0.64],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-0.32, -1.2, 0.28],
+          "size": [0.64, 0.5, 0.14],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-0.33, -2.4, -0.36],
+          "size": [0.66, 0.45, 0.92],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "leg_r",
+      "parent": "hips",
+      "at": [-0.36, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.3, -1.95, -0.32],
+          "size": [0.6, 1.95, 0.64],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-0.32, -1.2, 0.28],
+          "size": [0.64, 0.5, 0.14],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-0.33, -2.4, -0.36],
+          "size": [0.66, 0.45, 0.92],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.38, -0.75, -0.12],
+          "size": [0.15, 0.65, 0.38],
+          "slot": "team_dark",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "torso",
+      "parent": "hips",
+      "bricks": [
+        {
+          "at": [-0.68, 0, -0.4],
+          "size": [1.36, 0.25, 0.8],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.14, 0.02, 0.4],
+          "size": [0.28, 0.2, 0.07],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-0.65, 0.25, -0.38],
+          "size": [1.3, 1.6, 0.76],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [-0.52, 0.5, 0.39],
+          "size": [1.04, 0.95, 0.13],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        { "at": [-0.48, 1.25, 0.53], "size": [0.28, 0.15, 0.06], "slot": "team", "studs": false },
+        { "at": [0.2, 1.25, 0.53], "size": [0.28, 0.15, 0.06], "slot": "team", "studs": false },
+        { "at": [-0.62, 0.3, 0.42], "size": [0.32, 0.5, 0.3], "slot": "team_dark", "studs": false },
+        {
+          "at": [0.3, 0.3, 0.42],
+          "size": [0.32, 0.5, 0.3],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.52, 0.65, -0.78],
+          "size": [1.04, 1.05, 0.4],
+          "slot": "team_dark",
+          "studs": false
+        },
+        {
+          "at": [-0.44, 0.9, -0.85],
+          "size": [0.88, 0.18, 0.07],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 1.45, -0.85],
+          "size": [0.18, 0.18, 0.07],
+          "slot": "team_emissive",
+          "studs": false
+        },
+        {
+          "at": [0.32, 1.6, -0.64],
+          "size": [0.1, 1.05, 0.1],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.42, 1.85, -0.3],
+          "size": [0.84, 0.12, 0.6],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "torso",
+      "at": [0, 1.95, 0],
+      "bricks": [
+        {
+          "at": [-0.45, 0, -0.43],
+          "size": [0.9, 0.95, 0.86],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.56, 0.15, -0.52],
+          "size": [0.2, 0.95, 1],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "mirror": true,
+          "studs": false
+        },
+        {
+          "at": [-0.56, 1.1, -0.52],
+          "size": [1.12, 0.25, 1],
+          "slot": "palette",
+          "color": "#4a4f57"
+        },
+        {
+          "at": [-0.35, 0.65, 0.44],
+          "size": [0.7, 0.19, 0.08],
+          "slot": "palette",
+          "color": "#f2b705",
+          "studs": false
+        },
+        {
+          "at": [-0.17, 0.64, 0.53],
+          "size": [0.34, 0.21, 0.08],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.3, 0.18, 0.44],
+          "size": [0.6, 0.3, 0.12],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        {
+          "at": [0.56, 0.5, -0.2],
+          "size": [0.16, 0.4, 0.4],
+          "slot": "team_dark",
+          "mirror": true,
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "arm_r",
+      "parent": "torso",
+      "at": [-0.88, 1.75, 0],
+      "bricks": [
+        {
+          "at": [-0.22, -0.9, -0.24],
+          "size": [0.44, 0.9, 0.48],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        { "at": [-0.26, -0.35, -0.28], "size": [0.52, 0.4, 0.56], "slot": "team", "studs": false }
+      ]
+    },
+    {
+      "name": "forearm_r",
+      "parent": "arm_r",
+      "at": [0, -0.9, 0],
+      "rotation": [-80, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.2, -0.6, -0.22],
+          "size": [0.4, 0.6, 0.44],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-0.22, -0.85, -0.23],
+          "size": [0.44, 0.25, 0.46],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "arm_l",
+      "parent": "torso",
+      "at": [0.88, 1.75, 0],
+      "rotation": [-10, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.22, -1.5, -0.24],
+          "size": [0.44, 1.5, 0.48],
+          "slot": "palette",
+          "color": "#2f3338",
+          "studs": false
+        },
+        { "at": [-0.26, -0.35, -0.28], "size": [0.52, 0.4, 0.56], "slot": "team", "studs": false },
+        {
+          "at": [-0.22, -1.8, -0.23],
+          "size": [0.44, 0.3, 0.46],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        { "at": [0.22, -1.35, -0.16], "size": [0.12, 0.38, 0.32], "slot": "metal", "studs": false },
+        {
+          "at": [0.35, -1.25, -0.1],
+          "size": [0.04, 0.18, 0.18],
+          "slot": "team_emissive",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "weapon",
+      "parent": "forearm_r",
+      "at": [0, -0.72, 0.05],
+      "rotation": [80, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.13, -0.18, -0.14],
+          "size": [0.26, 0.42, 0.25],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.14, 0.15, -0.2],
+          "size": [0.28, 0.22, 0.68],
+          "slot": "palette",
+          "color": "#4a4f57",
+          "studs": false
+        },
+        {
+          "at": [-0.1, 0.19, 0.48],
+          "size": [0.2, 0.14, 0.23],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        },
+        {
+          "at": [-0.05, 0.37, 0.1],
+          "size": [0.1, 0.07, 0.2],
+          "slot": "palette",
+          "color": "#1c1d20",
+          "studs": false
+        }
+      ]
+    },
+    { "name": "socket_muzzle", "parent": "weapon", "at": [0, 0.26, 0.74] }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        { "node": "torso", "translation": [[0, [0, 0, 0]], [1.5, [0, 0.04, 0]], [3, [0, 0, 0]]] },
+        {
+          "node": "head",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.75, [0, -25, 0]],
+            [1.5, [0, 0, 0]],
+            [2.25, [0, 25, 0]],
+            [3, [0, 0, 0]]
+          ]
+        }
+      ]
+    },
+    "move": {
+      "duration": 0.7,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "leg_l",
+          "rotation": [
+            [0, [-25, 0, 0]],
+            [0.175, [0, 0, 0]],
+            [0.35, [25, 0, 0]],
+            [0.525, [0, 0, 0]],
+            [0.7, [-25, 0, 0]]
+          ]
+        },
+        {
+          "node": "leg_r",
+          "rotation": [
+            [0, [25, 0, 0]],
+            [0.175, [0, 0, 0]],
+            [0.35, [-25, 0, 0]],
+            [0.525, [0, 0, 0]],
+            [0.7, [25, 0, 0]]
+          ]
+        },
+        {
+          "node": "hips",
+          "translation": [
+            [0, [0, -0.22, 0]],
+            [0.175, [0, 0, 0]],
+            [0.35, [0, -0.22, 0]],
+            [0.525, [0, 0, 0]],
+            [0.7, [0, -0.22, 0]]
+          ]
+        },
+        { "node": "torso", "rotation": [[0, [6, 4, 0]], [0.35, [6, -4, 0]], [0.7, [6, 4, 0]]] },
+        { "node": "arm_l", "rotation": [[0, [20, 0, 0]], [0.35, [-30, 0, 0]], [0.7, [20, 0, 0]]] },
+        { "node": "arm_r", "rotation": [[0, [-12, 0, 0]], [0.35, [8, 0, 0]], [0.7, [-12, 0, 0]]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.65,
+      "tracks": [
+        {
+          "node": "forearm_r",
+          "rotation": [
+            [0, [-80, 0, 0]],
+            [0.12, [-92, 0, 0]],
+            [0.18, [-103, 0, 0]],
+            [0.3, [-92, 0, 0]],
+            [0.5, [-92, 0, 0]],
+            [0.65, [-80, 0, 0]]
+          ]
+        },
+        {
+          "node": "arm_r",
+          "rotation": [[0, [0, 0, 0]], [0.12, [-12, 0, 0]], [0.5, [-12, 0, 0]], [0.65, [0, 0, 0]]]
+        },
+        {
+          "node": "head",
+          "rotation": [[0, [0, 0, 0]], [0.12, [0, -12, 0]], [0.5, [0, -12, 0]], [0.65, [0, 0, 0]]]
+        }
+      ]
+    },
+    "death": {
+      "duration": 1.1,
+      "tracks": [
+        {
+          "node": "hips",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.15, [-10, 0, 0]],
+            [0.65, [-86, 0, 8]],
+            [0.8, [-80, 0, 8]],
+            [1.1, [-86, 0, 8]]
+          ],
+          "translation": [
+            [0, [0, 0, 0]],
+            [0.15, [0, 0, -0.1]],
+            [0.65, [0, -1.65, -0.5]],
+            [0.8, [0, -1.5, -0.5]],
+            [1.1, [0, -1.65, -0.5]]
+          ]
+        },
+        { "node": "leg_l", "rotation": [[0, [0, 0, 0]], [0.65, [-12, 0, 8]], [1.1, [-8, 0, 8]]] },
+        { "node": "leg_r", "rotation": [[0, [0, 0, 0]], [0.65, [14, 0, -8]], [1.1, [8, 0, -8]]] },
+        {
+          "node": "arm_l",
+          "rotation": [[0, [-10, 0, 0]], [0.6, [-155, 0, 35]], [1.1, [-170, 0, 40]]]
+        },
+        {
+          "node": "arm_r",
+          "rotation": [[0, [0, 0, 0]], [0.6, [-120, 0, -30]], [1.1, [-150, 0, -40]]]
+        },
+        {
+          "node": "forearm_r",
+          "rotation": [[0, [-80, 0, 0]], [0.6, [-20, 0, 0]], [1.1, [-10, 0, 0]]]
+        },
+        { "node": "head", "rotation": [[0, [0, 0, 0]], [0.6, [-15, 15, 0]], [1.1, [5, 20, 0]]] }
+      ]
+    }
+  }
+}
