@@ -4,7 +4,6 @@ Work that can start now without a further decision, grouped by [roadmap](./roadm
 
 ## Now: phase 1a (engine foundations)
 
-- [ ] `bun neo run <scenario> --seed N`: runs a command log, prints checkpoint hashes. Spec: [testing.md](../engineering/testing.md#2-determinism-harness). PR type: tooling.
 - [ ] Scenario golden hashes: once `bun neo run` exists, check its checkpoint hashes in Bun and, through the Playwright helper in `apps/web/e2e/determinism.e2e.ts`, in Chromium, Firefox and WebKit. PR type: tooling.
 
 ## Next: phase 1b (debug mode)
