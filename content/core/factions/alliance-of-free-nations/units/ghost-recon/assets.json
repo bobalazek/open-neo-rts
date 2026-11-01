@@ -1,0 +1,12 @@
+{
+  "files": {
+    "ghost-recon.glb": {
+      "author": "Borut Balazek",
+      "source": "source/ghost-recon.bricks.json"
+    },
+    "ghost-recon.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/ghost-recon.bricks.json"
+    }
+  }
+}
