@@ -1,0 +1,16 @@
+{
+  "files": {
+    "scavenger-vtol.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scavenger-vtol.bricks.json"
+    },
+    "scavenger-vtol.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/scavenger-vtol.bricks.json"
+    },
+    "scavenger-vtol.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scavenger-vtol.bricks.json"
+    }
+  }
+}
