@@ -48,6 +48,7 @@
     "icon": "tesla-coil.icon.png",
     "wreck": "tesla-coil.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_muzzle"]
+    "sockets": ["socket_smoke", "socket_muzzle"],
+    "animations": ["active", "attack"]
   }
 }
