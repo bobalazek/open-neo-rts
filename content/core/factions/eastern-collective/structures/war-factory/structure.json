@@ -19,6 +19,7 @@
     "icon": "war-factory.icon.png",
     "wreck": "war-factory.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_exit"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["open", "close", "active"]
   }
 }

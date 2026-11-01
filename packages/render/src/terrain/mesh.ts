@@ -1,8 +1,8 @@
 // Terrain chunk geometry as flat arrays: bevelled cell tops, one-cell ramps, brick cliff faces and water quads.
 // World axes (right-handed): x east, y up, z south; cell (x, y) spans [x, x + 1] × [y, y + 1] cells on x and z.
 
-import { RAMP, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content";
-import type { Palette } from "./biomes";
+import { BIOMES, RAMP, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content";
+import { PALETTES, type Palette } from "./biomes";
 
 /** Metres per cell. */
 export const CELL_SIZE = 2;
@@ -102,7 +102,9 @@ export function cornerHeights(g: TerrainGrid): Float32Array {
   return out;
 }
 
-function rgb(hex: number): [number, number, number] {
+type RGB = [number, number, number];
+
+function rgb(hex: number): RGB {
   return [((hex >> 16) & 255) / 255, ((hex >> 8) & 255) / 255, (hex & 255) / 255];
 }
 
@@ -116,7 +118,7 @@ class Builder {
    * A planar quad a b c d, counter-clockwise seen from the front. The normal is the cross of its diagonals, so a
    * quad with two coincident corners (a triangle) still gets one.
    */
-  quad(v: number[], color: [number, number, number], shade: number) {
+  quad(v: number[], color: RGB, shade: number) {
     const [ax = 0, ay = 0, az = 0, bx = 0, by = 0, bz = 0, cx = 0, cy = 0, cz = 0] = v;
     const [dx = 0, dy = 0, dz = 0] = v.slice(9);
     const ux = cx - ax;
@@ -153,8 +155,15 @@ class Builder {
   }
 }
 
-/** Builds every chunk of the map plus its border. Empty chunks are skipped. */
-export function buildTerrainGeometry(g: TerrainGrid, palette: Palette): ChunkGeometry[] {
+const colours = (p: Palette) => ({
+  surfaces: SURFACES.map((s) => rgb(p.surfaces[s])),
+  cliff: rgb(p.cliff),
+  shallow: rgb(p.shallow),
+  deep: rgb(p.deep),
+});
+
+/** Builds every chunk of the map plus its border, each cell in its biome's palette. Empty chunks are skipped. */
+export function buildTerrainGeometry(g: TerrainGrid): ChunkGeometry[] {
   const corners = cornerHeights(g);
   const ew = g.width + 2 * BORDER;
   const eh = g.height + 2 * BORDER;
@@ -163,10 +172,8 @@ export function buildTerrainGeometry(g: TerrainGrid, palette: Palette): ChunkGeo
     const ey = y + BORDER;
     return ex < 0 || ey < 0 || ex >= ew || ey >= eh ? BASE : (corners[(ey * ew + ex) * 4 + k] ?? 0);
   };
-  const surfaces = SURFACES.map((s) => rgb(palette.surfaces[s]));
-  const cliff = rgb(palette.cliff);
-  const shallow = rgb(palette.shallow);
-  const deep = rgb(palette.deep);
+  const fallback = colours(PALETTES.temperate);
+  const palettes = BIOMES.map((b) => colours(PALETTES[b]));
   const C = CELL_SIZE;
 
   const chunks: ChunkGeometry[] = [];
@@ -181,6 +188,7 @@ export function buildTerrainGeometry(g: TerrainGrid, palette: Palette): ChunkGeo
         for (let x = Math.max(cx * CHUNK_SIZE, -BORDER); x < x1; x++) {
           const i = sample(g, x, y);
           const dark = x >= 0 && y >= 0 && x < g.width && y < g.height ? 1 : BORDER_SHADE;
+          const { surfaces, cliff, shallow, deep } = palettes[g.biome[i] ?? 0] ?? fallback;
           const color = surfaces[g.surface[i] ?? 0] ?? surfaces[0] ?? cliff;
           const shade = (SHADES[hash2(x, y) % SHADES.length] ?? 1) * dark;
           const h = [0, 1, 2, 3].map((k) => corner(x, y, k));

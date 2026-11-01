@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/chain-link-fence",
+  "name": "Chain-Link Fence",
+  "description": "A wire fence, two cells long. Crushers flatten it.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 150,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "chain-link-fence.glb",
+    "icon": "chain-link-fence.icon.png",
+    "materials": {}
+  }
+}

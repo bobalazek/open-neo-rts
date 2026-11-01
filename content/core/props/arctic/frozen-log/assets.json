@@ -1,0 +1,12 @@
+{
+  "files": {
+    "frozen-log.glb": {
+      "author": "Borut Balazek",
+      "source": "source/frozen-log.bricks.json"
+    },
+    "frozen-log.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/frozen-log.bricks.json"
+    }
+  }
+}

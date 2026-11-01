@@ -1,0 +1,12 @@
+{
+  "files": {
+    "rocket-trooper.glb": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.bricks.json"
+    },
+    "rocket-trooper.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.bricks.json"
+    }
+  }
+}

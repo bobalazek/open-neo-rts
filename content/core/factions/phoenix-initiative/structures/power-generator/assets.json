@@ -1,0 +1,16 @@
+{
+  "files": {
+    "power-generator.glb": {
+      "author": "Borut Balazek",
+      "source": "source/power-generator.bricks.json"
+    },
+    "power-generator.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/power-generator.bricks.json"
+    },
+    "power-generator.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/power-generator.bricks.json"
+    }
+  }
+}

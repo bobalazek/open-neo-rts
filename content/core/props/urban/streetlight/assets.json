@@ -1,0 +1,12 @@
+{
+  "files": {
+    "streetlight.glb": {
+      "author": "Borut Balazek",
+      "source": "source/streetlight.bricks.json"
+    },
+    "streetlight.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/streetlight.bricks.json"
+    }
+  }
+}

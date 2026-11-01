@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/sandbag-wall",
+  "name": "Sandbag Wall",
+  "description": "A low sandbag wall, two cells long. Crushers flatten it.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 400,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "sandbag-wall.glb",
+    "icon": "sandbag-wall.icon.png",
+    "materials": {}
+  }
+}

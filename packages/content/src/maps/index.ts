@@ -1,6 +1,6 @@
 // Map source format, map compiler (nav grids, height levels) and map validators. Phase 1b.
 
-import { MAX_LEVEL, RAMP, SURFACES, WATER } from "../rules/terrain";
+import { BIOMES, MAX_LEVEL, RAMP, SURFACES, WATER } from "../rules/terrain";
 
 /**
  * A map's terrain as integer cell grids, row-major: cell (x, y) is at index `y * width + x`, with y growing
@@ -17,20 +17,32 @@ export interface TerrainGrid {
   surface: Uint8Array;
   /** WATER value. */
   water: Uint8Array;
+  /** Index into BIOMES. */
+  biome: Uint8Array;
 }
 
 /** A map's `.r8` layers, by their `map.layers` key: one byte per cell, row-major, no header. */
-export type TerrainLayers = Partial<Record<"height" | "ramps" | "surface" | "water", Uint8Array>>;
+export type TerrainLayers = Partial<
+  Record<"height" | "ramps" | "surface" | "water" | "biome", Uint8Array>
+>;
 
 /**
- * Builds a map's terrain from its layers. A missing layer is all zeros: level 0, no ramp, grass, no water.
- * Throws if a layer isn't exactly width × height bytes.
+ * Builds a map's terrain from its layers. A missing layer is all zeros (level 0, no ramp, grass, no water),
+ * except the biome layer, which is the map's base `biome` everywhere. Throws if a layer isn't exactly
+ * width × height bytes, or if the base biome isn't one of BIOMES.
  */
-export function parseTerrain(width: number, height: number, layers: TerrainLayers): TerrainGrid {
+export function parseTerrain(
+  width: number,
+  height: number,
+  layers: TerrainLayers,
+  biome = "temperate",
+): TerrainGrid {
   const cells = width * height;
+  const base = (BIOMES as readonly string[]).indexOf(biome);
+  if (base < 0) throw new Error(`biome "${biome}" isn't one of ${BIOMES.join(", ")}`);
   const layer = (name: keyof TerrainLayers) => {
     const bytes = layers[name];
-    if (!bytes) return new Uint8Array(cells);
+    if (!bytes) return new Uint8Array(cells).fill(name === "biome" ? base : 0);
     if (bytes.length !== cells)
       throw new Error(
         `layers.${name} is ${bytes.length} bytes, expected ${width} × ${height} = ${cells}`,
@@ -44,6 +56,7 @@ export function parseTerrain(width: number, height: number, layers: TerrainLayer
     ramp: layer("ramps"),
     surface: layer("surface"),
     water: layer("water"),
+    biome: layer("biome"),
   };
 }
 
@@ -55,7 +68,7 @@ const STEP: Record<number, [number, number]> = {
 };
 
 /**
- * Terrain rules: known values, each ramp cell one level below the cell it rises toward and part of a run at
+ * Terrain rules: known values (biomes included), each ramp cell one level below the cell it rises toward and part of a run at
  * least 2 cells wide, and deep water never touching land (not even diagonally). One message per broken rule,
  * naming the first cell and how many more break it.
  */
@@ -77,6 +90,7 @@ export function checkTerrain(t: TerrainGrid): string[] {
       const water = t.water[i] ?? 0;
       if (level > MAX_LEVEL) bad(`level above ${MAX_LEVEL}`, x, y);
       if ((t.surface[i] ?? 0) >= SURFACES.length) bad("unknown surface", x, y);
+      if ((t.biome[i] ?? 0) >= BIOMES.length) bad("unknown biome", x, y);
       if (water > WATER.deep) bad("unknown water value", x, y);
       if (water === WATER.deep) {
         let land = false;

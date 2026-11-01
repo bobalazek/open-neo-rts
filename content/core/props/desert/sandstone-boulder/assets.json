@@ -1,0 +1,12 @@
+{
+  "files": {
+    "sandstone-boulder.glb": {
+      "author": "Borut Balazek",
+      "source": "source/sandstone-boulder.bricks.json"
+    },
+    "sandstone-boulder.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/sandstone-boulder.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "guerrilla-bunker.glb": {
+      "author": "Borut Balazek",
+      "source": "source/guerrilla-bunker.bricks.json"
+    },
+    "guerrilla-bunker.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/guerrilla-bunker.bricks.json"
+    },
+    "guerrilla-bunker.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/guerrilla-bunker.bricks.json"
+    }
+  }
+}

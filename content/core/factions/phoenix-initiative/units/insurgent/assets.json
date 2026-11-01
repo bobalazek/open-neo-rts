@@ -1,0 +1,12 @@
+{
+  "files": {
+    "insurgent.glb": {
+      "author": "Borut Balazek",
+      "source": "source/insurgent.bricks.json"
+    },
+    "insurgent.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/insurgent.bricks.json"
+    }
+  }
+}

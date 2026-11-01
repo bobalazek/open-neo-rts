@@ -1,0 +1,16 @@
+{
+  "files": {
+    "war-factory.glb": {
+      "author": "Borut Balazek",
+      "source": "source/war-factory.bricks.json"
+    },
+    "war-factory.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/war-factory.bricks.json"
+    },
+    "war-factory.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/war-factory.bricks.json"
+    }
+  }
+}

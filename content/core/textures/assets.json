@@ -1,0 +1,60 @@
+{
+  "files": {
+    "palette.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "grass-1.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "grass-2.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "grass-3.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "dirt-1.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "dirt-2.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "dirt-3.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "sand.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "rock.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "snow.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "ice.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "road.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "rubble.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    },
+    "ore.png": {
+      "author": "Borut Balazek",
+      "source": "apps/cli/src/commands/generate-textures.ts"
+    }
+  }
+}

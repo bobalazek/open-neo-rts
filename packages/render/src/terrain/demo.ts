@@ -1,21 +1,21 @@
 // Procedural 64×64 demo terrain until real maps load: plateaus on levels 0–3 with inner and outer cliff corners,
 // ramps facing all four directions, a pillar, a lake with a shallow shore band, a road and every surface.
 
-import { RAMP, SURFACES, type Surface, type TerrainGrid, WATER } from "@open-neo-rts/content";
+import {
+  type Biome,
+  parseTerrain,
+  RAMP,
+  SURFACES,
+  type Surface,
+  type TerrainGrid,
+  WATER,
+} from "@open-neo-rts/content";
 import { hash2 } from "./mesh";
 
 const SIZE = 64;
 
-export function createDemoGrid(): TerrainGrid {
-  const n = SIZE * SIZE;
-  const g: TerrainGrid = {
-    width: SIZE,
-    height: SIZE,
-    level: new Uint8Array(n),
-    ramp: new Uint8Array(n),
-    surface: new Uint8Array(n),
-    water: new Uint8Array(n),
-  };
+export function createDemoGrid(biome: Biome = "temperate"): TerrainGrid {
+  const g = parseTerrain(SIZE, SIZE, {}, biome);
   // Fills [x0, x1) × [y0, y1).
   const fill = (x0: number, y0: number, x1: number, y1: number, set: (i: number) => void) => {
     for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) set(y * SIZE + x);

@@ -1,0 +1,12 @@
+{
+  "files": {
+    "boulder.glb": {
+      "author": "Borut Balazek",
+      "source": "source/boulder.bricks.json"
+    },
+    "boulder.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/boulder.bricks.json"
+    }
+  }
+}

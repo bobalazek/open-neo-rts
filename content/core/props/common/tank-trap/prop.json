@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:common/tank-trap",
+  "name": "Tank Trap",
+  "description": "A steel hedgehog. Stops vehicles; infantry walk past it.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 600
+  },
+  "presentation": {
+    "model": "tank-trap.glb",
+    "icon": "tank-trap.icon.png",
+    "materials": {}
+  }
+}

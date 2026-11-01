@@ -1,0 +1,16 @@
+{
+  "files": {
+    "collapsed-building.glb": {
+      "author": "Borut Balazek",
+      "source": "source/collapsed-building.bricks.json"
+    },
+    "collapsed-building.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/collapsed-building.bricks.json"
+    },
+    "collapsed-building.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/collapsed-building.bricks.json"
+    }
+  }
+}

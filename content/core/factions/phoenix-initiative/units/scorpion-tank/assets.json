@@ -1,0 +1,16 @@
+{
+  "files": {
+    "scorpion-tank.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scorpion-tank.bricks.json"
+    },
+    "scorpion-tank.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/scorpion-tank.bricks.json"
+    },
+    "scorpion-tank.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scorpion-tank.bricks.json"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { checkTerrain, RAMP, type TerrainGrid } from "@open-neo-rts/content";
-import { BIOMES } from "./biomes";
+import { BIOMES, checkTerrain, RAMP, type TerrainGrid } from "@open-neo-rts/content";
+import { PALETTES } from "./biomes";
 import { createDemoGrid } from "./demo";
 import {
   BORDER,
@@ -22,16 +22,21 @@ function grid(width: number, height: number, levels: number[] = []): TerrainGrid
     ramp: new Uint8Array(n),
     surface: new Uint8Array(n),
     water: new Uint8Array(n),
+    biome: new Uint8Array(n),
   };
 }
 
-const all = (g: TerrainGrid) => buildTerrainGeometry(g, BIOMES.temperate);
+const all = (g: TerrainGrid) => buildTerrainGeometry(g);
 const quads = (geos: (Geometry | null)[]) =>
   geos.reduce((n, g) => n + (g?.indices.length ?? 0) / 6, 0);
 
 describe("terrain geometry", () => {
   test("demo grid passes the map rules", () => {
-    expect(checkTerrain(createDemoGrid())).toEqual([]);
+    for (const biome of BIOMES) {
+      const g = createDemoGrid(biome);
+      expect(checkTerrain(g)).toEqual([]);
+      expect([...new Set(g.biome)]).toEqual([BIOMES.indexOf(biome)]);
+    }
   });
 
   test("chunks cover the map plus border", () => {
@@ -73,6 +78,29 @@ describe("terrain geometry", () => {
     expect(nw).toBeCloseTo(ne);
   });
 
+  test("each cell is coloured by its own biome's palette", () => {
+    // Flat grass, two cells: west desert, east arctic. Tops are shaded, so compare hue (r / g, b / g) only.
+    const g = grid(2, 1);
+    g.biome.set([BIOMES.indexOf("desert"), BIOMES.indexOf("arctic")]);
+    const hue = (hex: number) => [
+      (hex >> 16) / ((hex >> 8) & 255),
+      (hex & 255) / ((hex >> 8) & 255),
+    ];
+    const tops = new Map<number, number[]>();
+    for (const { terrain: t } of all(g)) {
+      for (let v = 0; v < t.positions.length / 3; v++) {
+        const [x = 0, y = 0, z = 0] = t.positions.subarray(v * 3, v * 3 + 3);
+        if (z <= 0 || z >= 2 || x <= 0 || x >= 4 || Math.abs(y) > 1e-3) continue;
+        const [r = 0, gr = 1, b = 0] = t.colors.subarray(v * 4, v * 4 + 3);
+        tops.set(Math.floor(x / 2), [r / gr, b / gr]);
+      }
+    }
+    const expected = [hue(PALETTES.desert.surfaces.grass), hue(PALETTES.arctic.surfaces.grass)];
+    expect([0, 1].map((x) => tops.get(x)?.map((c) => c.toFixed(3)))).toEqual(
+      expected.map((h) => h.map((c) => c.toFixed(3))),
+    );
+  });
+
   test("normals are unit length and never point down", () => {
     for (const chunk of all(createDemoGrid())) {
       for (const geo of [chunk.terrain, chunk.water]) {
@@ -99,6 +127,7 @@ describe("terrain geometry", () => {
         big.ramp[j] = demo.ramp[i] ?? 0;
         big.surface[j] = demo.surface[i] ?? 0;
         big.water[j] = demo.water[i] ?? 0;
+        big.biome[j] = (x >> 6) + 2 * (y >> 6); // a quadrant per biome
       }
     const start = performance.now();
     const chunks = all(big);

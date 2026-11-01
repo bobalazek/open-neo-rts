@@ -1,0 +1,12 @@
+{
+  "files": {
+    "ice-shards.glb": {
+      "author": "Borut Balazek",
+      "source": "source/ice-shards.bricks.json"
+    },
+    "ice-shards.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/ice-shards.bricks.json"
+    }
+  }
+}

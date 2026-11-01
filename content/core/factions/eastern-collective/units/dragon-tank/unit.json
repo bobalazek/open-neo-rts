@@ -85,7 +85,7 @@
     "materials": {},
     "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": [],
+    "animations": ["fire_recoil"],
     "wreck": "dragon-tank.wreck.glb"
   }
 }

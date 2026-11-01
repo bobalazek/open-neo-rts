@@ -1,0 +1,12 @@
+{
+  "files": {
+    "snowy-boulder.glb": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-boulder.bricks.json"
+    },
+    "snowy-boulder.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-boulder.bricks.json"
+    }
+  }
+}

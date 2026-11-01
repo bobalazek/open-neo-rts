@@ -1,0 +1,16 @@
+{
+  "files": {
+    "raider-buggy.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raider-buggy.bricks.json"
+    },
+    "raider-buggy.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/raider-buggy.bricks.json"
+    },
+    "raider-buggy.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raider-buggy.bricks.json"
+    }
+  }
+}

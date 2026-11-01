@@ -1,0 +1,16 @@
+{
+  "files": {
+    "advanced-barracks.glb": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-barracks.bricks.json"
+    },
+    "advanced-barracks.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-barracks.bricks.json"
+    },
+    "advanced-barracks.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/advanced-barracks.bricks.json"
+    }
+  }
+}

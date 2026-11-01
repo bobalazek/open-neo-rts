@@ -1,0 +1,16 @@
+{
+  "files": {
+    "acacia-tree.glb": {
+      "author": "Borut Balazek",
+      "source": "source/acacia-tree.bricks.json"
+    },
+    "acacia-tree.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/acacia-tree.bricks.json"
+    },
+    "acacia-tree.stump.glb": {
+      "author": "Borut Balazek",
+      "source": "source/acacia-tree.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "files": {
+    "snowy-outcrop.glb": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-outcrop.bricks.json"
+    },
+    "snowy-outcrop.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/snowy-outcrop.bricks.json"
+    }
+  }
+}

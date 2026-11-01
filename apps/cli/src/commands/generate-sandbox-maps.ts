@@ -2,7 +2,7 @@
 // content/core/maps/sandbox-*/. This file is their source: edit the shapes here and rerun, never the output.
 
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { RAMP, type TerrainGrid, WATER } from "@open-neo-rts/content";
+import { parseTerrain, RAMP, type TerrainGrid, WATER } from "@open-neo-rts/content";
 
 const DIR = "content/core/maps";
 
@@ -23,16 +23,7 @@ export interface SandboxMap {
 }
 
 function grid(size: number): TerrainGrid {
-  const cells = size * size;
-  const layer = () => new Uint8Array(cells);
-  return {
-    width: size,
-    height: size,
-    level: layer(),
-    ramp: layer(),
-    surface: layer(),
-    water: layer(),
-  };
+  return parseTerrain(size, size, {});
 }
 
 type Layer = "level" | "ramp" | "water";

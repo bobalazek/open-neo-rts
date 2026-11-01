@@ -41,6 +41,7 @@
     "icon": "smart-turret.icon.png",
     "wreck": "smart-turret.rubble.glb",
     "materials": {},
+    "parts": ["turret", "barrel"],
     "sockets": ["socket_smoke", "socket_muzzle"]
   }
 }

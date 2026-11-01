@@ -1,0 +1,16 @@
+{
+  "files": {
+    "supply-relay.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-relay.bricks.json"
+    },
+    "supply-relay.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/supply-relay.bricks.json"
+    },
+    "supply-relay.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-relay.bricks.json"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "conifer-tree.glb": {
+      "author": "Borut Balazek",
+      "source": "source/conifer-tree.bricks.json"
+    },
+    "conifer-tree.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/conifer-tree.bricks.json"
+    },
+    "conifer-tree.stump.glb": {
+      "author": "Borut Balazek",
+      "source": "source/conifer-tree.bricks.json"
+    }
+  }
+}

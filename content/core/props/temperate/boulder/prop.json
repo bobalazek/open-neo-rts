@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:temperate/boulder",
+  "name": "Boulder",
+  "description": "A single grey boulder.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "presentation": {
+    "model": "boulder.glb",
+    "icon": "boulder.icon.png",
+    "materials": {}
+  }
+}

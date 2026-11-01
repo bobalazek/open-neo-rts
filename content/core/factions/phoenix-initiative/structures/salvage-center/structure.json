@@ -29,6 +29,7 @@
     "icon": "salvage-center.icon.png",
     "wreck": "salvage-center.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_dock"]
+    "sockets": ["socket_smoke", "socket_dock"],
+    "animations": ["active"]
   }
 }

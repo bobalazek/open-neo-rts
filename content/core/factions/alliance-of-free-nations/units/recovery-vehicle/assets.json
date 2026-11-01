@@ -1,0 +1,16 @@
+{
+  "files": {
+    "recovery-vehicle.glb": {
+      "author": "Borut Balazek",
+      "source": "source/recovery-vehicle.bricks.json"
+    },
+    "recovery-vehicle.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/recovery-vehicle.bricks.json"
+    },
+    "recovery-vehicle.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/recovery-vehicle.bricks.json"
+    }
+  }
+}

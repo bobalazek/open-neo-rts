@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:urban/wrecked-car",
+  "name": "Wrecked Car",
+  "description": "A burned-out car. Crushers flatten it.",
+  "footprint": [2, 1],
+  "blocks": "movement",
+  "destructible": {
+    "health": 300,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "wrecked-car.glb",
+    "icon": "wrecked-car.icon.png",
+    "materials": {}
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "rock",
+      "bricks": [
+        {
+          "at": [-7, 0, -6],
+          "size": [14, 3.5, 12],
+          "slot": "palette",
+          "color": "#4c5157",
+          "studs": false
+        },
+        {
+          "at": [-6, 0, -7],
+          "size": [12, 3.5, 14],
+          "slot": "palette",
+          "color": "#4c5157",
+          "studs": false
+        },
+        {
+          "at": [-7, 3.5, -6],
+          "size": [3, 0.5, 9],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-5, 3.5, 3],
+          "size": [9, 0.5, 3.5],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-5, 3.5, -5],
+          "size": [9, 3.5, 9],
+          "slot": "palette",
+          "color": "#5f656c",
+          "studs": false
+        },
+        {
+          "at": [4, 3.5, -5],
+          "size": [1.5, 3.5, 9],
+          "slot": "palette",
+          "color": "#5f656c",
+          "studs": false,
+          "shape": "slope+x"
+        },
+        {
+          "at": [-4, 7, -3],
+          "size": [6, 3.5, 6],
+          "slot": "palette",
+          "color": "#4c5157",
+          "studs": false
+        },
+        {
+          "at": [-5, 7, 0],
+          "size": [6, 0.5, 4],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [-4, 10.5, -3],
+          "size": [5, 0.5, 6],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        },
+        {
+          "at": [4, 0, 4],
+          "size": [3, 2, 3],
+          "slot": "palette",
+          "color": "#5f656c",
+          "studs": false
+        },
+        {
+          "at": [4.5, 2, 4.5],
+          "size": [2, 0.4, 2],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

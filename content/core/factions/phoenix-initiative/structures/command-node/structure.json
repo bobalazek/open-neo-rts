@@ -30,6 +30,7 @@
     "icon": "command-node.icon.png",
     "wreck": "command-node.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke", "socket_exit"],
+    "animations": ["active", "open", "close"]
   }
 }

@@ -1,0 +1,196 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "ore"
+    },
+    {
+      "name": "stage_full",
+      "parent": "ore",
+      "bricks": [
+        {
+          "at": [-3, 0, -3],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 1, -2.5],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": true
+        },
+        {
+          "at": [1, 0, -2.5],
+          "size": [2, 1.5, 2],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 1.5, -2],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": true
+        },
+        {
+          "at": [-2.5, 0, 1],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        },
+        {
+          "at": [-2, 1, 1.5],
+          "size": [1, 0.75, 1],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 0, 1.5],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": true
+        },
+        {
+          "at": [-0.5, 0, -0.5],
+          "size": [1, 3, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": false
+        },
+        {
+          "at": [-0.5, 3, -0.5],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": false,
+          "shape": "slope+x"
+        }
+      ]
+    },
+    {
+      "name": "stage_75",
+      "parent": "ore",
+      "bricks": [
+        {
+          "at": [-3, 0, -3],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": false
+        },
+        {
+          "at": [1, 0, -2.5],
+          "size": [2, 1.5, 2],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 1.5, -2],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": true
+        },
+        {
+          "at": [-2.5, 0, 1],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 0, 1.5],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": true
+        },
+        {
+          "at": [-0.5, 0, -0.5],
+          "size": [1, 2, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_50",
+      "parent": "ore",
+      "bricks": [
+        {
+          "at": [-3, 0, -3],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 0, 1],
+          "size": [2, 0.75, 2],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 0, 1.5],
+          "size": [2, 1, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": true
+        },
+        {
+          "at": [-0.5, 0, -0.5],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#f4d675",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_25",
+      "parent": "ore",
+      "bricks": [
+        {
+          "at": [-3, 0, -3],
+          "size": [2, 0.5, 2],
+          "slot": "palette",
+          "color": "#b8892a",
+          "studs": false
+        },
+        {
+          "at": [1.5, 0, 1.5],
+          "size": [1, 0.5, 1],
+          "slot": "palette",
+          "color": "#e0b23a",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "stage_empty",
+      "parent": "ore"
+    }
+  ],
+  "animations": {
+    "harvest": {
+      "duration": 0.4,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "ore",
+          "scale": [[0, [1, 1, 1]], [0.2, [1.06, 0.88, 1.06]], [0.4, [1, 1, 1]]]
+        }
+      ]
+    }
+  }
+}

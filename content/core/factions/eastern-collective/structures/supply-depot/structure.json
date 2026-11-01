@@ -20,6 +20,7 @@
     "icon": "supply-depot.icon.png",
     "wreck": "supply-depot.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke", "socket_dock"]
+    "sockets": ["socket_smoke", "socket_dock"],
+    "animations": ["active"]
   }
 }

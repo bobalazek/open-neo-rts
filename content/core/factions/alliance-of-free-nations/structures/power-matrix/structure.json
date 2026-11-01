@@ -28,6 +28,7 @@
     "icon": "power-matrix.icon.png",
     "wreck": "power-matrix.rubble.glb",
     "materials": {},
-    "sockets": ["socket_smoke"]
+    "sockets": ["socket_smoke"],
+    "animations": ["active"]
   }
 }

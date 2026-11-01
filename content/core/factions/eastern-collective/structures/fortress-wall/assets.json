@@ -1,0 +1,16 @@
+{
+  "files": {
+    "fortress-wall.glb": {
+      "author": "Borut Balazek",
+      "source": "source/fortress-wall.bricks.json"
+    },
+    "fortress-wall.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/fortress-wall.bricks.json"
+    },
+    "fortress-wall.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/fortress-wall.bricks.json"
+    }
+  }
+}

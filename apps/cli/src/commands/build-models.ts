@@ -39,7 +39,9 @@ function build(file: string): string {
   const name = basename(file, ".bricks.json");
   const src = JSON.parse(readFileSync(file, "utf8")) as BrickModel;
   if (!src.author) throw new Error(`"author" is required (never invent one)`);
-  const defFile = ["unit.json", "structure.json"].map((f) => join(folder, f)).find(existsSync);
+  const defFile = ["unit.json", "structure.json", "prop.json"]
+    .map((f) => join(folder, f))
+    .find(existsSync);
   const wreckFile = defFile && JSON.parse(readFileSync(defFile, "utf8")).presentation?.wreck;
   const factionFile = join(folder, "..", "..", "faction.json");
   const team = existsSync(factionFile)

@@ -42,6 +42,7 @@
     "icon": "adaptive-defense-tower.icon.png",
     "wreck": "adaptive-defense-tower.rubble.glb",
     "materials": {},
+    "parts": ["turret", "barrel"],
     "sockets": ["socket_smoke", "socket_muzzle"]
   }
 }

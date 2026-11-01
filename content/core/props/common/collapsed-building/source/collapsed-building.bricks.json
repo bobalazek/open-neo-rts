@@ -1,0 +1,146 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "base",
+      "bricks": [
+        {
+          "at": [-11, 0, -11],
+          "size": [22, 0.5, 22],
+          "slot": "palette",
+          "color": "#8c8983",
+          "studs": false
+        },
+        {
+          "at": [-8, 0.5, -6],
+          "size": [12, 2, 10],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-6, 2.5, -4],
+          "size": [7, 1.5, 6],
+          "slot": "palette",
+          "color": "#8c8983",
+          "studs": false
+        },
+        {
+          "at": [2, 0.5, 2],
+          "size": [6, 1, 5],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [1, 2.5, -1],
+          "size": [0.3, 3, 0.3],
+          "slot": "palette",
+          "color": "#7a4e33",
+          "studs": false
+        },
+        {
+          "at": [-2, 4, 1],
+          "size": [0.3, 2.5, 0.3],
+          "slot": "palette",
+          "color": "#7a4e33",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "slab",
+      "parent": "base",
+      "at": [4, 0.5, -4],
+      "rotation": [0, 0, 20],
+      "bricks": [
+        {
+          "at": [-4, 0, -3],
+          "size": [8, 0.8, 6],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "walls",
+      "parent": "base",
+      "bricks": [
+        {
+          "at": [-11, 0.5, -11],
+          "size": [22, 3, 2],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-11, 3.5, -11],
+          "size": [3, 3, 2],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-4, 3.5, -11],
+          "size": [4, 3, 2],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [4, 3.5, -11],
+          "size": [3, 3, 2],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-11, 6.5, -11],
+          "size": [16, 2, 2],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-11, 8.5, -11],
+          "size": [9, 3, 2],
+          "slot": "palette",
+          "color": "#8c8983",
+          "studs": false
+        },
+        {
+          "at": [-2, 8.5, -11],
+          "size": [4, 1.5, 2],
+          "slot": "palette",
+          "color": "#8c8983",
+          "studs": false
+        },
+        {
+          "at": [-11, 0.5, -9],
+          "size": [2, 6, 14],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        },
+        {
+          "at": [-11, 6.5, -9],
+          "size": [2, 3, 8],
+          "slot": "palette",
+          "color": "#8c8983",
+          "studs": false
+        },
+        {
+          "at": [-11, 0.5, 5],
+          "size": [2, 3, 3],
+          "slot": "palette",
+          "color": "#a8a59e",
+          "studs": false
+        }
+      ]
+    }
+  ],
+  "destroyed": {
+    "darken": 0.7
+  }
+}

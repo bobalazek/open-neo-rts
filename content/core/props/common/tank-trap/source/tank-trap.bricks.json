@@ -1,0 +1,53 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "trap"
+    },
+    {
+      "name": "beam_0",
+      "parent": "trap",
+      "at": [0, 2.1, 0],
+      "rotation": [54.7, 0, 0],
+      "bricks": [
+        {
+          "at": [-0.4, -3, -0.4],
+          "size": [0.8, 6, 0.8],
+          "slot": "palette",
+          "color": "#7a4e33",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "beam_1",
+      "parent": "trap",
+      "at": [0, 2.1, 0],
+      "rotation": [54.7, 120, 0],
+      "bricks": [
+        {
+          "at": [-0.4, -3, -0.4],
+          "size": [0.8, 6, 0.8],
+          "slot": "palette",
+          "color": "#5d6166",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "beam_2",
+      "parent": "trap",
+      "at": [0, 2.1, 0],
+      "rotation": [54.7, 240, 0],
+      "bricks": [
+        {
+          "at": [-0.4, -3, -0.4],
+          "size": [0.8, 6, 0.8],
+          "slot": "palette",
+          "color": "#7a4e33",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

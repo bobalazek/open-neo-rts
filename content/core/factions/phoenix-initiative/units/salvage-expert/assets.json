@@ -1,0 +1,12 @@
+{
+  "files": {
+    "salvage-expert.glb": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-expert.bricks.json"
+    },
+    "salvage-expert.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/salvage-expert.bricks.json"
+    }
+  }
+}

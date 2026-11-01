@@ -1,0 +1,141 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "trunk",
+      "bricks": [
+        {
+          "at": [-1, 0, -1],
+          "size": [2, 2, 2],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.5, 0, -1.5],
+          "size": [3, 0.5, 3],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "canopy",
+      "parent": "trunk",
+      "at": [0, 2, 0],
+      "bricks": [
+        {
+          "at": [-0.75, 0, -0.75],
+          "size": [1.5, 3, 1.5],
+          "slot": "palette",
+          "color": "#6b4a2b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-4, 1.5, -4],
+          "size": [8, 2, 8],
+          "slot": "palette",
+          "color": "#26492b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3.75, 3.5, -3.75],
+          "size": [7.5, 0.5, 7.5],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-3, 4, -3],
+          "size": [6, 2, 6],
+          "slot": "palette",
+          "color": "#2f5a34",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2.75, 6, -2.75],
+          "size": [5.5, 0.5, 5.5],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2.25, 6.5, -2.25],
+          "size": [4.5, 2, 4.5],
+          "slot": "palette",
+          "color": "#26492b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-2, 8.5, -2],
+          "size": [4, 0.5, 4],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.5, 9, -1.5],
+          "size": [3, 2, 3],
+          "slot": "palette",
+          "color": "#2f5a34",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-1.25, 11, -1.25],
+          "size": [2.5, 0.5, 2.5],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.75, 11.5, -0.75],
+          "size": [1.5, 1.5, 1.5],
+          "slot": "palette",
+          "color": "#26492b",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.5, 13, -0.5],
+          "size": [1, 1, 1],
+          "slot": "palette",
+          "color": "#eef3f7",
+          "studs": true
+        }
+      ]
+    }
+  ],
+  "animations": {
+    "idle": {
+      "duration": 8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "canopy",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [2, [1.5, 0, 0.8999999999999999]],
+            [4, [0, 0, 0]],
+            [6, [-1.5, 0, -0.8999999999999999]],
+            [8, [0, 0, 0]]
+          ]
+        }
+      ]
+    }
+  },
+  "destroyed": {
+    "drop": ["canopy"],
+    "darken": 0.85
+  }
+}

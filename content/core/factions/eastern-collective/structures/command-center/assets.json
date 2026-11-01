@@ -1,0 +1,16 @@
+{
+  "files": {
+    "command-center.glb": {
+      "author": "Borut Balazek",
+      "source": "source/command-center.bricks.json"
+    },
+    "command-center.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/command-center.bricks.json"
+    },
+    "command-center.rubble.glb": {
+      "author": "Borut Balazek",
+      "source": "source/command-center.bricks.json"
+    }
+  }
+}

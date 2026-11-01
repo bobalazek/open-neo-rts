@@ -55,7 +55,7 @@
     "model": "striker-ifv.glb",
     "icon": "striker-ifv.icon.png",
     "materials": {},
-    "parts": ["hull", "turret"],
+    "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
     "animations": [],
     "wreck": "striker-ifv.wreck.glb"

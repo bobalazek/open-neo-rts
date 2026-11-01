@@ -1,0 +1,135 @@
+{
+  "author": "Borut Balazek",
+  "nodes": [
+    {
+      "name": "shrub",
+      "bricks": [
+        {
+          "at": [-1.25, 0, -1.25],
+          "size": [2.5, 0.6, 2.5],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false,
+          "shape": "cyl-y"
+        },
+        {
+          "at": [-0.3, 0.6, -0.3],
+          "size": [0.6, 0.5, 0.6],
+          "slot": "palette",
+          "color": "#5a3e26",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "twig_0",
+      "parent": "shrub",
+      "at": [0, 0.5, 0],
+      "rotation": [0, 0, 35],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 2.6, 0.4],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 2, -0.35],
+          "size": [0.7, 0.7, 0.7],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "twig_1",
+      "parent": "shrub",
+      "at": [0, 0.5, 0],
+      "rotation": [25, 90, 30],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 2, 0.4],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 1.4, -0.35],
+          "size": [0.7, 0.7, 0.7],
+          "slot": "palette",
+          "color": "#7a8f3c",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "twig_2",
+      "parent": "shrub",
+      "at": [0, 0.5, 0],
+      "rotation": [-30, 200, 25],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 2.6, 0.4],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 2, -0.35],
+          "size": [0.7, 0.7, 0.7],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "twig_3",
+      "parent": "shrub",
+      "at": [0, 0.5, 0],
+      "rotation": [20, 290, 40],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 2, 0.4],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 1.4, -0.35],
+          "size": [0.7, 0.7, 0.7],
+          "slot": "palette",
+          "color": "#7a8f3c",
+          "studs": false
+        }
+      ]
+    },
+    {
+      "name": "twig_4",
+      "parent": "shrub",
+      "at": [0, 0.5, 0],
+      "rotation": [-15, 150, 15],
+      "bricks": [
+        {
+          "at": [-0.2, 0, -0.2],
+          "size": [0.4, 2.6, 0.4],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        },
+        {
+          "at": [-0.35, 2, -0.35],
+          "size": [0.7, 0.7, 0.7],
+          "slot": "palette",
+          "color": "#a88f5c",
+          "studs": false
+        }
+      ]
+    }
+  ]
+}

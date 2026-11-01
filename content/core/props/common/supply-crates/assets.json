@@ -1,0 +1,12 @@
+{
+  "files": {
+    "supply-crates.glb": {
+      "author": "Borut Balazek",
+      "source": "source/supply-crates.bricks.json"
+    },
+    "supply-crates.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/supply-crates.bricks.json"
+    }
+  }
+}

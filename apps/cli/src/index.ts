@@ -4,6 +4,7 @@
 import { buildModels } from "./commands/build-models";
 import { generateSandboxMaps } from "./commands/generate-sandbox-maps";
 import { generateSchemas } from "./commands/generate-schemas";
+import { generateTextures } from "./commands/generate-textures";
 import { generateTrigTable } from "./commands/generate-trig-table";
 import { makePlaceholders } from "./commands/make-placeholders";
 import { validateAssets } from "./commands/validate-assets";
@@ -48,6 +49,11 @@ const commands: Record<string, Command> = {
   "generate-sandbox-maps": {
     summary: "Write the sandbox maps in content/core/maps from their source in the CLI",
     run: generateSandboxMaps,
+  },
+  "generate-textures": {
+    summary:
+      "Write the palette and surface detail textures to content/<pack>/textures (default: core)",
+    run: generateTextures,
   },
   "generate-trig-table": {
     summary:

@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../schemas/prop.schema.json",
+  "id": "prop:desert/cactus",
+  "name": "Cactus",
+  "description": "A tall saguaro cactus. Stops vehicles; crushers flatten it.",
+  "footprint": [1, 1],
+  "blocks": "movement",
+  "domains": ["wheeled", "tracked", "hover", "amphibious"],
+  "destructible": {
+    "health": 100,
+    "crushable": true
+  },
+  "presentation": {
+    "model": "cactus.glb",
+    "icon": "cactus.icon.png",
+    "materials": {}
+  }
+}

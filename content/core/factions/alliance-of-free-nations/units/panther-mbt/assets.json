@@ -1,0 +1,16 @@
+{
+  "files": {
+    "panther-mbt.glb": {
+      "author": "Borut Balazek",
+      "source": "source/panther-mbt.bricks.json"
+    },
+    "panther-mbt.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/panther-mbt.bricks.json"
+    },
+    "panther-mbt.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/panther-mbt.bricks.json"
+    }
+  }
+}
