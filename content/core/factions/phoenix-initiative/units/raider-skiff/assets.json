@@ -1,0 +1,16 @@
+{
+  "files": {
+    "raider-skiff.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raider-skiff.bricks.json"
+    },
+    "raider-skiff.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/raider-skiff.bricks.json"
+    },
+    "raider-skiff.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/raider-skiff.bricks.json"
+    }
+  }
+}
