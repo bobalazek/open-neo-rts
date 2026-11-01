@@ -1,0 +1,16 @@
+{
+  "files": {
+    "scout-helicopter.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scout-helicopter.bricks.json"
+    },
+    "scout-helicopter.icon.png": {
+      "author": "Borut Balazek",
+      "source": "source/scout-helicopter.bricks.json"
+    },
+    "scout-helicopter.wreck.glb": {
+      "author": "Borut Balazek",
+      "source": "source/scout-helicopter.bricks.json"
+    }
+  }
+}
