@@ -2,6 +2,23 @@
 
 Our own implementation, inside the deterministic sim (`packages/sim/src/features/movement/`).
 
+## Phase 1b progress
+
+The standalone `PathSearch` core accepts a caller-supplied `NavGrid`: row-major integer entry costs
+(zero blocks a cell) and outgoing neighbour connection bits in `NAV_DIRECTIONS` order. Dimensions
+are 1–512 cells per axis, matching the map limit. Terrain-to-domain compilation remains separate;
+the owner must resolve the water table in [human-tasks.md](../project/human-tasks.md) first.
+
+Each request owns its search arrays and heap. Keep its supplied grid unchanged until completion.
+`step(budget)` expands at most that many nodes and returns a path including the start. Partial and
+unreachable results choose the reachable cell with lowest octile distance to the target, then lowest
+path cost, then lowest cell index. A blocked start is invalid; a blocked goal uses that fallback.
+Diagonal moves require both orthogonal routes around the corner, including their edge connections,
+to be passable. Costs stay exact integers even at the largest grid and cell cost.
+
+This core is not registered with the movement feature. Per-Force queues, tick budgets, nav compilation,
+reachability labels and movement integration are still pending; existing simulation outcomes are unchanged.
+
 ## Navigation data
 
 - The map compiles into one **nav grid per movement domain**. The domains are a fixed list used everywhere (content `movement.domain`, map masks, overlays): `foot`, `wheeled`, `tracked`, `hover`, `amphibious`, `naval` and `air`. Air units don't use a grid.
