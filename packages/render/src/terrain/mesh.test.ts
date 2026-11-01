@@ -32,7 +32,11 @@ const quads = (geos: (Geometry | null)[]) =>
 
 describe("terrain geometry", () => {
   test("demo grid passes the map rules", () => {
-    expect(checkTerrain(createDemoGrid())).toEqual([]);
+    for (const biome of BIOMES) {
+      const g = createDemoGrid(biome);
+      expect(checkTerrain(g)).toEqual([]);
+      expect([...new Set(g.biome)]).toEqual([BIOMES.indexOf(biome)]);
+    }
   });
 
   test("chunks cover the map plus border", () => {
