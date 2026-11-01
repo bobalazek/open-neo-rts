@@ -22,7 +22,7 @@ Power structures ──► power capacity ──► keeps everything running
 - **Ore fields** are clusters of ore cells. Each cell holds a finite amount and **regrows slowly** up to its cap; fully mined cells regrow from neighbours. Rich fields hold more and regrow faster.
 - **Harvesters** carry a fixed load (e.g. 500 credits worth), mine one cell at a time, then drive to the nearest friendly drop-off structure. When their field is empty they move to the nearest reachable field on their own.
 - **Drop-off docking:** one harvester unloads at a time; others queue in arrival order (deterministic). Unloading takes a few seconds.
-- **Material nodes** are single spots worked by a node-bound structure on top, producing raw materials at a fixed rate until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). Which structure works them is a pending decision ([human-tasks.md](../project/human-tasks.md)).
+- **Material nodes** are single spots worked by a node-bound structure on top, producing raw materials at a fixed rate until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md), built by any faction on material or oil nodes. Its fit with builders, drop-offs and power is under [design review](../project/neutral-extractor-plan.md); rates and other unapproved operating details remain open.
 - **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's builders can clear a wreck for a small amount; the Phoenix Initiative's Salvage Crawlers and Scavenger VTOLs get the full value, plus salvage points ([phoenix-initiative.md](factions/phoenix-initiative.md)).
 
 ## Spending

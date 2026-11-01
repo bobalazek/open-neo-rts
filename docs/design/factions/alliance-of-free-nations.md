@@ -19,7 +19,7 @@ Clean white and light-grey bricks, with **cyan translucent bricks** for sensors,
 ## Economy
 
 - **Credits:** Supply Drones hover to ore fields and back to a Supply Relay.
-- **Raw materials:** from captured material nodes on the map ([economy.md](../economy.md)).
+- **Raw materials:** from the shared neutral extractor built on material nodes ([accepted direction](../../project/decisions/2026-11-01-neutral-extractor.md)); its operating design is under [fit review](../../project/neutral-extractor-plan.md).
 - **Quantum processing** (unique): a capacity provided by the Quantum Research Lab. Every Alliance research project uses some, so more labs mean faster research, and losing a lab stalls research.
 
 ## Builder
