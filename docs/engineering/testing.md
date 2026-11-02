@@ -1,5 +1,30 @@
 # Testing strategy
 
+## Seeded normal bot matches
+
+`bun neo ai-vs-ai --out /tmp/neo-ai-evidence` runs the actual Eastern Collective
+mirror on Training Grounds with default normal rules, no debug commands and two
+hosted basic bots. The output directory must be new and its parent must exist.
+The default batch uses seeds 1–20 with a 30,000-tick cap (25 simulated minutes).
+`--seeds 7,11 --ticks 30000` selects a smaller explicit batch; bounds are 100
+distinct uint32 seeds and 1–216,000 ticks.
+
+Each seed runs twice and must match final hashes, periodic checkpoints, outcome,
+applied-command diagnostics and final bot state. The scenario is written before
+execution; the first result is preserved before verification. A divergence keeps
+the repeat and failure files, and stops the batch. `summary.json` updates after
+each seed. A game that reaches its cap without a canonical result is incomplete,
+even if reproducible: the command continues the batch and ultimately exits 1.
+All complete, reproducible games exit 0. Existing evidence is never overwritten.
+
+The versioned scenario embeds actual content identity, compiled definitions and
+map data, with hosted bots in setup and no injected external commands. Reproduce
+its checkpoints with `bun neo run seed-7.scenario.json --ticks 30000`; do not add
+the diagnostic bot commands to that scenario or they would run twice. These
+artifacts are full-input headless evidence, not snapshot saves, replay keyframes,
+an interactive viewer or a balance claim. Long qualification batches are explicit
+commands; the ordinary suite exercises only a bounded two-tick integration case.
+
 **Status:** proposed. It builds on the acceptance tests listed in [multiplayer.md](../design/multiplayer.md) §8 and [map-editor.md](map-editor.md) §10.
 
 The game is only as trustworthy as its determinism. Most of the testing effort goes into proving that the same inputs produce the same state, everywhere.

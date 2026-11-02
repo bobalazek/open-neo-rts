@@ -104,3 +104,16 @@ do not affect canonical hashes. Model regressions and eight unique integrated
 Chromium menu/results/minimap cases passed; the final minimap rerun retains the
 original fixed-inset height-only selection regression and all real order checks.
 Source review accepted; shared delivery CI remains to be recorded in the PR.
+
+Task 2-40a implements the original-content headless runner:
+`bun neo ai-vs-ai --out <new-directory> [--seeds 1,2,...] [--ticks 30000]`.
+Each declared seed runs twice, compares canonical hashes/checkpoints/outcomes and
+diagnostics, preserves inputs/first failures, and treats caps as incomplete.
+The current SIM32 default20-seed batch is running in
+`/tmp/neo-ai-qualification-sim32-20261102` with log
+`/tmp/neo-ai-qualification-sim32.log`; leave it running. Seed1 capped at30,000
+ticks twice with matching hash `e9cbaa12f14aa4b4` and no winner. Do not report
+20 completed matches, full replay support or balance acceptance from this.
+Independent runner review and repository/content gates passed. The bounded
+two-tick normal integration and output overwrite refusal are ordinary tests;
+long qualification batches remain explicit CLI invocations.
