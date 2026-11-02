@@ -225,6 +225,7 @@ test("two data-defined slots pay on start and work independently when the earlie
   expect(units(kernel)).toHaveLength(1);
   expect(units(kernel, 3)).toHaveLength(1);
   expect(itemIds(kernel)).toEqual([]);
+  expect(kernel.statistics?.snapshot(1)[0]?.counters.unitsBuilt).toBe(2);
 });
 
 test("five total player items includes active slots, and unpaid FIFO heads wait without blocking paid work", () => {

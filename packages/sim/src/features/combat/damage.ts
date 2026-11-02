@@ -141,6 +141,13 @@ export function applyDamageWarhead(
     );
     if (!amount) continue;
     world.set(target, Health, "current", world.get(target, Health, "current") - amount);
+    kernel.statistics?.damage(
+      impact.force,
+      force,
+      !!definition.footprint,
+      amount,
+      world.get(target, Health, "current") === 0,
+    );
     const point = combatPoint(kernel, definitions, target);
     emitCombatEvent(kernel, { type: "damage", ...point, force, amount, entity: target });
   }
