@@ -1,9 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import type { OfflineState, PlacementDiagnostic } from "../../../packages/client/src/worker";
 
-test("authoritative placement preview agrees with rotated commits and refreshes occupancy", async ({
-  page,
-}) => {
+async function openPlacement(page: Page) {
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
     window.Worker = class extends OriginalWorker {
@@ -34,6 +32,14 @@ test("authoritative placement preview agrees with rotated commits and refreshes 
   if (!bounds) throw new Error("Canvas missing");
   const x = bounds.x + bounds.width / 2,
     y = bounds.y + bounds.height / 2;
+  return { canvas, definitions, preview, result, diagnostic, state, x, y };
+}
+
+test("authoritative placement preview agrees with rotated refusals and camera changes", async ({
+  page,
+}) => {
+  const { canvas, definitions, preview, result, diagnostic, state, x, y } =
+    await openPlacement(page);
   await definitions.selectOption("core.structure:eastern-collective/shipyard");
   await page.mouse.move(x, y);
   for (const rotation of [0, 1, 2, 3]) {
@@ -58,8 +64,14 @@ test("authoritative placement preview agrees with rotated commits and refreshes 
   } finally {
     await page.keyboard.up("ArrowRight");
   }
+});
+
+test("authoritative placement commits refresh occupancy and reset on reload", async ({ page }) => {
+  const { canvas, definitions, preview, result, diagnostic, state, x, y } =
+    await openPlacement(page);
   await definitions.selectOption("core.structure:eastern-collective/radar-tower");
   await page.getByLabel("Rotation", { exact: true }).selectOption("0");
+  await page.mouse.move(x, y);
   await expect(preview).toContainText("Allowed");
   await page.screenshot({ path: test.info().outputPath("placement-allowed.png") });
   await page.mouse.click(x, y);
