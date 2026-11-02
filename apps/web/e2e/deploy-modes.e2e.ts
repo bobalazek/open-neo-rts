@@ -1,12 +1,15 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { parseMatchRecord, verifyMatchRecord } from "../../../packages/sim/src";
 import type { start } from "./deploy-fixture";
+import type { start as startDeploymentProof } from "./deployment-proof";
 
 declare global {
   interface Window {
     deployFixture: Awaited<ReturnType<typeof start>>;
+    deploymentProof: Awaited<ReturnType<typeof startDeploymentProof>>;
   }
 }
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -362,26 +365,58 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
   test.skip(info.project.name !== "chromium", "Bounded HUD integration runs in Chromium");
   test.setTimeout(60_000);
   const errors: string[] = [];
+  const renderFixture = execFileSync(
+    "bun",
+    ["build", "apps/web/e2e/deployment-proof.ts", "--target=browser"],
+    {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    },
+  );
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("http://deploy-modes.test/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith(".glb")) {
+      const name = path.slice(1, -4);
+      return route.fulfill({
+        contentType: "model/gltf-binary",
+        body: readFileSync(
+          `${root}/content/core/factions/eastern-collective/units/${name}/${name}.glb`,
+        ),
+      });
+    }
     return route.fulfill({
       contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
       body:
         path === "/fixture.js"
           ? fixture
-          : path === "/sim-worker.js"
-            ? worker
-            : '<!doctype html><title>Deploy modes</title><canvas tabindex="0"></canvas>',
+          : path === "/renderer.js"
+            ? renderFixture
+            : path === "/sim-worker.js"
+              ? worker
+              : '<!doctype html><title>Deploy modes</title><canvas tabindex="0"></canvas>',
     });
   });
   await page.goto("http://deploy-modes.test/");
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.evaluate(async (setup) => {
     const moduleUrl = "/fixture.js";
     const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
     window.deployFixture = await start(setup);
+    const canvas = document.querySelector("canvas")!;
+    canvas.width = 960;
+    canvas.height = 640;
+    canvas.style.width = "960px";
+    canvas.style.height = "640px";
+    const rendererUrl = "/renderer.js";
+    const { start: render } = (await import(rendererUrl)) as typeof import("./deployment-proof");
+    window.deploymentProof = await render(canvas, window.deployFixture.state()!.snapshot);
   }, setup);
   try {
+    const packed = await page
+      .locator("canvas")
+      .screenshot({ path: info.outputPath("vehicles-packed.png") });
     await page.evaluate(([tank, apc]) => window.deployFixture.select([tank!, apc!]), [tank, apc]);
     const deploy = page.locator("[data-deploy]");
     await expect(deploy).toBeEnabled();
@@ -399,6 +434,20 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
     expect(deployed.every((entity) => entity.deploy?.active && entity.deploy.readyAt === 60)).toBe(
       true,
     );
+    const stance = await page.evaluate(async () => {
+      const proof = window.deploymentProof;
+      await proof.accept(window.deployFixture.state()!.snapshot, 50);
+      proof.render(1550);
+      const partial = proof.poses();
+      proof.render(3050);
+      return { partial, deployed: proof.poses() };
+    });
+    expect(stance.partial.every((row) => row.y < 0)).toBe(true);
+    expect(stance.deployed.find((row) => row.definition === tank)?.y).toBeCloseTo(-0.125);
+    expect(stance.deployed.find((row) => row.definition === apc)?.y).toBeCloseTo(-0.23);
+    expect(
+      await page.locator("canvas").screenshot({ path: info.outputPath("vehicles-deployed.png") }),
+    ).not.toEqual(packed);
     const receipts = await page.evaluate(
       async (entities) => {
         const fixture = window.deployFixture;
@@ -423,6 +472,14 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
     await page.keyboard.press("d");
     await expect(deploy).toHaveAttribute("aria-pressed", "false");
     await expect(deploy).toBeDisabled();
+    const restored = await page.evaluate(async () => {
+      const proof = window.deploymentProof;
+      await proof.accept(window.deployFixture.state()!.snapshot, 3100);
+      proof.render(6100);
+      return proof.poses();
+    });
+    expect(restored.every((row) => row.y === 0)).toBe(true);
+    await page.locator("canvas").screenshot({ path: info.outputPath("vehicles-repacked.png") });
     const moved = await page.evaluate(
       async (entities) => {
         const fixture = window.deployFixture;
@@ -460,6 +517,7 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
     expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
     expect(errors).toEqual([]);
   } finally {
+    await page.evaluate(() => window.deploymentProof?.dispose());
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });
