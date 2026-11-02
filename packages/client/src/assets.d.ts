@@ -8,8 +8,13 @@ declare module "*.glb" {
   export default url;
 }
 
+declare module "*.png" {
+  const url: string;
+  export default url;
+}
+
 declare module "virtual:debug-builtins" {
-  export const builtins: readonly { raw: unknown; model?: string }[];
+  export const builtins: readonly { raw: unknown; model?: string; icon?: string }[];
 }
 
 declare module "virtual:normal-catalog" {
