@@ -33,9 +33,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      # Renderer tests need six GLBs; the original movement regression also reads two terrain layers.
-      - name: Pull renderer test fixtures
-        run: git lfs pull --include="content/core/factions/eastern-collective/units/collective-soldier/collective-soldier.glb,content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb,content/core/factions/eastern-collective/units/gunboat/gunboat.glb,content/core/factions/eastern-collective/structures/radar-tower/radar-tower.glb,content/core/factions/eastern-collective/structures/industrial-reactor/industrial-reactor.glb,content/core/resources/ore-cell/ore-cell.glb,content/core/maps/training-grounds/height.r8,content/core/maps/training-grounds/ramps.r8" --exclude=""
+      # The normal setup regression resolves the real catalog and hashes original runtime bytes.
+      - name: Pull original core content
+        run: git lfs pull --include="content/core/**" --exclude=""
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json

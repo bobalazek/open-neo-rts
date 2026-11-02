@@ -12,8 +12,8 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-22b · Canonical match statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual lifecycle/income/spend/death attribution and frozen final counters.
-- [ ] [2-24b · Activate and qualify the normal skirmish opponent](./phases/2.md#2-24--first-bot-economy-and-build-order). PR type: engine; connect the real policy and run the authored Training Grounds matchup.
 - [ ] [2-30b · Own-force alerts, Space cycling and pings](./phases/2.md#2-30--minimap-alerts-and-camera-commands). PR type: engine; only permitted projected events and legal locations.
+- [ ] [2-40 · Seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling; persistent runner/replay evidence and20 recorded seeds after normal opponent activation.
 
 Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction sites/builders (2-09/2-10), node extraction (2-08a/b) and production (2-11a/b) are implemented. SIM18 activates Eastern Collective tier-1 exits and two Barracks slots using the real queue engine; existing costs/times and included Supply Truck remain intact. CLI validation compiles all 137 authored definitions. Ore hauling and permitted enemy observations are next.
 
