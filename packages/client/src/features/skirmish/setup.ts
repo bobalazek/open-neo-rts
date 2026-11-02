@@ -132,10 +132,11 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
       { index: 1, faction: `core.${faction.id}`, spawn: config.otherSpawn, team: 1 },
     ],
     seats: [1, 2],
+    bots: [{ seat: 2, kind: "basic-skirmish", force: 1 }],
     grants: [0, 1].map((force) => ({
       seat: force + 1,
       force,
-      scopes: ["unit.orders", "economy.build", "production.queue"],
+      scopes: ["unit.orders", "economy.build", "production.queue", "surrender"],
       grantedAtTick: 0,
     })),
   });

@@ -8,7 +8,7 @@ import type {
   SkirmishMemory,
   SkirmishPolicy,
 } from "../economy";
-import { basicSkirmishProgram } from ".";
+import { basicSkirmishProgram, initialSkirmishMemory } from ".";
 
 const policy: SkirmishPolicy = {
   force: 1,
@@ -250,6 +250,30 @@ test("waves use permitted structure ghosts only as positions, and dropped ghost 
     64,
   );
   expect(next.state.target).not.toBe("g1");
+});
+test("a retreating first survivor cannot prevent healthy reinforcements from scouting below wave size", () => {
+  const decide = basicSkirmishProgram(policy);
+  const memory = initialSkirmishMemory();
+  memory.orders = [{ handle: "e2", x: 0, y: 0, until: 0, retreat: true }];
+  const view = {
+    ...observation([
+      entity("e1", "hq"),
+      { ...entity("e2", "soldier"), health: 45 },
+      entity("e3", "soldier"),
+    ]),
+    fog: [{ width: 16, height: 16, cells: new Uint8Array(256).fill(1) }],
+    ghosts: [{ handle: "g1", force: 3, x: 14 * 1024, y: 14 * 1024 }],
+  };
+  const result = runDecision(decide, view, { ...state(), memory }, createStream(1, "ai:1"), 64);
+  expect(result.commands).toContainEqual({
+    type: "unit.attackMove",
+    payload: { entities: ["e3"], x: 14 * 1024 + 512, y: 14 * 1024 + 512 },
+  });
+  expect(
+    result.commands.some(
+      (command) => command.type === "unit.move" && command.payload.entities[0] === "e2",
+    ),
+  ).toBe(true);
 });
 test("failed placements advance finite candidate history and unknown terrain is never queried", () => {
   const decide = basicSkirmishProgram(policy);
