@@ -28,6 +28,9 @@ finishes locally; unusual positions may scan the finite map, with no arbitrary d
 sort. Each cell is considered at most once for visibility, at most 262,144 centres on a 512×512 map;
 component/fallback goal scans are linear integer work. Only a closer candidate for a component needs
 a swept check. This work occurs during order/repath planning, not every movement tick.
+A measured 64×64 disconnected-goal fallback needs 1,801 sweeps/about 127 ms locally;
+[issue #149](https://github.com/bobalazek/open-neo-rts/issues/149) must budget/cache this exceptional
+work before the phase exit without truncating valid distant joins.
 
 Map matches now register ground path following and bounded direct air movement. Mapless kernel tests
 retain the phase-1a flat movement helper. Map units require their original domain and integer radius

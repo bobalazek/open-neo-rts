@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/content/core/**/{unit,structure,prop}.json",
+        "$TURBO_ROOT$/content/core/maps/training-grounds/map.json",
+        "$TURBO_ROOT$/content/core/maps/training-grounds/height.r8",
+        "$TURBO_ROOT$/content/core/maps/training-grounds/ramps.r8"
+      ]
+    }
+  }
+}
