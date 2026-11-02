@@ -203,5 +203,13 @@
   "ui.result.force": "Force",
   "ui.result.outcome": "Outcome",
   "ui.result.rematch": "Rematch",
-  "ui.result.home": "Home"
+  "ui.result.home": "Home",
+  "ui.minimap.title": "Minimap",
+  "ui.minimap.instructions": "Minimap. Left-click or drag to pan. Right-click orders your selected units; A then right-click attack-moves. Arrow keys pan when focused. Home returns to your base. Wheel zooms the main camera.",
+  "ui.minimap.home": "Base (Home)",
+  "ui.minimap.alert": "Alert (Space)",
+  "ui.minimap.no-alerts": "Combat alerts are not available yet. No camera jump was made.",
+  "ui.minimap.no-base": "No completed structure of your Force is available.",
+  "ui.minimap.no-pings": "Pings are not available yet.",
+  "ui.minimap.no-queue": "Queued movement is not available yet. Release Shift to issue a single order."
 }

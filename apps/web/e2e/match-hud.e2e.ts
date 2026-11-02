@@ -10,7 +10,7 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
-  const canvas = page.locator("canvas");
+  const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: /Idle builders 2/ }).click();
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
@@ -39,8 +39,12 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await page
     .locator('[data-definition="core.structure:eastern-collective/industrial-reactor"]')
     .click();
-  await page.mouse.move(735, 350);
-  await page.mouse.click(735, 350);
+  const top = await page.locator(".match-top").boundingBox();
+  const bottom = await page.locator(".match-hud").boundingBox();
+  if (!top || !bottom) throw new Error("Playable area missing");
+  const placement = { x: 685, y: (top.y + top.height + bottom.y) / 2 };
+  await page.mouse.move(placement.x, placement.y);
+  await page.mouse.click(placement.x, placement.y);
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4100");
   await expect(
     page.getByRole("button", { name: "Select Industrial Reactor site", exact: true }),

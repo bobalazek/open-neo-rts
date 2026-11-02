@@ -47,21 +47,21 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   await page.unrouteAll({ behavior: "wait" });
   await expect(page.getByRole("heading", { name: "Skirmish", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Start local match" }).click();
-  await expect(page.locator("canvas")).toHaveAttribute("data-session", "ready", {
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
   await expect(page).toHaveURL(/\/match$/);
-  await expect(page.locator("canvas")).toHaveAttribute("data-mode", "controlled");
-  await expect(page.locator("canvas")).toHaveAttribute("data-entities", "7");
+  await expect(page.locator("#game")).toHaveAttribute("data-mode", "controlled");
+  await expect(page.locator("#game")).toHaveAttribute("data-entities", "7");
   await expect(page.getByText("Credits 5000", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
-  const tick = await page.locator("canvas").getAttribute("data-tick");
+  const tick = await page.locator("#game").getAttribute("data-tick");
   await page.screenshot({ path: info.outputPath("normal-match-desktop.png") });
-  expect(await page.locator("canvas").getAttribute("data-tick")).toBe(tick);
+  expect(await page.locator("#game").getAttribute("data-tick")).toBe(tick);
   await page.getByRole("button", { name: "Leave match" }).click();
   await expect(page).toHaveURL(/\/skirmish$/);
-  await expect(page.locator("canvas")).toBeHidden();
+  await expect(page.locator("#game")).toBeHidden();
   await page.goBack();
   await expect(page).toHaveURL(/\/skirmish$/);
   await expect(page.getByRole("status")).toHaveText(
@@ -85,10 +85,10 @@ test("failed worker loading can retry through the same quick-start path", async 
   ).toBeVisible({ timeout: 60_000 });
   await page.unroute("**/sim-worker.js");
   await page.getByRole("button", { name: "Retry loading" }).click();
-  await expect(page.locator("canvas")).toHaveAttribute("data-session", "ready", {
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
   await expect(page).toHaveURL(/\/match$/);
   await page.getByRole("button", { name: "Leave match" }).click();
-  await expect(page.locator("canvas")).toBeHidden();
+  await expect(page.locator("#game")).toBeHidden();
 });
