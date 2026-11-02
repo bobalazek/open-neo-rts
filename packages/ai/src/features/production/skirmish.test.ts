@@ -423,3 +423,67 @@ test("scouting spends its bounded sample on new shroud before revisiting explore
     handle: null,
   });
 });
+
+test("after headquarters loss a completed structure anchors retreat instead of the first moving unit", () => {
+  const decide = basicSkirmishProgram(policy);
+  const view = observation([
+    { ...entity("e1", "soldier"), health: 20 },
+    entity("e2", "reactor", 1, 10 * 1024),
+  ]);
+  const result = runDecision(decide, view, state(), createStream(1, "ai:1"), 64);
+  expect(result.commands).toContainEqual({
+    type: "unit.move",
+    payload: { entities: ["e1"], x: 7 * 1024, y: 9 * 1024 },
+  });
+});
+
+test("without a completed base wounded survivors leave old retreat orders and all pursue permitted goals", () => {
+  const decide = basicSkirmishProgram({
+    ...policy,
+    definitions: policy.definitions.map((definition) =>
+      definition.id === "soldier" ? { ...definition, speed: 77 } : definition,
+    ),
+  });
+  const own = [10, 20, 30].map((health, i) => ({ ...entity(`e${i + 1}`, "soldier"), health }));
+  const memory = initialSkirmishMemory();
+  memory.orders = own.map((actor) => ({
+    handle: actor.handle,
+    x: 2 * 1024,
+    y: 9 * 1024,
+    until: 200,
+    retreat: true,
+  }));
+  const view = {
+    ...observation(own),
+    fog: [{ width: 16, height: 16, cells: new Uint8Array(256) }],
+    ghosts: [{ handle: "g1", force: 3, x: 10 * 1024, y: 10 * 1024 }],
+  };
+  const result = runDecision(decide, view, { ...state(), memory }, createStream(1, "ai:1"), 64);
+  expect(result.commands.filter((command) => command.type === "unit.attackMove")).toHaveLength(3);
+  expect(result.commands.some((command) => command.type === "unit.move")).toBe(false);
+  expect(result.state.memory?.goal?.until).toBeGreaterThan(400);
+  const engaged = runDecision(
+    decide,
+    { ...view, tick: 10, entities: [...own, entity("e9", "soldier", 3, 6 * 1024)] },
+    result.state,
+    result.random,
+    64,
+  );
+  expect(engaged.commands.filter((command) => command.type === "unit.attack")).toHaveLength(3);
+});
+
+test("unfinished structures cannot anchor a retreat after loss of the completed base", () => {
+  const decide = basicSkirmishProgram(policy);
+  const view = {
+    ...observation([
+      { ...entity("e1", "soldier"), health: 20 },
+      { ...entity("e2", "reactor"), constructionSite: true as const },
+    ]),
+    ghosts: [{ handle: "g1", force: 3, x: 10 * 1024, y: 10 * 1024 }],
+  };
+  const result = runDecision(decide, view, state(), createStream(1, "ai:1"), 64);
+  expect(result.commands).toContainEqual({
+    type: "unit.attackMove",
+    payload: { entities: ["e1"], x: 10 * 1024 + 512, y: 10 * 1024 + 512 },
+  });
+});

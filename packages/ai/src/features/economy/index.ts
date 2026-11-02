@@ -154,7 +154,11 @@ export const baseOf = (view: PlanningView) =>
   view.own.find(
     (entity) =>
       complete(entity) && view.definitions.get(entity.definition)?.role === "headquarters",
-  ) ?? view.own[0];
+  ) ??
+  view.own.find(
+    (entity) => complete(entity) && view.definitions.get(entity.definition)?.footprint,
+  ) ??
+  view.own[0];
 export const nextStructure = (view: PlanningView) => {
   const power = view.observation.power?.find((row) => row.force === view.policy.force);
   if (
