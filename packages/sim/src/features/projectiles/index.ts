@@ -70,9 +70,9 @@ const velocity = (facing: number, speed: number) => ({
 });
 const supported = (weapon: GameplayWeapon | undefined): weapon is GameplayWeapon =>
   !!weapon &&
-  ["instant", "bullet", "missile"].includes(weapon.projectile.kind) &&
-  weapon.warheads.every((warhead) => ["damage", "disable"].includes(warhead.type)) &&
-  (weapon.projectile.kind === "instant" ||
+  ["instant", "beam", "bullet", "missile"].includes(weapon.projectile.kind) &&
+  weapon.warheads.every((warhead) => ["damage", "disable", "burn"].includes(warhead.type)) &&
+  (["instant", "beam"].includes(weapon.projectile.kind) ||
     ((weapon.projectile.speedSubcellsPerTick ?? 0) > 0 && weapon.projectile.flightTicks !== 0)) &&
   (weapon.projectile.kind !== "missile" ||
     (weapon.projectile.turnAnglePerTick !== undefined &&
@@ -165,7 +165,7 @@ export function initializeProjectiles(
       y: data.y,
       force: data.force,
       round: id,
-      projectile: weapon.projectile.kind as "instant" | "bullet" | "missile",
+      projectile: weapon.projectile.kind as "instant" | "beam" | "bullet" | "missile",
     });
   };
   const strike = (
@@ -264,10 +264,9 @@ export function initializeProjectiles(
               x: world.get(shot, ShotIntent, "scatterX"),
               y: world.get(shot, ShotIntent, "scatterY"),
             };
-            const predicted =
-              weapon.projectile.kind === "instant"
-                ? raw
-                : lead(origin, raw, movementOf(target), speed, life, width, height);
+            const predicted = ["instant", "beam"].includes(weapon.projectile.kind)
+              ? raw
+              : lead(origin, raw, movementOf(target), speed, life, width, height);
             const destination = { x: predicted.x + offset.x, y: predicted.y + offset.y };
             world.remove(shot, ShotIntent);
             emitCombatEvent(kernel, {
@@ -276,9 +275,9 @@ export function initializeProjectiles(
               force,
               round: shot,
               entity: shooter,
-              projectile: weapon.projectile.kind as "instant" | "bullet" | "missile",
+              projectile: weapon.projectile.kind as "instant" | "beam" | "bullet" | "missile",
             });
-            if (weapon.projectile.kind === "instant") {
+            if (["instant", "beam"].includes(weapon.projectile.kind)) {
               const traceWeapon = miss
                 ? {
                     ...weapon,
@@ -558,19 +557,20 @@ export function initializeProjectiles(
       destruction: [
         () => {
           const dead = world
-            .query(Template, Transform, OwnerForce, Health)
+            .query(Template, OwnerForce, Health)
             .filter(
               (id) =>
                 world.get(id, Health, "current") === 0 &&
                 (definitions[world.get(id, Template, "definition")]?.health ?? 0) > 0,
             );
           for (const id of dead) {
-            emitCombatEvent(kernel, {
-              type: "death",
-              entity: id,
-              ...combatPoint(kernel, definitions, id),
-              force: world.get(id, OwnerForce, "force"),
-            });
+            if (world.has(id, Transform))
+              emitCombatEvent(kernel, {
+                type: "death",
+                entity: id,
+                ...combatPoint(kernel, definitions, id),
+                force: world.get(id, OwnerForce, "force"),
+              });
             kernel.movement?.cancel(id);
             for (const actor of world.query(AttackOrder))
               if (world.get(actor, AttackOrder, "target") === id) clearAttackOrder(kernel, actor);

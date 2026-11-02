@@ -14,6 +14,7 @@ import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
 
 export const MAX_SHOT_INTENTS = 4096;
+export { Burning } from "./burn";
 export { Disabled } from "./disable";
 export const AttackOrder = defineComponent("AttackOrder", { target: "u32" });
 export const WeaponState = defineComponent("WeaponState", {

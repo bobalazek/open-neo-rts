@@ -612,7 +612,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
           return false;
         return (
           event.projectile === undefined ||
-          ["instant", "bullet", "missile"].some((kind) => kind === event.projectile)
+          ["instant", "beam", "bullet", "missile"].some((kind) => kind === event.projectile)
         );
       })
     )
@@ -748,6 +748,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "production",
             "attackTarget",
             "disabled",
+            "burning",
             "repair",
             "repairOrder",
             "deploy",
@@ -763,6 +764,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
+    if (entity.burning !== undefined && entity.burning !== true) return false;
     if (entity.cargo !== undefined) {
       const cargo = entity.cargo;
       if (

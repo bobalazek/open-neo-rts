@@ -5,9 +5,12 @@ import { createProjection } from "../../projection";
 import { createMatchRecord, verifyMatchRecord } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder, WeaponState } from "../combat";
+import { initializeBurn } from "../combat/burn";
+import { applyWarhead } from "../combat/damage";
 import { Disabled } from "../combat/disable";
 import { MoveIntent, MovementFailure } from "../movement";
 import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
+import { ForceStatistics } from "../victory/statistics";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from ".";
 import { Boarding, Cargo } from "./transport";
 
@@ -613,4 +616,57 @@ test("a terminal record reproduces real boarding, travel and mounted combat from
   expect(command("match.surrender", { force: 0 })).toBe("accepted");
   const record = createMatchRecord(kernel, setup);
   expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+});
+
+test("an attached burn persists aboard and simultaneous carrier death cannot revive or expose dead cargo", () => {
+  const { setup, kernel, world, apc, infantry, command } = bunkerFixture();
+  const weapon = {
+    id: "fire",
+    targets: ["ground"],
+    rangeSubcells: [0, 1024] as const,
+    reloadTicks: 20,
+    projectile: { kind: "beam" },
+    warheads: [{ type: "burn", amountPerSecond: 20, durationTicks: 20, tags: ["fire"] }],
+  };
+  initializeBurn(
+    kernel,
+    setup.definitions.map((definition, index) =>
+      index === 1 ? { ...definition, weapons: [weapon] } : definition,
+    ),
+  );
+  world.set(infantry, Health, "current", 2);
+  applyWarhead(
+    kernel,
+    setup.definitions,
+    weapon,
+    weapon.warheads[0]!,
+    {
+      force: 1,
+      direct: infantry,
+      x: world.get(infantry, Transform, "x"),
+      y: world.get(infantry, Transform, "y"),
+      fromX: 0,
+      fromY: 0,
+      air: false,
+      maxLevel: 255,
+    },
+    false,
+  );
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  expect(world.has(infantry, Transform)).toBe(false);
+  expect(world.get(infantry, Health, "current")).toBe(1);
+  world.set(apc, Health, "current", 0);
+  step(kernel, []);
+  expect(world.isAlive(infantry)).toBe(false);
+  expect(world.isAlive(apc)).toBe(false);
+  expect(kernel.combatEvents?.some((event) => event.entity === infantry)).toBe(false);
+  const own = world
+    .query(ForceStatistics)
+    .find((id) => world.get(id, ForceStatistics, "force") === 0)!;
+  const enemy = world
+    .query(ForceStatistics)
+    .find((id) => world.get(id, ForceStatistics, "force") === 1)!;
+  expect(world.get(own, ForceStatistics, "unitsLost")).toBe(1);
+  expect(world.get(own, ForceStatistics, "damageTaken")).toBe(2);
+  expect(world.get(enemy, ForceStatistics, "unitsDestroyed")).toBe(1);
 });

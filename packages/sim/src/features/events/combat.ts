@@ -12,7 +12,7 @@ export interface CombatEvent {
   readonly round?: number;
   readonly entity?: number;
   readonly amount?: number;
-  readonly projectile?: "instant" | "bullet" | "missile";
+  readonly projectile?: "instant" | "beam" | "bullet" | "missile";
 }
 export type PresentedCombatEvent = Omit<CombatEvent, "force" | "round" | "entity"> & {
   readonly handle?: string;
