@@ -631,6 +631,9 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 20
+        },
+        "fireWhileDeployed": {
+          "type": "boolean"
         }
       },
       "required": [

@@ -9,6 +9,7 @@ import { BuilderConstruction, ConstructionSite, clearConstructionOrder } from ".
 import { suspendRepair } from "../construction/repair";
 import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
+import { Cargo } from "../entities/transport";
 import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
 
@@ -25,6 +26,7 @@ export const WeaponState = defineComponent("WeaponState", {
 });
 /** Internal one-tick handoff. Never project these authoritative IDs or hidden firing origins. */
 export const ShotIntent = defineComponent("ShotIntent", {
+  rangeSubcells: "u32",
   damageBonus: "i32",
   tick: "u32",
   shooter: "u32",
@@ -41,20 +43,25 @@ export const ShotIntent = defineComponent("ShotIntent", {
 });
 const kind = (definition: Definition | undefined) =>
   definition?.id.split(":")[0]?.split(".").at(-1);
-const live = (kernel: Kernel, id: number) =>
+const actorAlive = (kernel: Kernel, id: number) =>
   kernel.world.isAlive(id) &&
   kernel.world.has(id, Template) &&
   kernel.world.has(id, OwnerForce) &&
-  kernel.world.has(id, Transform) &&
   kernel.world.has(id, Health) &&
   kernel.world.get(id, Health, "current") > 0;
+const live = (kernel: Kernel, id: number) =>
+  actorAlive(kernel, id) && kernel.world.has(id, Transform);
+const shooterAlive = (kernel: Kernel, id: number) =>
+  actorAlive(kernel, id) &&
+  (kernel.world.has(id, Transform) || (!!kernel.transport && kernel.world.has(id, Cargo)));
 const angleDelta = (from: number, to: number) => ((to - from + 0x8000) & 0xffff) - 0x8000;
 
 export function clearAttackOrder(kernel: Kernel, actor: number): void {
   const world = kernel.world;
+  const shooters = new Set([actor, ...(kernel.transport?.passengers(actor) ?? [])]);
   if (world.has(actor, AttackOrder)) world.remove(actor, AttackOrder);
   for (const state of world.query(WeaponState))
-    if (world.get(state, WeaponState, "shooter") === actor) {
+    if (shooters.has(world.get(state, WeaponState, "shooter"))) {
       world.set(state, WeaponState, "remaining", 0);
       world.set(state, WeaponState, "target", 0);
     }
@@ -100,8 +107,15 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
   const { definitions, grants } = setup;
   const definitionOf = (kernel: Kernel, id: number) =>
     definitions[kernel.world.get(id, Template, "definition")];
+  const platformOf = (kernel: Kernel, shooter: number) =>
+    live(kernel, shooter) ? shooter : kernel.transport?.firingPlatform(shooter);
+  const lineOf = (kernel: Kernel, shooter: number, target: number, weapon: GameplayWeapon) => {
+    const platform = platformOf(kernel, shooter);
+    return platform !== undefined && clearFireLine(kernel, definitions, platform, target, weapon);
+  };
   const eligible = (kernel: Kernel, shooter: number, target: number, weapon: GameplayWeapon) => {
-    if (!live(kernel, shooter) || !live(kernel, target) || shooter === target) return false;
+    if (platformOf(kernel, shooter) === undefined || !live(kernel, target) || shooter === target)
+      return false;
     const world = kernel.world;
     const force = world.get(shooter, OwnerForce, "force"),
       other = world.get(target, OwnerForce, "force");
@@ -117,8 +131,16 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
       kernel.vision?.canSeeEntity(force, target) === true
     );
   };
+  const canAttack = (kernel: Kernel, actor: number, target: number) =>
+    [actor, ...(kernel.transport?.firingPassengers(actor) ?? [])].some((shooter) =>
+      definitionOf(kernel, shooter)?.weapons?.some((weapon) =>
+        eligible(kernel, shooter, target, weapon),
+      ),
+    );
   const inRange = (kernel: Kernel, shooter: number, target: number, weapon: GameplayWeapon) => {
-    const a = combatPoint(kernel, definitions, shooter),
+    const platform = platformOf(kernel, shooter);
+    if (platform === undefined) return false;
+    const a = combatPoint(kernel, definitions, platform),
       b = combatPoint(kernel, definitions, target);
     const squared = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
     const maximum =
@@ -127,16 +149,18 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
   };
   const choose = (kernel: Kernel, shooter: number, weapon: GameplayWeapon) => {
     const world = kernel.world;
-    if (world.has(shooter, AttackOrder)) {
-      const explicit = world.get(shooter, AttackOrder, "target");
+    const platform = platformOf(kernel, shooter);
+    if (platform === undefined) return;
+    if (world.has(platform, AttackOrder)) {
+      const explicit = world.get(platform, AttackOrder, "target");
       return eligible(kernel, shooter, explicit, weapon) &&
         inRange(kernel, shooter, explicit, weapon) &&
-        clearFireLine(kernel, definitions, shooter, explicit, weapon)
+        lineOf(kernel, shooter, explicit, weapon)
         ? explicit
         : undefined;
     }
-    const actor = definitionOf(kernel, shooter) as Definition;
-    const origin = combatPoint(kernel, definitions, shooter);
+    const actor = definitionOf(kernel, platform) as Definition;
+    const origin = combatPoint(kernel, definitions, platform);
     const rank = (target: number) => {
       const definition = definitionOf(kernel, target) as Definition;
       const point = combatPoint(kernel, definitions, target);
@@ -155,7 +179,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
         (target) =>
           eligible(kernel, shooter, target, weapon) &&
           inRange(kernel, shooter, target, weapon) &&
-          clearFireLine(kernel, definitions, shooter, target, weapon),
+          lineOf(kernel, shooter, target, weapon),
       )
       .sort((a, b) => {
         const x = rank(a),
@@ -178,9 +202,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
           )
         )
           return "no_grant";
-        const armed = actors.filter((id) =>
-          definitionOf(kernel, id)?.weapons?.some((weapon) => eligible(kernel, id, entity, weapon)),
-        );
+        const armed = actors.filter((id) => canAttack(kernel, id, entity));
         if (!armed.length) return "bad_payload";
         for (const actor of armed) {
           kernel.transport?.cancel(actor);
@@ -204,16 +226,15 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
           for (const actor of world.query(AttackOrder))
             if (
               !live(kernel, actor) ||
-              !definitionOf(kernel, actor)?.weapons?.some((weapon) =>
-                eligible(kernel, actor, world.get(actor, AttackOrder, "target"), weapon),
-              )
+              !canAttack(kernel, actor, world.get(actor, AttackOrder, "target"))
             )
               clearAttackOrder(kernel, actor);
           for (const state of world.query(WeaponState))
-            if (!live(kernel, world.get(state, WeaponState, "shooter"))) world.destroy(state);
-          for (const shooter of world.query(Template, Transform, OwnerForce, Health)) {
+            if (!shooterAlive(kernel, world.get(state, WeaponState, "shooter")))
+              world.destroy(state);
+          for (const shooter of world.query(Template, OwnerForce, Health)) {
             const definition = definitionOf(kernel, shooter);
-            if (!live(kernel, shooter) || !definition?.weapons?.length) continue;
+            if (!shooterAlive(kernel, shooter) || !definition?.weapons?.length) continue;
             for (const [weapon] of definition.weapons.entries())
               if (
                 !world
@@ -228,7 +249,9 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
                 world.add(state, WeaponState, {
                   shooter,
                   weapon,
-                  facing: world.get(shooter, Transform, "facing"),
+                  facing: world.has(shooter, Transform)
+                    ? world.get(shooter, Transform, "facing")
+                    : world.get(shooter, Cargo, "facing"),
                 });
               }
           }
@@ -242,6 +265,12 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
             );
           for (const state of states) {
             const shooter = world.get(state, WeaponState, "shooter");
+            const platform = platformOf(kernel, shooter);
+            if (platform === undefined) {
+              world.set(state, WeaponState, "remaining", 0);
+              world.set(state, WeaponState, "target", 0);
+              continue;
+            }
             const definition = definitionOf(kernel, shooter);
             const weapon = definition?.weapons?.[world.get(state, WeaponState, "weapon")];
             if (
@@ -259,7 +288,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               remaining &&
               (!eligible(kernel, shooter, previous, weapon) ||
                 !inRange(kernel, shooter, previous, weapon) ||
-                !clearFireLine(kernel, definitions, shooter, previous, weapon))
+                !lineOf(kernel, shooter, previous, weapon))
             ) {
               remaining = 0;
               world.set(state, WeaponState, "remaining", 0);
@@ -267,7 +296,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
             const target = remaining ? previous : choose(kernel, shooter, weapon);
             world.set(state, WeaponState, "target", target ?? 0);
             if (target === undefined) continue;
-            const origin = combatPoint(kernel, definitions, shooter),
+            const origin = combatPoint(kernel, definitions, platform),
               aim = combatPoint(kernel, definitions, target);
             const desired = atan2(aim.y - origin.y, aim.x - origin.x);
             if (weapon.aim === "turret") {
@@ -278,12 +307,19 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               world.set(state, WeaponState, "facing", next);
               if (next !== desired) continue;
             } else if (weapon.aim === "forward") {
-              let facing = world.get(shooter, Transform, "facing");
-              if (!world.has(shooter, MoveIntent) && kind(definition) === "unit") {
+              let facing =
+                platform === shooter
+                  ? world.get(shooter, Transform, "facing")
+                  : world.get(state, WeaponState, "facing");
+              if (
+                (platform !== shooter || !world.has(shooter, MoveIntent)) &&
+                kind(definition) === "unit"
+              ) {
                 const difference = angleDelta(facing, desired),
                   rate = definition.turnRate;
                 facing = (facing + Math.max(0 - rate, Math.min(rate, difference))) & 0xffff;
-                world.set(shooter, Transform, "facing", facing);
+                if (platform === shooter) world.set(shooter, Transform, "facing", facing);
+                else world.set(state, WeaponState, "facing", facing);
               }
               if (Math.abs(angleDelta(facing, desired)) > (weapon.arcAngle ?? 0)) continue;
             }
@@ -314,9 +350,10 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               const offset = scatter(kernel, radius);
               const shot = world.create();
               world.add(shot, ShotIntent, {
+                rangeSubcells: maximum,
                 damageBonus: kernel.unitModes?.damageBonus(shooter) ?? 0,
                 tick: kernel.tick,
-                shooter,
+                shooter: platform,
                 force: world.get(shooter, OwnerForce, "force"),
                 definition: world.get(shooter, Template, "definition"),
                 weapon: world.get(state, WeaponState, "weapon"),

@@ -251,8 +251,7 @@ export function initializeProjectiles(
             const level = miss ? elevation(origin) : Math.max(elevation(origin), elevation(raw)),
               ceiling = miss ? elevation(origin) : 255;
             const speed = weapon.projectile.speedSubcellsPerTick ?? 0;
-            const range =
-              kernel.unitModes?.range(shooter, weapon.rangeSubcells[1]) ?? weapon.rangeSubcells[1];
+            const range = world.get(shot, ShotIntent, "rangeSubcells");
             const life =
               weapon.projectile.flightTicks ??
               Math.max(

@@ -766,7 +766,8 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       if (
         snapshot.mode !== "controlled" ||
         !isRecord(cargo) ||
-        !exact(cargo, ["capacity", "boarding", "passengers"]) ||
+        !exact(cargo, ["capacity", "firing", "boarding", "passengers"]) ||
+        typeof cargo.firing !== "boolean" ||
         !bounded(cargo.capacity, 50) ||
         Number(cargo.capacity) < 1 ||
         !bounded(cargo.boarding, 50) ||

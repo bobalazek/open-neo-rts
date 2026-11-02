@@ -436,10 +436,11 @@ test("private cargo packets bound manifests and reservations without exposing ca
     health: 100,
     maxHealth: 100,
   };
-  const cargo = { capacity: 5, boarding: 1, passengers: [passenger] };
+  const cargo = { capacity: 5, firing: false, boarding: 1, passengers: [passenger] };
   expect(isWorkerReply(powerReply([power], [{ ...entity, cargo }]))).toBe(true);
   for (const bad of [
     { ...cargo, capacity: 0 },
+    { ...cargo, firing: 1 },
     { ...cargo, capacity: 51 },
     { ...cargo, boarding: 5 },
     { ...cargo, boarding: -1 },

@@ -12,7 +12,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-43c · Mode transformation playback and disable integration](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle/effects; deploy commands and combat modifiers alone do not complete the signature.
-- [ ] [2-44b · Bunker Mode passenger fire](./phases/2.md#2-44--tier-1-apc-transport-lifecycle). PR type: engine after cargo lifecycle; actual passenger weapons fire through the deployed transport without granting independent sight or exposing hidden cargo.
+- [ ] [2-44b2 · Activate authored APC passenger fire](./phases/2.md#2-44--tier-1-apc-transport-lifecycle). PR type: faction after the passenger-fire engine; enable the original APC behavior and prove the actual roster/worker path.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
 - [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling after concrete bot fixes; persistent runner is implemented, but capped matches are incomplete and20 full-game outcomes remain unqualified.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.

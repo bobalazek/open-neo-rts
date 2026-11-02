@@ -1,4 +1,5 @@
 {
+  "ui.hud.passenger-fire": "Passenger fire on",
   "ui.hud.load": "Board transport",
   "ui.hud.unload": "Unload infantry",
   "ui.hud.transport-cargo": "Cargo {count}/{capacity} · boarding {boarding}",

@@ -42,6 +42,7 @@ export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
   cargo?: {
     capacity: number;
+    firing: boolean;
     boarding: number;
     passengers: { definition: string; health: number; maxHealth: number }[];
   };
