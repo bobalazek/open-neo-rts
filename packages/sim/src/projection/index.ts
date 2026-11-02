@@ -1,5 +1,6 @@
 // Copied presentation data only. Fog and enemy visibility arrive in phase 2.
 import { hasGrant } from "../commands";
+import type { BankSnapshot } from "../features/economy";
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { MoveIntent } from "../features/movement";
 import type { Kernel } from "../kernel";
@@ -23,6 +24,8 @@ export interface SeatSnapshot {
   tick: number;
   mode: ProjectionMode;
   entities: PresentedEntity[];
+  /** Present only for normal matches, with economic grants checked at this tick. */
+  banks?: BankSnapshot[];
 }
 
 /** Per-seat handles never contain ECS IDs. Keep this object inside the authoritative host. */
@@ -71,7 +74,12 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             : null,
         });
       }
-      return { tick: kernel.tick, mode, entities };
+      return {
+        tick: kernel.tick,
+        mode,
+        entities,
+        ...(kernel.economy && { banks: kernel.economy.snapshot(seat) }),
+      };
     },
     resolve(handle: unknown): number | undefined {
       return typeof handle === "string" ? visible.get(handle) : undefined;

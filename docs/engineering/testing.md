@@ -35,16 +35,23 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 10, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 11, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
 before tick zero; no debug commands appear in its initial log. The normal-start
 tests retain fixed initial/two-tick checkpoint goldens for the authored Eastern
 Collective kit on Training Grounds. Existing debug scenario state hashes remain
-unchanged under SIM10; their version headers advance explicitly. A browser worker
+unchanged under SIM11; their version headers advance explicitly. A browser worker
 journey also checks failed-init retry, the private seven-entity controlled view,
 Bun/browser startup agreement, ordinary orders and debug/export refusal.
+
+SIM11 appends real stock-bank entities after the starter entities, preserving
+their IDs. Normal-start initial/two-tick goldens are `59224a8b433ff77c` and
+`1314cf05d33bed96`. Bank operations participate in World serialization and hashes;
+bank tests cover same-tick affordability, rejected mutations, grant lifetimes and
+private projections. The worker journey checks the permitted 5,000-credit bank
+and excludes the opposing bank.
 
 `setup` contains:
 
