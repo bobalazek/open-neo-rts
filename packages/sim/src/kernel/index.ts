@@ -21,6 +21,7 @@ import {
 import { type Component, World } from "../ecs";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
+import type { TerrainVision } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
 
 const MAP_SERIALIZATION = Symbol("mapSerialization");
@@ -101,6 +102,8 @@ export interface Kernel {
   extraction?: ForceExtraction;
   /** Map movement owns its routes and incremental search state. */
   movement?: TerrainMovement;
+  /** Authoritative sight and explored history; only copied group grids may leave the host. */
+  vision?: TerrainVision;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
@@ -237,6 +240,7 @@ export function checkpointHash(kernel: Kernel): string {
   if (map !== undefined) addString(h, map);
   if (kernel[SETUP_IDENTITY] !== undefined) addString(h, kernel[SETUP_IDENTITY]);
   kernel.movement?.hashInto(h);
+  kernel.vision?.hashInto(h);
   return digest(h).hex;
 }
 

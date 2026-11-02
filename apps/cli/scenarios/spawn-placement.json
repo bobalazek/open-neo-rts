@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 19,
+  "simVersion": 20,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -15,6 +15,7 @@
     "definitions": [
       {
         "id": "structure:eastern-collective/war-factory",
+        "visionSubcells": 6144,
         "role": "production",
         "health": 2600,
         "speed": 0,
@@ -41,6 +42,7 @@
       },
       {
         "id": "unit:eastern-collective/collective-soldier",
+        "visionSubcells": 7168,
         "pop": 1,
         "role": "combat",
         "health": 100,

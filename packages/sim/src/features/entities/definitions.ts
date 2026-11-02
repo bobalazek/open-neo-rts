@@ -24,6 +24,8 @@ export interface Definition {
   speed: number;
   /** Binary angle units per tick. */
   turnRate: number;
+  /** Authored circular sight radius in integer subcells; omitted means no vision source. */
+  visionSubcells?: number;
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
   role?: string;
@@ -73,6 +75,7 @@ export const definitionSchema = strictObject({
   health: int(0, INT32_MAX),
   speed: int(0, INT32_MAX),
   turnRate: int(0, 0x10000),
+  visionSubcells: opt(int(0, 40 * 1024)),
   power: opt(int(-500, 500)),
   role: opt(oneOf([...UNIT_ROLES, ...STRUCTURE_ROLES])),
   construction: opt({
@@ -122,6 +125,11 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     ids.add(definition.id);
     if (kind !== "prop" && definition.health === 0)
       issues.push({ path: `${path}.health`, message: "must be positive for units/structures" });
+    if (kind === "prop" && definition.visionSubcells !== undefined)
+      issues.push({
+        path: `${path}.visionSubcells`,
+        message: "only units/structures reveal terrain",
+      });
     if (kind !== "structure" && definition.power !== undefined)
       issues.push({ path: `${path}.power`, message: "only structures declare power" });
     const roles: readonly string[] =
@@ -227,6 +235,7 @@ export function toDefinition(content: {
   productionSlots?: number;
   exits?: readonly { side: string; cell: readonly number[] }[];
   health?: number;
+  vision?: number;
   destructible?: { health: number };
   movement?: { speed: number; turnRate?: number; domain?: string };
   radius?: number;
@@ -252,6 +261,7 @@ export function toDefinition(content: {
     health: content.health ?? content.destructible?.health ?? 0,
     speed: Math.round((speed * 1024) / 20),
     turnRate: Math.round((turnRate * 0x10000) / 7200),
+    ...(content.vision !== undefined && { visionSubcells: Math.round(content.vision * 1024) }),
     ...(content.power !== undefined && { power: content.power }),
     ...(content.movement?.domain !== undefined && { domain: content.movement.domain }),
     ...(content.radius !== undefined && { radiusSubcells: Math.round(content.radius * 1024) }),
