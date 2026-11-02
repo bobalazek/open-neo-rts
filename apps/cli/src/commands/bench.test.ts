@@ -22,10 +22,11 @@ test("bench runs moving units and prints tick statistics and both ECS stores", (
     expect(result.out).toMatch(new RegExp(`\\n${operation} \\| \\d+\\.\\d+ \\| \\d+\\.\\d+`));
 });
 
+// Cold CLI startup and benchmark warmup need room on shared CI runners.
 for (const units of [1, 8001])
   test(`bench accepts ${units} units`, () => {
     expect(execute(["--units", String(units), "--ticks", "1"]).status).toBe(0);
-  });
+  }, 15_000);
 
 test("navigation benchmark validates routes and repeats fixed-work counters and checksum", () => {
   const args = ["--workload", "navigation", "--ticks", "2"];

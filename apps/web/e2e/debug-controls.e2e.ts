@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import manifest from "../../../content/core/manifest.json" with { type: "json" };
 import type { OfflineState } from "../../../packages/client/src/worker";
 
 async function openDebug(page: Page, forces: 1 | 2 = 1) {
@@ -20,7 +21,9 @@ async function openDebug(page: Page, forces: 1 | 2 = 1) {
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   const state = () => page.evaluate(() => Reflect.get(window, "debugControlState") as OfflineState);
   const definitions = page.getByRole("listbox", { name: "Definition" });
-  expect(await definitions.locator("option").count()).toBe(136);
+  await expect(definitions.locator("option")).toHaveCount(
+    manifest.files.units.length + manifest.files.structures.length + manifest.files.props.length,
+  );
   const bounds = await canvas.boundingBox();
   if (!bounds) throw new Error("Canvas missing");
   const point = (x: number, y: number) => ({
