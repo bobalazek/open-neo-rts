@@ -2,10 +2,10 @@
   "hashes": [
     {
       "tick": 100,
-      "hash": "7c8f50fd84645b31"
+      "hash": "5c39306da78a6881"
     }
   ],
-  "hash": "7c8f50fd84645b31",
+  "hash": "5c39306da78a6881",
   "results": [
     "accepted",
     "placement_failed",

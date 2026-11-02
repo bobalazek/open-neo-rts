@@ -42,9 +42,11 @@ describe("PathScheduler", () => {
     ]);
     expect(scheduler.tick()).toEqual({
       results: [],
+      prepared: [],
+      work: 0,
       expansions: 0,
       queued: 0,
-      forces: [{ force: 0, expansions: 0, completed: 0, queued: 0 }],
+      forces: [{ force: 0, expansions: 0, completed: 0, queued: 0, work: 0 }],
     });
   });
 
@@ -100,8 +102,8 @@ describe("PathScheduler", () => {
     ]);
     expect(result.queued).toBe(0);
     expect(result.forces).toEqual([
-      { force: 0, expansions: 0, completed: 0, queued: 0 },
-      { force: 1, expansions: 2, completed: 1, queued: 0 },
+      { force: 0, expansions: 0, completed: 0, queued: 0, work: 0 },
+      { force: 1, expansions: 2, completed: 1, queued: 0, work: 2 },
     ]);
     expect(scheduler.tick().results).toEqual([]);
   });
@@ -179,6 +181,8 @@ describe("PathScheduler", () => {
     const empty = new PathScheduler(grid(), [], 10);
     expect(PathScheduler.restore(grid(), empty.snapshot()).tick()).toEqual({
       results: [],
+      prepared: [],
+      work: 0,
       expansions: 0,
       queued: 0,
       forces: [],

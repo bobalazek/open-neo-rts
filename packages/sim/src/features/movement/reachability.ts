@@ -71,7 +71,7 @@ export function nearestReachable(
   return best;
 }
 
-/** Join a continuous position to a graph centre without changing the position or collision rules. */
+/** Synchronous reference/offline join selection; kernel preparation uses counted AnchorSearch. */
 export function reachableStart(
   grid: NavigationGrid,
   labels: Uint32Array,
@@ -123,7 +123,6 @@ export function reachableStart(
       return;
     if (clearSegment(grid, position, point)) anchors.set(component, { cell, distance });
   };
-  // shortcut: disconnected off-centre starts can exhaust map-wide sweeps, budget/cache this in issue149 before the phase exit.
   // Perimeters avoid sorting/scanning the whole grid in the common local-corner case.
   const limit = Math.max(x, y, grid.width - 1 - x, grid.height - 1 - y);
   for (let ring = 0; ring <= limit; ring++) {
