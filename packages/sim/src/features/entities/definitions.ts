@@ -20,6 +20,8 @@ export interface Definition {
   speed: number;
   /** Binary angle units per tick. */
   turnRate: number;
+  /** Completed structure capacity: positive supply, negative draw. */
+  power?: number;
   domain?: MovementDomain;
   radiusSubcells?: number;
   domains?: readonly MovementDomain[];
@@ -35,6 +37,7 @@ export const definitionSchema = strictObject({
   health: int(0, INT32_MAX),
   speed: int(0, INT32_MAX),
   turnRate: int(0, 0x10000),
+  power: opt(int(-500, 500)),
   domain: opt(oneOf(DOMAINS)),
   radiusSubcells: opt(int(0, 8192)),
   domains: opt(arr(oneOf(DOMAINS), 1)),
@@ -54,6 +57,8 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     ids.add(definition.id);
     if (kind !== "prop" && definition.health === 0)
       issues.push({ path: `${path}.health`, message: "must be positive for units/structures" });
+    if (kind !== "structure" && definition.power !== undefined)
+      issues.push({ path: `${path}.power`, message: "only structures declare power" });
     if (kind === "unit" && (definition.footprint || definition.cells || definition.blocks))
       issues.push({ path, message: "units do not have static footprints" });
     if (kind !== "prop" && definition.blocks !== undefined)
@@ -101,6 +106,7 @@ export function toDefinition(content: {
   cells?: readonly string[];
   nodeKinds?: readonly NodeKind[];
   blocks?: string;
+  power?: number;
 }): Definition {
   const { speed = 0, turnRate = 7200 } = content.movement ?? {};
   if (!Number.isFinite(speed) || speed < 0 || !Number.isFinite(turnRate) || turnRate < 0)
@@ -110,6 +116,7 @@ export function toDefinition(content: {
     health: content.health ?? content.destructible?.health ?? 0,
     speed: Math.round((speed * 1024) / 20),
     turnRate: Math.round((turnRate * 0x10000) / 7200),
+    ...(content.power !== undefined && { power: content.power }),
     ...(content.movement?.domain !== undefined && { domain: content.movement.domain }),
     ...(content.radius !== undefined && { radiusSubcells: Math.round(content.radius * 1024) }),
     ...(content.domains && { domains: [...content.domains] }),

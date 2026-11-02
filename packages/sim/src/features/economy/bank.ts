@@ -2,6 +2,7 @@ import { type Grant, hasGrant } from "../../commands";
 import { defineComponent } from "../../ecs";
 import type { Kernel } from "../../kernel";
 import type { NormalMatchSetup } from "../control";
+import { canInspectEconomy } from "./permissions";
 
 const MAX_AMOUNT = 0x7fffffff;
 const FIELDS = {
@@ -63,12 +64,6 @@ const spendScopes: readonly SpendScope[] = [
   "unit.abilities",
   "commander.abilities",
 ];
-const readScopes = [
-  "economy.build",
-  "economy.transfer",
-  "production.queue",
-  "research.spend",
-] as const;
 const success: BankResult = Object.freeze({ ok: true });
 
 /** Only own data properties on plain JSON objects count; prototype names, accessors and symbols refuse. */
@@ -177,9 +172,7 @@ export function initializeForceBanks(
     refund: gain,
     snapshot(seat: number): BankSnapshot[] {
       return [...ids.keys()]
-        .filter((force) =>
-          readScopes.some((scope) => hasGrant(permissions, seat, force, scope, kernel.tick)),
-        )
+        .filter((force) => canInspectEconomy(permissions, seat, force, kernel.tick))
         .map((force) => ({ force, resources: balance(force) as StockBalances }));
     },
   });

@@ -170,6 +170,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     health: def.health,
     speed: def.speed,
     turnRate: def.turnRate,
+    ...(def.power !== undefined && { power: def.power }),
     ...(def.domain !== undefined && { domain: def.domain }),
     ...(def.radiusSubcells !== undefined && { radiusSubcells: def.radiusSubcells }),
     ...(def.domains && { domains: def.domains }),
