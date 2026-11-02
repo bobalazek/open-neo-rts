@@ -5,7 +5,7 @@ import { type Grant, hasGrant, type Rejection } from "../../commands";
 import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchMap } from "../../match-map";
-import { BuilderConstruction } from "../construction";
+import { BuilderConstruction, clearConstructionOrder } from "../construction";
 import type { NormalMatchSetup } from "../control";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 
@@ -51,7 +51,7 @@ export function movementFeature(match: {
       return "no_grant";
     if (target) kernel.movement?.refreshOccupancy();
     for (const id of ids) {
-      if (match.normal && world.has(id, BuilderConstruction)) world.remove(id, BuilderConstruction);
+      if (match.normal && world.has(id, BuilderConstruction)) clearConstructionOrder(kernel, id);
       if (kernel.movement && world.has(id, MovementFailure)) world.remove(id, MovementFailure);
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);
       kernel.movement?.cancel(id);

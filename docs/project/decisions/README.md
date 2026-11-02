@@ -22,6 +22,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-02 — Barracks Complex has two production slots](./2026-11-02-production-slots.md) — One active slot elsewhere, pay at start and retain the five-item queue limit.
+
 - [2026-11-02 — Provisional shared extractor economy](./2026-11-02-extractor-economy.md) — 800 credits, 20 seconds, accepted power/output/depletion rules.
 - [2026-11-02 — Ground weapons include structures](./2026-11-02-ground-targets-structures.md) — Existing structure damage multipliers apply.
 

@@ -3,7 +3,7 @@ import { defineComponent } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import type { StockResourceId } from "../economy";
-import { type Definition, OwnerForce, spawnEntity, Template, Transform } from "../entities";
+import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import { checkSpawnPlacement, type SpawnCell } from "../entities/placement";
 import { MoveIntent, MovementFailure } from "../movement";
 import { ConstructionSite } from ".";
@@ -35,6 +35,67 @@ export const ConstructionBuilder = defineComponent("ConstructionBuilder", {
 });
 /** Current build order: an unpaid request first, then the actual paid site. */
 export const BuilderConstruction = defineComponent("BuilderConstruction", { target: "u32" });
+/** Whole single-builder work ticks plus the remaining quarter tick: never multiply int32 duration into u32. */
+export const ConstructionProgress = defineComponent("ConstructionProgress", {
+  completedTicks: "u32",
+  quarter: "u8",
+  buildersWorking: "u32",
+});
+export const ConstructionApproach = defineComponent("ConstructionApproach", {
+  site: "u32",
+  originX: "i32",
+  originY: "i32",
+  next: "u8",
+  x: "i32",
+  y: "i32",
+  state: "u8",
+});
+
+/** Explicit replacement/cancellation only; callers check that the assignment still belongs to them. */
+export function clearConstructionOrder(kernel: Kernel, builder: number): void {
+  const world = kernel.world;
+  kernel.movement?.cancel(builder);
+  if (world.has(builder, MoveIntent)) world.remove(builder, MoveIntent);
+  if (world.has(builder, MovementFailure)) world.remove(builder, MovementFailure);
+  if (world.has(builder, ConstructionApproach)) world.remove(builder, ConstructionApproach);
+  if (world.has(builder, BuilderConstruction)) world.remove(builder, BuilderConstruction);
+}
+
+export function assignBuilderConstruction(kernel: Kernel, builder: number, target: number): void {
+  clearConstructionOrder(kernel, builder);
+  kernel.world.add(builder, BuilderConstruction, { target });
+}
+
+export function validConstructionBuilders(
+  kernel: Kernel,
+  definitions: readonly Definition[],
+  force: number,
+  definitionId: string,
+  builders: readonly number[],
+): boolean {
+  return (
+    builders.length > 0 &&
+    new Set(builders).size === builders.length &&
+    builders.every((id) => {
+      const world = kernel.world;
+      if (
+        !world.isAlive(id) ||
+        !world.has(id, Template) ||
+        !world.has(id, OwnerForce) ||
+        !world.has(id, Health) ||
+        world.get(id, Health, "current") === 0
+      )
+        return false;
+      const definition = definitions[world.get(id, Template, "definition")];
+      return (
+        world.get(id, OwnerForce, "force") === force &&
+        definition?.role === "builder" &&
+        kind(definition) === "unit" &&
+        !!definition.builds?.includes(definitionId)
+      );
+    })
+  );
+}
 
 export const CONSTRUCTION_REFUSALS = [
   "bad_payload",
@@ -114,21 +175,6 @@ export function constructionFeature(
   const teams = new Map(setup.normal?.forces.map((force) => [force.index, force.team]));
   const definitionOf = (kernel: Kernel, id: number) =>
     definitions[kernel.world.get(id, Template, "definition")];
-  const validBuilders = (kernel: Kernel, build: ConstructionBuild) =>
-    build.builders.length > 0 &&
-    new Set(build.builders).size === build.builders.length &&
-    build.builders.every((id) => {
-      const world = kernel.world;
-      if (!world.isAlive(id) || !world.has(id, Template) || !world.has(id, OwnerForce))
-        return false;
-      const definition = definitionOf(kernel, id);
-      return (
-        world.get(id, OwnerForce, "force") === build.force &&
-        definition?.role === "builder" &&
-        kind(definition) === "unit" &&
-        definition.builds?.includes(build.definition)
-      );
-    });
   const eligible = (
     kernel: Kernel,
     seat: number,
@@ -140,7 +186,7 @@ export function constructionFeature(
       !kernel.economy ||
       !definition?.construction ||
       kind(definition) !== "structure" ||
-      !validBuilders(kernel, build)
+      !validConstructionBuilders(kernel, definitions, build.force, build.definition, build.builders)
     )
       return "bad_payload";
     const structures = kernel.world.query(Template, OwnerForce).filter((id) => {
@@ -223,24 +269,19 @@ export function constructionFeature(
     if (!paid?.ok) return paid?.reason === "no_grant" ? "no_grant" : "insufficient_funds";
     const site = spawnEntity(kernel, index, definition, build);
     kernel.world.add(site, ConstructionSite);
+    kernel.world.add(site, ConstructionProgress);
     kernel.world.add(site, ConstructionPayment, {
       credits: cost?.credits ?? 0,
       materials: cost?.materials ?? 0,
       industrialCapacity: cost?.["industrial-capacity"] ?? 0,
       salvagePoints: cost?.["salvage-points"] ?? 0,
     });
-    for (const builder of build.builders) assign(kernel, builder, site);
-  }
-  function assign(kernel: Kernel, builder: number, target: number) {
-    const world = kernel.world;
-    if (world.has(builder, BuilderConstruction))
-      world.set(builder, BuilderConstruction, "target", target);
-    else world.add(builder, BuilderConstruction, { target });
+    for (const builder of build.builders) assignBuilderConstruction(kernel, builder, site);
   }
   function unassign(kernel: Kernel, target: number) {
     for (const builder of kernel.world.query(BuilderConstruction))
       if (kernel.world.get(builder, BuilderConstruction, "target") === target)
-        kernel.world.remove(builder, BuilderConstruction);
+        clearConstructionOrder(kernel, builder);
   }
   function refuseRequest(
     kernel: Kernel,
@@ -294,6 +335,8 @@ export function constructionFeature(
       ConstructionRequest,
       ConstructionBuilder,
       BuilderConstruction,
+      ConstructionProgress,
+      ConstructionApproach,
     ],
     handlers: {
       "economy.build": (kernel, { seat, payload: build }) => {
@@ -340,7 +383,7 @@ export function constructionFeature(
         for (const builder of [...build.builders].sort((a, b) => a - b)) {
           const id = world.create();
           world.add(id, ConstructionBuilder, { request, builder });
-          assign(kernel, builder, request);
+          assignBuilderConstruction(kernel, builder, request);
         }
         kernel.movement.refreshOccupancy();
         const xs = placement.cells.map((cell) => cell.x),
@@ -350,6 +393,11 @@ export function constructionFeature(
           minY = Math.min(...ys),
           maxY = Math.max(...ys);
         for (const id of ids) {
+          if (
+            world.has(id, BuilderConstruction) &&
+            world.get(id, BuilderConstruction, "target") !== request
+          )
+            clearConstructionOrder(kernel, id);
           const x = world.get(id, Transform, "x"),
             y = world.get(id, Transform, "y");
           const radius = definitionOf(kernel, id)?.radiusSubcells ?? 0;

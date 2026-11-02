@@ -203,6 +203,23 @@ export class TerrainMovement {
     this.plan(id, target, "order", 0);
   }
 
+  /** Certified exterior work positions use the same radius/domain/occupancy grid as normal orders. */
+  canStand(id: number, point: Point): boolean {
+    const map = this.kernel.map;
+    if (
+      !map ||
+      point.x < 0 ||
+      point.y < 0 ||
+      point.x >= map.terrain.width * 1024 ||
+      point.y >= map.terrain.height * 1024 ||
+      point.x % 1024 !== 512 ||
+      point.y % 1024 !== 512
+    )
+      return false;
+    if (this.definitions[this.definitionOf(id)]?.domain === "air") return false;
+    return !!this.profile(this.definitionOf(id)).grid.cost[this.cell(point)];
+  }
+
   private plan(id: number, target: Point, kind: "order" | "repath", repaths: number): void {
     const world = this.kernel.world;
     const definition = this.definitionOf(id);

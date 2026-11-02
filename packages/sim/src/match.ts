@@ -1,6 +1,6 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
-import { constructionFeature } from "./features/construction";
+import { constructionFeature, constructionWorkFeature } from "./features/construction";
 import {
   checkNormalMatchSetup,
   copyNormalMatchSetup,
@@ -28,7 +28,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 13;
+export const SIM_VERSION = 14;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -95,5 +95,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
+  if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
   return kernel;
 }

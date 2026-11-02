@@ -53,6 +53,7 @@ export interface ConstructionBuild extends DebugSpawn {
 }
 
 export interface Payloads {
+  "economy.assistConstruction": { entity: number; builders: number[] };
   "economy.build": ConstructionBuild;
   "economy.cancelConstruction": { entity: number };
   "debug.spawn": DebugSpawn;
@@ -110,6 +111,7 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "economy.assistConstruction": { entity: ID, builders: IDS },
   "economy.build": {
     definition: /^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
     force: ID,
