@@ -4,7 +4,7 @@ import { createMatchHud } from "../../../packages/client/src/features/match/hud"
 import { createOfflineMatch, type OfflineState } from "../../../packages/client/src/worker";
 import type { MatchSetup } from "../../../packages/sim/src";
 
-/** Real catalog and worker; only the starting kit is expanded for this bounded UI fixture. */
+/** Real catalog/terrain and worker; journeys choose their test-only kit, spawns and fog rule. */
 export async function start(setup: MatchSetup) {
   if (!content.catalog) throw new Error(content.error ?? "Missing actual catalog");
   const canvas = document.querySelector<HTMLCanvasElement>("canvas");
@@ -62,10 +62,11 @@ export async function start(setup: MatchSetup) {
     state: () => state,
     errors: () => errors,
     command,
-    target(id: string) {
+    target(id: string, force = 0) {
       targetHandle =
-        state?.snapshot.entities.find((entity) => entity.force === 0 && entity.definition === id)
-          ?.handle ?? null;
+        state?.snapshot.entities.find(
+          (entity) => entity.force === force && entity.definition === id,
+        )?.handle ?? null;
     },
     select(ids: string[]) {
       selection =

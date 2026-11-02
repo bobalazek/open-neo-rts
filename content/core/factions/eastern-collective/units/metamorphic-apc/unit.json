@@ -67,7 +67,8 @@
     }
   ],
   "transport": {
-    "slots": 5
+    "slots": 5,
+    "fireWhileDeployed": true
   },
   "presentation": {
     "model": "metamorphic-apc.glb",

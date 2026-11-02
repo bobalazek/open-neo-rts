@@ -107,7 +107,7 @@ test("authored deployed passenger fire compiles as a bounded transport capabilit
     compileGameplayCatalog(resolvePacks([pack()], "0.1.0")).definitions.find(
       (definition) => definition.id === unitId("metamorphic-apc"),
     )?.transportFireWhileDeployed,
-  ).toBeUndefined();
+  ).toBe(true);
   expect(() =>
     compileGameplayCatalog(
       resolvePacks(
@@ -340,6 +340,7 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
     interceptable: true,
   });
   expect(definitions.get(unitId("metamorphic-apc"))?.transportSlots).toBe(5);
+  expect(definitions.get(unitId("metamorphic-apc"))?.transportFireWhileDeployed).toBe(true);
   expect(dragon?.deployMode).toMatchObject({
     id: "siege-mode",
     cooldownTicks: 60,
