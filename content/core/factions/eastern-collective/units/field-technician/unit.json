@@ -21,6 +21,13 @@
   "vision": 6,
   "pop": 1,
   "weapons": [],
+  "repair": {
+    "targets": { "structures": true },
+    "rate": 10,
+    "costPercent": 25,
+    "range": 0,
+    "automatic": false
+  },
   "presentation": {
     "model": "field-technician.glb",
     "icon": "field-technician.icon.png",

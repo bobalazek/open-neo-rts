@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 25, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 26, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -223,3 +223,11 @@ copied private repair status. The original harvesting, targeting and production
 interfaces remain intact. Missing authored repair metadata remains unavailable;
 actual Field Technician activation is a separate balance change. Debug hashes
 remain unchanged. Full save-file identity remains separate.
+
+
+SIM26 activates manual adjacent Field Technician structure repair at 10 HP/second
+and 25% full-repair credit cost, using the existing content-format example as a
+recorded provisional default. The authored compiler assertion verifies all target,
+rate, cost, range and automatic fields. Existing normal fixture goldens remain
+`546cd5a52356f5c8` and `c8652b8de2ae48f3`: that initializer fixture deliberately
+supplies a minimal catalog without repair metadata. Debug hashes are unchanged.

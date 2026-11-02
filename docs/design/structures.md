@@ -134,3 +134,10 @@ A wonder is a huge structure that wins the match in the **Wonder Race** mode ([o
 - **Rally point unreachable** for a domain (an aircraft factory rallying into a building): each unit goes as close as it can.
 - **Selling a structure with units in its queue:** queued items are refunded, then the sale completes.
 - **Brownout during a superweapon charge:** the charge pauses until power returns.
+
+
+The first Eastern Collective implementation gives Field Technicians manual
+adjacent structure repair at 10 HP/second. Full repair costs 25% of the target's
+paid credit price; fractional prepayment persists across stop/restart. This
+[provisional default](../project/decisions/2026-11-02-provisional-builder-repair.md)
+uses the content-format example and awaits balance playtests.
