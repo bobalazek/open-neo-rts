@@ -7,6 +7,9 @@ import {
   type PolicyEntity,
 } from "../economy";
 export function shouldRetreat(view: PlanningView, entity: PolicyEntity): boolean {
+  const base = baseOf(view);
+  if (!base || !view.definitions.get(base.definition)?.footprint || base.constructionSite)
+    return false;
   const previous = view.memory.orders.find((order) => order.handle === entity.handle);
   return entity.health * 100 < entity.maxHealth * (previous?.retreat ? 55 : 35);
 }
@@ -27,7 +30,12 @@ export function army(
   const retreat = shouldRetreat(view, entity);
   let x: number, y: number;
   let target: PolicyEntity | undefined;
-  const reserve = !memory.enemy && waveSize < 6 && entity.handle !== scoutHandle;
+  const reserve =
+    !!definitions.get(base.definition)?.footprint &&
+    !base.constructionSite &&
+    !memory.enemy &&
+    waveSize < 6 &&
+    entity.handle !== scoutHandle;
   if (retreat || reserve) {
     const footprint = definitions.get(base.definition)?.footprint ?? [1, 1];
     x = Math.max(512, Math.min(grid.width * 1024 - 512, base.x - 3 * 1024));
