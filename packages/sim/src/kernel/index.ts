@@ -21,6 +21,7 @@ import {
 import { type Component, World } from "../ecs";
 import type { UnitModes } from "../features/abilities";
 import type { ProductionSurges } from "../features/abilities/production-surge";
+import type { UnitVeterancy } from "../features/abilities/veterancy";
 import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { UnitTransports } from "../features/entities/transport";
@@ -139,6 +140,7 @@ export interface Kernel {
   controllerPayload?: (seat: number, command: ControllerCommand) => unknown;
   observationProjections?: ReadonlyMap<number, SeatProjection>;
   bots?: BotSeats;
+  veterancy?: UnitVeterancy;
   victory?: MatchVictory;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */

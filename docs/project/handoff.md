@@ -118,7 +118,7 @@ Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; l
 
 Repository fix/typecheck/test/build/content checks pass; original catalog identities and no-bot goldens remain unchanged. Independent review reproduced and closed the boosted-brownout label error: preserve base power rate500 for status while actual work is750. The permanent regression and `/tmp/neo-surge-brownout-review.ts` both pass. Review accepted the bounded engine. PR #220 merged at ad13de2bb0fbf41520d158ef81fd4b68e30a04ca with an identical tree to reviewed 4e32441. Hosted CI remains unavailable because of account billing/spending limits.
 
-## Authored industrial activation, SIM44 candidate
+## Authored industrial activation, SIM44 merged
 
 `/tmp/neo-industrial-activation`, branch `codex/industrial-surge-content`,
 activates the original headquarters Surge Force scope and provisional 1-IC,
@@ -156,3 +156,44 @@ All phases remain incomplete. Next functional work includes veterancy,
 remaining effects, mode/door/wreck presentation and complete persistence/replay,
 then the remaining roadmap phases. Do not restart FPS/native-key profiling or
 ask routine approval questions.
+
+PR #221 merged at 5febf7cc3802b0708e6baff2551f6bc0583fd048; its whole source
+tree equals the reviewed 3187fa622190bdb6394a2dc9a19de91912aa6c58 candidate.
+
+## Canonical veterancy, SIM45 candidate
+
+`/tmp/neo-veterancy`, branch `codex/unit-veterancy`, delivers 2-46a under the
+[recorded provisional contract](./decisions/2026-11-02-provisional-veterancy.md).
+Actual hostile HP damage consumes one lifetime base-health XP budget per
+priced target, with exact carried fractions. The actual firing unit is distinct
+from its physical platform through shots, flight, delayed impact and burns.
+Three ranks add bounded health/damage, and top rank repairs after actual damage
+cooldown with integer carry. Dead/transferred sources do not earn; repair and
+promotion cannot refill the target's XP value. Mode damage adds at launch.
+Public rank/effective HP and army-only exact XP are copied and wire-validated.
+Off disables the progression and bonuses.
+
+Independent review found and verified closure of an invented cooldown on first
+XP: damage history now exists before XP and promotion leaves it unchanged.
+Preserved probes `/tmp/neo-veterancy-timer-review.ts` and
+`/tmp/neo-veterancy-timer-review-after.ts` show damage at tick 0, promotion at
+200, then health 110→111 and carry 600 over 20 ticks. A permanent regression
+matches it. Bounded engine review accepted. Repository fix/typecheck/test/build/
+content checks pass, including actual launch, passenger credit, delayed shots,
+burn, numeric bounds, Off, privacy/copy/wire, registered World roundtrip and
+terminal normal input-record replay. Normal fixture goldens are now
+80f19002522632f2/ddb0b89a2a3b9fff for the new canonical fields/default setting;
+debug digests and catalog identities stay unchanged. The extraction test's
+manual restore component list includes both new components.
+
+Player-facing 2-46b remains: setup toggle, HUD XP/chevrons, visible scene ranks
+and original-catalog worker/browser proof. No final CI or full-game acceptance
+is claimed. Hosted CI billing and local Firefox launch restrictions persist.
+
+The frozen SIM39 batch has now finished all 20 double trials: 13 natural
+endings and seven reproducible caps (6, 7, 10, 12, 15, 16, 18). All results are
+reproducible. Preserve its source, summary and companion log; it is historical
+evidence with known stalled outcomes, not the later SIM45 exit. The separate
+SIM42 seed-6 repair already completed naturally twice. Do not rerun historical
+batches or restart FPS/native-key profiling. Full phase 2 and phases 3–5 remain
+unfinished; continue functional gameplay and remaining roadmap delivery.

@@ -47,6 +47,7 @@ export interface PresentedEntity {
     passengers: { definition: string; health: number; maxHealth: number }[];
   };
   deploy?: { id: string; active: boolean; readyAt?: number };
+  veterancy?: { rank: number; xp?: number; nextXp?: number };
   handle: string;
   definition: string;
   force: number;
@@ -238,7 +239,9 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ? kernel.productionSurges?.snapshot(id)
           : undefined;
         const powerDetails = inspectPower ? kernel.power?.details(id) : undefined;
+        const veterancy = kernel.veterancy?.snapshot(id, controlled);
         entities.push({
+          ...(veterancy && { veterancy }),
           ...(surge && { productionSurge: surge }),
           ...(controlled &&
             kernel.transport?.snapshot(id) && { cargo: kernel.transport.snapshot(id) }),
@@ -258,7 +261,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           ...(kernel.disabled?.(id) && { disabled: true }),
           ...(kernel.burning?.(id) && { burning: true }),
-          maxHealth: definition.health,
+          maxHealth: kernel.veterancy?.maxHealth(id, definition.health) ?? definition.health,
           ...(inspectRepair &&
             world.has(id, RepairCredit) && {
               repair: {
