@@ -231,8 +231,7 @@
   pointer-events: none;
   overflow: hidden;
 }
-.match-top,
-.match-controls {
+.match-top {
   pointer-events: auto;
   background: #202b35f5;
   border: 1px solid #62707d;
@@ -248,26 +247,212 @@
 .match-top strong {
   margin-right: auto;
 }
-.match-controls {
-  position: absolute;
-  left: 1rem;
-  bottom: 1rem;
-  padding: 1rem;
-  max-width: 38rem;
-  max-height: 35dvh;
-  overflow: auto;
+.hud-warning {
+  color: #ffc4b8;
 }
-.match-controls p {
+.match-hud {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 52dvh;
+  pointer-events: none;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.hud-panels,
+.hud-groups,
+.hud-panel-tabs,
+.hud-feedback:not(:empty) {
+  pointer-events: auto;
+  background: #202b35f5;
+  border-top: 1px solid #62707d;
+}
+.hud-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem minmax(0, 1.3fr);
+  min-height: 0;
+}
+.hud-panel-tabs {
+  display: none;
+}
+.hud-panels > section {
+  padding: 0.75rem;
+  overflow: auto;
+  min-width: 0;
+  max-height: 29dvh;
+}
+.hud-panels > section + section {
+  border-left: 1px solid #62707d;
+}
+.match-hud h2 {
+  font-size: 1rem;
   margin: 0 0 0.5rem;
 }
-.match-controls fieldset {
-  border: 0;
-  margin: 0;
-  padding: 0;
-  min-width: 0;
+.match-hud p {
+  margin: 0.35rem 0;
 }
-.match-controls .model-check-controls {
+.hud-selection [data-details] {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  margin-top: 0.6rem;
+}
+.hud-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.hud-command-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+.game-shell .hud-command-grid button {
+  padding: 0.35rem;
+  min-height: 2.75rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.game-shell .hud-command-grid button[aria-pressed="true"] {
+  background: #354754;
+  border-color: var(--accent);
+}
+.hud-catalog {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.game-shell .hud-recipe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.35rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  gap: 0.25rem;
+}
+.hud-recipe img {
+  object-fit: contain;
+}
+.hud-recipe small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.hud-build-panel [data-advice] {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+.hud-queue {
+  padding: 0;
+  list-style: none;
+  margin: 0 0 0.75rem;
+}
+.hud-queue:empty {
+  display: none;
+}
+.hud-sites > div {
+  padding-block: 0.5rem;
+  border-bottom: 1px solid #62707d;
+  margin-bottom: 0.5rem;
+}
+.game-shell .hud-sites button {
+  margin: 0.15rem;
+}
+.hud-queue li {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid #62707d;
+}
+.hud-queue li span {
+  flex: 1;
+}
+.hud-groups {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+}
+.hud-groups [data-groups] {
+  display: flex;
+  gap: 0.2rem;
+}
+.game-shell .hud-groups button,
+.game-shell .hud-groups select {
+  padding: 0.3rem 0.45rem;
+}
+.hud-groups label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.hud-feedback {
+  padding: 0 1rem;
+  max-height: 15dvh;
+  overflow: auto;
+}
+.hud-feedback:has([data-mode]:empty):has([data-result]:empty):has([data-requests]:empty) {
+  display: none;
+}
+.game-shell .hud-feedback button {
+  margin-inline-start: 0.5rem;
+}
+canvas[data-command-mode] {
+  cursor: crosshair;
+}
+@media (max-width: 1050px) {
+  .hud-panels {
+    grid-template-columns: minmax(0, 1fr) 18rem minmax(0, 1fr);
+  }
+  .hud-catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hud-groups {
+    max-height: 8rem;
+    overflow: auto;
+  }
+}
+@media (max-width: 750px) {
+  .hud-panel-tabs {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+  }
+  .hud-panels {
+    display: block;
+    overflow: auto;
+  }
+  .hud-panels > section {
+    max-height: 26dvh;
+  }
+  .match-hud[data-panel="selection"] .hud-command-panel,
+  .match-hud[data-panel="selection"] .hud-build-panel,
+  .match-hud[data-panel="commands"] .hud-selection,
+  .match-hud[data-panel="commands"] .hud-build-panel,
+  .match-hud[data-panel="build"] .hud-selection,
+  .match-hud[data-panel="build"] .hud-command-panel {
+    display: none;
+  }
+  .hud-groups > span {
+    display: none;
+  }
+  .hud-groups [data-groups] {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .hud-groups {
+    max-height: 10rem;
+  }
+  .hud-groups [data-groups] button {
+    flex-shrink: 0;
+  }
 }
 @media (max-width: 950px) {
   .setup-columns {
@@ -312,12 +497,5 @@
   }
   .match-top strong {
     width: 100%;
-  }
-  .match-controls {
-    left: 0.5rem;
-    right: 0.5rem;
-    bottom: 0.5rem;
-    max-width: none;
-    padding: 0.75rem;
   }
 }
