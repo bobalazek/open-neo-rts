@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
+
 // open-neo-rts CLI: tools that run without graphics. Usage: bun neo <command> [args]
 
+import { aiVsAi } from "./commands/ai-vs-ai";
 import { bench } from "./commands/bench";
 import { buildModels } from "./commands/build-models";
 import { generateSandboxMaps } from "./commands/generate-sandbox-maps";
@@ -15,6 +17,11 @@ import { validateContent } from "./commands/validate-content";
 type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
+  "ai-vs-ai": {
+    summary:
+      "Run real Training Grounds bots twice per seed; preserve evidence in --out <new-directory>",
+    run: aiVsAi,
+  },
   bench: {
     summary:
       "Measure flat sim/ECS or navigation [--workload flat|navigation] [--units N] [--ticks T]",

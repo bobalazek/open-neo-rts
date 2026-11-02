@@ -12,7 +12,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
-- [ ] [2-40 · Seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling; persistent runner/replay evidence and20 recorded seeds after normal opponent activation.
+- [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling after concrete bot fixes; persistent runner is implemented, but capped matches are incomplete and20 full-game outcomes remain unqualified.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.
 - [ ] [2-31b · Complete save/load, audio and rebinding settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine after the actual save/audio/input systems; the normal menu and core device preferences are implemented.
 - [ ] [2-32b2 · Replay actions and detailed results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after replay export/viewer and actual per-type/APM/history producers; canonical summary totals are displayed.

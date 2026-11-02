@@ -1,5 +1,30 @@
 # Testing strategy
 
+## Seeded normal bot matches
+
+`bun neo ai-vs-ai --out /tmp/neo-ai-evidence` runs the actual Eastern Collective
+mirror on Training Grounds with default normal rules, no debug commands and two
+hosted basic bots. The output directory must be new and its parent must exist.
+The default batch uses seeds 1–20 with a 30,000-tick cap (25 simulated minutes).
+`--seeds 7,11 --ticks 30000` selects a smaller explicit batch; bounds are 100
+distinct uint32 seeds and 1–216,000 ticks.
+
+Each seed runs twice and must match final hashes, periodic checkpoints, outcome,
+applied-command diagnostics and final bot state. The scenario is written before
+execution; the first result is preserved before verification. A divergence keeps
+the repeat and failure files, and stops the batch. `summary.json` updates after
+each seed. A game that reaches its cap without a canonical result is incomplete,
+even if reproducible: the command continues the batch and ultimately exits 1.
+All complete, reproducible games exit 0. Existing evidence is never overwritten.
+
+The versioned scenario embeds actual content identity, compiled definitions and
+map data, with hosted bots in setup and no injected external commands. Reproduce
+its checkpoints with `bun neo run seed-7.scenario.json --ticks 30000`; do not add
+the diagnostic bot commands to that scenario or they would run twice. These
+artifacts are full-input headless evidence, not snapshot saves, replay keyframes,
+an interactive viewer or a balance claim. Long qualification batches are explicit
+commands; the ordinary suite exercises only a bounded two-tick integration case.
+
 **Status:** proposed. It builds on the acceptance tests listed in [multiplayer.md](../design/multiplayer.md) §8 and [map-editor.md](map-editor.md) §10.
 
 The game is only as trustworthy as its determinism. Most of the testing effort goes into proving that the same inputs produce the same state, everywhere.
@@ -177,7 +202,7 @@ On a browser scenario golden mismatch, Playwright attaches two browser traces an
 ## 4. Tooling
 
 - **Runner:** `bun test` for everything that runs in Bun. **Playwright** for browser runs; it's a test tool, not a game dependency. Its specs are `apps/web/e2e/*.e2e.ts` (named so `bun test` ignores them), configured by the root `playwright.config.ts` and run with `bun run test:browsers`.
-- **CLI integration deadlines:** the repeated 10,000-tick golden replay and benchmark unit-count acceptance tests allow 15 seconds for cold child processes and warmup on shared CI runners. Their inputs, work and assertions stay fixed. This correctness-test deadline is separate from the renderer's 60 FPS acceptance gate.
+- **CLI integration deadlines:** the repeated 10,000-tick golden replay, benchmark unit-count acceptance and original-core AI runner integration tests allow 15 seconds for cold asset/child-process setup on shared CI runners. Their inputs, work and assertions stay fixed; the AI case reuses the CLI's real scenario artifact rather than loading/hashing the same pack twice. This correctness-test deadline is separate from the renderer's 60 FPS acceptance gate.
 - **CI:** GitHub Actions checks merged batches on `main`: `bun run check`, `typecheck`, `test`, `build`, content validation and cross-engine browser determinism. New pushes cancel an outdated main run, so delivery can proceed without waiting for the same suite on every small PR. Inspect the final batch's run and fix any failures before starting the next batch. The workflow can also be dispatched manually. Nightly fuzz, AI-vs-AI and benchmarks remain planned.
 - **Browser jobs:** Chromium, Firefox and WebKit run in separate matrix jobs with the same tests and a 25-minute aggregate budget for browser installation and the full software-WebGL suite. Individual journey deadlines and assertions remain unchanged. Linux Firefox uses headed Xvfb/Mesa for WebGL; the other engines remain headless. Keep smoke journeys bounded and use the existing initialization readiness budget for cold map loads, inside the normal test deadline.
 - **Fixtures:** `@open-neo-rts/sim/testing` exports fresh 8×8 `flatMap()` and `terrainMap()` inputs (the latter includes a plateau, ramp, water, surfaces and biomes), `easternCollectiveTier1Definitions()` (the seven original tier-1 unit JSON files converted to integers) and `createCommandLog()`. Each log has `move(tick, seat, entities, x, y)`, `stop(tick, seat, entities)`, `spawn(tick, seat, definition, force, x, y, facing = 0)` and `spawnArmy(tick, seat, count, definition, force, x, y, facing = 0)`. They return canonical commands, assigning sequences across seats and types from 0 per tick within that log; use one builder for each command log. Army spawning returns commands for N units at the same position, without changing the world. `scriptedController({ [issueTick]: commands })` returns a controller for `registerController`: it emits at the issue tick, and the kernel executes those commands on the following tick.
