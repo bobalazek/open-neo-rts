@@ -51,6 +51,165 @@ for (const force of setup.normal.forces)
 const tank = "core.unit:eastern-collective/dragon-tank";
 const apc = "core.unit:eastern-collective/metamorphic-apc";
 
+test("paid original infantry earn industrial capacity and activate the authored Force Surge through HUD and replay", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded original-catalog HUD integration");
+  test.setTimeout(90_000);
+  const candidate = structuredClone(setup);
+  candidate.normal.settings.fog = "off";
+  candidate.normal.forces[0].start.units = [
+    { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
+  ];
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://industrial-surge.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>Industrial production</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  await page.goto("http://industrial-surge.test/");
+  await page.evaluate(async (setup) => {
+    const moduleUrl = "/fixture.js";
+    const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+    window.deployFixture = await start(setup);
+    window.deployFixture.select(["core.structure:eastern-collective/command-center"]);
+  }, candidate);
+  try {
+    const surge = page.locator("[data-surge]");
+    await expect(surge).toHaveText("Mass Production Surge");
+    await expect(surge).toBeDisabled();
+    await expect(surge).toHaveAttribute("title", /20 industrial capacity/i);
+    const earned = await page.evaluate(async () => {
+      const f = window.deployFixture;
+      const barracks = "core.structure:eastern-collective/barracks-complex";
+      const infantry = "core.unit:eastern-collective/collective-soldier";
+      const builders = f
+        .state()!
+        .snapshot.entities.filter(
+          (row) => row.force === 0 && row.definition.endsWith("/field-technician"),
+        )
+        .map((row) => row.handle);
+      const built = await f.command("economy.build", {
+        definition: barracks,
+        force: 0,
+        builders,
+        x: 22 * 1024,
+        y: 18 * 1024,
+        facing: 16384,
+      });
+      const producer = () =>
+        f
+          .state()!
+          .snapshot.entities.find(
+            (row) => row.force === 0 && row.definition === barracks && !row.constructionSite,
+          );
+      for (let tick = 0; tick < 600 && !producer(); tick++) await f.step(1);
+      const handle = producer()?.handle;
+      if (!handle) throw new Error("Original Barracks did not complete");
+      const rally = await f.command("production.rally", {
+        entity: handle,
+        x: 30 * 1024 + 512,
+        y: 22 * 1024 + 512,
+      });
+      const units = () =>
+        f
+          .state()!
+          .snapshot.entities.filter((row) => row.force === 0 && row.definition === infantry);
+      const receipts: unknown[] = [];
+      for (let tick = 0; tick < 1800 && units().length < 20; tick++) {
+        if (receipts.length < 20 && (producer()?.production?.queue.length ?? 5) < 5)
+          receipts.push(
+            await f.command("production.enqueue", { entity: handle, definition: infantry }),
+          );
+        else await f.step(1);
+      }
+      f.select(["core.structure:eastern-collective/command-center"]);
+      return {
+        built,
+        rally,
+        receipts,
+        count: units().length,
+        bank: f.state()!.snapshot.banks?.find((row) => row.force === 0)?.resources,
+        handle,
+      };
+    });
+    expect(earned.built).toBe("accepted");
+    expect(earned.rally).toBe("accepted");
+    expect(earned.receipts).toEqual(Array.from({ length: 20 }, () => "accepted"));
+    expect(earned.count).toBe(20);
+    expect(earned.bank?.credits).toBe(2500);
+    expect(earned.bank?.["industrial-capacity"]).toBe(20);
+    await expect(surge).toBeEnabled();
+    const before = await page.evaluate(async (handle) => {
+      const f = window.deployFixture;
+      for (let i = 0; i < 2; i++) {
+        const result = await f.command("production.enqueue", {
+          entity: handle,
+          definition: "core.unit:eastern-collective/collective-soldier",
+        });
+        if (result !== "accepted") throw new Error(`Queue failed: ${result}`);
+      }
+      const snapshot = f.state()!.snapshot;
+      return {
+        tick: snapshot.tick,
+        queue: snapshot.entities.find((row) => row.handle === handle)?.production?.queue,
+      };
+    }, earned.handle);
+    await surge.click();
+    await expect(surge).toHaveAttribute("aria-pressed", "true");
+    await expect(surge).toBeDisabled();
+    await expect(page.locator("[data-details]")).toContainText("Production +50%");
+    const active = await page.evaluate((handle) => {
+      const snapshot = window.deployFixture.state()!.snapshot;
+      return {
+        provider: snapshot.entities.find((row) => row.productionSurge)?.productionSurge,
+        bank: snapshot.banks?.find((row) => row.force === 0)?.resources,
+        queue: snapshot.entities.find((row) => row.handle === handle)?.production?.queue,
+      };
+    }, earned.handle);
+    expect(active.provider).toMatchObject({
+      id: "production-surge",
+      until: before.tick + 400,
+      readyAt: before.tick + 2400,
+      perMille: 1500,
+    });
+    expect(active.bank?.["industrial-capacity"]).toBe(0);
+    expect(active.bank?.credits).toBe(2300);
+    expect(active.queue).toHaveLength(2);
+    active.queue!.forEach((item, index) => {
+      const prior = before.queue![index]!;
+      expect(
+        (item.completedTicks - prior.completedTicks) * 1000 + item.remainder - prior.remainder,
+      ).toBe(1500);
+    });
+    const expired = await page.evaluate(async (until) => {
+      const f = window.deployFixture;
+      while (f.state()!.snapshot.tick <= until) await f.step(1);
+      return f.state()!.snapshot.banks?.find((row) => row.force === 0)?.resources;
+    }, active.provider!.until);
+    expect(expired?.["industrial-capacity"]).toBe(2);
+    await expect(surge).toHaveAttribute("aria-pressed", "false");
+    await expect(surge).toBeDisabled();
+    expect(
+      await page.evaluate(() => window.deployFixture.command("match.surrender", { force: 0 })),
+    ).toBe("accepted");
+    const record = parseMatchRecord(await page.evaluate(() => window.deployFixture.record()));
+    expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+    expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(() => window.deployFixture.dispose());
+  }
+});
+
 test("authored Siege and Bunker modes work through the actual worker and HUD", async ({
   page,
 }, info) => {

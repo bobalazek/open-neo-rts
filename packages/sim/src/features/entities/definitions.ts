@@ -446,7 +446,7 @@ export function toDefinition(content: {
   extraction?: Definition["extraction"];
   blocks?: string;
   power?: number;
-  productionReward?: Definition["productionReward"];
+  productionReward?: { resource: string; amount: number; cap: number };
   tags?: readonly string[];
   adjacency?: readonly {
     tags: readonly string[];

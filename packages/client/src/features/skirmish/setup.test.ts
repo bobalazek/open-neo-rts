@@ -80,6 +80,7 @@ test("normal defaults activate the real core bot opponent and grant both control
   expect(setup.debug).toBe(false);
   expect(setup.normal?.bots).toEqual([{ seat: 2, kind: "basic-skirmish", force: 1 }]);
   expect(setup.normal?.gameplayHash).toBe(catalog.gameplayHash);
+  expect(setup.grants.every((grant) => grant.scopes.includes("commander.abilities"))).toBe(true);
   expect(setup.map.terrain.level).toEqual([...grid.level]);
   expect(
     setup.grants.map((grant) => [grant.seat, grant.force, grant.scopes.includes("surrender")]),

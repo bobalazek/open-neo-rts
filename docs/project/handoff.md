@@ -112,8 +112,47 @@ Continue non-damage effects, wreck/salvage/lifecycle presentation, required tier
 
 Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; legacy `/?map=...` remains. CI pulls original core LFS bytes for actual identity. Never replace assets with pointers/synthetic identity bytes; incomplete installs preserve Home/debug and refuse Start.
 
-## Industrial production engine, SIM43 candidate
+## Industrial production engine, SIM43 merged
 
 `/tmp/neo-industrial-surge`, branch `codex/industrial-surge-engine`, delivers 2-45b: capped rewards only after paid legal unit output; explicit Force-scoped Surge compilation; atomic current-Commander activation; canonical Force effect/cooldown surviving provider loss; exact 1500/750/0 production rates retaining work fractions. Commander-only handles/private cooldown do not reveal banks or production. Selected HUD uses the authored name/cost, cooldown and duration. [Contract](./decisions/2026-11-02-provisional-industrial-surge.md). Original catalog is intentionally inactive until the separate faction task 2-45c. No free mode-toggle cost changes.
 
-Repository fix/typecheck/test/build/content checks pass; original catalog identities and no-bot goldens remain unchanged. Independent review is in progress; actual original-catalog earning/Surge browser proof belongs to the activation slice. Hosted CI remains unavailable because of account billing/spending limits. All phases remain incomplete; do not restart FPS/native-key profiling or ask routine design questions.
+Repository fix/typecheck/test/build/content checks pass; original catalog identities and no-bot goldens remain unchanged. Independent review reproduced and closed the boosted-brownout label error: preserve base power rate500 for status while actual work is750. The permanent regression and `/tmp/neo-surge-brownout-review.ts` both pass. Review accepted the bounded engine. PR #220 merged at ad13de2bb0fbf41520d158ef81fd4b68e30a04ca with an identical tree to reviewed 4e32441. Hosted CI remains unavailable because of account billing/spending limits.
+
+## Authored industrial activation, SIM44 candidate
+
+`/tmp/neo-industrial-activation`, branch `codex/industrial-surge-content`,
+activates the original headquarters Surge Force scope and provisional 1-IC,
+cap-100 rewards on the Command Center, Barracks Complex and War Factory.
+Skirmish/CLI seats receive Commander permission; the basic bot does not yet
+spend capacity. Base prices, starting kits, assets, weapon values and approved
+free mode costs are preserved. The raw converter accepts JSON-inferred strings
+and still validates the resulting reward resource/bounds. The static debug
+scenario's War Factory metadata was updated by hand.
+
+Minimal normal fixture goldens are now 8a7d7a02533ce677/c6280e498456066f because
+canonical startup identity includes the new headquarters reward metadata;
+debug digests stay unchanged. The actual catalog validates 137 definitions and
+833 assets: gameplay 97ddd2a140545413, cosmetic 8c190e7bcead16ad. Cosmetic
+identity includes whole definition JSON.
+
+Final fix/typecheck/test/build/content checks pass. All seven original-catalog
+worker/HUD Chromium journeys passed together in 30.3 seconds. The new one
+builds a paid Barracks Complex with actual builders, trains 20 original
+100-credit infantry through legal exits/rally, verifies 2500 credits/20 IC,
+queues two more for 2300 credits, clicks authored Surge and verifies payment
+to 0 IC plus exact 1500 work. Expiry leaves 2 IC; surrender and terminal Bun
+replay reproduce the final hash. No IC injection or substituted content
+numbers. Test-only kits/fogOff and stubbed renderer picking remain explicit;
+physical transformation/flame animations are not proved. Independent bounded
+activation review accepted. Browser cooldown metadata is checked, but its
+post-expiry disabled button is also unfunded; engine cases isolate cooldown
+refusal. Hosted CI still cannot start because of account billing/spending
+limits. Local Firefox remains unavailable because of its profile launch error.
+
+The fixed-source SIM39 qualification is still running; through seed 13, nine
+matches ended naturally and four reproducibly capped (6, 7, 10, 12). Preserve
+that batch/source/log; historical SIM39 outcomes are not SIM44 acceptance.
+All phases remain incomplete. Next functional work includes veterancy,
+remaining effects, mode/door/wreck presentation and complete persistence/replay,
+then the remaining roadmap phases. Do not restart FPS/native-key profiling or
+ask routine approval questions.

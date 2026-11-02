@@ -108,7 +108,13 @@ export async function aiMatchScenario(seed: number): Promise<Scenario> {
       seat: force + 1,
       force,
       grantedAtTick: 0,
-      scopes: ["unit.orders", "economy.build", "production.queue", "surrender"],
+      scopes: [
+        "unit.orders",
+        "economy.build",
+        "production.queue",
+        "commander.abilities",
+        "surrender",
+      ],
     })),
   });
   return parseScenario({ format: SCENARIO_FORMAT, simVersion: SIM_VERSION, setup, commands: [] });

@@ -4,6 +4,7 @@
   "name": "Command Center",
   "description": "Primary base structure with its own defensive guns. Builds structures.",
   "role": "headquarters",
+  "productionReward": { "resource": "industrial-capacity", "amount": 1, "cap": 100 },
   "health": 4500,
   "armor": "structure",
   "footprint": [3, 3],
@@ -46,6 +47,7 @@
         {
           "type": "modifyStat",
           "stat": "productionSpeed",
+          "scope": "force",
           "percent": 150,
           "duration": 20
         }
