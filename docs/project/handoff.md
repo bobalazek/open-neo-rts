@@ -40,3 +40,12 @@ focused and full repository/content checks pass. Five exact worker journeys now
 include rifle damage/death and opaque event actors. Cosmetic events remain human
 presentation output and are excluded from canonical bot observations. Non-damage
 warheads/statuses, wrecks/salvage and full phase acceptance remain open.
+
+
+Task 2-24/2-25 first basic policy is integrated under SIM29: real paid build order,
+hauling/extraction/production, explored scouting, legal target attacks and retreat.
+Only public definitions and permitted copied observations reach AI. Independent
+review found and closed structure-centre range handling; full repository/content
+batch passes on projectile28. Small original-gameplay fixture proof is not full
+Training Grounds or complete-match acceptance. Normal UI opponent activation and
+qualification remain 2-24b; full defeat/statistics/post-match work remains open.

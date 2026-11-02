@@ -343,3 +343,43 @@ test("worker replies validate bounded private production queues, work and point 
   ])
     expect(isWorkerReply(powerReply([power], [{ ...entity, production: malformed }]))).toBe(false);
 });
+
+test("discovered resource origins require exact public fields and a permitted explored cell", () => {
+  const cells = new Uint8Array(16);
+  cells[5] = 1;
+  cells[6] = 2;
+  const node = { kind: "materials", x: 1024, y: 1024 };
+  const packet = (resourceNodes: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 0,
+        mode,
+        entities: [],
+        fog: [{ group: 1, width: 4, height: 4, cells }],
+        ghosts: [],
+        resourceNodes,
+      },
+    },
+  });
+  expect(isWorkerReply(packet([node, { ...node, kind: "oil", x: 2048 }]))).toBe(true);
+  for (const bad of [
+    null,
+    {},
+    [null],
+    [node, node],
+    [{ ...node, x: 0 }],
+    [{ ...node, x: 4096 }],
+    [{ ...node, x: 1025 }],
+    [{ ...node, y: -1024 }],
+    [{ ...node, kind: "ore" }],
+    [{ ...node, remaining: 10 }],
+    [Object.assign(Object.create(node), node)],
+    [{ ...node, [Symbol("extra")]: 1 }],
+    Array(1),
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet([node], "debug-no-fog"))).toBe(false);
+});
