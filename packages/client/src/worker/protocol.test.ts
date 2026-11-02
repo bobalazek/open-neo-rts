@@ -45,6 +45,19 @@ test("worker replies accept bounded copied stock banks and retain bank-free debu
   expect(isWorkerReply(reply([{ force: 1, resources }], "debug-no-fog"))).toBe(false);
 });
 
+test("worker pacing accepts normal Slow/Fast speeds while retaining debug speeds", () => {
+  for (const speed of [0.25, 0.5, 0.75, 1, 1.5, 2, 4, 8]) {
+    const value = reply([]);
+    value.state.speed = speed;
+    expect(isWorkerReply(value)).toBe(true);
+  }
+  for (const speed of [0, 1.1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const value = reply([]);
+    value.state.speed = speed;
+    expect(isWorkerReply(value)).toBe(false);
+  }
+});
+
 test("worker replies reject forged bank values, unknown/capacity/prototype keys and duplicate Forces", () => {
   for (const malformed of [
     null,

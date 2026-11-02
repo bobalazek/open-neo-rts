@@ -10,6 +10,7 @@ import {
 } from "./protocol";
 
 export type { OfflineSetup, OfflineState, PlacementDiagnostic } from "./protocol";
+export { NORMAL_GAME_SPEEDS } from "./protocol";
 
 /** One worker per match. Disposal rejects outstanding requests and ignores late replies. */
 export function createOfflineMatch(

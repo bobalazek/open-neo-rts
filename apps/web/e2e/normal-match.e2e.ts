@@ -182,6 +182,18 @@ test("normal worker starts the kit, constructs with builders and keeps debug gat
         );
         await match.init({ setup, seat: 1, mode: "controlled" });
         const initial = state;
+        const pacing: number[] = [];
+        for (const speed of [0.75, 1.5]) {
+          await match.speed(speed);
+          pacing.push(state?.speed ?? -1);
+        }
+        const debugSpeedRefused = await match.speed(8).then(
+          () => false,
+          () => true,
+        );
+        const pacingUnchanged =
+          JSON.stringify(state?.snapshot) === JSON.stringify(initial?.snapshot);
+        await match.speed(1);
         const gated = await match.command("debug.spawn", {
           definition: setup.definitions[0]?.id,
           force: 0,
@@ -272,6 +284,9 @@ test("normal worker starts the kit, constructs with builders and keeps debug gat
         );
         return {
           failed,
+          pacing,
+          debugSpeedRefused,
+          pacingUnchanged,
           initial,
           gated,
           result,
@@ -303,6 +318,9 @@ test("normal worker starts the kit, constructs with builders and keeps debug gat
     { client, setup },
   );
   expect(actual.failed).toBe(true);
+  expect(actual.pacing).toEqual([0.75, 1.5]);
+  expect(actual.debugSpeedRefused).toBe(true);
+  expect(actual.pacingUnchanged).toBe(true);
   expect(actual.initial?.snapshot.entities).toHaveLength(7);
   expect(actual.initial?.snapshot.entities.every((entity) => entity.force === 0)).toBe(true);
   expect(actual.initial?.hash).toBeUndefined();

@@ -43,8 +43,12 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   let goal = camera.radius;
   const keys = new Set<string>();
   let pointer: { x: number; y: number } | null = null;
-  let drag: { button: number; x: number; y: number; moved: boolean } | null = null;
+  let drag: { id: number; button: number; x: number; y: number; moved: boolean } | null = null;
   let selecting = false;
+  let enabled = true;
+  let panSpeed = 1,
+    edgeScroll = true,
+    reducedMotion = false;
 
   // right and forward in metres, relative to the view direction on the ground.
   const pan = (right: number, forward: number) => {
@@ -60,7 +64,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   window.addEventListener(
     "keydown",
     (e) => {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!enabled || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
       if (
         e.target instanceof Element &&
         e.target.closest("input, select, textarea, button, a, [contenteditable]")
@@ -90,10 +94,11 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "pointerdown",
     (e) => {
+      if (!enabled) return;
       if (e.button === 0) selecting = true;
       if (e.button !== 1 && e.button !== 2) return;
       e.preventDefault();
-      drag = { button: e.button, x: e.clientX, y: e.clientY, moved: false };
+      drag = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, moved: false };
       canvas.setPointerCapture(e.pointerId);
     },
     { signal },
@@ -101,6 +106,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "pointermove",
     (e) => {
+      if (!enabled) return;
       pointer = { x: e.offsetX, y: e.offsetY };
       if (!drag) return;
       const dx = e.clientX - drag.x;
@@ -122,8 +128,11 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     { signal },
   );
   const release = () => {
+    const pointerId = drag?.id;
     drag = null;
     selecting = false;
+    if (pointerId !== undefined && canvas.hasPointerCapture(pointerId))
+      canvas.releasePointerCapture(pointerId);
   };
   canvas.addEventListener("pointerup", release, { signal });
   window.addEventListener("pointerup", release, { signal });
@@ -134,6 +143,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "wheel",
     (e) => {
+      if (!enabled) return;
       e.preventDefault();
       goal = clamp(goal * Math.exp(e.deltaY * ZOOM_STEP), MIN_DISTANCE, MAX_DISTANCE);
     },
@@ -141,6 +151,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   );
 
   scene.onBeforeRenderObservable.add(() => {
+    if (!enabled) return;
     const dt = Math.min(scene.getEngine().getDeltaTime() / 1000, 0.1);
     let right = 0;
     let forward = 0;
@@ -151,19 +162,36 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
         forward += v[1];
       }
     }
-    if (pointer && !drag && !selecting) {
+    if (edgeScroll && pointer && !drag && !selecting) {
       if (pointer.x < EDGE) right -= 1;
       if (pointer.x > canvas.clientWidth - EDGE) right += 1;
       if (pointer.y < EDGE) forward += 1;
       if (pointer.y > canvas.clientHeight - EDGE) forward -= 1;
     }
-    const speed = camera.radius * PAN_SPEED * dt;
+    const speed = camera.radius * PAN_SPEED * panSpeed * dt;
     if (right || forward) pan(Math.sign(right) * speed, Math.sign(forward) * speed);
-    camera.radius += (goal - camera.radius) * (1 - Math.exp(-ZOOM_SMOOTHING * dt));
+    camera.radius = reducedMotion
+      ? goal
+      : camera.radius + (goal - camera.radius) * (1 - Math.exp(-ZOOM_SMOOTHING * dt));
     const t = (camera.radius - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
     camera.beta = PITCH_NEAR + (PITCH_FAR - PITCH_NEAR) * t;
   });
   return Object.assign(camera, {
+    setInputEnabled(value: boolean) {
+      enabled = value;
+      keys.clear();
+      pointer = null;
+      release();
+      goal = camera.radius;
+    },
+    setControls(options: { panSpeed: number; edgeScroll: boolean; reducedMotion: boolean }) {
+      if (!Number.isFinite(options.panSpeed) || options.panSpeed < 0.5 || options.panSpeed > 2)
+        throw new RangeError("Invalid camera speed");
+      panSpeed = options.panSpeed;
+      edgeScroll = options.edgeScroll;
+      reducedMotion = options.reducedMotion;
+      pointer = null;
+    },
     panTo(x: number, z: number, height = target.y) {
       target.set(clamp(x, bounds.minX, bounds.maxX), height, clamp(z, bounds.minZ, bounds.maxZ));
       keys.clear();
