@@ -222,6 +222,40 @@ export function createNormalSession(
       root
         .querySelector("[data-leave]")
         ?.addEventListener("click", leave, { signal: signal.signal });
+      const surrender = document.createElement("button");
+      surrender.type = "button";
+      surrender.textContent = text("ui.result.surrender");
+      root.querySelector(".match-top")?.append(surrender);
+      surrender.addEventListener(
+        "click",
+        async () => {
+          if (
+            busy ||
+            disposed ||
+            latest?.snapshot.victory?.result ||
+            !window.confirm(text("ui.result.confirm-surrender"))
+          )
+            return;
+          busy = true;
+          surrender.disabled = true;
+          try {
+            hud?.cancel();
+            await activeMatch.pause(false);
+            if (disposed) return;
+            const result = await activeMatch.command("match.surrender", { force: 0 });
+            if (disposed) return;
+            if (result !== "accepted" && !latest?.snapshot.victory?.result) {
+              surrender.textContent = text("ui.result.surrender-refused");
+              surrender.disabled = false;
+            }
+          } catch (error) {
+            failed(error);
+          } finally {
+            busy = false;
+          }
+        },
+        { signal: signal.signal },
+      );
       footprint = createPlacementOverlay(renderer.scene, loaded.grid, "#81d4ed");
       hud = createMatchHud(
         canvas,
@@ -260,7 +294,8 @@ export function createNormalSession(
       bindSelectionInput(
         canvas,
         {
-          enabled: () => ready && !disposed && !busy && !latest?.snapshot.victory?.result && !hud?.targeting(),
+          enabled: () =>
+            ready && !disposed && !busy && !latest?.snapshot.victory?.result && !hud?.targeting(),
           selected: activePresentation.selection,
           select: activePresentation.select,
           pick: activePresentation.pick,
@@ -271,7 +306,12 @@ export function createNormalSession(
       window.addEventListener(
         "keydown",
         (event) => {
-          if (event.code === "Escape" && !event.defaultPrevented && ready && !latest?.snapshot.victory?.result) {
+          if (
+            event.code === "Escape" &&
+            !event.defaultPrevented &&
+            ready &&
+            !latest?.snapshot.victory?.result
+          ) {
             event.preventDefault();
             if (hud?.cancel()) return;
             if (activePresentation.selection().length) {

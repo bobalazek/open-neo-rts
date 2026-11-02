@@ -66,3 +66,12 @@ batch (normal start/cancel/retry plus HUD) passed in 15.1 seconds, including a r
 900-credit Reactor site/refund and 450-credit Field Technician queue/refund.
 Desktop and 390px screenshots are inspected. Publication/CI follows; minimap and
 full UI-scale qualification remain separate.
+
+Task 2-32a displays the actual canonical winner/draw, Force defeat/surrender and
+terminal duration over the retained final scene. The modal contains focus and
+ignores Escape; match input cannot resume a terminal simulation. Surrender uses
+the real granted worker command even from pause. Rematch creates a fresh worker
+with the same setup and Home disposes it. A real authored normal browser journey
+proves surrender, frozen result, repeated end, two-worker rematch and Home cleanup
+in11.1s, with desktop/mobile captures. Statistics and replay actions remain later
+tasks; no invented totals or unsupported controls are displayed.
