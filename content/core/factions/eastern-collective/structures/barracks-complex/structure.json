@@ -11,6 +11,8 @@
   "health": 1400,
   "armor": "structure",
   "footprint": [3, 2],
+  "productionSlots": 2,
+  "exits": [{ "side": "south", "cell": [0, 1] }, { "side": "south", "cell": [2, 1] }],
   "power": -10,
   "vision": 6,
   "presentation": {

@@ -134,6 +134,7 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
     construction: null,
     power: 20,
     produces: [unitId("field-technician")],
+    exits: [{ side: "south", cell: [1, 2] }],
     abilities: [
       {
         cooldownTicks: 2400,
@@ -161,13 +162,31 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
       .map(structureId)
       .concat("core.structure:neutral/resource-extractor"),
   );
-  expect(definitions.get(structureId("barracks-complex"))?.produces).toEqual(
-    ["collective-soldier", "drone-hunter", "rocket-trooper"].map(unitId),
-  );
+  expect(definitions.get(structureId("barracks-complex"))).toMatchObject({
+    produces: ["collective-soldier", "drone-hunter", "rocket-trooper"].map(unitId),
+    productionSlots: 2,
+    exits: [
+      { side: "south", cell: [0, 1] },
+      { side: "south", cell: [2, 1] },
+    ],
+  });
+  expect(definitions.get(structureId("war-factory"))).toMatchObject({
+    produces: ["dragon-tank", "metamorphic-apc", "supply-truck"].map(unitId),
+    exits: [{ side: "south", cell: [1, 2] }],
+  });
   expect(definitions.get(structureId("supply-depot"))).toMatchObject({
     dock: true,
     spawnsWith: [unitId("supply-truck")],
+    exits: [{ side: "south", cell: [1, 2] }],
   });
+  for (const name of ["command-center", "supply-depot", "war-factory"])
+    expect(definitions.get(structureId(name))?.productionSlots ?? 1).toBe(1);
+  for (const definition of compiled.definitions)
+    for (const id of [...definition.produces, ...definition.spawnsWith]) {
+      expect(definitions.get(id)).toMatchObject({ kind: "unit" });
+      expect(definitions.get(id)?.pop).toBeGreaterThanOrEqual(0);
+      expect(definitions.get(id)?.radiusSubcells).toBeGreaterThan(0);
+    }
   expect(definitions.get(structureId("industrial-reactor"))?.adjacency).toEqual([
     { tags: ["power"], radiusSubcells: 1024, stat: "power", perMille: 1100, maxSources: 3 },
   ]);
@@ -374,4 +393,32 @@ test("unimplemented era selection and ambiguous effect quantities fail explicitl
       resolvePacks([pack("core", [{ ...factory, abilities: [ability] }])], "0.1.0"),
     ),
   ).toThrow("Unsupported gameplay effect amount");
+});
+
+test("production capacity and exit cells remain authored data through compilation", () => {
+  const edited = roster.map((definition) =>
+    definition.id === barracks.id
+      ? {
+          ...definition,
+          productionSlots: 2,
+          exits: [
+            { side: "south", cell: [0, 1] },
+            { side: "south", cell: [2, 1] },
+          ],
+        }
+      : definition,
+  );
+  const compiled = compileGameplayCatalog(resolvePacks([pack("core", edited)], "0.1.0"));
+  const definition = compiled.definitions.find(
+    (definition) => definition.id === `core.${barracks.id}`,
+  );
+  expect(definition?.productionSlots).toBe(2);
+  expect(definition?.exits).toEqual([
+    { side: "south", cell: [0, 1] },
+    { side: "south", cell: [2, 1] },
+  ]);
+  expect(definition?.produces).toContain(`core.${soldier.id}`);
+  expect(() => toDefinition({ ...barracks, exits: [{ side: "south", cell: [0, 0] }] })).toThrow(
+    "exit cell must be on its declared footprint side",
+  );
 });

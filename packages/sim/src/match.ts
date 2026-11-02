@@ -21,6 +21,7 @@ import {
 } from "./features/entities";
 import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
+import { productionFeature } from "./features/production";
 import { createKernel, type Kernel, register } from "./kernel";
 import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
 
@@ -32,7 +33,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 16;
+export const SIM_VERSION = 18;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -84,6 +85,18 @@ export function createMatch(setup: MatchSetup): Kernel {
       ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
       ...(definition.requires && { requires: Object.freeze([...definition.requires]) }),
       ...(definition.builds && { builds: Object.freeze([...definition.builds]) }),
+      ...(definition.produces && { produces: Object.freeze([...definition.produces]) }),
+      ...(definition.spawnsWith && { spawnsWith: Object.freeze([...definition.spawnsWith]) }),
+      ...(definition.exits && {
+        exits: Object.freeze(
+          definition.exits.map((exit) =>
+            Object.freeze({
+              side: exit.side,
+              cell: Object.freeze([...exit.cell]) as readonly [number, number],
+            }),
+          ),
+        ),
+      }),
       ...(definition.construction && {
         construction: Object.freeze({
           cost: Object.freeze({ ...definition.construction.cost }),
@@ -111,5 +124,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeExtraction(kernel, definitions);
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
+  if (setup.normal) register(kernel, productionFeature({ ...setup, definitions }));
   return kernel;
 }

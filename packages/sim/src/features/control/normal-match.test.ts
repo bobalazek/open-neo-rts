@@ -131,6 +131,7 @@ test("normal setup preserves data-defined extractor rates and copies their immut
     role: "extractor",
     power: -10,
     footprint: [2, 2],
+    exits: undefined,
     nodeKinds: ["materials"],
     extraction: { materials: { resource: "materials", amountPerSecond: 1 } },
   };
@@ -162,7 +163,7 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"8257214c396e5970"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"591ee483e603a15d"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -233,7 +234,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "d66fd6da6a662ec8",
+        "hash": "e42e33c5cd6e2094",
         "tick": 2,
       },
     ]

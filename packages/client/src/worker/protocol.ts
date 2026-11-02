@@ -9,7 +9,7 @@ import type {
   SeatSnapshot,
   SpawnPlacement,
 } from "@open-neo-rts/sim";
-import { CONSTRUCTION_REFUSALS, EXTRACTION_STATUSES } from "@open-neo-rts/sim";
+import { CONSTRUCTION_REFUSALS, EXTRACTION_STATUSES, PRODUCTION_STATUSES } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
   /** Tick evaluated by the authoritative checker. */
@@ -404,6 +404,59 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.production !== undefined) {
+      const production = entity.production;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(production) ||
+        Object.getPrototypeOf(production) !== Object.prototype ||
+        Reflect.ownKeys(production).length !== 3 ||
+        !Number.isInteger(production.slots) ||
+        Number(production.slots) < 1 ||
+        Number(production.slots) > 5 ||
+        !Array.isArray(production.queue) ||
+        production.queue.length > 1005 ||
+        ![...production.queue].every((item: unknown) => {
+          if (
+            !isRecord(item) ||
+            Object.getPrototypeOf(item) !== Object.prototype ||
+            Reflect.ownKeys(item).length !== 8 ||
+            typeof item.handle !== "string" ||
+            typeof item.definition !== "string" ||
+            !/^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(item.definition) ||
+            typeof item.gift !== "boolean" ||
+            typeof item.state !== "string" ||
+            !PRODUCTION_STATUSES.some((state) => state === item.state) ||
+            ![item.completedTicks, item.remainder, item.totalTicks].every(Number.isInteger) ||
+            Number(item.totalTicks) < 0 ||
+            Number(item.totalTicks) > 0x7fffffff ||
+            Number(item.completedTicks) < 0 ||
+            Number(item.completedTicks) > Number(item.totalTicks) ||
+            Number(item.remainder) < 0 ||
+            Number(item.remainder) > 999 ||
+            (item.completedTicks === item.totalTicks && item.remainder !== 0)
+          )
+            return false;
+          return (
+            item.slot === null ||
+            (Number.isInteger(item.slot) &&
+              Number(item.slot) >= 1 &&
+              Number(item.slot) <= Number(production.slots))
+          );
+        }) ||
+        (production.rally !== null &&
+          (!isRecord(production.rally) ||
+            Reflect.ownKeys(production.rally).length !== 2 ||
+            !point(production.rally)))
+      )
+        return false;
+      const queue = production.queue as { handle: string; gift: boolean }[];
+      if (
+        queue.filter((item) => !item.gift).length > 5 ||
+        new Set(queue.map((item) => item.handle)).size !== queue.length
+      )
+        return false;
+    }
     if (entity.construction !== undefined) {
       const progress = entity.construction;
       if (

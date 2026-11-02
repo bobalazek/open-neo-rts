@@ -740,6 +740,48 @@
         "description": "unit ID"
       }
     },
+    "productionSlots": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "simultaneously active unit items; total player queue limit is five"
+    },
+    "exits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          },
+          "cell": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 7
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "side",
+          "cell"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
     "dock": {
       "type": "boolean"
     },

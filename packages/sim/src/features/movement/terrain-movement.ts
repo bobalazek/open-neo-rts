@@ -205,6 +205,11 @@ export class TerrainMovement {
 
   /** Certified exterior work positions use the same radius/domain/occupancy grid as normal orders. */
   canStand(id: number, point: Point): boolean {
+    return this.canStandDefinition(this.definitionOf(id), point);
+  }
+
+  /** Production checks an unspawned unit against the same original navigation profile. */
+  canStandDefinition(definition: number, point: Point): boolean {
     const map = this.kernel.map;
     if (
       !map ||
@@ -216,8 +221,8 @@ export class TerrainMovement {
       point.y % 1024 !== 512
     )
       return false;
-    if (this.definitions[this.definitionOf(id)]?.domain === "air") return false;
-    return !!this.profile(this.definitionOf(id)).grid.cost[this.cell(point)];
+    if (this.definitions[definition]?.domain === "air") return false;
+    return !!this.profile(definition).grid.cost[this.cell(point)];
   }
 
   private plan(id: number, target: Point, kind: "order" | "repath", repaths: number): void {

@@ -12,6 +12,7 @@
   "health": 2600,
   "armor": "structure",
   "footprint": [3, 3],
+  "exits": [{ "side": "south", "cell": [1, 2] }],
   "power": -40,
   "vision": 6,
   "presentation": {

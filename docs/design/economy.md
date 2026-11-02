@@ -37,7 +37,7 @@ that mint resources. The owning construction/production lifecycle must ensure a
 paid item is refunded only once. Seat snapshots copy only economically permitted
 banks; other Forces' balances remain private.
 
-- Costs are paid **when production or construction starts**, not reserved earlier. If two co-controllers spend in the same tick, the server order decides, and only what's affordable goes through ([multiplayer.md §8](multiplayer.md#8-adversarial-and-acceptance-tests)).
+- Costs are paid **when production or construction starts**, not reserved earlier. Immediate construction payments follow canonical command order during ingest. Free production enqueueing does not reserve funds: eligible queued starts pay later in the economy phase, in enqueue order across producers. Only affordable work starts ([multiplayer.md §8](multiplayer.md#8-adversarial-and-acceptance-tests)).
 - **Cancel** refunds 100% of what was paid. **Sell** refunds 50% of a structure's cost. Repair costs credits over time and pauses when broke.
 - **Low funds:** production pauses (not cancels) and resumes when credits arrive.
 

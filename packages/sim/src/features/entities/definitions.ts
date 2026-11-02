@@ -34,6 +34,14 @@ export interface Definition {
   } | null;
   requires?: readonly string[];
   builds?: readonly string[];
+  produces?: readonly string[];
+  spawnsWith?: readonly string[];
+  pop?: number;
+  productionSlots?: number;
+  exits?: readonly {
+    readonly side: "north" | "east" | "south" | "west";
+    readonly cell: readonly [number, number];
+  }[];
   domain?: MovementDomain;
   radiusSubcells?: number;
   domains?: readonly MovementDomain[];
@@ -75,6 +83,17 @@ export const definitionSchema = strictObject({
   }),
   requires: opt(arr(str(/^[a-z0-9.:/-]+$/))),
   builds: opt(arr(str(/^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/))),
+  produces: opt(arr(str(/^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/), 0, 1000)),
+  spawnsWith: opt(arr(str(/^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/), 0, 1000)),
+  pop: opt(int(0, INT32_MAX)),
+  productionSlots: opt(int(1, 5)),
+  exits: opt(
+    arr(
+      strictObject({ side: oneOf(["north", "east", "south", "west"]), cell: arr(int(0, 7), 2, 2) }),
+      1,
+      8,
+    ),
+  ),
   domain: opt(oneOf(DOMAINS)),
   radiusSubcells: opt(int(0, 8192)),
   domains: opt(arr(oneOf(DOMAINS), 1)),
@@ -111,6 +130,47 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       issues.push({ path: `${path}.role`, message: "role must match the definition kind" });
     if (definition.builds && (kind !== "unit" || definition.role !== "builder"))
       issues.push({ path: `${path}.builds`, message: "only builder units declare build lists" });
+    if (
+      (definition.produces ||
+        definition.spawnsWith ||
+        definition.productionSlots !== undefined ||
+        definition.exits) &&
+      kind !== "structure"
+    )
+      issues.push({
+        path,
+        message: "only structures declare production lists, capacity and exits",
+      });
+    for (const field of ["produces", "spawnsWith"] as const)
+      for (const reference of definition[field] ?? []) {
+        const unit = definitions.find((candidate) => candidate.id === reference);
+        if (
+          unit?.id.split(":")[0]?.split(".").at(-1) !== "unit" ||
+          unit.pop === undefined ||
+          unit.domain === undefined ||
+          unit.radiusSubcells === undefined
+        )
+          issues.push({
+            path: `${path}.${field}`,
+            message: "production references require unit population and movement metadata",
+          });
+      }
+    for (const exit of definition.exits ?? []) {
+      const [x, y] = exit.cell,
+        [w = 0, d = 0] = definition.footprint ?? [];
+      if (
+        x >= w ||
+        y >= d ||
+        (exit.side === "north" && y !== 0) ||
+        (exit.side === "south" && y !== d - 1) ||
+        (exit.side === "west" && x !== 0) ||
+        (exit.side === "east" && x !== w - 1)
+      )
+        issues.push({
+          path: `${path}.exits`,
+          message: "exit cell must be on its declared footprint side",
+        });
+    }
     if (kind === "unit" && (definition.footprint || definition.cells || definition.blocks))
       issues.push({ path, message: "units do not have static footprints" });
     if (kind !== "prop" && definition.blocks !== undefined)
@@ -163,6 +223,9 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
 export function toDefinition(content: {
   id: string;
   role?: string;
+  pop?: number;
+  productionSlots?: number;
+  exits?: readonly { side: string; cell: readonly number[] }[];
   health?: number;
   destructible?: { health: number };
   movement?: { speed: number; turnRate?: number; domain?: string };
@@ -181,6 +244,11 @@ export function toDefinition(content: {
   const definition = {
     id: content.id,
     ...(content.role !== undefined && { role: content.role }),
+    ...(content.pop !== undefined && { pop: content.pop }),
+    ...(content.productionSlots !== undefined && { productionSlots: content.productionSlots }),
+    ...(content.exits && {
+      exits: content.exits.map((exit) => ({ side: exit.side, cell: [...exit.cell] })),
+    }),
     health: content.health ?? content.destructible?.health ?? 0,
     speed: Math.round((speed * 1024) / 20),
     turnRate: Math.round((turnRate * 0x10000) / 7200),

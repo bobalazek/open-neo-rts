@@ -159,9 +159,13 @@ port.onmessage = ({ data }) => {
             type === "debug.remove" ||
             type === "debug.setHealth" ||
             type === "economy.power" ||
-            type === "economy.cancelConstruction"
+            type === "economy.cancelConstruction" ||
+            type === "production.enqueue" ||
+            type === "production.rally"
           )
             fields.entity = projection.resolve(fields.entity) ?? -1;
+          else if (type === "production.cancel")
+            fields.item = projection.resolve(fields.item) ?? -1;
         }
         const command = { tick: kernel.tick, seat, sequence: sequence++, type, payload };
         const validation = validateCommands([command], kernel)[0];
