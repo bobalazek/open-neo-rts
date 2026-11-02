@@ -1,5 +1,7 @@
 # Learnings
 
+- [Observe short-lived orders at the worker boundary](./2026-11-02-observe-short-lived-orders.md) — A completed minimap order can legitimately disappear before a slow UI assertion starts.
+
 One file per surprise: something that broke, a gotcha, a measurement worth remembering. Append-only; a wrong learning gets a correction entry. One paragraph is enough.
 
 File names: `YYYY-MM-DD-short-slug.md`. Add one line to the index for each.
