@@ -6,7 +6,9 @@ import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
+import { AttackOrder, ShotIntent } from "../combat";
 import { OwnerForce, Template } from "../entities";
+import { ProductionItem } from "../production";
 import { BOT_WORK_BUDGET, type BotSeatState, registerBotSeat, type SeatBotProgram } from "./bots";
 
 function botSetup(idle = false): MatchSetup {
@@ -362,4 +364,169 @@ test("shared sight never authorizes commands to another Force, and malformed pol
   const saved = host.serialize();
   expect(() => step(other, [])).toThrow("decision state");
   expect(host.serialize()).toEqual(saved);
+});
+
+test("a bot can order an opaque visible enemy target without control grants on the enemy Force", () => {
+  const setup = botSetup();
+  setup.definitions = setup.definitions.map((definition) =>
+    definition.role === "builder"
+      ? {
+          ...definition,
+          armor: "infantry",
+          visionSubcells: 32 * 1024,
+          weapons: [
+            {
+              id: "fixture-gun",
+              targets: ["ground"],
+              rangeSubcells: [0, 32 * 1024],
+              reloadTicks: 1,
+              projectile: { kind: "instant" },
+              warheads: [{ type: "damage", amount: 1, tags: [] }],
+            },
+          ],
+        }
+      : definition,
+  );
+  const kernel = createMatch(setup);
+  registerBotSeat(
+    kernel,
+    setup,
+    { seat: 1, program: "fixture-attack" },
+    ({ observation, state, work }) => {
+      if (state.cursor || !work.take()) return { state, commands: [] };
+      const actor = observation.entities.find(
+        (entity) => entity.force === 1 && entity.definition.startsWith("unit:"),
+      );
+      const enemy = observation.entities.find(
+        (entity) => entity.force === 2 && entity.definition.startsWith("unit:"),
+      );
+      expect(actor?.handle).toMatch(/^e[1-9][0-9]*$/);
+      expect(enemy?.handle).toMatch(/^e[1-9][0-9]*$/);
+      return {
+        state: { ...state, cursor: 1 },
+        commands: [
+          {
+            type: "unit.attack",
+            payload: { entities: [actor?.handle as string], entity: enemy?.handle as string },
+          },
+        ],
+      };
+    },
+  );
+  step(kernel, []);
+  expect(kernel.queued).toHaveLength(1);
+  const command = kernel.queued[0] as {
+    type: string;
+    payload: { entities: number[]; entity: number };
+  };
+  expect(command.type).toBe("unit.attack");
+  const actor = command.payload.entities[0] as number,
+    enemy = command.payload.entity;
+  expect(kernel.world.get(actor, OwnerForce, "force")).toBe(1);
+  expect(kernel.world.get(enemy, OwnerForce, "force")).toBe(2);
+  expect(kernel.visibility?.permits(1, 2, "unit.orders")).toBe(false);
+  expect(step(kernel, [])[0]?.result).toBe("accepted");
+  expect(kernel.world.get(actor, AttackOrder, "target")).toBe(enemy);
+  expect(
+    kernel.world
+      .query(ShotIntent)
+      .some(
+        (id) =>
+          kernel.world.get(id, ShotIntent, "shooter") === actor &&
+          kernel.world.get(id, ShotIntent, "target") === enemy,
+      ),
+  ).toBe(true);
+});
+
+test("queued bot cancellation survives item completion later in the same tick and restores twin continuation", () => {
+  const setup = botSetup();
+  setup.grants = setup.grants.map((grant) => ({
+    ...grant,
+    scopes: [...grant.scopes, "production.queue"],
+  }));
+  setup.definitions = setup.definitions.map((definition) =>
+    definition.role === "headquarters"
+      ? {
+          ...definition,
+          power: 20,
+          productionSlots: 1,
+          produces: ["unit:test/builder"],
+          exits: [{ side: "south", cell: [0, 0] }],
+        }
+      : { ...definition, pop: 1, construction: { cost: { credits: 1 }, buildTicks: 2 } },
+  );
+  const policy: SeatBotProgram = ({ observation, state, work }) => {
+    if (state.cursor === 2 || !work.take()) return { state, commands: [] };
+    const producer = observation.entities.find((entity) => entity.force === 1 && entity.production);
+    if (state.cursor === 0)
+      return {
+        state: { ...state, cursor: 1 },
+        commands: [
+          {
+            type: "production.enqueue",
+            payload: { entity: producer?.handle as string, definition: "unit:test/builder" },
+          },
+        ],
+      };
+    const item = producer?.production?.queue[0];
+    return item
+      ? {
+          state: { ...state, cursor: 2 },
+          commands: [{ type: "production.cancel", payload: { item: item.handle } }],
+        }
+      : { state, commands: [] };
+  };
+  const make = () => {
+    const kernel = createMatch(setup);
+    const host = registerBotSeat(kernel, setup, { seat: 1, program: "fixture-cancel" }, policy);
+    return { kernel, host };
+  };
+  const a = make(),
+    b = make();
+  for (let i = 0; i < 3; i++) {
+    step(a.kernel, []);
+    step(b.kernel, []);
+  }
+  const saved = a.host.serialize();
+  expect(saved.queued).toHaveLength(1);
+  const command = saved.queued[0];
+  if (command?.type !== "production.cancel") throw new Error("Expected queued cancellation");
+  expect(a.kernel.world.isAlive(command.payload.item)).toBe(false);
+  expect(a.kernel.world.query(ProductionItem)).toEqual([]);
+  const hash = checkpointHash(a.kernel);
+  a.kernel.queued = [];
+  a.host.load(saved);
+  expect(a.host.serialize()).toEqual(saved);
+  expect(checkpointHash(a.kernel)).toBe(hash);
+  for (let i = 0; i < 3; i++) {
+    const actual = step(a.kernel, []),
+      twin = step(b.kernel, []);
+    expect(actual).toEqual(twin);
+    if (i === 0) expect(actual[0]?.result).toBe("bad_payload");
+    expect(checkpointHash(a.kernel)).toBe(checkpointHash(b.kernel));
+  }
+  expect(a.kernel.log).toEqual(b.kernel.log);
+});
+
+test("restored canonical bot references still cannot control another Force at dispatch", () => {
+  const { kernel, host } = fixture();
+  const foreign = kernel.world
+    .query(Template, OwnerForce)
+    .find(
+      (id) =>
+        kernel.world.get(id, OwnerForce, "force") === 2 &&
+        kernel.world.get(id, Template, "definition") === 1,
+    ) as number;
+  const saved = host.serialize();
+  saved.queued = [
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 0,
+      type: "unit.move",
+      payload: { entities: [foreign], x: 1024, y: 1024 },
+    },
+  ];
+  host.load(saved);
+  expect(step(kernel, [])[0]?.result).toBe("no_grant");
 });

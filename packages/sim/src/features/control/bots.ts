@@ -191,9 +191,8 @@ export class BotSeats {
     if (!checked?.accepted) return false;
     return this.authorized(checked.command, this.kernel.tick, this.kernel.tick + 1);
   }
-  private authorized(command: Command, now: number, execution: number): boolean {
+  private grantedFor(command: Command, now: number, execution: number): (force: number) => boolean {
     const { seat } = command;
-    const fields = command.payload as unknown as Record<string, unknown>;
     const scopes: readonly Scope[] = command.type.startsWith("unit.")
       ? ["unit.orders"]
       : command.type.startsWith("production.")
@@ -201,15 +200,27 @@ export class BotSeats {
         : command.type === "economy.power"
           ? ["economy.build", "economy.transfer", "production.queue", "research.spend"]
           : ["economy.build"];
-    const allowed = (force: number) =>
+    return (force: number) =>
       scopes.some(
         (scope) =>
           this.kernel.visibility?.permits(seat, force, scope, now) &&
           this.kernel.visibility.permits(seat, force, scope, execution),
       );
+  }
+  private authorized(command: Command, now: number, execution: number): boolean {
+    const { seat } = command;
+    const fields = command.payload as unknown as Record<string, unknown>;
+    const allowed = this.grantedFor(command, now, execution);
     if (typeof fields.force === "number" && !allowed(fields.force)) return false;
+    // Attack targets need current sight; combat checks hostility and weapon eligibility at dispatch.
+    if (
+      command.type === "unit.attack" &&
+      !this.kernel.visibility?.canSeeEntity(seat, command.payload.entity)
+    )
+      return false;
     const ids: number[] = [];
     for (const field of ["entities", "builders", "entity", "item"]) {
+      if (command.type === "unit.attack" && field === "entity") continue;
       const value = fields[field];
       if (Array.isArray(value)) ids.push(...value);
       else if (typeof value === "number") ids.push(value);
@@ -315,13 +326,19 @@ export class BotSeats {
     });
     const results = validateCommands(saved.queued, this.kernel);
     if (results.some((result) => !result.accepted)) throw new Error("Invalid queued bot commands");
-    for (const command of saved.queued)
+    // References were resolved before later phases; dispatch rechecks live ownership/legality.
+    for (const command of saved.queued) {
+      const allowed = this.grantedFor(command, this.kernel.tick, this.kernel.tick);
+      const fields = command.payload as unknown as Record<string, unknown>;
       if (
         !this.seats.has(command.seat) ||
         command.tick !== this.kernel.tick ||
-        !this.authorized(command, this.kernel.tick, this.kernel.tick)
+        !(typeof fields.force === "number"
+          ? allowed(fields.force)
+          : this.setup.forces.some((force) => allowed(force.index)))
       )
         throw new Error("Invalid queued bot seat/tick/grant");
+    }
     const remaining = this.kernel.queued.filter(
       (entry): entry is Command =>
         typeof entry === "object" &&
