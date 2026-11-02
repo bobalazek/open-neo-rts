@@ -39,6 +39,13 @@ The batch is not finished. Preserve capped/failing evidence and investigate actu
 
 ## Continue
 
-Finish/merge the reviewed queue, preserving each PR's own commits when rebasing after squash. Continue non-damage effects, wreck/salvage and lifecycle presentation, required tier1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Watch/save replay, per-type/APM/history and a real human-versus-bot completion remain open. The detailed phase plan is authoritative; phase2 and phases3–5 are not complete.
+Task2-35a adds terminal input-record export/download and strict headless replay
+verification. Real paid production followed by surrender downloaded a record
+whose hosted bot/setup/external inputs reproduced the exact terminal hash in Bun.
+Running-match export is refused. Wrong versions/hash/tick, malformed records and
+explicit hosted-bot commands are rejected. This is not full-save/keyframe/metadata
+or viewer completion; continue2-35b after validated snapshot restore.
+
+Finish/merge the reviewed queue, preserving each PR's own commits when rebasing after squash. Continue non-damage effects, wreck/salvage and lifecycle presentation, required tier1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Full replay files/viewer, per-type/APM/history and a real human-versus-bot completion remain open. The detailed phase plan is authoritative; phase2 and phases3–5 are not complete.
 
 Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; legacy `/?map=...` remains supported. CI pulls original core LFS bytes for actual catalog identity. Never replace assets with pointers or synthetic identity bytes; incomplete installs preserve Home/debug and refuse Start.

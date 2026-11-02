@@ -1,4 +1,8 @@
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
+import type { MatchRecord } from "../../../packages/sim/src";
 
 test("real paid production reaches the frozen final totals on desktop and narrow layouts", async ({
   page,
@@ -6,9 +10,32 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   test.skip(info.project.name !== "chromium", "Bounded authored production/result journey");
   test.setTimeout(120_000);
   page.on("dialog", (dialog) => dialog.accept());
+  await page.addInitScript(() => {
+    const OriginalWorker = window.Worker;
+    window.Worker = class extends OriginalWorker {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        Reflect.set(window, "recordWorker", this);
+      }
+    };
+  });
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  const refused = await page.evaluate(
+    () =>
+      new Promise<string>((resolve) => {
+        const worker = Reflect.get(window, "recordWorker") as Worker;
+        const listener = ({ data }: MessageEvent) => {
+          if (data.id !== 9_000_004) return;
+          worker.removeEventListener("message", listener);
+          resolve(data.error ?? "unexpected acceptance");
+        };
+        worker.addEventListener("message", listener);
+        worker.postMessage({ id: 9_000_004, type: "export-match-record" });
+      }),
+  );
+  expect(refused).toContain("Finish the normal match");
   await page.getByRole("button", { name: /Idle producers 1/ }).click();
   await page.locator('[data-definition="core.unit:eastern-collective/field-technician"]').click();
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
@@ -24,6 +51,28 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await expect(cells.nth(3)).toHaveText("0 / 0 / 0");
   await expect(cells.nth(4)).toHaveText("0 / 450 / 0");
   await expect(cells.nth(5)).toHaveText("0 / 0 / 0");
+  const downloaded = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Save replay", exact: true }).click();
+  const download = await downloaded;
+  const path = info.outputPath("match-replay.json");
+  await download.saveAs(path);
+  const record = JSON.parse(readFileSync(path, "utf8")) as MatchRecord;
+  expect(record.scenario.setup.debug).toBe(false);
+  expect(record.scenario.commands.every((command) => command.seat === 1)).toBe(true);
+  const verified = execFileSync(
+    "bun",
+    [
+      "-e",
+      'import { verifyMatchRecord } from "./packages/sim/src/index.ts"; const value = await Bun.file(process.argv[1]).json(); console.log(JSON.stringify(verifyMatchRecord(value)));',
+      path,
+    ],
+    {
+      cwd: fileURLToPath(new URL("../../../", import.meta.url)),
+      encoding: "utf8",
+    },
+  );
+  expect(JSON.parse(verified)).toMatchObject({ tick: record.tick, hash: record.hash });
+  await expect(dialog.getByRole("status")).toHaveText("Replay download started.");
   await page.screenshot({ path: info.outputPath("match-totals-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(dialog.getByRole("region", { name: "Final Force totals" })).toBeVisible();

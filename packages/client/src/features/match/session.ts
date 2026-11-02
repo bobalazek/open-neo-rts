@@ -52,6 +52,7 @@ export function createNormalSession(
   let minimap: ReturnType<typeof createMinimap> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
+  const replayUrls = new Set<string>();
   const applyPreferences = (next: DeviceSettings) => {
     if (disposed) return;
     if (next.quality !== preferences.quality) renderer?.setQuality(next.quality);
@@ -69,6 +70,8 @@ export function createNormalSession(
     menu?.finish();
     disposed = true;
     signal.abort();
+    for (const url of replayUrls) URL.revokeObjectURL(url);
+    replayUrls.clear();
     resultScreen?.remove();
     match?.dispose();
     presentation?.dispose();
@@ -149,6 +152,23 @@ export function createNormalSession(
         rematch,
         home,
         state.snapshot.statistics,
+        async () => {
+          if (!match || disposed) return;
+          const record = await match.exportMatchRecord();
+          if (disposed) return;
+          const url = URL.createObjectURL(
+            new Blob([`${JSON.stringify(record)}\n`], { type: "application/json" }),
+          );
+          replayUrls.add(url);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = `open-neo-rts-replay-tick-${record.tick}.json`;
+          anchor.click();
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+            replayUrls.delete(url);
+          }, 1000);
+        },
       );
     }
   };
