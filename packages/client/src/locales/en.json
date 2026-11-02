@@ -103,6 +103,7 @@
   "ui.hud.deploy-immobile": "The unit is deployed or temporarily disabled.",
   "ui.hud.deployed": "{name} · Deployed",
   "ui.hud.emp-disabled": "Disabled by EMP",
+  "ui.hud.burning": "On fire",
   "ui.hud.packed": "{name} · Packed",
   "ui.hud.attack": "Attack target",
   "ui.hud.harvest": "Harvest ore",

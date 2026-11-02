@@ -158,6 +158,25 @@ test("EMP status is a strict public flag with no private deadline", () => {
   );
 });
 
+test("burning status and beam events pass the strict wire without exposing a rate, source or timer", () => {
+  const packet = powerReply(undefined, [{ ...entity, burning: true }]);
+  expect(isWorkerReply(packet)).toBe(true);
+  for (const burning of [false, 1, "fire", null, { until: 20 }])
+    expect(isWorkerReply(powerReply(undefined, [{ ...entity, burning }]))).toBe(false);
+  expect(
+    isWorkerReply({
+      ...packet,
+      state: {
+        ...packet.state,
+        snapshot: {
+          ...packet.state.snapshot,
+          combatEvents: [{ type: "impact", x: 1024, y: 1024, projectile: "beam" }],
+        },
+      },
+    }),
+  ).toBe(true);
+});
+
 test("worker replies strictly validate private harvester cargo, status and unload work", () => {
   const harvesting = { cargo: 10, capacity: 500, status: "mining", unloadTicks: 0 };
   const packet = (value: unknown, mode = "controlled") =>

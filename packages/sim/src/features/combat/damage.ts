@@ -6,6 +6,7 @@ import { type Definition, Health, OwnerForce, Template, Transform } from "../ent
 import type { GameplayWarhead, GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
 import { weaponTargets } from ".";
+import { applyBurn } from "./burn";
 import { applyDisable } from "./disable";
 
 export interface DamageImpact {
@@ -85,7 +86,7 @@ export function applyWarhead(
   impact: DamageImpact,
   friendlyFire: boolean,
 ): void {
-  if (warhead.type !== "damage" && warhead.type !== "disable") return;
+  if (!["damage", "disable", "burn"].includes(warhead.type)) return;
   const { world } = kernel;
   const radius = warhead.radiusSubcells ?? 0;
   const targets =
@@ -137,6 +138,18 @@ export function applyWarhead(
         : 1000;
     if (warhead.type === "disable") {
       applyDisable(kernel, target, definition, warhead, falloff);
+      continue;
+    }
+    if (warhead.type === "burn") {
+      applyBurn(
+        kernel,
+        target,
+        definition,
+        warhead,
+        falloff,
+        impact.force,
+        impact.damageBonus ?? 0,
+      );
       continue;
     }
     let facing = 1000;

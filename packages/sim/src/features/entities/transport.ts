@@ -325,6 +325,7 @@ export class UnitTransports {
     const { world } = this.kernel;
     for (const id of world.query(Cargo)) {
       const transport = world.get(id, Cargo, "transport");
+      if (world.get(id, Health, "current") === 0) continue;
       if (this.live(transport)) continue;
       const center = { x: world.get(id, Cargo, "x"), y: world.get(id, Cargo, "y") };
       const point = this.exit(id, center);

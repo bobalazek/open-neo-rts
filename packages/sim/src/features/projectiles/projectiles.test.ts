@@ -5,6 +5,7 @@ import { createProjection } from "../../projection";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder, combatFeature, ShotIntent, WeaponState } from "../combat";
+import { Burning } from "../combat/burn";
 import { applyWarhead, warheadDamage } from "../combat/damage";
 import { Disabled } from "../combat/disable";
 import { BuilderConstruction, ConstructionSite } from "../construction";
@@ -19,6 +20,7 @@ import {
 import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent, MAX_COMBAT_EVENTS } from "../events/combat";
 import { movementFeature } from "../movement";
+import { ForceStatistics } from "../victory/statistics";
 import { initializeVision } from "../vision";
 import { initializeProjectiles, MAX_ACTIVE_ROUNDS, PendingImpact, Projectile } from ".";
 
@@ -168,6 +170,118 @@ const emp: GameplayWeapon = {
   ],
 };
 
+const flame: GameplayWeapon = {
+  ...gun,
+  projectile: { kind: "beam" },
+  warheads: [
+    { type: "damage", amount: 10, tags: ["fire"] },
+    { type: "burn", amountPerSecond: 5, durationTicks: 60, tags: ["fire"] },
+  ],
+};
+
+test("beam impacts apply once and a three-second burn delivers exact fractional DPS through its last tick", () => {
+  const f = fixture({ weapon: flame });
+  f.fire();
+  expect(f.hp()).toBe(990);
+  expect(f.kernel.world.query(Projectile)).toEqual([]);
+  expect(f.kernel.burning?.(f.target)).toBe(true);
+  expect(
+    f.kernel.combatEvents?.some((event) => event.type === "impact" && event.projectile === "beam"),
+  ).toBe(true);
+  const projection = createProjection(f.setup, 1, "controlled").snapshot(f.kernel);
+  expect(
+    projection.entities.find((row) => row.force === 1 && row.definition === unit.id)?.burning,
+  ).toBe(true);
+  f.advance(59);
+  expect(f.hp()).toBe(975);
+  f.advance(20);
+  expect(f.hp()).toBe(975);
+  expect(f.kernel.world.has(f.target, Burning)).toBe(false);
+});
+
+test("beams trace moving targets at their current pose, including when unused speed metadata is present", () => {
+  const impacts: { x: number; y: number }[] = [];
+  for (const projectile of [
+    { kind: "instant" },
+    { kind: "beam" },
+    { kind: "beam", speedSubcellsPerTick: 512 },
+  ]) {
+    const f = fixture({ weapon: { ...flame, projectile } });
+    step(f.kernel, [
+      {
+        tick: 0,
+        seat: 1,
+        sequence: 0,
+        type: "unit.attack",
+        payload: { entities: [f.actor], entity: f.target },
+      },
+      {
+        tick: 0,
+        seat: 2,
+        sequence: 0,
+        type: "unit.move",
+        payload: { entities: [f.target], x: 24 * 1024 + 512, y: 25 * 1024 + 512 },
+      },
+    ]);
+    expect(f.hp()).toBe(990);
+    expect(f.kernel.burning?.(f.target)).toBe(true);
+    const impact = f.kernel.combatEvents?.find((event) => event.type === "impact");
+    if (!impact) throw new Error("Expected the instantaneous shot's actual impact");
+    impacts.push({ x: impact.x, y: impact.y });
+  }
+  expect(impacts[1]).toEqual(impacts[0]);
+  expect(impacts[2]).toEqual(impacts[0]);
+});
+
+test("burn resistance, refresh and stronger-source replacement preserve bounded rates and fractional work", () => {
+  const immune = fixture({ weapon: flame, resistance: { fire: 0 } });
+  immune.fire();
+  expect(immune.hp()).toBe(1000);
+  expect(immune.kernel.burning?.(immune.target)).toBe(false);
+  const f = fixture({ weapon: flame });
+  f.fire();
+  f.advance(9);
+  const impact = {
+    force: 0,
+    direct: f.target,
+    x: 0,
+    y: 0,
+    fromX: 0,
+    fromY: 0,
+    air: false,
+    maxLevel: 255,
+  };
+  const carry = f.kernel.world.get(f.target, Burning, "carry");
+  applyWarhead(f.kernel, f.definitions, flame, flame.warheads[1]!, impact, false);
+  expect(f.kernel.world.get(f.target, Burning, "until")).toBe(70);
+  expect(f.kernel.world.get(f.target, Burning, "carry")).toBe(carry);
+  applyWarhead(
+    f.kernel,
+    f.definitions,
+    flame,
+    { type: "burn", amountPerSecond: 1, durationTicks: 120, tags: [] },
+    impact,
+    false,
+  );
+  expect(f.kernel.world.get(f.target, Burning, "until")).toBe(70);
+  applyWarhead(
+    f.kernel,
+    f.definitions,
+    flame,
+    { type: "burn", amountPerSecond: 10, durationTicks: 20, tags: [] },
+    impact,
+    false,
+  );
+  expect(f.kernel.world.get(f.target, Burning, "until")).toBe(30);
+  f.kernel.world.destroy(f.actor);
+  f.advance(20);
+  expect(f.hp()).toBe(978);
+  const row = f.kernel.world
+    .query(ForceStatistics)
+    .find((id) => f.kernel.world.get(id, ForceStatistics, "force") === 0)!;
+  expect(f.kernel.world.get(row, ForceStatistics, "damageDealt")).toBe(22);
+});
+
 test("mixed EMP shots deal damage and pause a vehicle's existing route until the exclusive deadline", () => {
   const f = fixture({ weapon: emp, targetDomain: "tracked", armor: "heavy" });
   const { kernel, target } = f,
@@ -265,64 +379,69 @@ test("EMP's delayed area uses existing geometry and friendly-fire rules; project
   expect(visible).not.toHaveProperty("until");
 });
 
-test("EMP combat from actual starting kits replays the canonical deadline, paused route and final hash", () => {
-  const base = fixture({ weapon: emp, targetDomain: "tracked" }).setup;
-  const setup: MatchSetup = {
-    ...base,
-    definitions: base.definitions.map((definition, index) =>
-      index === 3 ? { ...definition, weapons: [emp] } : definition,
-    ),
-    normal: {
-      ...base.normal!,
-      forces: base.normal!.forces.map((force) => ({
-        ...force,
-        start: {
-          ...force.start,
-          units: [
-            ...force.start.units,
-            {
-              unit: base.definitions[force.index === 0 ? 2 : 3]!.id,
-              count: 1,
-              pop: 1,
-              role: "combat",
-            },
-          ],
-        },
-      })),
-    },
-  };
-  const kernel = createMatch(setup),
-    world = kernel.world;
-  const actor = world.query(Template).find((id) => world.get(id, Template, "definition") === 2)!;
-  const target = world.query(Template).find((id) => world.get(id, Template, "definition") === 3)!;
-  const commands = [
-    {
-      tick: 0,
-      seat: 1,
-      sequence: 0,
-      type: "unit.attackMove" as const,
-      payload: {
-        entities: [actor],
-        x: world.get(target, Transform, "x"),
-        y: world.get(target, Transform, "y"),
+for (const [weapon, status] of [
+  [emp, "disabled"],
+  [flame, "burning"],
+] as const)
+  test(`timed ${status} combat from starting kits replays canonical state and the final hash`, () => {
+    const base = fixture({ weapon, targetDomain: "tracked" }).setup;
+    const setup: MatchSetup = {
+      ...base,
+      definitions: base.definitions.map((definition, index) =>
+        index === 3 ? { ...definition, weapons: [weapon] } : definition,
+      ),
+      normal: {
+        ...base.normal!,
+        forces: base.normal!.forces.map((force) => ({
+          ...force,
+          start: {
+            ...force.start,
+            units: [
+              ...force.start.units,
+              {
+                unit: base.definitions[force.index === 0 ? 2 : 3]!.id,
+                count: 1,
+                pop: 1,
+                role: "combat",
+              },
+            ],
+          },
+        })),
       },
-    },
-  ];
-  expect(step(kernel, commands)[0]?.result).toBe("accepted");
-  let observed = false;
-  for (let i = 0; i < 200; i++) {
-    step(kernel, []);
-    observed ||= kernel.disabled?.(target) === true;
-  }
-  expect(observed).toBe(true);
-  const scenario = parseScenario({
-    format: SCENARIO_FORMAT,
-    simVersion: SIM_VERSION,
-    setup,
-    commands,
+    };
+    const kernel = createMatch(setup),
+      world = kernel.world;
+    const actor = world.query(Template).find((id) => world.get(id, Template, "definition") === 2)!;
+    const target = world.query(Template).find((id) => world.get(id, Template, "definition") === 3)!;
+    const commands = [
+      {
+        tick: 0,
+        seat: 1,
+        sequence: 0,
+        type: "unit.attackMove" as const,
+        payload: {
+          entities: [actor],
+          x: world.get(target, Transform, "x"),
+          y: world.get(target, Transform, "y"),
+        },
+      },
+    ];
+    expect(step(kernel, commands)[0]?.result).toBe("accepted");
+    let observed = false;
+    for (let i = 0; i < 200; i++) {
+      step(kernel, []);
+      observed ||=
+        (status === "disabled" ? kernel.disabled?.(target) : kernel.burning?.(target)) === true;
+    }
+    expect(observed).toBe(true);
+    const scenario = parseScenario({
+      format: SCENARIO_FORMAT,
+      simVersion: SIM_VERSION,
+      setup,
+      commands,
+    });
+    expect(runScenario(scenario, { ticks: kernel.tick }).at(-1)?.hash).toBe(checkpointHash(kernel));
   });
-  expect(runScenario(scenario, { ticks: kernel.tick }).at(-1)?.hash).toBe(checkpointHash(kernel));
-});
 
 test("instant resolves now; bullets travel for real ticks and strike once without tunnelling", () => {
   const instant = fixture({ weapon: { ...gun, projectile: { kind: "instant" } } });
@@ -728,7 +847,7 @@ test("event actor handles use current presented actors and retain only previousl
 
 test("unsupported projectile kinds and exhausted round capacity cannot consume RNG or weapon clocks", () => {
   const unavailable = fixture({
-    weapon: { ...gun, scatterSubcells: 100, projectile: { kind: "beam" } },
+    weapon: { ...gun, scatterSubcells: 100, projectile: { kind: "arc" } },
   });
   unavailable.fire();
   expect(unavailable.hp()).toBe(1000);

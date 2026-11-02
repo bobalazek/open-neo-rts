@@ -563,3 +563,124 @@ test("the original Tesla weapon disables a Dragon Tank through the real worker a
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });
+
+test("the original Flame Tank delivers its authored beam and persistent burn through worker and HUD", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded HUD integration runs in Chromium");
+  test.setTimeout(60_000);
+  const candidate = structuredClone(setup),
+    flame = "core.unit:eastern-collective/flame-tank";
+  candidate.normal.settings.fog = "off";
+  candidate.normal.settings.highGroundMissPerMille = 0;
+  for (const force of candidate.normal.forces)
+    force.start.units = [
+      { unit: "core.unit:eastern-collective/field-technician", count: 1, pop: 1, role: "builder" },
+      {
+        unit: force.index === 0 ? tank : flame,
+        count: 1,
+        pop: force.index === 0 ? 3 : 2,
+        role: "combat",
+      },
+    ];
+  candidate.map.spawns.find((spawn: { id: string }) => spawn.id === "south-east").position = [
+    28 * 1024,
+    20 * 1024,
+  ];
+  candidate.grants.push({ seat: 1, force: 1, grantedAtTick: 0, scopes: ["unit.orders"] });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://burn-warhead.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>Burn warhead</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  await page.goto("http://burn-warhead.test/");
+  await page.evaluate(async (setup) => {
+    const moduleUrl = "/fixture.js";
+    const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+    window.deployFixture = await start(setup);
+  }, candidate);
+  try {
+    const impact = await page.evaluate(
+      async ([tank, flame]) => {
+        const f = window.deployFixture;
+        const target = f
+          .state()!
+          .snapshot.entities.find((row) => row.force === 0 && row.definition === tank)!;
+        const shooter = f
+          .state()!
+          .snapshot.entities.find((row) => row.force === 1 && row.definition === flame)!;
+        const receipt = await f.command("unit.move", {
+          entities: [shooter.handle],
+          x: target.x + 2 * 1024,
+          y: target.y,
+        });
+        let observed = f.state()!.snapshot.entities.find((row) => row.handle === target.handle);
+        for (let i = 0; i < 500 && observed && !observed.burning; i++) {
+          await f.step(1);
+          observed = f.state()!.snapshot.entities.find((row) => row.handle === target.handle);
+        }
+        f.select([tank!]);
+        return {
+          receipt,
+          before: target.health,
+          after: observed?.health,
+          burning: observed?.burning,
+          target: target.handle,
+          shooter: shooter.handle,
+        };
+      },
+      [tank, flame],
+    );
+    expect(impact.receipt).toBe("accepted");
+    expect(impact.burning).toBe(true);
+    expect(impact.after).toBeLessThan(impact.before);
+    await expect(page.locator("[data-details]")).toContainText("On fire");
+    const remaining = await page.evaluate(async ({ target, shooter }) => {
+      const f = window.deployFixture;
+      const headquarters = f
+        .state()!
+        .snapshot.entities.find(
+          (row) => row.force === 0 && row.definition.endsWith("/command-center"),
+        )!;
+      // An actual replacement target stops refreshing the tank's attached burn.
+      const receipt = await f.command("unit.attack", {
+        entities: [shooter],
+        entity: headquarters.handle,
+      });
+      let elapsed = 0;
+      while (
+        elapsed < 61 &&
+        f.state()!.snapshot.entities.find((row) => row.handle === target)?.burning
+      ) {
+        await f.step(1);
+        elapsed++;
+      }
+      return {
+        receipt,
+        elapsed,
+        burning:
+          f.state()!.snapshot.entities.find((row) => row.handle === target)?.burning ?? false,
+      };
+    }, impact);
+    expect(remaining).toEqual({ receipt: "accepted", elapsed: 58, burning: false });
+    await expect(page.locator("[data-details]")).not.toContainText("On fire");
+    expect(
+      await page.evaluate(() => window.deployFixture.command("match.surrender", { force: 0 })),
+    ).toBe("accepted");
+    const record = parseMatchRecord(await page.evaluate(() => window.deployFixture.record()));
+    expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+    expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(() => window.deployFixture.dispose());
+  }
+});
