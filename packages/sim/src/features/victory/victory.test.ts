@@ -1,7 +1,15 @@
 import { expect, test } from "bun:test";
 import { checkpointHash, step } from "../../kernel";
-import { createMatch, type MatchSetup } from "../../match";
+import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
+import {
+  parseScenario,
+  parseTrace,
+  runScenario,
+  SCENARIO_FORMAT,
+  traceScenario,
+} from "../../snapshots";
+import { replayScenario } from "../../snapshots/replay";
 import { flatMap } from "../../testing/maps";
 import { Health, OwnerForce, spawnEntity, Template } from "../entities";
 import type { EliminationRule } from ".";
@@ -163,4 +171,28 @@ test("surrender needs its current scope and all eligible co-controller votes; co
   if (!copied) throw new Error("Missing victory observation");
   if (copied.forces[0]) copied.forces[0].reason = "active";
   expect(f.kernel.observe?.(1).victory).toEqual(snapshot.victory);
+});
+
+test("replay and trace stop at the winning tick and reject later commands without hanging", () => {
+  const f = fixture();
+  const scenario = parseScenario({
+    format: SCENARIO_FORMAT,
+    simVersion: SIM_VERSION,
+    setup: f.setup,
+    commands: [{ tick: 0, seat: 1, sequence: 0, type: "match.surrender", payload: { force: 0 } }],
+  });
+  expect(runScenario(scenario, { ticks: 1000 }).map((entry) => entry.tick)).toEqual([1]);
+  const trace = traceScenario(scenario, { ticks: 1000 });
+  expect(trace.hashes.map((entry) => entry.tick)).toEqual([0, 1]);
+  expect(parseTrace(JSON.parse(JSON.stringify(trace)))).toEqual(trace);
+  const invalid = parseScenario({
+    ...scenario,
+    commands: [
+      ...scenario.commands,
+      { tick: 2, seat: 2, sequence: 0, type: "unit.stop", payload: { entities: [f.actors(1)[0]] } },
+    ],
+  });
+  expect(() => runScenario(invalid, { ticks: 1000 })).toThrow("after match end");
+  expect(() => traceScenario(invalid, { ticks: 1000 })).toThrow("after match end");
+  expect(replayScenario(invalid, 1).tick).toBe(1);
 });

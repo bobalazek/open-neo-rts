@@ -31,11 +31,13 @@ export function replayScenario(
   const commands = sortCommands(scenario.commands);
   let cursor = 0;
   observe?.(kernel);
-  while (kernel.tick < ticks) {
+  while (kernel.tick < ticks && !kernel.victory?.ended) {
     const start = cursor;
     while (commands[cursor]?.tick === kernel.tick) cursor++;
     step(kernel, commands.slice(start, cursor));
     observe?.(kernel);
   }
+  if (kernel.victory?.ended && commands.slice(cursor).some((command) => command.tick < ticks))
+    throw new Error("Scenario contains commands after match end");
   return kernel;
 }
