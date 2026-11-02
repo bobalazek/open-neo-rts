@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 15, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 16, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -87,6 +87,12 @@ journey builds a real extractor using approved fixture balance, then checks
 full/half/no output and finite depletion. Engine coverage is independent of the
 separate authored balance activation. Raw ECS serialization is covered; executing
 a restored kernel remains later save/restore acceptance. Debug hashes are unchanged.
+
+SIM16 activates the owner's provisional extractor recipe/rates in actual content.
+Authored compiler assertions check the 800-credit/400-tick recipe, both outputs
+and existing builder availability. Normal-start fixture and debug state hashes
+remain unchanged; their inputs do not use that newly activated recipe. Scenario
+headers advance deliberately without manufacturing changed state goldens.
 
 `setup` contains:
 

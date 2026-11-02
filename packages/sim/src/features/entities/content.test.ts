@@ -142,7 +142,13 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
       },
     ],
   });
-  expect(definitions.get("core.structure:neutral/resource-extractor")?.construction).toBeNull();
+  expect(definitions.get("core.structure:neutral/resource-extractor")).toMatchObject({
+    construction: { cost: { credits: 800 }, buildTicks: 400 },
+    extraction: {
+      materials: { resource: "materials", amountPerSecond: 1 },
+      oil: { resource: "credits", amountPerSecond: 2 },
+    },
+  });
   expect(definitions.get(unitId("field-technician"))?.builds).toEqual(
     [
       "anti-air-complex",
@@ -151,7 +157,9 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
       "industrial-reactor",
       "supply-depot",
       "war-factory",
-    ].map(structureId),
+    ]
+      .map(structureId)
+      .concat("core.structure:neutral/resource-extractor"),
   );
   expect(definitions.get(structureId("barracks-complex"))?.produces).toEqual(
     ["collective-soldier", "drone-hunter", "rocket-trooper"].map(unitId),
