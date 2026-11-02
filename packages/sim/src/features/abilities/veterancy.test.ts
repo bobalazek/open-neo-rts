@@ -19,6 +19,7 @@ import {
 import { Cargo } from "../entities/transport";
 import type { GameplayWeapon } from "../entities/weapons";
 import { PendingImpact, Projectile } from "../projectiles";
+import { initializeVision } from "../vision";
 import { ExperienceYield, initializeVeterancy, UnitExperience } from "./veterancy";
 
 const weapon: GameplayWeapon = {
@@ -374,11 +375,13 @@ test("extreme authored values keep rank XP and thresholds inside u32 storage", (
 });
 
 test("XP budget, carry, rank and repair progress survive a fresh registered World load", () => {
-  const definitions = fixture({ targetHealth: 3, targetCost: 1 }).definitions;
+  const original = fixture({ targetHealth: 3, targetCost: 1000 });
+  const definitions = original.definitions;
   const make = () => {
-    const kernel = createKernel({ seed: 1, debug: false });
+    const kernel = createKernel({ seed: 1, debug: false, map: original.setup.map });
     register(kernel, entitiesFeature(definitions));
     initializeVeterancy(kernel, definitions);
+    initializeVision(kernel, original.setup);
     return kernel;
   };
   const kernel = make();
@@ -397,14 +400,34 @@ test("XP budget, carry, rank and repair progress survive a fresh registered Worl
     facing: 0,
   });
   hit({ kernel, definitions, source, target }, 1);
+  expect(kernel.world.get(target, Health, "current")).toBe(2);
+  expect(kernel.veterancy?.snapshot(source, true)).toEqual({ rank: 2, xp: 341333, nextXp: 409600 });
+  hit({ kernel, definitions, source, target }, 1);
+  const enemy = spawnEntity(kernel, 1, definitions[1]!, {
+    definition: definitions[1]!.id,
+    force: 1,
+    x: 2048,
+    y: 0,
+    facing: 0,
+  });
+  hit({ kernel, definitions, source, target }, 20, source, enemy, 0, 1);
+  kernel.tick = 100;
+  kernel.veterancy!.repair();
+  expect(kernel.veterancy?.snapshot(source, true)).toEqual({ rank: 3, xp: 409600, nextXp: 409600 });
+  expect(kernel.world.get(target, ExperienceYield, "used")).toBe(2);
+  expect(kernel.world.get(target, ExperienceYield, "carry")).toBe(2);
+  expect(kernel.world.get(source, UnitExperience, "repairCarry")).toBe(130);
   const loaded = make();
   loaded.world.load(kernel.world.serialize());
+  loaded.tick = kernel.tick;
   expect(loaded.world.serialize()).toEqual(kernel.world.serialize());
   expect(loaded.veterancy?.snapshot(source, true)).toEqual(
     kernel.veterancy?.snapshot(source, true),
   );
   hit({ kernel, definitions, source, target }, 1);
   hit({ kernel: loaded, definitions, source, target }, 1);
+  kernel.veterancy!.repair();
+  loaded.veterancy!.repair();
   expect(checkpointHash(loaded)).toBe(checkpointHash(kernel));
 });
 

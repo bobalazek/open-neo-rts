@@ -5,14 +5,18 @@ import type { ConstructionBuild } from "../../commands";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup, toMatchResources } from "../../match";
 import { createProjection } from "../../projection";
+import { ExperienceYield } from "../abilities";
+import { applyWarhead } from "../combat/damage";
 import {
   type Definition,
+  Health,
   OwnerForce,
   spawnEntity,
   Template,
   Transform,
   toDefinition,
 } from "../entities";
+import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
 import { ConstructionSite } from ".";
 import { BuilderConstruction, CONSTRUCTION_CLEARANCE_TICKS, ConstructionRequest } from "./sites";
@@ -136,6 +140,104 @@ const build = (
   seat = 1,
 ) => ({ tick: kernel.tick, sequence, seat, type: "economy.build" as const, payload: data });
 const sites = (kernel: ReturnType<typeof createMatch>) => kernel.world.query(ConstructionSite);
+
+test("refundable unfinished sites cannot mint XP; completed structures still give actual damage credit", () => {
+  const base = setup();
+  if (!base.normal) throw new Error("Expected normal construction fixture");
+  const weapon: GameplayWeapon = {
+    id: "gun",
+    targets: ["ground"],
+    rangeSubcells: [0, 32768],
+    reloadTicks: 1000,
+    projectile: { kind: "instant" },
+    warheads: [{ type: "damage", amount: 10, tags: [] }],
+  };
+  const attacker: Definition = {
+    id: "unit:fixture/attacker",
+    armor: "infantry",
+    role: "combat",
+    health: 100,
+    speed: 64,
+    turnRate: 65536,
+    domain: "foot",
+    radiusSubcells: 128,
+    construction: { cost: { credits: 100 }, buildTicks: 1 },
+    weapons: [weapon],
+  };
+  const input: MatchSetup = {
+    ...base,
+    definitions: [...base.definitions, attacker],
+    forces: [...base.forces, { index: 1, faction: "faction:fixture" }],
+    grants: [...base.grants, { seat: 2, force: 1, scopes: ["unit.orders"], grantedAtTick: 0 }],
+    map: {
+      ...base.map,
+      spawns: [...base.map.spawns, { id: "south", position: [30 * 1024, 12 * 1024], facing: 0 }],
+    },
+    normal: {
+      ...base.normal,
+      mapSupport: { ...base.normal.mapSupport, players: { min: 1, max: 2 } },
+      forces: [
+        ...base.normal.forces,
+        {
+          index: 1,
+          team: 1,
+          spawn: "south",
+          start: {
+            structures: [hq.id],
+            units: [{ unit: attacker.id, count: 1, pop: 1, role: "combat" }],
+            resources: { credits: 1000 },
+          },
+        },
+      ],
+    },
+  };
+  const { kernel, builders } = fixture(input),
+    { world } = kernel;
+  const source = world.query(Template).find((id) => world.get(id, Template, "definition") === 5)!;
+  const damage = (site: number) => {
+    const x = world.get(site, Transform, "x"),
+      y = world.get(site, Transform, "y");
+    applyWarhead(
+      kernel,
+      input.definitions,
+      weapon,
+      weapon.warheads[0]!,
+      { source, force: 1, direct: site, x, y, fromX: x + 1024, fromY: y, air: false, maxLevel: 2 },
+      true,
+    );
+  };
+  for (let repeat = 0; repeat < 2; repeat++) {
+    expect(step(kernel, [build(kernel, payload(builders))])[0]?.result).toBe("accepted");
+    const site = sites(kernel)[0]!;
+    expect(kernel.economy?.balance(0)).toMatchObject({ credits: 400, materials: 90 });
+    damage(site);
+    expect(world.get(site, Health, "current")).toBe(90);
+    expect(world.get(site, ExperienceYield, "damagedAt")).toBe(kernel.tick);
+    expect(kernel.veterancy?.snapshot(source, true)).toBeUndefined();
+    expect(
+      step(kernel, [
+        {
+          tick: kernel.tick,
+          sequence: 0,
+          seat: 1,
+          type: "economy.cancelConstruction",
+          payload: { entity: site },
+        },
+      ])[0]?.result,
+    ).toBe("accepted");
+    expect(world.isAlive(site)).toBe(false);
+    expect(kernel.economy?.balance(0)).toMatchObject({ credits: 1000, materials: 100 });
+  }
+  expect(step(kernel, [build(kernel, payload(builders))])[0]?.result).toBe("accepted");
+  const completed = sites(kernel)[0]!;
+  damage(completed);
+  for (let ticks = 0; ticks < 250 && world.has(completed, ConstructionSite); ticks++)
+    step(kernel, []);
+  expect(world.has(completed, ConstructionSite)).toBe(false);
+  expect(kernel.veterancy?.snapshot(source, true)).toBeUndefined();
+  damage(completed);
+  expect(kernel.veterancy?.snapshot(source, true)).toEqual({ rank: 0, xp: 66560, nextXp: 102400 });
+});
 
 test("normal build pays full authored cost once, occupies its rotated cells and cancels once", () => {
   for (const rotation of [0, 1, 2, 3]) {

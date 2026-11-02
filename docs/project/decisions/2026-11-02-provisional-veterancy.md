@@ -28,6 +28,9 @@ balance numbers are copied.
   refill that budget. No allied/self/prop damage awards XP. Structures can give
   XP but cannot earn ranks. Damage from dead, missing or transferred firing
   units consumes the target budget without awarding a survivor free credit.
+  Unfinished construction never awards XP because cancellation refunds its
+  full payment. Actual damage history still updates; completed structures
+  resume ordinary bounded credit. This preserves the approved refund rule.
 - Preserve the actual firing unit separately from its physical platform in
   shot/projectile/delayed-impact/burn state. A mounted passenger earns its own
   credit; a carrier never inherits it. Equal-strength burn refresh keeps the

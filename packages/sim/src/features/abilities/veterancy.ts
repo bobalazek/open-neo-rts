@@ -1,5 +1,6 @@
 import { defineComponent } from "../../ecs";
 import { type Kernel, register } from "../../kernel";
+import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, Template } from "../entities";
 
 const XP_SCALE = 1024;
@@ -63,6 +64,8 @@ export class UnitVeterancy {
   damage(source: number, target: number, force: number, amount: number) {
     const { world } = this.kernel;
     this.damaged(target);
+    // Unfinished work can be canceled for a full refund, so damaging it must not mint XP.
+    if (world.has(target, ConstructionSite)) return;
     const targetForce = world.get(target, OwnerForce, "force");
     const group = this.kernel.vision?.groupForForce(force);
     if (
