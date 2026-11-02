@@ -35,6 +35,9 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       fog: snapshot.fog.map((grid) => ({ ...grid, cells: grid.cells.slice() })),
     }),
     ...(snapshot.ghosts && { ghosts: snapshot.ghosts.map((ghost) => ({ ...ghost })) }),
+    ...(snapshot.combatEvents && {
+      combatEvents: snapshot.combatEvents.map((event) => ({ ...event })),
+    }),
   };
 }
 

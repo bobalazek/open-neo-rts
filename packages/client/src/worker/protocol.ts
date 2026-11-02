@@ -10,10 +10,12 @@ import type {
   SpawnPlacement,
 } from "@open-neo-rts/sim";
 import {
+  COMBAT_EVENT_TYPES,
   CONSTRUCTION_REFUSALS,
   EXTRACTION_STATUSES,
   HARVEST_STATUSES,
   PRODUCTION_STATUSES,
+  MAX_COMBAT_EVENTS,
 } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
@@ -465,6 +467,59 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       snapshot.mode !== "controlled" ||
       !isFog(snapshot.fog) ||
       !isGhosts(snapshot.ghosts, snapshot.fog, Number(snapshot.tick), snapshot.entities)
+    )
+      return false;
+  }
+  if (snapshot.combatEvents !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.combatEvents) ||
+      snapshot.combatEvents.length > MAX_COMBAT_EVENTS ||
+      ![...snapshot.combatEvents].every((event: unknown) => {
+        if (
+          !isRecord(event) ||
+          Object.getPrototypeOf(event) !== Object.prototype ||
+          Reflect.ownKeys(event).some(
+            (key) =>
+              typeof key !== "string" ||
+              !["type", "x", "y", "amount", "projectile", "handle", "entity"].includes(key),
+          )
+        )
+          return false;
+        if (
+          !COMBAT_EVENT_TYPES.some((type) => type === event.type) ||
+          ![event.x, event.y].every(
+            (value) =>
+              typeof value === "number" &&
+              Number.isInteger(value) &&
+              value >= 0 &&
+              value < 512 * 1024,
+          )
+        )
+          return false;
+        if (
+          event.amount !== undefined &&
+          (typeof event.amount !== "number" ||
+            !Number.isInteger(event.amount) ||
+            event.amount < 0 ||
+            event.amount > 0x7fffffff)
+        )
+          return false;
+        if (
+          event.handle !== undefined &&
+          (typeof event.handle !== "string" || !/^p[1-9][0-9]*$/.test(event.handle))
+        )
+          return false;
+        if (
+          event.entity !== undefined &&
+          (typeof event.entity !== "string" || !/^e[1-9][0-9]*$/.test(event.entity))
+        )
+          return false;
+        return (
+          event.projectile === undefined ||
+          ["instant", "bullet", "missile"].some((kind) => kind === event.projectile)
+        );
+      })
     )
       return false;
   }

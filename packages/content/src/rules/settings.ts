@@ -21,6 +21,16 @@ export interface MatchSetting {
 }
 
 export const MATCH_SETTINGS: readonly MatchSetting[] = [
+  { id: "friendlyFire", group: "combat", type: "boolean", default: true, scope: ["match"] },
+  {
+    id: "highGroundMissPerMille",
+    group: "combat",
+    type: "integer",
+    default: 250,
+    min: 0,
+    max: 1000,
+    scope: ["match"],
+  },
   {
     id: "popCap",
     group: "caps",

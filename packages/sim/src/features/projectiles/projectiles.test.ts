@@ -1,0 +1,570 @@
+import { expect, test } from "bun:test";
+import { checkpointHash, createKernel, register, step } from "../../kernel";
+import { createMatch, type MatchSetup } from "../../match";
+import { createProjection } from "../../projection";
+import { flatMap } from "../../testing/maps";
+import { AttackOrder, combatFeature, ShotIntent, WeaponState } from "../combat";
+import { warheadDamage } from "../combat/damage";
+import { BuilderConstruction, ConstructionSite } from "../construction";
+import { type Definition, entitiesFeature, Health, spawnEntity, Transform } from "../entities";
+import type { GameplayWeapon } from "../entities/weapons";
+import { emitCombatEvent, MAX_COMBAT_EVENTS } from "../events/combat";
+import { movementFeature } from "../movement";
+import { initializeVision } from "../vision";
+import { initializeProjectiles, MAX_ACTIVE_ROUNDS, PendingImpact, Projectile } from ".";
+
+const unit: Definition = {
+  id: "unit:flight/target",
+  role: "combat",
+  health: 1000,
+  armor: "infantry",
+  speed: 256,
+  turnRate: 0x10000,
+  domain: "foot",
+  radiusSubcells: 128,
+  visionSubcells: 1024,
+};
+const gun: GameplayWeapon = {
+  id: "test",
+  targets: ["ground", "air"],
+  rangeSubcells: [0, 8 * 1024],
+  reloadTicks: 1000,
+  projectile: { kind: "bullet", speedSubcellsPerTick: 2 * 1024 },
+  warheads: [{ type: "damage", amount: 10, tags: [] }],
+};
+const hq: Definition = {
+  id: "structure:flight/headquarters",
+  role: "headquarters",
+  health: 1000,
+  armor: "structure",
+  speed: 0,
+  turnRate: 0,
+  footprint: [2, 2],
+  power: 100,
+  visionSubcells: 1024,
+};
+
+function fixture(
+  options: {
+    weapon?: GameplayWeapon;
+    health?: number;
+    armor?: Definition["armor"];
+    resistance?: Definition["resistPerMille"];
+    fog?: "off" | "standard";
+    friendlyFire?: boolean;
+    miss?: number;
+    raised?: boolean;
+  } = {},
+) {
+  const weapon = options.weapon ?? gun;
+  const definitions: Definition[] = [
+    hq,
+    { ...unit, id: "unit:flight/worker", role: "builder" },
+    { ...unit, id: "unit:flight/shooter", weapons: [weapon] },
+    {
+      ...unit,
+      health: options.health ?? 1000,
+      armor: options.armor ?? "infantry",
+      ...(options.resistance && { resistPerMille: options.resistance }),
+    },
+    { ...hq, id: "structure:flight/blocker", footprint: [1, 1] },
+    { ...unit, id: "unit:flight/aircraft", domain: "air", armor: "aircraft" },
+  ];
+  const map = flatMap(48),
+    level = [...map.terrain.level];
+  if (options.raised)
+    for (let y = 18; y <= 22; y++) for (let x = 24; x <= 30; x++) level[y * 48 + x] = 1;
+  const setup: MatchSetup = {
+    map: {
+      ...map,
+      terrain: { ...map.terrain, level },
+      spawns: [
+        { id: "west", position: [8 * 1024, 8 * 1024], facing: 16384 },
+        { id: "east", position: [38 * 1024, 8 * 1024], facing: 16384 },
+      ],
+    },
+    seed: 5,
+    debug: false,
+    definitions,
+    forces: [0, 1].map((index) => ({ index, faction: "faction:flight" })),
+    seats: [1, 2, 3],
+    grants: [
+      { seat: 1, force: 0, scopes: ["unit.orders"], grantedAtTick: 0 },
+      { seat: 2, force: 1, scopes: ["unit.orders"], grantedAtTick: 0 },
+    ],
+    normal: {
+      gameplayHash: "1234567890abcdef",
+      mapSupport: { start: "faction", players: { min: 2, max: 2 } },
+      settings: {
+        startingCredits: 1000,
+        popCap: 500,
+        structureCap: 400,
+        fog: options.fog ?? "off",
+        friendlyFire: options.friendlyFire ?? true,
+        highGroundMissPerMille: options.miss ?? 0,
+      },
+      forces: [0, 1].map((index) => ({
+        index,
+        team: index,
+        spawn: index ? "east" : "west",
+        start: {
+          structures: [hq.id],
+          units: [{ unit: definitions[1]?.id as string, count: 1, pop: 1, role: "builder" }],
+          resources: { credits: 1000 },
+        },
+      })),
+    },
+  };
+  const kernel = createMatch(setup);
+  const spawn = (index: number, force: number, x: number, y: number, facing = 0) => {
+    const definition = definitions[index] as Definition;
+    return spawnEntity(kernel, index, definition, {
+      definition: definition.id,
+      force,
+      x: x * 1024 + (definition.footprint ? 0 : 512),
+      y: y * 1024 + (definition.footprint ? 0 : 512),
+      facing,
+    });
+  };
+  const actor = spawn(2, 0, 20, 20),
+    target = spawn(3, 1, 24, 20);
+  const advance = (ticks = 1) => {
+    for (let i = 0; i < ticks; i++) step(kernel, []);
+  };
+  const hp = (id = target) =>
+    kernel.world.isAlive(id) ? kernel.world.get(id, Health, "current") : 0;
+  const fire = () =>
+    step(kernel, [
+      {
+        tick: kernel.tick,
+        seat: 1,
+        sequence: 0,
+        type: "unit.attack",
+        payload: { entities: [actor], entity: target },
+      },
+    ]);
+  return { kernel, setup, definitions, actor, target, spawn, advance, hp, fire };
+}
+
+test("instant resolves now; bullets travel for real ticks and strike once without tunnelling", () => {
+  const instant = fixture({ weapon: { ...gun, projectile: { kind: "instant" } } });
+  instant.fire();
+  expect(instant.hp()).toBe(990);
+  expect(instant.kernel.world.query(Projectile)).toEqual([]);
+  const f = fixture();
+  f.fire();
+  expect(f.hp()).toBe(1000);
+  expect(f.kernel.world.query(Projectile)).toHaveLength(1);
+  f.advance();
+  expect(f.hp()).toBe(1000);
+  f.advance();
+  expect(f.hp()).toBe(990);
+  expect(f.kernel.world.query(Projectile)).toEqual([]);
+  f.advance(10);
+  expect(f.hp()).toBe(990);
+  const fast = fixture({
+    weapon: { ...gun, projectile: { kind: "bullet", speedSubcellsPerTick: 10 * 1024 } },
+  });
+  const first = fast.spawn(3, 1, 22, 20);
+  fast.fire();
+  fast.advance();
+  expect(fast.hp(first)).toBe(990);
+  expect(fast.hp()).toBe(1000);
+});
+
+test("declared structure blockers stop a previously launched shell and shooter death does not erase flight", () => {
+  const f = fixture({
+    weapon: {
+      ...gun,
+      projectile: { kind: "bullet", speedSubcellsPerTick: 1024, blockedBy: ["structures"] },
+    },
+  });
+  f.fire();
+  f.advance();
+  f.spawn(4, 0, 22, 20, 16384);
+  f.kernel.world.destroy(f.actor);
+  f.advance();
+  expect(f.kernel.world.query(Projectile)).toEqual([]);
+  expect(f.hp()).toBe(1000);
+  const other = fixture();
+  other.fire();
+  other.kernel.world.destroy(other.actor);
+  other.advance(2);
+  expect(other.hp()).toBe(990);
+});
+
+test("ballistic leading uses actual velocity and relative sweeps detect targets crossing a fast segment", () => {
+  const f = fixture({
+    weapon: { ...gun, projectile: { kind: "bullet", speedSubcellsPerTick: 1024 } },
+  });
+  step(f.kernel, [
+    {
+      tick: 0,
+      seat: 2,
+      sequence: 0,
+      type: "unit.move",
+      payload: { entities: [f.target], x: 24 * 1024 + 512, y: 30 * 1024 + 512 },
+    },
+    {
+      tick: 0,
+      seat: 1,
+      sequence: 1,
+      type: "unit.attack",
+      payload: { entities: [f.actor], entity: f.target },
+    },
+  ]);
+  const round = f.kernel.world.query(Projectile)[0] as number;
+  expect(f.kernel.world.get(round, Projectile, "destinationY")).toBeGreaterThan(
+    f.kernel.world.get(f.target, Transform, "y"),
+  );
+  f.advance(8);
+  expect(f.hp()).toBe(990);
+});
+
+test("missiles accelerate, obey turn limits, lose dead target references and expire without phantom damage", () => {
+  const weapon = {
+    ...gun,
+    projectile: {
+      kind: "missile",
+      speedSubcellsPerTick: 1024,
+      turnAnglePerTick: 1000,
+      flightTicks: 8,
+    },
+  };
+  const f = fixture({ weapon });
+  f.fire();
+  const round = f.kernel.world.query(Projectile)[0] as number;
+  f.advance();
+  expect(f.kernel.world.get(round, Projectile, "speed")).toBe(256);
+  f.kernel.world.set(f.target, Transform, "y", 24 * 1024 + 512);
+  const before = f.kernel.world.get(round, Projectile, "facing");
+  f.advance();
+  expect(
+    Math.abs(
+      ((f.kernel.world.get(round, Projectile, "facing") - before + 0x8000) & 0xffff) - 0x8000,
+    ),
+  ).toBeLessThanOrEqual(1000);
+  f.kernel.world.destroy(f.target);
+  f.advance();
+  expect(f.kernel.world.get(round, Projectile, "target")).toBe(0);
+  f.advance(10);
+  expect(f.kernel.world.query(Projectile)).toEqual([]);
+});
+
+test("direct plus splash warheads apply once each with shape distance, resistance and friendly-fire override", () => {
+  const weapon: GameplayWeapon = {
+    ...gun,
+    projectile: { kind: "instant" },
+    warheads: [
+      { type: "damage", amount: 10, tags: [] },
+      { type: "damage", amount: 20, radiusSubcells: 1024, falloffPerMille: [1000, 500], tags: [] },
+    ],
+  };
+  const f = fixture({ weapon });
+  const friend = f.spawn(3, 0, 24, 20.5),
+    neighbour = f.spawn(3, 1, 24, 20.5);
+  f.fire();
+  expect(f.hp()).toBe(970);
+  expect(f.hp(friend)).toBe(980);
+  expect(f.hp(neighbour)).toBe(980);
+  const safe = fixture({
+    weapon: {
+      ...weapon,
+      warheads: [
+        weapon.warheads[0] as (typeof weapon.warheads)[number],
+        { ...weapon.warheads[1], friendlyFire: false } as (typeof weapon.warheads)[number],
+      ],
+    },
+  });
+  const protectedFriend = safe.spawn(3, 0, 24, 20.5);
+  safe.fire();
+  expect(safe.hp(protectedFriend)).toBe(1000);
+});
+
+test("zero, immunity and final-floor damage remain exact even for large products and duplicate tags", () => {
+  const target = { ...unit, armor: "heavy" as const, resistPerMille: { fire: 500 } };
+  expect(
+    warheadDamage(
+      { type: "damage", amount: 100, versusPerMille: { heavy: 333 }, tags: ["fire", "fire"] },
+      target,
+      333,
+      1250,
+    ),
+  ).toBe(6);
+  for (const amount of [0, 1])
+    expect(
+      warheadDamage(
+        { type: "damage", amount, versusPerMille: { heavy: 0 }, tags: [] },
+        target,
+        1000,
+      ),
+    ).toBe(0);
+  expect(
+    warheadDamage({ type: "damage", amount: 1, versusPerMille: { heavy: 1 }, tags: [] }, target, 1),
+  ).toBe(1);
+  const f = fixture({
+    weapon: {
+      ...gun,
+      projectile: { kind: "instant" },
+      warheads: [
+        {
+          type: "damage",
+          amount: 100000,
+          versusPerMille: { default: 10000 },
+          tags: ["fire", "emp", "explosive", "energy", "nanite"],
+        },
+      ],
+    },
+    resistance: { fire: 10000, emp: 10000, explosive: 10000, energy: 10000, nanite: 10000 },
+  });
+  f.fire();
+  expect(f.kernel.world.isAlive(f.target)).toBe(false);
+});
+
+test("delayed multi-warhead damage and fuses persist and never repeat after target removal", () => {
+  const f = fixture({
+    weapon: {
+      ...gun,
+      projectile: { kind: "instant" },
+      warheads: [
+        { type: "damage", amount: 10, delayTicks: 2, tags: [] },
+        { type: "damage", amount: 5, delayTicks: 4, tags: [] },
+      ],
+    },
+  });
+  f.fire();
+  expect(f.hp()).toBe(1000);
+  expect(f.kernel.world.query(PendingImpact)).toHaveLength(1);
+  f.advance(2);
+  expect(f.hp()).toBe(990);
+  f.advance(2);
+  expect(f.hp()).toBe(985);
+  f.advance(10);
+  expect(f.hp()).toBe(985);
+  expect(f.kernel.world.query(PendingImpact)).toEqual([]);
+  const fuse = fixture({
+    weapon: {
+      ...gun,
+      projectile: { kind: "bullet", speedSubcellsPerTick: 10 * 1024, fuseTicks: 3 },
+    },
+  });
+  fuse.fire();
+  fuse.advance();
+  expect(fuse.hp()).toBe(1000);
+  fuse.advance(2);
+  expect(fuse.hp()).toBe(1000);
+  fuse.advance();
+  expect(fuse.hp()).toBe(990);
+});
+
+test("death removes the actor once, clears targets and releases occupancy while event output stays outside hashes", () => {
+  const f = fixture({ health: 10, weapon: { ...gun, projectile: { kind: "instant" } } });
+  f.fire();
+  expect(f.kernel.world.isAlive(f.target)).toBe(false);
+  expect(f.kernel.world.has(f.actor, AttackOrder)).toBe(false);
+  expect(f.kernel.combatEvents?.filter((event) => event.type === "death")).toHaveLength(1);
+  const before = checkpointHash(f.kernel);
+  emitCombatEvent(f.kernel, { type: "flight", x: 0, y: 0, force: 0, projectile: "bullet" });
+  expect(checkpointHash(f.kernel)).toBe(before);
+  f.advance();
+  expect(f.kernel.combatEvents?.filter((event) => event.type === "death")).toEqual([]);
+  f.kernel.combatEvents = [];
+  for (let i = 0; i < MAX_COMBAT_EVENTS; i++)
+    emitCombatEvent(f.kernel, { type: "flight", x: 0, y: 0, force: 0 });
+  emitCombatEvent(f.kernel, { type: "death", x: 0, y: 0, force: 0 });
+  expect(f.kernel.combatEvents).toHaveLength(MAX_COMBAT_EVENTS);
+  expect(f.kernel.combatEvents.at(-1)?.type).toBe("death");
+});
+
+test("uphill misses strike the terrain below their victim instead of faking a direct hit", () => {
+  const f = fixture({
+    raised: true,
+    miss: 1000,
+    weapon: {
+      ...gun,
+      projectile: { kind: "instant" },
+      warheads: [{ type: "damage", amount: 100, radiusSubcells: 1024, tags: [] }],
+    },
+  });
+  f.fire();
+  expect(f.hp()).toBe(1000);
+  expect(f.kernel.streams.has("combat")).toBe(true);
+  expect(
+    f.kernel.combatEvents?.some((event) => event.type === "impact" && event.x <= 24 * 1024),
+  ).toBe(true);
+  const hit = fixture({
+    raised: true,
+    miss: 0,
+    weapon: { ...gun, projectile: { kind: "instant" } },
+  });
+  hit.fire();
+  expect(hit.hp()).toBe(990);
+});
+
+test("visibility clips actual round events and own-hit/death alerts reveal no hidden attacker origin or raw IDs", () => {
+  const f = fixture({
+    fog: "standard",
+    health: 10,
+    weapon: {
+      ...gun,
+      projectile: {
+        kind: "missile",
+        speedSubcellsPerTick: 1024,
+        turnAnglePerTick: 1000,
+        flightTicks: 40,
+      },
+    },
+  });
+  // A separate source authorizes the shot, without giving the victim's Force sight of the shooter.
+  f.spawn(1, 0, 24, 21);
+  f.advance();
+  const victim = createProjection(f.setup, 2, "controlled"),
+    unauthorised = createProjection(f.setup, 3, "controlled");
+  expect(victim.snapshot(f.kernel).combatEvents?.some((event) => event.type === "launch")).toBe(
+    false,
+  );
+  expect(unauthorised.snapshot(f.kernel).combatEvents).toEqual([]);
+  let observed = false;
+  for (let tick = 0; tick < 12 && f.kernel.world.isAlive(f.target); tick++) {
+    f.advance();
+    const packet = victim.snapshot(f.kernel);
+    for (const event of packet.combatEvents ?? []) {
+      expect(Object.hasOwn(event, "round")).toBe(false);
+      expect(Object.hasOwn(event, "force")).toBe(false);
+      expect(event.x).toBeGreaterThan(22 * 1024);
+      observed = true;
+    }
+  }
+  expect(observed).toBe(true);
+  expect(f.kernel.world.isAlive(f.target)).toBe(false);
+});
+
+test("event actor handles use current presented actors and retain only previously presented death victims", () => {
+  const f = fixture({ health: 10, weapon: { ...gun, projectile: { kind: "instant" } } });
+  const projection = createProjection(f.setup, 1, "controlled");
+  const before = projection.snapshot(f.kernel);
+  const actor = before.entities.find(
+    (entity) => projection.resolve(entity.handle) === f.actor,
+  )?.handle;
+  const victim = before.entities.find(
+    (entity) => projection.resolve(entity.handle) === f.target,
+  )?.handle;
+  f.fire();
+  const snapshot = projection.snapshot(f.kernel);
+  expect(snapshot.combatEvents?.find((event) => event.type === "launch")?.entity).toBe(actor);
+  const death = snapshot.combatEvents?.find((event) => event.type === "death");
+  expect(death?.entity).toBe(victim);
+  expect(projection.resolve(death?.entity)).toBeUndefined();
+  Reflect.set(death as object, "entity", "e999");
+  expect(
+    projection.snapshot(f.kernel).combatEvents?.find((event) => event.type === "death")?.entity,
+  ).toBe(victim);
+  expect(
+    createProjection(f.setup, 1, "controlled")
+      .snapshot(f.kernel)
+      .combatEvents?.find((event) => event.type === "death")?.entity,
+  ).toBeUndefined();
+  const living = fixture({ weapon: { ...gun, projectile: { kind: "instant" } } });
+  living.fire();
+  const observer = createProjection(living.setup, 1, "controlled"),
+    packet = observer.snapshot(living.kernel);
+  const damaged = packet.combatEvents?.find((event) => event.type === "damage")?.entity;
+  expect(observer.resolve(damaged)).toBe(living.target);
+});
+
+test("unsupported projectile kinds and exhausted round capacity cannot consume RNG or weapon clocks", () => {
+  const unavailable = fixture({
+    weapon: { ...gun, scatterSubcells: 100, projectile: { kind: "beam" } },
+  });
+  unavailable.fire();
+  expect(unavailable.hp()).toBe(1000);
+  expect(unavailable.kernel.world.query(ShotIntent)).toEqual([]);
+  expect(unavailable.kernel.streams.has("combat")).toBe(false);
+  const f = fixture({ weapon: { ...gun, scatterSubcells: 100, projectile: { kind: "instant" } } });
+  for (let i = 0; i < MAX_ACTIVE_ROUNDS; i++) {
+    const id = f.kernel.world.create();
+    f.kernel.world.add(id, PendingImpact, {
+      definition: 2,
+      weapon: 0,
+      remaining: 1,
+      tick: 100000,
+      ceiling: 255,
+    });
+  }
+  f.fire();
+  expect(f.kernel.streams.has("combat")).toBe(false);
+  const state = f.kernel.world
+    .query(WeaponState)
+    .find((id) => f.kernel.world.get(id, WeaponState, "shooter") === f.actor) as number;
+  expect(f.kernel.world.get(state, WeaponState, "reloadAt")).toBe(0);
+  f.kernel.world.destroy(f.kernel.world.query(PendingImpact)[0] as number);
+  f.advance();
+  expect(f.kernel.streams.has("combat")).toBe(true);
+});
+
+test("active flight and delayed impacts continue identically after World and vision restoration", () => {
+  const definitions: Definition[] = [
+    {
+      ...unit,
+      visionSubcells: 6 * 1024,
+      id: "unit:restore/shooter",
+      weapons: [
+        {
+          ...gun,
+          projectile: {
+            kind: "missile",
+            speedSubcellsPerTick: 1024,
+            turnAnglePerTick: 1000,
+            flightTicks: 40,
+          },
+          warheads: [{ type: "damage", amount: 10, delayTicks: 3, tags: [] }],
+        },
+      ],
+    },
+    unit,
+  ];
+  const make = () => {
+    const kernel = createKernel({ seed: 1, debug: false, map: flatMap(16) });
+    register(kernel, entitiesFeature(definitions));
+    register(kernel, movementFeature({ definitions, grants: [] }));
+    register(kernel, { components: [ConstructionSite, BuilderConstruction] });
+    register(kernel, combatFeature({ definitions, grants: [] }));
+    initializeProjectiles(kernel, { definitions });
+    initializeVision(kernel, {
+      definitions,
+      forces: [
+        { index: 0, faction: "faction:restore" },
+        { index: 1, faction: "faction:restore" },
+      ],
+    });
+    return kernel;
+  };
+  const source = make();
+  spawnEntity(source, 0, definitions[0] as Definition, {
+    definition: definitions[0]?.id as string,
+    force: 0,
+    x: 5 * 1024 + 512,
+    y: 5 * 1024 + 512,
+    facing: 0,
+  });
+  spawnEntity(source, 1, unit, {
+    definition: unit.id,
+    force: 1,
+    x: 9 * 1024 + 512,
+    y: 5 * 1024 + 512,
+    facing: 0,
+  });
+  step(source, []);
+  step(source, []);
+  expect(source.world.query(Projectile)).toHaveLength(1);
+  const restored = make();
+  restored.world.load(source.world.serialize());
+  restored.vision?.load(source.vision?.serialize());
+  restored.tick = source.tick;
+  expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  for (let tick = 0; tick < 15; tick++) {
+    step(source, []);
+    step(restored, []);
+    expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  }
+});
