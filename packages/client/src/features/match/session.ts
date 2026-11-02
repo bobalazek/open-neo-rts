@@ -66,6 +66,7 @@ export function createNormalSession(
   const clock = createPresentationClock();
   const release = () => {
     if (disposed) return;
+    menu?.finish();
     disposed = true;
     signal.abort();
     resultScreen?.remove();

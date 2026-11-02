@@ -1,5 +1,28 @@
 import { expect, test } from "@playwright/test";
 
+test("browser Back disposes an unsaved in-match settings preview", async ({ page }, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded normal settings/WebGL journey");
+  test.setTimeout(90_000);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Quick start local match", exact: true }).click();
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
+  await menu.getByRole("button", { name: "Settings", exact: true }).click();
+  await menu.getByLabel("Interface scale", { exact: true }).selectOption("150");
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
+    .toBe("150%");
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
+    .toBe("100%");
+  expect(await page.evaluate(() => localStorage.getItem("open-neo-rts.settings.v1"))).toBeNull();
+  await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
+});
+
 test("shared device settings preview, cancel, persist and apply live across interface scales", async ({
   page,
 }, info) => {
