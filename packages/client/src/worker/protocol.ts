@@ -19,6 +19,9 @@ import {
   STAT_COUNTERS,
 } from "@open-neo-rts/sim";
 
+export const NORMAL_GAME_SPEEDS = [0.75, 1, 1.5, 2] as const;
+export const DEBUG_GAME_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;
+
 export interface PlacementDiagnostic extends SpawnPlacement {
   /** Tick evaluated by the authoritative checker. */
   tick: number;
@@ -478,7 +481,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     !isRecord(state) ||
     typeof state.paused !== "boolean" ||
     typeof state.speed !== "number" ||
-    ![0.25, 0.5, 1, 2, 4, 8].includes(state.speed)
+    ![...NORMAL_GAME_SPEEDS, ...DEBUG_GAME_SPEEDS].some((speed) => speed === state.speed)
   )
     return false;
   if (state.overlays !== undefined && !isOverlayData(state.overlays)) return false;

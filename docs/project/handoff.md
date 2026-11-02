@@ -73,7 +73,7 @@ completes a 450-credit Field Technician and verifies one unit built and 450 spen
 at surrender; screenshots cover desktop/narrow layouts. Score/APM/graphs and
 replay actions remain unavailable until their actual producers exist.
 
-Continue the in-game menu/settings, alerts, non-damage effects, wreck/salvage,
+Continue remaining save/audio/rebinding integration, alerts, non-damage effects, wreck/salvage,
 required tier-1 signatures/abilities and veterancy, full version/content/map-checked
 save/restore/replay, audio/help/tooling and the phase exit. Feature-level World or
 bot restore is not a complete validated save file. Replay hash,20 recorded complete
@@ -84,3 +84,13 @@ Routes: `/`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; legacy `/?map=
 terrain links remain supported. Code/browser CI pull original core LFS bytes for
 actual catalog identity and authored setup; never replace them with pointers or
 synthetic identity bytes. Missing assets preserve Home/debug and refuse Start.
+
+Task 2-31a adds an owned native modal menu with acknowledged pause/resume, actual
+0.75/1/1.5/2 pacing, Esc priority, confirmed restart/leave and the same surrender
+command as the HUD. `/settings` and the in-match panel share validated versioned
+device preferences for live graphics, 75–150% interface scale, camera panning,
+edge scrolling and reduced zoom motion. Unsaved preview cancels, successful writes
+persist, and failed storage writes restore saved preferences. Camera input is
+suspended while the menu owns focus. Speed/preferences do not enter canonical sim
+state; normal matches reject debug speed 8×. Save/load remain visibly unavailable;
+audio, full rebinding and F1 acceptance are not claimed. No SIM/content change.

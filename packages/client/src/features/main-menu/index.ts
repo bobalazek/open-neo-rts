@@ -13,6 +13,11 @@ export function homeScreen(
     menu.hidden = !menu.hidden;
     (event.currentTarget as HTMLButtonElement).setAttribute("aria-expanded", String(!menu.hidden));
   });
+  const settings = document.createElement("button");
+  settings.type = "button";
+  settings.textContent = text("ui.settings.title");
+  settings.addEventListener("click", () => navigate("/settings"));
+  root.querySelector("nav")?.append(settings);
   root.querySelector("[data-skirmish]")?.addEventListener("click", () => navigate("/skirmish"));
   root.querySelector("[data-quick]")?.addEventListener("click", quickStart);
 }
