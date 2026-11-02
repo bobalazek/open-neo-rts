@@ -140,6 +140,8 @@ port.onmessage = ({ data }) => {
         return;
       }
       case "command": {
+        if (setup.normal?.bots?.some((bot) => bot.seat === seat))
+          throw new Error("This seat is controlled by a bot");
         if (!isRecord(data.command) || Object.keys(data.command).length !== 2)
           throw new Error("Invalid command request");
         const { type } = data.command;

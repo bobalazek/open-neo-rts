@@ -6,6 +6,7 @@ import {
   constructionWorkFeature,
   structureRepairFeature,
 } from "./features/construction";
+import { initializeBotSeats } from "./features/control/bots";
 import {
   checkNormalMatchSetup,
   copyNormalMatchSetup,
@@ -158,5 +159,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
   if (setup.normal) register(kernel, combatFeature({ ...setup, definitions }));
   initializeObservations(kernel, { ...setup, definitions });
+  initializeBotSeats(kernel, { ...setup, definitions });
   return kernel;
 }

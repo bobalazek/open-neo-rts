@@ -44,7 +44,6 @@
       "version": "0.0.0",
       "dependencies": {
         "@open-neo-rts/deterministic": "workspace:*",
-        "@open-neo-rts/sim": "workspace:*",
       },
     },
     "packages/client": {
@@ -101,6 +100,7 @@
       "name": "@open-neo-rts/sim",
       "version": "0.0.0",
       "dependencies": {
+        "@open-neo-rts/ai": "workspace:*",
         "@open-neo-rts/content": "workspace:*",
         "@open-neo-rts/deterministic": "workspace:*",
       },
