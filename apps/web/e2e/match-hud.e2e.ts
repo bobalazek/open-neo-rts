@@ -48,14 +48,62 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await page.getByRole("button", { name: "Cancel site (100%)", exact: true }).click();
   await expect(page.locator("[data-credits]")).toHaveText("Credits 5000");
   await page.getByRole("button", { name: /Idle producers 1/ }).click();
-  await page.locator('[data-definition="core.unit:eastern-collective/field-technician"]').click();
+  const technician = page.locator(
+    '[data-definition="core.unit:eastern-collective/field-technician"]',
+  );
+  await expect(technician).toBeEnabled();
+  // Pause as paid work first paints; slow driver round trips can exceed the authored eight seconds.
+  await technician.evaluate(
+    (element) =>
+      new Promise<void>((resolve) => {
+        const paid = new MutationObserver(() => {
+          const pause = document.querySelector<HTMLButtonElement>("[data-pause]");
+          if (
+            document.querySelector("[data-credits]")?.textContent === "Credits 4550" &&
+            document
+              .querySelector("[data-queue]")
+              ?.textContent?.includes("Field Technician · slot 1") &&
+            pause?.textContent === "Pause"
+          ) {
+            paid.disconnect();
+            pause.click();
+            resolve();
+          }
+        });
+        paid.observe(document.body, { subtree: true, childList: true, characterData: true });
+        (element as HTMLButtonElement).click();
+      }),
+  );
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
   await expect(page.locator("[data-queue]")).toContainText("Field Technician · slot 1");
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(page.getByRole("button", { name: "Cancel item", exact: true })).toBeDisabled();
   await page.screenshot({ path: info.outputPath("hud-production-desktop.png") });
-  await page.getByRole("button", { name: "Resume", exact: true }).click();
-  await page.getByRole("button", { name: "Cancel item", exact: true }).click();
+  // Cancel when the resumed UI enables the real button, before another remote-control round trip.
+  await page.getByRole("button", { name: "Resume", exact: true }).evaluate(
+    (element) =>
+      new Promise<void>((resolve) => {
+        const resumed = new MutationObserver(() => {
+          const cancel = document.querySelector<HTMLButtonElement>("[data-queue] button");
+          if (
+            document.querySelector("[data-pause]")?.textContent === "Pause" &&
+            cancel &&
+            !cancel.disabled
+          ) {
+            resumed.disconnect();
+            cancel.click();
+            resolve();
+          }
+        });
+        resumed.observe(document.body, {
+          subtree: true,
+          childList: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ["disabled"],
+        });
+        (element as HTMLButtonElement).click();
+      }),
+  );
   await expect(page.locator("[data-queue] li")).toHaveCount(0);
   await expect(page.locator("[data-credits]")).toHaveText("Credits 5000");
   await page.setViewportSize({ width: 390, height: 844 });
