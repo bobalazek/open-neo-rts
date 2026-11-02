@@ -484,7 +484,7 @@ test("blocked approaches cannot repair remotely, expose bounded status and retry
   f.world.set(f.target, Health, "current", 0);
   step(f.kernel, []);
   expect(f.world.has(f.unit, RepairOrder)).toBe(false);
-  expect(f.world.get(f.target, Health, "current")).toBe(0);
+  expect(f.world.isAlive(f.target)).toBe(false);
 });
 
 test("private repair status is copied with opaque targets, and huge recipes keep bounded integer credit carry", () => {

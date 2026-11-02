@@ -14,8 +14,8 @@ import {
   CONSTRUCTION_REFUSALS,
   EXTRACTION_STATUSES,
   HARVEST_STATUSES,
-  PRODUCTION_STATUSES,
   MAX_COMBAT_EVENTS,
+  PRODUCTION_STATUSES,
 } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {

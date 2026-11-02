@@ -685,3 +685,155 @@ test("normal worker mines partial cargo and unloads into the bank after builders
   expect(actual.cargo?.cargo).toBe(0);
   expect(actual.finalCredits).toBe((actual.paid ?? 0) + 5);
 });
+
+test("normal worker applies rifle damage and publishes scoped launch and death actors", async ({
+  page,
+}) => {
+  await page.route("http://normal-match.test/**", (route) =>
+    route.fulfill({
+      contentType: route.request().url().endsWith("sim-worker.js")
+        ? "text/javascript"
+        : "text/html",
+      body: route.request().url().endsWith("sim-worker.js")
+        ? worker
+        : "<!doctype html><title>Combat fixture</title>",
+    }),
+  );
+  await page.goto("http://normal-match.test/");
+  const actual = await page.evaluate(
+    async ({ client, setup }) => {
+      const url = URL.createObjectURL(new Blob([client], { type: "text/javascript" }));
+      const { createOfflineMatch } = (await import(
+        url
+      )) as typeof import("../../../packages/client/src/worker");
+      URL.revokeObjectURL(url);
+      let state: OfflineState | undefined;
+      const match = createOfflineMatch((next) => {
+        state = next;
+      });
+      const known = new Set<string>();
+      const remember = () => {
+        for (const entity of state?.snapshot.entities ?? []) known.add(entity.handle);
+      };
+      const events = () => state?.snapshot.combatEvents ?? [];
+      try {
+        await match.init({ setup, seat: 1, mode: "controlled" });
+        remember();
+        const soldiers =
+          state?.snapshot.entities
+            .filter(
+              (entity) => entity.definition === "core.unit:eastern-collective/collective-soldier",
+            )
+            .map((entity) => entity.handle) ?? [];
+        const moving = match.command("unit.move", {
+          entities: soldiers,
+          x: 20 * 1024,
+          y: 22 * 1024,
+        });
+        await match.step();
+        const result = await moving;
+        const inRangePair = () => {
+          const entities = state?.snapshot.entities ?? [];
+          for (const actor of entities.filter(
+            (entity) =>
+              entity.force === 0 &&
+              entity.definition === "core.unit:eastern-collective/collective-soldier",
+          ))
+            for (const enemy of entities.filter(
+              (entity) => entity.force === 1 && entity.definition === actor.definition,
+            ))
+              if ((actor.x - enemy.x) ** 2 + (actor.y - enemy.y) ** 2 <= 5120 ** 2)
+                return { actor, enemy };
+        };
+        for (let tick = 0; tick < 600 && !inRangePair(); tick++) {
+          remember();
+          await match.step();
+        }
+        const pair = inRangePair();
+        if (!pair) throw new Error("No permitted soldier pair entered rifle range");
+        const attacking = match.command("unit.attack", {
+          entities: [pair.actor.handle],
+          entity: pair.enemy.handle,
+        });
+        await match.step();
+        const attackResult = await attacking;
+        for (
+          let tick = 0;
+          tick < 600 && !events().some((event) => event.type === "damage");
+          tick++
+        ) {
+          remember();
+          await match.step();
+        }
+        const damage = events();
+        const hurt = state?.snapshot.entities.some((entity) => entity.health < entity.maxHealth);
+        for (
+          let tick = 0;
+          tick < 240 && !events().some((event) => event.type === "death");
+          tick++
+        ) {
+          remember();
+          await match.step();
+        }
+        const deaths = events().filter((event) => event.type === "death");
+        return { result, attackResult, damage, hurt, deaths, known: [...known] };
+      } finally {
+        match.dispose();
+      }
+    },
+    {
+      client,
+      setup: {
+        ...setup,
+        // Compiled authored rifle fixture; complete real catalog compilation is checked separately.
+        definitions: setup.definitions.map((definition) =>
+          definition.id === "core.unit:eastern-collective/collective-soldier"
+            ? {
+                ...definition,
+                armor: "infantry" as const,
+                weapons: [
+                  {
+                    id: "rifle",
+                    targets: ["ground"],
+                    rangeSubcells: [0, 5120] as const,
+                    reloadTicks: 20,
+                    projectile: { kind: "instant" },
+                    warheads: [
+                      {
+                        type: "damage",
+                        amount: 10,
+                        versusPerMille: {
+                          default: 1000,
+                          medium: 300,
+                          heavy: 100,
+                          aircraft: 500,
+                          naval: 250,
+                          structure: 100,
+                        },
+                        tags: [],
+                      },
+                    ],
+                  },
+                ],
+              }
+            : definition,
+        ),
+      },
+    },
+  );
+  expect(actual.result).toBe("accepted");
+  expect(actual.attackResult).toBe("accepted");
+  expect(actual.hurt, JSON.stringify(actual)).toBe(true);
+  expect(actual.damage.some((event) => event.type === "damage" && event.amount === 10)).toBe(true);
+  expect(
+    actual.damage.some(
+      (event) => event.type === "launch" && /^e[1-9][0-9]*$/.test(event.entity ?? ""),
+    ),
+  ).toBe(true);
+  expect(actual.deaths.length, JSON.stringify(actual)).toBeGreaterThan(0);
+  for (const event of [...actual.damage, ...actual.deaths]) {
+    expect("force" in event || "round" in event).toBe(false);
+    if (event.entity) expect(actual.known).toContain(event.entity);
+    if (event.handle) expect(event.handle).toMatch(/^p[1-9][0-9]*$/);
+  }
+});
