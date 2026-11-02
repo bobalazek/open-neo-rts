@@ -1010,6 +1010,7 @@ export function createMatchHud(
     targeting: () => mode !== undefined,
     cancel,
     frame: preview,
+    armAttackMove: () => activate(4),
     /** Minimap points share normal selection filtering, busy state, payment/grant authority and refusals. */
     orderPoint(point: Point, attackMove = false) {
       if (busy) return;

@@ -24,7 +24,8 @@ export function createMinimap(
     zoom: (delta: number) => void;
     view: () => readonly MapPoint[];
     camera: () => MapPoint;
-    order: (point: MapPoint, attackMove: boolean) => void;
+    order: (point: MapPoint) => void;
+    armAttackMove: () => void;
   },
   signal: AbortSignal,
 ) {
@@ -64,8 +65,7 @@ export function createMinimap(
   const definitions = new Map(options.definitions.map((definition) => [definition.id, definition]));
   let snapshot: SeatSnapshot | undefined,
     lastDraw = -Infinity;
-  let drag: number | undefined,
-    attackMove = false;
+  let drag: number | undefined;
   function point(event: { clientX: number; clientY: number }) {
     return minimapPoint(
       event.clientX,
@@ -108,7 +108,7 @@ export function createMinimap(
       if (!cell) return;
       status.textContent = "";
       if (event.button === 2) {
-        options.order(cell, attackMove);
+        options.order(cell);
         return;
       }
       drag = event.pointerId;
@@ -171,23 +171,15 @@ export function createMinimap(
       }
       if (event.code === "KeyA") {
         event.preventDefault();
-        attackMove = true;
+        options.armAttackMove();
       }
     }
   }
   world.addEventListener("keydown", shortcuts, { signal });
   canvas.addEventListener("keydown", shortcuts, { signal });
   window.addEventListener(
-    "keyup",
-    (event) => {
-      if (event.code === "KeyA") attackMove = false;
-    },
-    { signal },
-  );
-  window.addEventListener(
     "blur",
     () => {
-      attackMove = false;
       cancelDrag();
     },
     { signal },

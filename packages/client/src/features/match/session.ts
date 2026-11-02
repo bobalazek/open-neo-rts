@@ -285,6 +285,7 @@ export function createNormalSession(
             y: activeRenderer.camera.target.z / CELL_SIZE,
           }),
           order: hud.orderPoint,
+          armAttackMove: hud.armAttackMove,
         },
         signal.signal,
       );
@@ -301,6 +302,7 @@ export function createNormalSession(
         const sizes = new ResizeObserver(layout);
         sizes.observe(topBar);
         sizes.observe(bottomHud);
+        sizes.observe(canvas);
         layout();
         signal.signal.addEventListener("abort", () => sizes.disconnect(), { once: true });
       }
