@@ -1,7 +1,7 @@
 // Content: definition types, schemas, pack loader, rules, maps, and validators for definitions and assets.
 export * from "./assets/glb";
 export * from "./assets/validate-model";
-export * from "./loader/check-packs";
+export * from "./loader";
 export * from "./maps";
 export * from "./rules/combat";
 export * from "./rules/navigation";

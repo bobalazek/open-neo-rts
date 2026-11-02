@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import type { BunPlugin } from "bun";
 import { SCHEMAS, validate } from "../../packages/content/src";
 
-/** Built-in source registry only; no pack loading or rewritten content. */
+/** Manifest-driven preview registry. Full match identity is resolved with runtime bytes. */
 export default {
   name: "debug-builtins",
   setup(build) {
@@ -12,9 +12,14 @@ export default {
     }));
     build.onLoad({ filter: /.*/, namespace: "debug-builtins" }, async () => {
       const root = resolve(import.meta.dir, "../../content/core");
-      const files = Array.from(
-        new Bun.Glob("**/{unit,structure,prop}.json").scanSync({ cwd: root }),
-      ).sort();
+      const manifest: unknown = await Bun.file(resolve(root, "manifest.json")).json();
+      const manifestIssues = validate(SCHEMAS.manifest, manifest);
+      if (manifestIssues.length)
+        throw new Error(
+          `manifest.json: ${manifestIssues.map((i) => `${i.path}: ${i.message}`).join("; ")}`,
+        );
+      const listed = (manifest as { files: Record<string, string[] | undefined> }).files;
+      const files = ["units", "structures", "props"].flatMap((group) => listed[group] ?? []).sort();
       const imports: string[] = [];
       const entries: string[] = [];
       for (const [index, relative] of files.entries()) {

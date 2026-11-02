@@ -144,11 +144,11 @@ export const obj = (props: Record<string, Schema>, description?: string): Schema
     (v, path, issues) => {
       if (!isObject(v)) return void issues.push({ path, message: "must be an object" });
       for (const [k, s] of Object.entries(props)) {
-        if (k in v) s.check(v[k], `${path}.${k}`, issues);
+        if (Object.hasOwn(v, k)) s.check(v[k], `${path}.${k}`, issues);
         else if (!s.optional) issues.push({ path: `${path}.${k}`, message: "is required" });
       }
       for (const k of Object.keys(v)) {
-        if (k !== "$schema" && !(k in props))
+        if (k !== "$schema" && !Object.hasOwn(props, k))
           issues.push({ path: `${path}.${k}`, message: "unknown field" });
       }
     },

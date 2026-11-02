@@ -2,6 +2,8 @@
 
 Build only what the current phase lists. The design and engineering docs describe the whole game; this page says what's in scope when. Concrete work items are in [tasks.md](./tasks.md); blockers on people are in [human-tasks.md](./human-tasks.md).
 
+The owner [authorized functional phase-2 gameplay before the remaining phase-1b performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md). Phase 1b remains open; its unfinished acceptance does not block independent gameplay tasks. The existing exit criteria remain unchanged.
+
 ## Phases
 
 | Phase                      | Deliverable                                                                                                                                                                                                                                                                                                                                                            | Rough effort*          |
