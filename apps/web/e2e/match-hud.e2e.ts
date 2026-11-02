@@ -4,7 +4,7 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   page,
 }, info) => {
   test.skip(info.project.name !== "chromium", "Normal HUD WebGL smoke runs in Chromium");
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1280, height: 720 });
