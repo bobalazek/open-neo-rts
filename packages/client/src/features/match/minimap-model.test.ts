@@ -5,6 +5,7 @@ import type {
   PresentedGhost,
   SeatSnapshot,
 } from "@open-neo-rts/sim";
+import { createMatchNotices } from "./alerts";
 import { minimapMarkers, minimapPoint, minimapVision, ownBase } from "./minimap-model";
 
 const unit: GameplayDefinition = {
@@ -60,6 +61,67 @@ const snapshot = (): SeatSnapshot => ({
   entities: [],
   ghosts: [],
   fog: [{ group: 0, width: 8, height: 8, cells: new Uint8Array(64) }],
+});
+
+test("Force notices use only observed own damage, actual readiness and permitted deaths", () => {
+  const notices = createMatchNotices(0, definitions, 8, 8);
+  const first = {
+    ...snapshot(),
+    entities: [live("own", unit.id, 0, 2, 3), live("enemy", unit.id, 1, 4, 4)],
+  };
+  notices.update(first);
+  expect(notices.entries()).toEqual([]);
+  first.entities[0]!.health = 80;
+  first.entities[1]!.health = 20;
+  const next = { ...first, tick: 1 };
+  notices.update(next);
+  expect(notices.entries()).toMatchObject([{ kind: "under-attack", x: 2, y: 3, entity: "own" }]);
+  notices.update(next);
+  notices.update({ ...next, tick: 2, entities: [{ ...first.entities[0]!, health: 60 }] });
+  expect(notices.entries()).toHaveLength(1);
+  const ready = live("ready", unit.id, 0, 1, 1);
+  const site = { ...live("site", base.id, 0, 3, 3), constructionSite: true as const };
+  notices.update({ ...snapshot(), tick: 3, entities: [ready, site] });
+  expect(notices.entries().map((n) => n.kind)).toEqual(["unit-ready", "under-attack"]);
+  notices.update({
+    ...snapshot(),
+    tick: 4,
+    entities: [{ ...site, constructionSite: undefined }],
+    combatEvents: [
+      { type: "death", entity: "ready", x: 1024, y: 1024 },
+      { type: "death", entity: "enemy", x: 4096, y: 4096 },
+    ],
+  });
+  expect(notices.entries().map((n) => n.kind)).toEqual([
+    "lost",
+    "structure-ready",
+    "unit-ready",
+    "under-attack",
+  ]);
+  expect(notices.next()?.kind).toBe("lost");
+  expect(notices.next()?.kind).toBe("structure-ready");
+  notices.update({ ...snapshot(), tick: 405 });
+  expect(notices.entries()).toEqual([]);
+  expect(notices.next()).toBeUndefined();
+});
+
+test("local pings reject shroud, debug fog and invalid coordinates; notices stay bounded and expire", () => {
+  const notices = createMatchNotices(0, definitions, 8, 8);
+  const value = snapshot();
+  if (value.fog?.[0]) value.fog[0].cells[9] = 1;
+  notices.update(value);
+  expect(notices.ping(value, "help", { x: 2, y: 2 })).toBe(false);
+  expect(notices.ping(value, "help", { x: -1, y: 1 })).toBe(false);
+  expect(notices.ping(value, "help", { x: Number.NaN, y: 1 })).toBe(false);
+  expect(notices.ping({ ...value, mode: "debug-no-fog" }, "help", { x: 1, y: 1 })).toBe(false);
+  for (let i = 0; i < 12; i++) expect(notices.ping(value, "danger", { x: 1, y: 1 })).toBe(true);
+  expect(notices.entries()).toHaveLength(8);
+  const ids = new Set<number>();
+  for (let i = 0; i < 8; i++) ids.add(notices.next()!.id);
+  expect(ids.size).toBe(8);
+  notices.update({ ...value, tick: 400 });
+  expect(notices.entries()).toEqual([]);
+  expect(notices.ping(value, "help", { x: 1, y: 1 })).toBe(false);
 });
 
 test("minimap fog is copied, unioned and fails closed for absent or mismatched grids", () => {

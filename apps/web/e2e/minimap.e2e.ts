@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { SeatSnapshot } from "../../../packages/sim/src";
 
 test("normal minimap masks shroud, pans locally, returns Home and submits owned orders through the worker", async ({
   page,
@@ -7,6 +8,32 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    const OriginalWorker = window.Worker;
+    const observed: string[] = [];
+    Reflect.set(window, "minimapOrders", observed);
+    window.Worker = class extends OriginalWorker {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        this.addEventListener(
+          "message",
+          ({ data }: MessageEvent<{ state?: { snapshot?: SeatSnapshot } }>) => {
+            for (const entity of data.state?.snapshot?.entities ?? []) {
+              if (
+                entity.force !== 0 ||
+                !entity.definition.endsWith("/field-technician") ||
+                !entity.order
+              )
+                continue;
+              const key = `${entity.force}|${entity.definition}|${entity.order.type}|${entity.order.x}|${entity.order.y}`;
+              if (!observed.includes(key)) observed.push(key);
+              if (observed.length > 32) observed.shift();
+            }
+          },
+        );
+      }
+    };
+  });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
@@ -30,7 +57,7 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   const panned = await minimap.getAttribute("data-camera-cell");
   await page.keyboard.press("Space");
   await expect(page.locator(".hud-minimap [role=status]")).toHaveText(
-    "Combat alerts are not available yet. No camera jump was made.",
+    "No recent notices. No camera jump was made.",
   );
   await expect(minimap).toHaveAttribute("data-camera-cell", panned ?? "");
   await page.keyboard.press("Home");
@@ -38,6 +65,10 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   const oldTop = await page.locator(".match-top").boundingBox();
   const oldHud = await page.locator(".match-hud").boundingBox();
   if (!oldTop || !oldHud) throw new Error("HUD bounds missing");
+  // Keep this regression's insets fixed: growing notices otherwise hit the viewport-relative cap.
+  await page.locator(".match-hud").evaluate((element, height) => {
+    element.style.maxHeight = `${height}px`;
+  }, oldHud.height);
   await page.setViewportSize({ width: 1280, height: 820 });
   const newTop = await page.locator(".match-top").boundingBox();
   const newHud = await page.locator(".match-hud").boundingBox();
@@ -60,6 +91,7 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   await expect(page.locator("[data-details]")).toContainText("Command Center");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: /Idle builders 2/ }).click();
+  await expect(page.locator("[data-details]")).toContainText("Field Technician");
   async function orderCell(x: number, y: number) {
     const current = await minimap.boundingBox();
     if (!current) throw new Error("Minimap bounds missing");
@@ -69,17 +101,23 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
       { button: "right" },
     );
   }
+  const observedOrder = (type: string, x: number, y: number) =>
+    expect
+      .poll(() => page.evaluate(() => Reflect.get(window, "minimapOrders") as string[]))
+      .toContain(
+        `0|core.unit:eastern-collective/field-technician|${type}|${x * 1024 + 512}|${y * 1024 + 512}`,
+      );
   await orderCell(26, 23);
-  await expect(page.locator("[data-details]")).toContainText("Moving");
+  await observedOrder("move", 26, 23);
   await minimap.focus();
   await expect(minimap).toBeFocused();
   await page.keyboard.press("a");
   await expect(world).toHaveAttribute("data-command-mode", "unit.attackMove");
   await orderCell(24, 25);
-  await expect(page.locator("[data-details]")).toContainText("Attacking");
+  await observedOrder("attackMove", 24, 25);
   await expect(world).not.toHaveAttribute("data-command-mode", "unit.attackMove");
   await orderCell(27, 24);
-  await expect(page.locator("[data-details]")).toContainText("Moving");
+  await observedOrder("move", 27, 24);
   await minimap.focus();
   await page.keyboard.press("a");
   await page.keyboard.press("Escape");
@@ -101,4 +139,41 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   await expect(world).toBeHidden();
   await expect(minimap).toHaveCount(0);
   expect(errors).toEqual([]);
+});
+
+test("local minimap pings refuse shroud and support keyboard placement and Space", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded offline minimap ping journey");
+  test.setTimeout(90_000);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  const minimap = page.locator(".hud-minimap canvas");
+  await minimap.click({ position: { x: 150, y: 150 }, modifiers: ["Alt"] });
+  await expect(page.locator(".hud-minimap [role=status]")).toHaveText(
+    "Explore this location before placing a ping.",
+  );
+  await expect(page.locator(".match-notices li")).toHaveCount(0);
+  await minimap.focus();
+  await page.keyboard.press("Home");
+  await page
+    .getByLabel("Local ping type (Alt-click minimap)", { exact: true })
+    .selectOption("danger");
+  await page.getByRole("button", { name: "Ping camera location", exact: true }).click();
+  await expect(page.locator(".match-notices button")).toHaveText(/^Danger · (19|20), (19|20)$/);
+  await expect(page.locator(".hud-minimap [role=status]")).toContainText(
+    "offline match does not send",
+  );
+  await minimap.click({ position: { x: 110, y: 110 } });
+  await minimap.focus();
+  await page.keyboard.press("Space");
+  await expect(minimap).toHaveAttribute("data-camera-cell", /^(19|20),(19|20)$/);
+  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("dialog", { name: "Match menu", exact: true })
+    .getByRole("button", { name: "Leave match", exact: true })
+    .click();
+  await expect(page.locator(".match-notices")).toHaveCount(0);
 });

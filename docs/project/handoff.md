@@ -73,7 +73,7 @@ completes a 450-credit Field Technician and verifies one unit built and 450 spen
 at surrender; screenshots cover desktop/narrow layouts. Score/APM/graphs and
 replay actions remain unavailable until their actual producers exist.
 
-Continue remaining save/audio/rebinding integration, alerts, non-damage effects, wreck/salvage,
+Continue remaining save/audio/rebinding integration, non-damage effects, wreck/salvage,
 required tier-1 signatures/abilities and veterancy, full version/content/map-checked
 save/restore/replay, audio/help/tooling and the phase exit. Feature-level World or
 bot restore is not a complete validated save file. Replay hash,20 recorded complete
@@ -94,3 +94,13 @@ persist, and failed storage writes restore saved preferences. Camera input is
 suspended while the menu owns focus. Speed/preferences do not enter canonical sim
 state; normal matches reject debug speed 8×. Save/load remain visibly unavailable;
 audio, full rebinding and F1 acceptance are not claimed. No SIM/content change.
+
+Task 2-30b adds eight recent own-Force notices (observed damage, actual unit/site
+completion and permitted actor deaths), a visible clickable feed, Space cycling
+and minimap rings. Five local ping kinds use explored legal cells via Alt-click
+or the camera-location button; offline pings are explicitly local. The
+[provisional presentation defaults](./decisions/2026-11-02-local-force-notices.md)
+do not affect canonical hashes. Model regressions and eight unique integrated
+Chromium menu/results/minimap cases passed; the final minimap rerun retains the
+original fixed-inset height-only selection regression and all real order checks.
+Source review accepted; shared delivery CI remains to be recorded in the PR.

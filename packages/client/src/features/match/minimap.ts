@@ -2,6 +2,7 @@ import { BIOMES, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content
 import { PALETTES } from "@open-neo-rts/render";
 import type { GameplayDefinition, SeatSnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
+import { createMatchNotices, type NoticeKind, PING_KINDS } from "./alerts";
 import {
   type MapPoint,
   minimapMarkers,
@@ -47,11 +48,26 @@ export function createMinimap(
   alert.disabled = true;
   alert.title = text("ui.minimap.no-alerts");
   controls.append(home, alert);
+  const ping = document.createElement("select");
+  ping.setAttribute("aria-label", text("ui.minimap.ping-kind"));
+  for (const kind of PING_KINDS) {
+    const option = document.createElement("option");
+    option.value = kind;
+    option.textContent = text(`ui.notice.${kind}`);
+    ping.append(option);
+  }
+  const pingCamera = document.createElement("button");
+  pingCamera.type = "button";
+  pingCamera.textContent = text("ui.minimap.ping-camera");
+  const feed = document.createElement("ol");
+  feed.className = "match-notices";
+  feed.setAttribute("aria-label", text("ui.minimap.feed"));
   const status = document.createElement("p");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  panel.append(controls, status);
+  panel.append(controls, ping, pingCamera, status);
   root.querySelector(".hud-panels")?.prepend(panel);
+  root.querySelector(".match-hud")?.append(feed);
   const canvasContext = canvas.getContext("2d");
   const terrain = options.terrain;
   const background = document.createElement("canvas");
@@ -63,6 +79,8 @@ export function createMinimap(
     ground = backgroundContext;
   const pixels = ground.createImageData(terrain.width, terrain.height);
   const definitions = new Map(options.definitions.map((definition) => [definition.id, definition]));
+  const notices = createMatchNotices(options.force, definitions, terrain.width, terrain.height);
+  let feedIds = "";
   let snapshot: SeatSnapshot | undefined,
     lastDraw = -Infinity;
   let drag: number | undefined;
@@ -88,11 +106,52 @@ export function createMinimap(
     pan(base);
     status.textContent = "";
   }
+  function noticeLabel(kind: NoticeKind) {
+    return text(`ui.notice.${kind}`);
+  }
+  function refreshFeed() {
+    const entries = notices.entries();
+    alert.disabled = entries.length === 0;
+    alert.title = entries.length ? text("ui.minimap.alert") : text("ui.minimap.no-alerts");
+    const ids = entries.map((entry) => entry.id).join(",");
+    if (ids === feedIds) return;
+    feedIds = ids;
+    feed.replaceChildren(
+      ...entries.map((entry) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `${noticeLabel(entry.kind)} · ${Math.floor(entry.x)}, ${Math.floor(entry.y)}`;
+        button.addEventListener("click", () => pan(entry));
+        item.append(button);
+        return item;
+      }),
+    );
+    status.textContent = entries[0] ? noticeLabel(entries[0].kind) : "";
+  }
+  function nextAlert() {
+    const entry = notices.next();
+    if (!entry) {
+      status.textContent = text("ui.minimap.no-alerts");
+      return;
+    }
+    pan(entry);
+    status.textContent = noticeLabel(entry.kind);
+  }
+  function placePing(cell: MapPoint) {
+    const kind = PING_KINDS.find((kind) => kind === ping.value);
+    if (snapshot && kind && notices.ping(snapshot, kind, cell)) {
+      refreshFeed();
+      status.textContent = text("ui.minimap.local-ping");
+    } else status.textContent = text("ui.minimap.ping-unexplored");
+  }
   function cancelDrag() {
     if (drag !== undefined && canvas.hasPointerCapture(drag)) canvas.releasePointerCapture(drag);
     drag = undefined;
   }
   home.addEventListener("click", goHome, { signal });
+  alert.addEventListener("click", nextAlert, { signal });
+  pingCamera.addEventListener("click", () => placePing(options.camera()), { signal });
   canvas.addEventListener(
     "pointerdown",
     (event) => {
@@ -100,12 +159,16 @@ export function createMinimap(
       event.preventDefault();
       event.stopPropagation();
       canvas.focus({ preventScroll: true });
-      if (event.altKey || event.shiftKey) {
-        status.textContent = text(event.altKey ? "ui.minimap.no-pings" : "ui.minimap.no-queue");
-        return;
-      }
       const cell = point(event);
       if (!cell) return;
+      if (event.altKey) {
+        placePing(cell);
+        return;
+      }
+      if (event.shiftKey) {
+        status.textContent = text("ui.minimap.no-queue");
+        return;
+      }
       status.textContent = "";
       if (event.button === 2) {
         options.order(cell);
@@ -153,7 +216,7 @@ export function createMinimap(
       goHome();
     } else if (event.code === "Space") {
       event.preventDefault();
-      status.textContent = text("ui.minimap.no-alerts");
+      nextAlert();
     } else if (event.currentTarget === canvas) {
       const direction = {
         ArrowLeft: [-1, 0],
@@ -249,6 +312,19 @@ export function createMinimap(
       }
     }
     const view = options.view();
+    for (const notice of notices.entries()) {
+      context.beginPath();
+      context.arc(
+        notice.x * sx,
+        notice.y * sy,
+        7 + ((snapshot.tick - notice.tick) % 20) / 4,
+        0,
+        Math.PI * 2,
+      );
+      context.strokeStyle = PING_KINDS.some((kind) => kind === notice.kind) ? "#81d4ed" : "#ffc85c";
+      context.lineWidth = 2;
+      context.stroke();
+    }
     if (view.length >= 3) {
       context.beginPath();
       view.forEach((point, i) => {
@@ -272,6 +348,7 @@ export function createMinimap(
     "abort",
     () => {
       cancelDrag();
+      feed.remove();
       panel.remove();
     },
     { once: true },
@@ -279,6 +356,8 @@ export function createMinimap(
   return {
     update(value: SeatSnapshot) {
       snapshot = value;
+      notices.update(value);
+      refreshFeed();
       home.disabled = !ownBase(value, definitions, options.force);
     },
     frame: draw,
