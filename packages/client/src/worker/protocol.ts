@@ -769,6 +769,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "disabled",
             "burning",
             "productionSurge",
+            "veterancy",
             "repair",
             "repairOrder",
             "deploy",
@@ -785,6 +786,22 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
+    if (entity.veterancy !== undefined) {
+      const veterancy = entity.veterancy;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(veterancy) ||
+        !exact(veterancy, veterancy.xp === undefined ? ["rank"] : ["rank", "xp", "nextXp"]) ||
+        !bounded(veterancy.rank, 3) ||
+        (veterancy.xp === undefined) !== (veterancy.nextXp === undefined) ||
+        (veterancy.xp !== undefined &&
+          (!bounded(veterancy.xp, 0xffffffff) ||
+            !bounded(veterancy.nextXp, 0xffffffff) ||
+            Number(veterancy.xp) > Number(veterancy.nextXp))) ||
+        (veterancy.rank === 0 && veterancy.xp === undefined)
+      )
+        return false;
+    }
     if (entity.productionSurge !== undefined) {
       const surge = entity.productionSurge;
       if (

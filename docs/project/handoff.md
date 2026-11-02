@@ -118,7 +118,7 @@ Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; l
 
 Repository fix/typecheck/test/build/content checks pass; original catalog identities and no-bot goldens remain unchanged. Independent review reproduced and closed the boosted-brownout label error: preserve base power rate500 for status while actual work is750. The permanent regression and `/tmp/neo-surge-brownout-review.ts` both pass. Review accepted the bounded engine. PR #220 merged at ad13de2bb0fbf41520d158ef81fd4b68e30a04ca with an identical tree to reviewed 4e32441. Hosted CI remains unavailable because of account billing/spending limits.
 
-## Authored industrial activation, SIM44 candidate
+## Authored industrial activation, SIM44 merged
 
 `/tmp/neo-industrial-activation`, branch `codex/industrial-surge-content`,
 activates the original headquarters Surge Force scope and provisional 1-IC,
@@ -156,3 +156,136 @@ All phases remain incomplete. Next functional work includes veterancy,
 remaining effects, mode/door/wreck presentation and complete persistence/replay,
 then the remaining roadmap phases. Do not restart FPS/native-key profiling or
 ask routine approval questions.
+
+PR #221 merged at 5febf7cc3802b0708e6baff2551f6bc0583fd048; its whole source
+tree equals the reviewed 3187fa622190bdb6394a2dc9a19de91912aa6c58 candidate.
+
+## Canonical veterancy, SIM45 merged
+
+`/tmp/neo-veterancy`, branch `codex/unit-veterancy`, delivers 2-46a under the
+[recorded provisional contract](./decisions/2026-11-02-provisional-veterancy.md).
+Actual hostile HP damage consumes one lifetime base-health XP budget per
+priced target, with exact carried fractions. The actual firing unit is distinct
+from its physical platform through shots, flight, delayed impact and burns.
+Three ranks add bounded health/damage, and top rank repairs after actual damage
+cooldown with integer carry. Dead/transferred sources do not earn; repair and
+promotion cannot refill the target's XP value. Mode damage adds at launch.
+Public rank/effective HP and army-only exact XP are copied and wire-validated.
+Off disables the progression and bonuses.
+
+Independent review found and verified closure of an invented cooldown on first
+XP: damage history now exists before XP and promotion leaves it unchanged.
+Preserved probes `/tmp/neo-veterancy-timer-review.ts` and
+`/tmp/neo-veterancy-timer-review-after.ts` show damage at tick 0, promotion at
+200, then health 110→111 and carry 600 over 20 ticks. A permanent regression
+matches it. Bounded engine review accepted. Repository fix/typecheck/test/build/
+content checks pass, including actual launch, passenger credit, delayed shots,
+burn, numeric bounds, Off, privacy/copy/wire and terminal normal input-record
+replay. The original low-level XP World case was later found to skip damage;
+use the SIM46 correction below for actual nonzero restore evidence. Normal fixture goldens are now
+80f19002522632f2/ddb0b89a2a3b9fff for the new canonical fields/default setting;
+debug digests and catalog identities stay unchanged. The extraction test's
+manual restore component list includes both new components.
+
+Player-facing 2-46b remains: setup toggle, HUD XP/chevrons, visible scene ranks
+and original-catalog worker/browser proof. No final CI or full-game acceptance
+is claimed. Hosted CI billing and local Firefox launch restrictions persist.
+
+The frozen SIM39 batch has now finished all 20 double trials: 13 natural
+endings and seven reproducible caps (6, 7, 10, 12, 15, 16, 18). All results are
+reproducible. Preserve its source, summary and companion log; it is historical
+evidence with known stalled outcomes, not the later SIM45 exit. The separate
+SIM42 seed-6 repair already completed naturally twice. Do not rerun historical
+batches or restart FPS/native-key profiling. Full phase 2 and phases 3–5 remain
+unfinished; continue functional gameplay and remaining roadmap delivery.
+
+
+PR #222 merged at 3909cef8be1c8dabd5a81d29d8106fb4cad54cb0 with an identical
+source tree to reviewed c3b759dd50a2dc032060915794eae0add6bc2899.
+
+## Refundable-site XP correction, SIM46 merged
+
+`/tmp/neo-veterancy-credit-fix`, branch `codex/veterancy-construction-credit`,
+closes a real zero-cost XP loop. The preserved independent probe
+`/tmp/neo-veterancy-refund-review.ts` placed a paid 600-credit/10-material site,
+dealt 10 actual HP damage at zero progress, earned 66,560 XP, then canceled for
+a full refund. Repeating twice promoted the attacker with no lasting resource
+cost. Unfinished ConstructionSite actors now update damage history but award
+no XP. Completed structures still award bounded damage credit, and the owner’s
+approved full-refund rule is unchanged.
+
+The new permanent regression failed before the guard with XP 66,560 and now
+passes two real build/damage/cancel cycles plus real builder completion and
+completed-structure credit. Independent rerun of the exact exploit probe
+confirmed unchanged 100→90 HP and full refund with no XP. Bounded review
+accepted. The old low-level restore fixture had no vision, so allied-group
+comparison skipped its damage. It now initializes real Force groups and the
+site marker, asserts HP 2, nonzero XP/rank, lifetime-budget carry 2 and repair
+carry 130 before serialization, loads an equally registered fresh World with
+the explicit clock, then checks identical damage/repair continuation and hash.
+Independent rerun passed with all preconditions. This remains a World unit
+check, not a complete game-save loader.
+
+Final repository checks pass. SIM46 and all three scenario headers align;
+startup/debug fixture hashes and actual catalog identities remain unchanged
+because those fixtures do not award refundable-site XP.
+
+The accepted 2-46b UI work is preserved at 86f41140e708f830928fc3d660df9cbd3a78d581
+in `/tmp/neo-veterancy-ui`, branch `codex/veterancy-presentation`, awaiting this
+fix parent. It adds strict backward-compatible saved setup On/Off, HUD rank/XP
+and shared unpickable scene chevrons. It passed repository checks and 18
+Chromium/WebKit cases with 10 expected non-Chromium HUD skips. Its original
+Soldier/Field Technician journey uses actual movement/HUD attack, a real
+granted enemy-HQ shutdown to isolate XP, no health/XP/definition edits, On/Off
+health/rank/XP assertions and two complete terminal Bun replays. A mobile
+checkbox screenshot was inspected. Stubbed picking/test-only setup and no
+physical-chevron/natural active-HQ match proof remain explicit. Rebase only
+that one UI commit onto the merged correction, preserve its patch, add final
+task/status documentation and verify the assembled parent before merging it.
+
+Continue mode animation, remaining effects/lifecycle/orders and complete
+persistence/replay/audio/help/content tools, then remaining roadmap phases.
+All phases remain unfinished. Keep the terminal SIM39 batch and all repair
+probes; no new historical reruns or FPS/native-key profiling.
+
+
+PR #223 merged at 7228e9ae265a012f7ee5a0696d17dcff5f1deeef with an identical
+tree to independently reviewed 20623ea65ed64838b8afcd3ad970324cefb774d2.
+
+## Veterancy controls and presentation, SIM46
+
+The single UI task commit rebased from 86f4114 to 2adfd80 onto the correction;
+`git range-diff` confirmed its patch was unchanged. `/tmp/neo-veterancy-ui`,
+branch `codex/veterancy-presentation`, now adds the final 2-46b documentation.
+No additional simulation-version change is needed for these client/render
+controls over the existing SIM46 On/Off rule.
+
+Legacy seven-field saved setups migrate with their preferences intact and
+veterancy On. New toggles are strict booleans; saved false reaches actual worker
+normal initialization. The selected HUD shows public rank and only the exact
+XP permitted by the snapshot. Scene chevrons share original code-built geometry,
+are unpickable, and revoke on rank loss/fog/death/disposal. A real-GLB NullEngine
+case covers shared instances, two visible Forces and final resource cleanup;
+there is no physical-chevron screenshot claim. The mobile checkbox screenshot
+was inspected and its save/load/launch journey passed.
+
+Independent bounded UI review accepted source and the corrected original-unit
+journey. It retains original content/prices/health/XP rules, uses actual movement
+and HUD attack, and isolates the original HQ's defensive guns with a real
+explicitly granted power-off command. On gives rank 3, XP 409600 and 130 HP;
+Off gives no rank state and 100 HP. Both completed input records reproduce
+terminal tick/hash in Bun. Test-only kits, nearby spawn, fogOff, added economic
+grant and stubbed renderer picking remain explicit; no natural active-HQ match
+or human acceptance is claimed. Final repository fix/typecheck/test/build/content checks over the correction
+passed. The assembled Chromium/WebKit batch passed 18 cases in 38.6 seconds,
+with 10 expected non-Chromium HUD skips; its eight original-catalog journeys
+include both veterancy settings and terminal Bun replay verification. Hosted CI remains
+unable to start steps, and local Firefox's profile launch remains unavailable.
+
+The next ready task is mode transformation playback; original Dragon Tank and
+Metamorphic APC assets currently declare only idle/move/attack/recoil clips,
+so split necessary original art from renderer wiring. The CLI can build one
+explicit source file with `bun neo build-models <path>`; avoid rebuilding the
+whole roster. Follow existing asset style and preserve original names/authors.
+Continue remaining phase-2 effects/lifecycle/orders, full persistence/replay,
+audio/help/content tools and acceptance, then phases 3–5. The goal is not done.

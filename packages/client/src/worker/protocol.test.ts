@@ -3,6 +3,52 @@ import { STAT_COUNTERS } from "@open-neo-rts/sim";
 import { isWorkerReply } from "./protocol";
 
 const resources = { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
+
+test("veterancy wire data bounds public ranks and paired private XP without accepting internal state", () => {
+  const packet = (veterancy: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1,
+        mode,
+        entities: [
+          {
+            handle: "e1",
+            definition: "core.unit:fixture/soldier",
+            force: 0,
+            x: 1024,
+            y: 1024,
+            facing: 0,
+            health: 110,
+            maxHealth: 110,
+            order: null,
+            veterancy,
+          },
+        ],
+      },
+    },
+  });
+  expect(isWorkerReply(packet({ rank: 1 }))).toBe(true);
+  expect(isWorkerReply(packet({ rank: 0, xp: 1, nextXp: 102400 }))).toBe(true);
+  expect(isWorkerReply(packet({ rank: 3, xp: 409600, nextXp: 409600 }))).toBe(true);
+  for (const invalid of [
+    { rank: 4 },
+    { rank: -1 },
+    { rank: 0 },
+    { rank: 1.5 },
+    { rank: 1, xp: 1 },
+    { rank: 1, nextXp: 1 },
+    { rank: 1, xp: -1, nextXp: 1 },
+    { rank: 1, xp: 2, nextXp: 1 },
+    { rank: 1, xp: 1, nextXp: 0x1_0000_0000 },
+    { rank: 1, damagedAt: 0 },
+    { rank: 1, [Symbol("hidden")]: true },
+  ])
+    expect(isWorkerReply(packet(invalid))).toBe(false);
+  expect(isWorkerReply(packet({ rank: 1 }, "debug-no-fog"))).toBe(false);
+});
 const reply = (banks: unknown, mode = "controlled") => ({
   id: 1,
   state: { paused: true, speed: 1, snapshot: { tick: 0, mode, entities: [], banks } },

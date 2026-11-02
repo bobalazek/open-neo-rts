@@ -2,6 +2,7 @@ import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
 import { initializeUnitModes } from "./features/abilities";
 import { initializeProductionSurges } from "./features/abilities/production-surge";
+import { initializeVeterancy } from "./features/abilities/veterancy";
 import { combatFeature } from "./features/combat";
 import { initializeBurn } from "./features/combat/burn";
 import { initializeDisable } from "./features/combat/disable";
@@ -51,7 +52,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 44;
+export const SIM_VERSION = 46;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -190,6 +191,8 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) register(kernel, combatFeature({ ...setup, definitions }));
   if (setup.normal) initializeProjectiles(kernel, { ...setup, definitions });
   if (setup.normal) initializeBurn(kernel, definitions);
+  if (setup.normal && setup.normal.settings.veterancy !== false)
+    initializeVeterancy(kernel, definitions);
   if (setup.normal) register(kernel, productionFeature({ ...setup, definitions }));
   if (setup.normal) initializeHarvesting(kernel, { definitions, grants: setup.grants });
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });

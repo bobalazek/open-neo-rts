@@ -10,6 +10,7 @@ import { applyBurn } from "./burn";
 import { applyDisable } from "./disable";
 
 export interface DamageImpact {
+  readonly source?: number;
   readonly damageBonus?: number;
   readonly force: number;
   readonly direct: number;
@@ -149,6 +150,7 @@ export function applyWarhead(
         falloff,
         impact.force,
         impact.damageBonus ?? 0,
+        impact.source ?? 0,
       );
       continue;
     }
@@ -176,6 +178,7 @@ export function applyWarhead(
     );
     if (!amount) continue;
     world.set(target, Health, "current", world.get(target, Health, "current") - amount);
+    kernel.veterancy?.damage(impact.source ?? 0, target, impact.force, amount);
     kernel.statistics?.damage(
       impact.force,
       force,

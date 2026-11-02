@@ -17,7 +17,7 @@ export function skirmishScreen(
   back: () => void,
   notice = "",
 ) {
-  root.innerHTML = `<section class="setup-screen"><header><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.skirmish.title")}</h1></header><form><div class="setup-columns"><section><h2>${text("ui.skirmish.forces")}</h2><div class="force-row"><strong>${text("ui.skirmish.you")}</strong><span>${faction.name}</span><label>${text("ui.skirmish.your-spawn")}<select name="yourSpawn"></select></label></div><div class="force-row"><strong>${text("ui.skirmish.opponent")}</strong><span>${faction.name}</span><label>${text("ui.skirmish.other-spawn")}<select name="otherSpawn"></select></label></div><p class="preview-note">${text("ui.skirmish.preview")}</p></section><aside><h2>${text("ui.skirmish.map")}</h2><h3>${map.name}</h3><p>${map.description}</p><p>128 × 128</p></aside></div><fieldset><legend>${text("ui.skirmish.rules")}</legend><div class="setup-fields"><label>${text("ui.skirmish.seed")}<input name="seed" inputmode="numeric" type="text" /></label>${numericSettings.map((id) => `<label>${text(id === "startingCredits" ? "ui.skirmish.credits" : id === "popCap" ? "ui.skirmish.population" : "ui.skirmish.structures")}<input name="${id}" inputmode="numeric" type="text" /></label>`).join("")}</div><p>${text("ui.skirmish.rules-note")}</p></fieldset><p role="status" aria-live="polite" data-status></p><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-save>${text("ui.skirmish.save")}</button><button type="button" data-load>${text("ui.skirmish.load")}</button><button type="button" data-defaults>${text("ui.skirmish.defaults")}</button><button type="submit" class="primary">${text("ui.skirmish.start")}</button></div></form></section>`;
+  root.innerHTML = `<section class="setup-screen"><header><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.skirmish.title")}</h1></header><form><div class="setup-columns"><section><h2>${text("ui.skirmish.forces")}</h2><div class="force-row"><strong>${text("ui.skirmish.you")}</strong><span>${faction.name}</span><label>${text("ui.skirmish.your-spawn")}<select name="yourSpawn"></select></label></div><div class="force-row"><strong>${text("ui.skirmish.opponent")}</strong><span>${faction.name}</span><label>${text("ui.skirmish.other-spawn")}<select name="otherSpawn"></select></label></div><p class="preview-note">${text("ui.skirmish.preview")}</p></section><aside><h2>${text("ui.skirmish.map")}</h2><h3>${map.name}</h3><p>${map.description}</p><p>128 × 128</p></aside></div><fieldset><legend>${text("ui.skirmish.rules")}</legend><div class="setup-fields"><label>${text("ui.skirmish.seed")}<input name="seed" inputmode="numeric" type="text" /></label>${numericSettings.map((id) => `<label>${text(id === "startingCredits" ? "ui.skirmish.credits" : id === "popCap" ? "ui.skirmish.population" : "ui.skirmish.structures")}<input name="${id}" inputmode="numeric" type="text" /></label>`).join("")}<label class="setup-toggle"><input type="checkbox" name="veterancy" />${text("ui.skirmish.veterancy")}</label></div><p>${text("ui.skirmish.rules-note")}</p></fieldset><p role="status" aria-live="polite" data-status></p><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-save>${text("ui.skirmish.save")}</button><button type="button" data-load>${text("ui.skirmish.load")}</button><button type="button" data-defaults>${text("ui.skirmish.defaults")}</button><button type="submit" class="primary">${text("ui.skirmish.start")}</button></div></form></section>`;
   const form = root.querySelector("form"),
     status = root.querySelector<HTMLElement>("[data-status]"),
     error = root.querySelector<HTMLElement>("[data-error]"),
@@ -33,13 +33,15 @@ export function skirmishScreen(
     );
   const fill = (config: SkirmishSetup) => {
     for (const [key, value] of Object.entries(config))
-      if (key !== "format") field(key).value = String(value);
+      if (key === "veterancy") (field(key) as HTMLInputElement).checked = value === true;
+      else if (key !== "format") field(key).value = String(value);
   };
   const read = () =>
     validateSkirmish({
       format: 1,
       yourSpawn: field("yourSpawn").value,
       otherSpawn: field("otherSpawn").value,
+      veterancy: (field("veterancy") as HTMLInputElement).checked,
       ...Object.fromEntries(
         ["seed", ...numericSettings].map((key) => [
           key,

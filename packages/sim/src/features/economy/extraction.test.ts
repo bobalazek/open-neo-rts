@@ -4,6 +4,7 @@ import { World } from "../../ecs";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup, toMatchResources } from "../../match";
 import { createProjection } from "../../projection";
+import { ExperienceYield, UnitExperience } from "../abilities";
 import { AttackOrder, ShotIntent, WeaponState } from "../combat";
 import {
   BuilderConstruction,
@@ -314,6 +315,8 @@ test("canonical snapshots include fractional progress and deposit state, with id
     CombatMotion,
     PendingImpact,
     Projectile,
+    UnitExperience,
+    ExperienceYield,
     ForceOutcome,
     ForceStatistics,
     MatchOutcome,

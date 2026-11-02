@@ -37,6 +37,7 @@ export interface NormalMatchSettings {
   readonly structureCap: number;
   readonly fog?: FogMode;
   readonly friendlyFire?: boolean;
+  readonly veterancy?: boolean;
   readonly highGroundMissPerMille?: number;
   readonly elimination?: EliminationRule;
 }
@@ -91,7 +92,13 @@ export interface NormalMatchOptions {
 const required = <T>(value: T | undefined): T =>
   value === undefined ? refuse("incomplete normal-match setup") : value;
 const setting = (
-  id: "startingCredits" | "popCap" | "structureCap" | "friendlyFire" | "highGroundMissPerMille",
+  id:
+    | "startingCredits"
+    | "popCap"
+    | "structureCap"
+    | "friendlyFire"
+    | "highGroundMissPerMille"
+    | "veterancy",
 ) => required(MATCH_SETTINGS.find((entry) => entry.id === id));
 const settingSchema = (id: "startingCredits" | "popCap" | "structureCap") =>
   int(setting(id).min, setting(id).max);
@@ -137,6 +144,7 @@ export const normalMatchSchema = strictObject({
     structureCap: settingSchema("structureCap"),
     fog: opt(oneOf(FOG_MODES)),
     friendlyFire: opt(bool()),
+    veterancy: opt(bool()),
     highGroundMissPerMille: opt(int(0, 1000)),
     elimination: opt(oneOf(ELIMINATION_RULES)),
   }),
@@ -194,6 +202,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
           "structureCap",
           "fog",
           "friendlyFire",
+          "veterancy",
           "highGroundMissPerMille",
           "elimination",
         ].includes(id),
@@ -209,6 +218,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ),
     fog: options.settings?.fog ?? "standard",
     friendlyFire: options.settings?.friendlyFire ?? setting("friendlyFire").default,
+    veterancy: options.settings?.veterancy ?? setting("veterancy").default,
     highGroundMissPerMille:
       options.settings?.highGroundMissPerMille ?? setting("highGroundMissPerMille").default,
     elimination: options.settings?.elimination ?? "annihilation",
@@ -440,6 +450,7 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         structureCap: normal.settings.structureCap,
         fog: normal.settings.fog ?? "standard",
         friendlyFire: normal.settings.friendlyFire ?? (setting("friendlyFire").default as boolean),
+        veterancy: normal.settings.veterancy ?? (setting("veterancy").default as boolean),
         highGroundMissPerMille:
           normal.settings.highGroundMissPerMille ??
           (setting("highGroundMissPerMille").default as number),

@@ -12,7 +12,6 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-43c · Mode transformation playback](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle; EMP integration is implemented, but authored transformation clips remain.
-- [ ] [2-46 · Veterancy progression and effective stats](./phases/2.md#2-46--veterancy-progression-and-effective-stats). PR type: engine; canonical XP/ranks, bounded bonuses, top-rank repair and settings/projection/replay behavior.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
 - [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling after concrete bot fixes; persistent runner is implemented, but capped matches are incomplete and20 full-game outcomes remain unqualified.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.

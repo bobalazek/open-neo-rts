@@ -14,6 +14,7 @@ test("normal quick-start defaults use the supported match settings and authored 
     startingCredits: rule("startingCredits").default,
     popCap: rule("popCap").default,
     structureCap: rule("structureCap").default,
+    veterancy: true,
   });
   expect(
     validateSkirmish({
@@ -23,6 +24,19 @@ test("normal quick-start defaults use the supported match settings and authored 
       otherSpawn: "north-east",
     }).seed,
   ).toBe(0xffffffff);
+});
+
+test("saved legacy setups retain their preferences with default veterancy, and the new toggle remains a strict boolean", () => {
+  const { veterancy: _veterancy, ...legacy } = defaultSkirmish();
+  expect(validateSkirmish({ ...legacy, seed: 42 })).toEqual({
+    ...legacy,
+    seed: 42,
+    veterancy: true,
+  });
+  expect(validateSkirmish({ ...legacy, veterancy: false }).veterancy).toBe(false);
+  for (const veterancy of [null, undefined, "false", 0, 1])
+    expect(() => validateSkirmish({ ...legacy, veterancy })).toThrow();
+  expect(() => validateSkirmish({ ...legacy, unknown: true })).toThrow();
 });
 
 test("saved or entered setups refuse malformed fields, unsupported additions and invalid spawn/rule combinations", () => {
@@ -96,6 +110,11 @@ test("normal defaults activate the real core bot opponent and grant both control
   expect(alternate.normal?.bots).toEqual(setup.normal?.bots);
   expect(alternate.normal?.forces.find((force) => force.index === 1)?.spawn).toBe("north-west");
   const kernel = createMatch(setup);
+  expect(kernel.veterancy).toBeDefined();
+  const disabled = createMatch(
+    normalSkirmish({ ...defaultSkirmish(), veterancy: false }, grid, catalog),
+  );
+  expect(disabled.veterancy).toBeUndefined();
   expect(kernel.bots?.hasSeat(1)).toBe(false);
   expect(kernel.bots?.hasSeat(2)).toBe(true);
   step(kernel, []);

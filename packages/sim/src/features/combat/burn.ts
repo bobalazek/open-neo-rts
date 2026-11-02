@@ -7,6 +7,7 @@ import { emitCombatEvent } from "../events/combat";
 import { warheadDamage } from "./damage";
 
 export const Burning = defineComponent("Burning", {
+  source: "u32",
   force: "u32",
   until: "u32",
   whole: "u32",
@@ -50,6 +51,12 @@ export function initializeBurn(kernel: Kernel, definitions: readonly Definition[
             if (!amount) continue;
             const definition = definitions[world.get(id, Template, "definition")]!;
             world.set(id, Health, "current", world.get(id, Health, "current") - amount);
+            kernel.veterancy?.damage(
+              world.get(id, Burning, "source"),
+              id,
+              world.get(id, Burning, "force"),
+              amount,
+            );
             const force = world.get(id, OwnerForce, "force");
             kernel.statistics?.damage(
               world.get(id, Burning, "force"),
@@ -81,11 +88,12 @@ export function applyBurn(
   falloff: number,
   force: number,
   bonus: number,
+  source = 0,
 ): void {
   if (!kernel.burning || !warhead.durationTicks || !warhead.amountPerSecond) return;
   // Snapshot the impact's effective rate; splitting whole/fraction avoids overflowing a u32 DPS field.
   const rate = Math.min(
-    definition.health * 20,
+    (kernel.veterancy?.maxHealth(target, definition.health) ?? definition.health) * 20,
     warheadDamage(
       { ...warhead, amount: warhead.amountPerSecond },
       definition,
@@ -110,11 +118,12 @@ export function applyBurn(
       return;
     }
     world.set(target, Burning, "force", force);
+    world.set(target, Burning, "source", source);
     world.set(target, Burning, "until", until);
     world.set(target, Burning, "whole", whole);
     world.set(target, Burning, "remainder", remainder);
   } else {
     if (world.has(target, Burning)) world.remove(target, Burning);
-    world.add(target, Burning, { force, until, whole, remainder, carry: 0 });
+    world.add(target, Burning, { source, force, until, whole, remainder, carry: 0 });
   }
 }

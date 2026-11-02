@@ -21,6 +21,7 @@ export interface MatchSetting {
 }
 
 export const MATCH_SETTINGS: readonly MatchSetting[] = [
+  { id: "veterancy", group: "combat", type: "boolean", default: true, scope: ["match"] },
   { id: "friendlyFire", group: "combat", type: "boolean", default: true, scope: ["match"] },
   {
     id: "highGroundMissPerMille",

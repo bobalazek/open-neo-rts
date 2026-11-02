@@ -24,6 +24,7 @@ export interface SkirmishSetup {
   startingCredits: number;
   popCap: number;
   structureCap: number;
+  veterancy: boolean;
 }
 export function defaultSkirmish(): SkirmishSetup {
   return {
@@ -34,6 +35,7 @@ export function defaultSkirmish(): SkirmishSetup {
     startingCredits: rule("startingCredits").default,
     popCap: rule("popCap").default,
     structureCap: rule("structureCap").default,
+    veterancy: true,
   };
 }
 export function validateSkirmish(value: unknown): SkirmishSetup {
@@ -41,11 +43,20 @@ export function validateSkirmish(value: unknown): SkirmishSetup {
     !value ||
     typeof value !== "object" ||
     Object.getPrototypeOf(value) !== Object.prototype ||
-    Reflect.ownKeys(value).length !== 7
+    ![7, 8].includes(Reflect.ownKeys(value).length) ||
+    Reflect.ownKeys(value).some(
+      (key) =>
+        typeof key !== "string" ||
+        !["format", "seed", "yourSpawn", "otherSpawn", ...numericSettings, "veterancy"].includes(
+          key,
+        ),
+    )
   )
     throw new Error(text("ui.skirmish.load-failed"));
   const input = value as Record<string, unknown>;
   if (input.format !== 1) throw new Error(text("ui.skirmish.load-failed"));
+  if (Object.hasOwn(input, "veterancy") && typeof input.veterancy !== "boolean")
+    throw new Error(text("ui.skirmish.load-failed"));
   for (const [key, field, min, max] of [
     ["seed", text("ui.skirmish.seed"), 0, 0xffffffff],
     ...numericSettings.map((id) => [
@@ -89,6 +100,7 @@ export function validateSkirmish(value: unknown): SkirmishSetup {
     startingCredits: input.startingCredits as number,
     popCap: input.popCap as number,
     structureCap: input.structureCap as number,
+    veterancy: (input.veterancy as boolean | undefined) ?? true,
   };
 }
 
@@ -103,6 +115,7 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
       popCap: config.popCap,
       structureCap: config.structureCap,
       fog: "standard",
+      veterancy: config.veterancy,
     },
     mapSupport: { start: map.start as "faction", players: map.players },
     map: {
