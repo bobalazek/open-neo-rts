@@ -7,6 +7,7 @@ import type { Feature, Kernel } from "../../kernel";
 import type { MatchMap } from "../../match-map";
 import { clearAttackOrder } from "../combat";
 import { BuilderConstruction, clearConstructionOrder } from "../construction";
+import { suspendRepair } from "../construction/repair";
 import type { NormalMatchSetup } from "../control";
 import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
@@ -55,6 +56,7 @@ export function movementFeature(match: {
     for (const id of ids) {
       if (match.normal) suspendHarvesting(kernel, id);
       if (match.normal) clearAttackOrder(kernel, id);
+      if (match.normal) suspendRepair(kernel, id);
       if (match.normal && world.has(id, BuilderConstruction)) clearConstructionOrder(kernel, id);
       if (kernel.movement && world.has(id, MovementFailure)) world.remove(id, MovementFailure);
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);

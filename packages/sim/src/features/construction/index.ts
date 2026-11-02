@@ -7,6 +7,7 @@ import { defineComponent } from "../../ecs";
 /** Present only while unfinished; the builder feature will own work/progress separately. */
 export const ConstructionSite = defineComponent("ConstructionSite", {});
 
+export * from "./repair";
 export * from "./sites";
 export * from "./work";
 

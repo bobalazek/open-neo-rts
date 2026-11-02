@@ -51,6 +51,16 @@ const live = (kernel: Kernel, id: number) =>
   kernel.world.has(id, Health) &&
   kernel.world.get(id, Health, "current") > 0;
 
+/** The exact paid receipt is shared with atomic structure sales; waiting items and gifts paid nothing. */
+export function productionReceipt(kernel: Kernel, id: number) {
+  return Object.fromEntries(
+    Object.entries(stockFields).map(([resource, field]) => [
+      resource,
+      kernel.world.get(id, ProductionItem, field),
+    ]),
+  ) as import("../economy/bank").StockBalances;
+}
+
 /** Select only authored exits. Navigation/occupancy can delay output, never send it to another side. */
 function exitPoint(
   kernel: Kernel,
@@ -140,14 +150,6 @@ export function productionFeature(
             definitionOf(kernel, entity)?.id === required,
         ),
     );
-  function receipt(kernel: Kernel, id: number) {
-    return Object.fromEntries(
-      Object.entries(stockFields).map(([resource, field]) => [
-        resource,
-        kernel.world.get(id, ProductionItem, field),
-      ]),
-    );
-  }
   function refund(kernel: Kernel, id: number) {
     const world = kernel.world;
     if (
@@ -159,7 +161,10 @@ export function productionFeature(
     }
     world.set(id, ProductionItem, "state", 3);
     status(kernel, id, "refund");
-    if (!kernel.economy?.refund(world.get(id, ProductionItem, "force"), receipt(kernel, id)).ok)
+    if (
+      !kernel.economy?.refund(world.get(id, ProductionItem, "force"), productionReceipt(kernel, id))
+        .ok
+    )
       return false;
     world.destroy(id);
     return true;

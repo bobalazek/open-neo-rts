@@ -9,6 +9,7 @@ import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform }
 import { checkSpawnPlacement, type SpawnCell } from "../entities/placement";
 import { MoveIntent, MovementFailure } from "../movement";
 import { ConstructionSite } from ".";
+import { suspendRepair } from "./repair";
 
 export const CONSTRUCTION_CLEARANCE_TICKS = 40;
 /** Proven investment, kept separately from the site's completion marker. Destruction loses it. */
@@ -65,6 +66,8 @@ export function clearConstructionOrder(kernel: Kernel, builder: number): void {
 
 export function assignBuilderConstruction(kernel: Kernel, builder: number, target: number): void {
   clearAttackOrder(kernel, builder);
+  suspendRepair(kernel, builder);
+  suspendHarvesting(kernel, builder);
   clearConstructionOrder(kernel, builder);
   kernel.world.add(builder, BuilderConstruction, { target });
 }
@@ -398,6 +401,7 @@ export function constructionFeature(
         for (const id of ids) {
           suspendHarvesting(kernel, id);
           clearAttackOrder(kernel, id);
+          suspendRepair(kernel, id);
           if (
             world.has(id, BuilderConstruction) &&
             world.get(id, BuilderConstruction, "target") !== request

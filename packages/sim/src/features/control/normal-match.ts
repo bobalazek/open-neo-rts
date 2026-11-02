@@ -17,6 +17,7 @@ import type { Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { compileOreCells } from "../../match-map";
 import { strictObject } from "../../snapshots/schema";
+import { KitStructure } from "../construction/repair";
 import { type Definition, type GameplayCatalog, spawnEntity } from "../entities";
 import { checkSpawnPlacement } from "../entities/placement";
 import {
@@ -180,6 +181,8 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.visionSubcells !== undefined && { visionSubcells: def.visionSubcells }),
     ...(def.power !== undefined && { power: def.power }),
     ...(def.role !== undefined && { role: def.role }),
+    ...(def.tags.length && { tags: def.tags }),
+    ...(def.repair && { repair: def.repair }),
     ...(def.harvestCapacity !== undefined && { harvestCapacity: def.harvestCapacity }),
     ...(def.harvestAmountPerSecond !== undefined && {
       harvestAmountPerSecond: def.harvestAmountPerSecond,
@@ -421,6 +424,7 @@ export function initializeNormalMatch(kernel: Kernel, setup: MatchSetup): void {
   const normal = setup.normal;
   const map = kernel.map;
   if (!normal || !map) return;
+  kernel.world.register(KitStructure);
   const ore = compileOreCells(map);
   const staticObjects: NavigationObject[] = [];
   const placed: { x: number; y: number; radius: number }[] = [];
@@ -440,7 +444,8 @@ export function initializeNormalMatch(kernel: Kernel, setup: MatchSetup): void {
     const payload = { definition: id, force: force.index, x, y, facing };
     if (!checkSpawnPlacement(kernel, setup.definitions, payload).ok)
       refuse(`headquarters does not fit spawn ${spawn.id}`);
-    spawnEntity(kernel, index, def, payload);
+    const entity = spawnEntity(kernel, index, def, payload);
+    kernel.world.add(entity, KitStructure);
     staticObjects.push({ definition: id, position: [x, y], rotation, owner: spawn.id });
     bases.set(force.index, { x: Math.floor(x / 1024), y: Math.floor(y / 1024), width, depth });
   }

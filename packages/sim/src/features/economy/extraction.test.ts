@@ -13,6 +13,10 @@ import {
   ConstructionProgress,
   ConstructionRequest,
   ConstructionSite,
+  KitStructure,
+  RepairCredit,
+  RepairOrder,
+  RepairWork,
 } from "../construction";
 import {
   type Definition,
@@ -283,6 +287,10 @@ test("canonical snapshots include fractional progress and deposit state, with id
     MoveIntent,
     MovementFailure,
     ConstructionSite,
+    KitStructure,
+    RepairOrder,
+    RepairWork,
+    RepairCredit,
     ConstructionPayment,
     ConstructionRequest,
     ConstructionBuilder,
