@@ -11,9 +11,9 @@ const DIR = "content/core/maps";
 
 type Spawn = { id: string; position: [number, number]; facing: number };
 type Resource = {
-  kind: "ore" | "materials";
+  kind: "ore" | "materials" | "oil";
   position: [number, number];
-  amount: number;
+  amount?: number;
   radius?: number;
 };
 
@@ -142,19 +142,19 @@ export const SANDBOX_MAPS: Record<string, () => SandboxMap> = {
   "sandbox-resources": () => ({
     name: "Sandbox: Resources",
     description:
-      "Ore fields of three sizes and raw-material nodes, the smallest of each nearly empty so depletion shows quickly.",
+      "Ore fields, raw-material nodes and an oil marker for shared-extractor placement. Extraction and depletion simulation arrive with the economy.",
     terrain: grid(64),
     spawns: [
       { id: "west", position: [12, 32], facing: 90 },
       { id: "east", position: [52, 32], facing: 270 },
     ],
-    // No oil nodes or neutral tech structures: the schema has no kind for them yet (owner decision).
     resources: [
       { kind: "ore", position: [32, 12], amount: 30000, radius: 5 },
       { kind: "ore", position: [20, 50], amount: 10000, radius: 3 },
       { kind: "ore", position: [44, 50], amount: 500, radius: 1 },
       { kind: "materials", position: [32, 32], amount: 5000 },
       { kind: "materials", position: [32, 44], amount: 250 },
+      { kind: "oil", position: [44.5, 32.5] },
     ],
   }),
 };
@@ -220,19 +220,30 @@ export function mapPreview({ terrain: t, spawns, resources = [] }: SandboxMap): 
       const water = t.water[i] === WATER.deep ? [44, 87, 135] : [85, 151, 179];
       cell(x, y, t.water[i] ? water : t.ramp[i] ? [232, 139, 57] : ground);
     }
-  for (const r of resources)
+  for (const r of resources) {
+    if (r.kind !== "ore") {
+      const px = Math.floor(r.position[0]),
+        py = Math.floor(r.position[1]),
+        extent = r.kind === "materials" ? 1 : 0;
+      for (let y = py - extent; y <= py; y++)
+        for (let x = px - extent; x <= px; x++)
+          if (x >= 0 && y >= 0 && x < t.width && y < t.height)
+            cell(x, y, r.kind === "oil" ? [55, 42, 34] : [111, 143, 168]);
+      continue;
+    }
     for (
-      let y = Math.max(0, r.position[1] - (r.radius ?? 1));
+      let y = Math.max(0, Math.ceil(r.position[1] - (r.radius ?? 1)));
       y <= Math.min(t.height - 1, r.position[1] + (r.radius ?? 1));
       y++
     )
       for (
-        let x = Math.max(0, r.position[0] - (r.radius ?? 1));
+        let x = Math.max(0, Math.ceil(r.position[0] - (r.radius ?? 1)));
         x <= Math.min(t.width - 1, r.position[0] + (r.radius ?? 1));
         x++
       )
         if ((x - r.position[0]) ** 2 + (y - r.position[1]) ** 2 <= (r.radius ?? 1) ** 2)
           cell(x, y, r.kind === "ore" ? [224, 178, 58] : [111, 143, 168]);
+  }
   for (const s of spawns)
     for (let y = s.position[1] - 1; y <= s.position[1] + 1; y++)
       for (let x = s.position[0] - 1; x <= s.position[0] + 1; x++) cell(x, y, [255, 255, 255]);
