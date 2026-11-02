@@ -7,60 +7,46 @@ Use [tasks](./tasks.md) and the [phase-2 plan](./phases/2.md).
 
 The owner [delegates provisional gameplay choices](./decisions/2026-11-02-provisional-implementation-autonomy.md): choose a coherent fit, record it and implement without routine approval questions. Preserve accepted content/earlier choices. Batch checks at feature boundaries. Commit/push/merge are authorized; merge reviewed finished work after green CI. Never cancel unfinished agents because other work finishes.
 
-[Performance acceptance is deferred](./decisions/2026-11-02-gameplay-before-performance.md). Do not resume foreground FPS/native-key profiling before functional gameplay. Preserve the owner's servers on4320/4318. Phase1b's deferred acceptance is still open.
+[Performance acceptance is deferred](./decisions/2026-11-02-gameplay-before-performance.md). Do not resume foreground FPS/native-key profiling before functional gameplay. Preserve the owner's servers on 4320/4318. Phase 1b's deferred acceptance remains open.
 
-## Delivered on main
+## Delivered through PR #209
 
-Main through PR #206 (`0e19a2e`) uses SIM32. Home/Quick start → real human Force versus the basic Eastern Collective bot → canonical result → fresh rematch/Home works. Economy/build/production, hauling/extraction, fog/vision, targeting/projectiles/damage/death, hosted bots, victory/surrender, HUD/control groups/minimap and actual final production/combat/resource totals are connected. Initial kits/stock and voluntary removals are excluded from those totals; income/spending/refunds remain separate.
+The delivered batch uses SIM32. Home/Quick start → real human-controlled Force versus the basic Eastern Collective bot → canonical result → fresh rematch/Home works. Economy/build/production, hauling/extraction, fog/vision, targeting/projectiles/damage/death, hosted bots, victory/surrender, HUD/control groups/minimap and actual final production/combat/resource totals are connected. Initial kits/stock and voluntary removals are excluded from totals; income/spending/refunds stay separate.
 
-PR #203 displays frozen per-Force totals with keyboard-accessible narrow scrolling. PR #204 fixes immediately loaded model picking before the next scene frame. PR #205 allows25 aggregate CI browser minutes; no workload/assertion or individual deadline changed. PR #206 adds acknowledged pause/menu, real0.75/1/1.5/2 pacing, Esc priority, confirmed restart/leave, shared surrender, objectives/current-controls help and shared Home/in-match device settings. Live graphics/UI scale/camera/edge/zoom-motion previews cancel correctly, persist on successful writes and roll back on failed writes. Browser Back discards unsaved preview before disposal. Save/load, audio and full rebinding remain explicitly unavailable; F1 is unresolved.
+- #203: final per-Force totals, with keyboard-accessible narrow scrolling.
+- #204: immediately loaded model picking before the next scene frame.
+- #205: 25 aggregate CI browser minutes, preserving browser workloads/assertions and individual journey deadlines.
+- #206: native pause/menu, real 0.75/1/1.5/2 pacing, Esc priority, confirmed restart/leave, shared surrender, objectives/current-controls help and shared Home/in-match device preferences. Live graphics/UI-scale/camera/edge/zoom-motion previews cancel, persist or roll back on failed writes. Browser Back discards unsaved preview before disposal. Save/load, audio and full rebinding remain unavailable; F1 is unresolved.
+- #207: eight recent own-Force notices, a visible clickable feed, Space cycling, minimap rings and five local ping types. Inputs are copied permitted observations: own health decreases, actual unit/site completion and permitted prior-owned deaths; disappearance alone is not a loss. Alt-click and keyboard-accessible camera-location pings require explored legal cells. Offline pings are explicitly local. [Presentation defaults](./decisions/2026-11-02-local-force-notices.md): 20 simulation seconds and five-second repeated-damage coalescing.
+- #208: `bun neo ai-vs-ai --out <new-directory> [--seeds 1,2,...] [--ticks 30000]`. Actual core/map bytes, default normal kits/rules and two hosted bots; each seed runs twice comparing hashes/checkpoints/outcomes/diagnostics. Preserve inputs/first failures and refuse existing output directories. Caps stay incomplete/nonzero. This is not a balance claim, full save or replay viewer.
+- #209: normal terminal input-record download and strict headless replay verification. Only accepted external inputs are recorded; hosted bots regenerate. The verifier rejects wrong versions, malformed records, refused inputs, explicit hosted-bot commands and mismatched terminal tick/hash. Active-match export is refused. Full installed-pack/cosmetic/creation metadata, snapshot keyframes, seeking and the interactive viewer remain 2-35b.
 
-Original first-pass assets cover54 units,46 structures and37 props. Team materials and required idle/movement/armed/death clip contracts are delivered. Permitted combat events drive attack/recoil/death clips, working-builder motion, health/work bars, flight/impact/damage effects; fog revokes retained cosmetic actors. All137 definitions compile;833 assets validate. Models do not mean every faction or ability is playable.
+Original first-pass assets cover 54 units, 46 structures and 37 props. Required team-material/idle/move/armed/death contracts are delivered. Permitted combat events drive attack/recoil/death clips, working-builder motion, health/work bars, flight/impact/damage effects; fog revokes retained cosmetic actors. All 137 definitions compile and 833 assets validate. Models do not mean every faction or ability is playable.
 
-## Evidence
+## Accepted evidence
 
-Shared menu/results/picking candidate45a62cd passed repository verification and Chromium/Firefox/WebKit in [CI41487961899](https://github.com/bobalazek/open-neo-rts/actions/runs/41487961899); content was appropriately skipped there, with local full validation passing. Merged source matches the tested non-documentation tree; only the explanatory CI-budget documentation differs. Independent reviews accepted all four PRs.
+All six jobs passed in [CI 41497184040](https://github.com/bobalazek/open-neo-rts/actions/runs/41497184040) on candidate 9f3b094eeba85a07528139bcff3cc21d5dc421d6: repository verification, content and Chromium/Firefox/WebKit. Rebased delivery trees match this candidate's production and test source; only this handoff differs. Independent reviews accepted the features and concrete fixes. Normal goldens remain ea8691a2ee5b2888 / b2cfa6f8e3c37a56; debug hashes unchanged. Gameplay identity a76a627d0f2f3aad, cosmetic e6a4c6a7a090f880.
 
-Integrated menu/results: six Chromium journeys passed together47.8s, followed by the concrete browser-Back preview regression6.3s and independent identical probe. Twelve earlier unique normal-worker/HUD/minimap/setup/menu/settings cases passed. Inspected desktop menu, narrow150% settings and final totals. Normal goldens remain ea8691a2ee5b2888 / b2cfa6f8e3c37a56; debug hashes unchanged. Gameplay identity a76a627d0f2f3aad, cosmetic e6a4c6a7a090f880.
+Menu/results: six Chromium journeys passed together in 47.8s, plus the browser-Back preview regression in 6.3s and independent identical probe. Prior normal-worker/HUD/minimap/setup/menu/settings coverage passed. Desktop menu, narrow 150% settings and final totals were inspected.
 
-## Reviewed delivery queue
+The minimap CI failures in earlier candidates exhausted the original journey's 90-second budget. An independent real-worker probe showed an accepted attack-move appearing for about 1.85 seconds, then arriving and correctly displaying idle. Tests now capture at most 32 real own-actor order signatures, retaining exact Force/definition/type/target and HUD/focus/bank/selection/resize/cleanup checks. Ping interactions have their own journey; both 90-second deadlines remain. The revised pair passed in 19.0s locally and the complete CI batch passed. [Learning](./learnings/2026-11-02-observe-short-lived-orders.md).
 
-The current shared candidate is PR #209 at139c3000ec03a7bfb8459b6e447504a9e0fba8a5,
-running [CI41495111537](https://github.com/bobalazek/open-neo-rts/actions/runs/41495111537).
-It includes #207+#208+#209. Earlier #207/#208 runs failed only the expanded
-minimap journey: a real-worker probe confirmed a legitimate short-lived order,
-and their90-second total deadline was exhausted. The reviewed correction captures
-bounded actual own-actor order signatures and separates ping interactions; both
-90-second deadlines are unchanged and the revised pair passed19.0s locally.
-Do not blindly retry the superseded old source. Merge after the shared batch is
-green, preserving own commits on each rebase after squash. All production source
-and tests match the shared candidate; subsequent handoff edits are documentation.
+The original-core CLI integration exceeded Bun's default five seconds in CI. It now reuses the CLI's genuine scenario artifact instead of loading/hashing the same pack twice, retains all 29 assertions and actual double trials, and uses the existing 15-second cold CLI-integration precedent. Production runner behavior is unchanged. Independent review and final CI accepted.
 
-- PR #207: own-Force notices and local pings (task2-30b). Eight notices track observed damage, actual unit/site completion and permitted prior-owned deaths; disappearance alone is not a loss. Visible clickable feed, Space cycling and minimap rings use only copied permitted observations. Five local ping kinds use Alt-click or a keyboard-accessible camera-location button in explored legal cells. [Presentation defaults](./decisions/2026-11-02-local-force-notices.md):20 simulation seconds, five-second repeated-damage coalescing. Full repository gates, six model cases43 assertions and eight unique integrated menu/results/minimap journeys passed. Final minimap11.2s, desktop/narrow images inspected, source/layout reviews accepted. CI41489811848; merge after green. Source rebase onto main changed only CI documentation.
-- PR #208: headless real-match runner (task2-40a), based on #207. `bun neo ai-vs-ai --out <new-directory> [--seeds 1,2,...] [--ticks 30000]` uses actual core/map bytes, default normal kits/rules and two hosted bots. Each seed runs twice comparing hashes/checkpoints/outcomes/diagnostics, preserves inputs/first failures and refuses existing directories. Capped games stay incomplete/nonzero; no save/keyframe/viewer/balance claim. Repository/content gates and independent source review passed. CI41491138993; finish after #207. A bounded ordinary test covers real setup, caps, standard replay checkpoints and overwrite refusal; long qualification is a separate explicit command.
+Replay records: two core cases, 16 assertions, plus actual paid production → surrender → download → Bun verification. The authentic browser file reproduces tick 231/hash 2111732313edace5, including the hosted bot. Independent review found and verified closure of a refused-input invariant gap. Terminal-race/rematch journeys and desktop/narrow Save replay UI also passed.
 
 ## Running qualification: leave it running
 
-SIM32 default20-seed batch: `/tmp/neo-ai-qualification-sim32-20261102`, log `/tmp/neo-ai-qualification-sim32.log`. Tool exec session56672. Each match runs twice and can take minutes; do not restart merely because an observation window expires. Results update summary.json after each seed.
+SIM32 baseline batch: `/tmp/neo-ai-qualification-sim32-20261102`; log `/tmp/neo-ai-qualification-sim32.log`; tool exec session 56672. Each match runs twice and can take minutes. Do not restart because an observation window expires. `summary.json` is authoritative and updates per seed; do not rewrite docs for every result.
 
-- Seed1: cap30000, no winner, reproducible hash e9cbaa12f14aa4b4. Incomplete.
-- Seed2: natural victory at26331 ticks (~21m57s), winnerteam1, reproducible hash ee39d4b098385aa0. No injected income/spawns/surrender/external orders.
+Seed 1 capped at 30,000 ticks with no winner and reproducible hash e9cbaa12f14aa4b4. Seed 2 naturally ended at 26,331 ticks (~21m57s), winner team 1, reproducible hash ee39d4b098385aa0. Several later seeds also capped; the batch is still running. No injected income/spawns/surrender/external orders were used. Preserve incomplete evidence and investigate actual stalls; do not claim 20 completed matches or a human playtest. Historical SIM30 artifacts remain `/tmp/neo-skirmish-opponent-seed{1-18000,2-30000}.json`; those hashes are not current goldens. One truck's no_ore recovery is limited.
 
-The batch is not finished. Preserve capped/failing evidence and investigate actual stalls; do not call this20 completed games or a human playtest. Earlier SIM30 trial artifacts remain `/tmp/neo-skirmish-opponent-seed{1-18000,2-30000}.json`; their hashes are historical, not current goldens. One truck's no_ore recovery remains limited.
+## Isolated ongoing work
 
-## Continue
+`/tmp/neo-unit-modes`, branch `codex/unit-modes`, has UNCOMMITTED task 2-43 work. It is not in main or an accepted feature. It starts SIM33, updates the three scenario headers, and adds typed single deploy-mode metadata, granted toggle/cooldown/payment state, immutable stat overlays, movement locking, launch-snapshotted damage and public-mode/private-cooldown projection/HUD wiring. Compile-derived modes require explicit self/mobile-zero metadata. Existing Dragon Tank/APC content has not yet been activated or corrected; neither mode is currently a claimed working release feature.
 
-PR #209/task2-35a adds terminal input-record export/download and strict headless replay
-verification. Real paid production followed by surrender downloaded a record
-whose hosted bot/setup/external inputs reproduced the exact terminal hash in Bun.
-Running-match export is refused. Wrong versions/hash/tick, malformed records and
-explicit hosted-bot commands are rejected. This is not full-save/keyframe/metadata
-or viewer completion; continue2-35b after validated snapshot restore.
-Independent review's refused-input invariant finding was fixed and independently
-reproduced as rejected. Two core cases16 assertions pass; the authentic downloaded
-record still verifies tick231/hash2111732313edace5 after the fix. Full accepted
-repository tests pass. Review accepted; no further source changes are pending.
+Finish that coherent feature before tests/review/publication: inspect projectile handoff of damageBonus, complete UI/wire/input and authored metadata, add meaningful mode/grant/money/flight/replay cases, update affected normal goldens and run one batched repository/content/browser check. Debug hashes should stay unchanged. Keep original faction/unit names. The owner's descriptions specify Dragon Tank +3 range/+25% damage/immobile (its older range-percent effect conflicts) and APC +50% armor/immobile; cooldowns are already three seconds. Record missing interpretations as provisional instead of asking. [OpenRA's deploy-condition model](https://docs.openra.net/en/release/traits/#grantconditionondeploy) was consulted as an implementation pattern; it is not a source of our balance values or code.
 
-Finish/merge the reviewed queue, preserving each PR's own commits when rebasing after squash. Continue non-damage effects, wreck/salvage and lifecycle presentation, required tier1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Full replay files/viewer, per-type/APM/history and a real human-versus-bot completion remain open. The detailed phase plan is authoritative; phase2 and phases3–5 are not complete.
+Continue non-damage effects, wreck/salvage/lifecycle presentation, required tier-1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Full replay files/viewer, per-type/APM/history and a real human-versus-bot completion remain open. Phase 2 and phases 3–5 are not complete.
 
-Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; legacy `/?map=...` remains supported. CI pulls original core LFS bytes for actual catalog identity. Never replace assets with pointers or synthetic identity bytes; incomplete installs preserve Home/debug and refuse Start.
+Routes: `/`, `/settings`, `/skirmish`, `/match`, `/debug`, `/debug?terrain=1`; legacy `/?map=...` remains. CI pulls original core LFS bytes for actual identity. Never replace assets with pointers/synthetic identity bytes; incomplete installs preserve Home/debug and refuse Start.
