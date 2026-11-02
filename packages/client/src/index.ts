@@ -1,6 +1,13 @@
 // Game client: screens, HUD, input, camera, single-player sim worker, editors. apps/web and the desktop shell only mount it.
 
 export async function startClient(canvas: HTMLCanvasElement) {
+  if (
+    (location.pathname === "/debug" && new URLSearchParams(location.search).has("terrain")) ||
+    (location.pathname === "/" && new URLSearchParams(location.search).has("map"))
+  ) {
+    const { startTerrainView } = await import("./features/debug/terrain");
+    return startTerrainView(canvas);
+  }
   if (location.pathname === "/debug" && new URLSearchParams(location.search).has("fog")) {
     const { startFogFixture } = await import("./features/match/fog-fixture");
     return startFogFixture(canvas);
@@ -13,8 +20,8 @@ export async function startClient(canvas: HTMLCanvasElement) {
     const { startDebugSession } = await import("./features/debug/session");
     return startDebugSession(canvas);
   }
-  const { startTerrainView } = await import("./features/debug/terrain");
-  return startTerrainView(canvas);
+  const { startApp } = await import("./app");
+  return startApp(canvas);
 }
 
 export { createMatchPresentation } from "./features/match";
