@@ -33,6 +33,8 @@ export interface NavigationGrid extends NavGrid {
   clearanceSubcells: Uint16Array;
   /** Physical terrain/occupancy speed; centre-clearance inflation does not change it. */
   speedPercent: Uint8Array;
+  /** Pre-inflation cardinal connectivity. A physically clear sweep cannot cross these regions. */
+  physicalRegions: Uint32Array;
 }
 
 const CELL = 1024;
@@ -227,6 +229,27 @@ export function compileNavigation(
         } else barrier(x * CELL, (y + 1) * CELL, (x + 1) * CELL, (y + 1) * CELL);
       }
     }
+  const physicalRegions = new Uint32Array(cells);
+  const flood: number[] = [];
+  let region = 0;
+  // Every allowed diagonal has an orthogonal decomposition, so cardinal labels suffice.
+  for (let start = 0; start < cells; start++) {
+    if (!cost[start] || physicalRegions[start]) continue;
+    physicalRegions[start] = ++region;
+    flood.length = 0;
+    flood.push(start);
+    for (let cursor = 0; cursor < flood.length; cursor++) {
+      const cell = flood[cursor] as number;
+      for (const direction of [1, 3, 4, 6]) {
+        if (!((connections[cell] as number) & (1 << direction))) continue;
+        const [dx, dy] = NAV_DIRECTIONS[direction] as readonly [number, number];
+        const next = cell + dx + dy * width;
+        if (!cost[next] || physicalRegions[next]) continue;
+        physicalRegions[next] = region;
+        flood.push(next);
+      }
+    }
+  }
   const clearanceSubcells = new Uint16Array(cells);
   const required = radiusSubcells * radiusSubcells;
   for (let i = 0; i < cells; i++) {
@@ -244,6 +267,7 @@ export function compileNavigation(
     connections,
     clearanceSubcells,
     speedPercent,
+    physicalRegions,
   };
   for (let i = 0; i < cells; i++) {
     if (!cost[i]) {

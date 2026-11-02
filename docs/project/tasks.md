@@ -10,7 +10,7 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
 
-- [ ] [1B-51 · Bound start-anchor fallback work](./phases/1b.md#1b-51--bound-continuous-start-anchor-fallback-work). Ready after 1B-50; required phase-exit follow-up [#149](https://github.com/bobalazek/open-neo-rts/issues/149). PR type: engine.
+[1B-51 · Counted start-anchor preparation](./phases/1b.md#1b-51--bound-continuous-start-anchor-fallback-work) has a SIM8 candidate for issue #149; measured completion latency, oracle/full-goal checks, independent review and owning-PR CI remain pending. It is required before the phase exit.
 
 ## In design review
 

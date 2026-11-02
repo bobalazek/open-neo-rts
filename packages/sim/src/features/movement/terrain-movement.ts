@@ -13,7 +13,7 @@ import { type Definition, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent, MovementFailure } from ".";
 import { compileNavigation, type NavigationGrid, type NavigationObject } from "./navigation";
 import { PathScheduler } from "./path-scheduler";
-import { labelReachability, nearestReachable, reachableStart } from "./reachability";
+import { labelReachability } from "./reachability";
 import { clearSegment, type Point, smoothPath } from "./segment";
 
 interface Route {
@@ -23,6 +23,7 @@ interface Route {
   target: Point;
   path: Point[];
   searching: boolean;
+  preparing: boolean;
   stuck: number;
   repaths: number;
 }
@@ -55,6 +56,7 @@ export class TerrainMovement {
       (request) => this.profile(this.definitionOf(request.entity)).grid,
       forces,
       MOVEMENT_NODE_BUDGET,
+      (request) => this.profile(this.definitionOf(request.entity)),
     );
     this.definitionHash = JSON.stringify(
       definitions.map((d) => [
@@ -226,6 +228,7 @@ export class TerrainMovement {
         target: bounded,
         path: [bounded],
         searching: false,
+        preparing: false,
         stuck: 0,
         repaths,
       });
@@ -233,47 +236,44 @@ export class TerrainMovement {
     }
     const { grid, labels, uniform } = this.profile(definition);
     const position = this.position(id);
-    if (
-      bounded.x === position.x &&
-      bounded.y === position.y &&
-      clearSegment(grid, position, position)
-    )
-      return;
-    const requestedCell = {
-      x: Math.floor(target.x / 1024),
-      y: Math.floor(target.y / 1024),
-    };
-    const start = reachableStart(grid, labels, position, requestedCell);
-    if (start === undefined) {
-      this.fail(id, 1);
-      return;
-    }
-    const goal = nearestReachable(grid, labels, start, {
-      x: Math.floor(target.x / 1024),
-      y: Math.floor(target.y / 1024),
-    });
-    if (goal === undefined) {
-      this.fail(id, 1);
-      return;
-    }
-    const destination =
-      goal === this.cell(bounded) && clearSegment(grid, this.centre(goal), bounded)
-        ? bounded
-        : this.centre(goal);
-    world.add(id, MoveIntent, destination);
-    // String pulling would produce this same unobstructed segment; no search queue is needed.
-    const direct = uniform && clearSegment(grid, this.position(id), destination);
+    const start = this.cell(position),
+      goal = this.cell(bounded);
+    // Compiled passable centres certify clearance without scanning the barrier list.
+    const certifiedStart =
+      grid.cost[start] && position.x % 1024 === 512 && position.y % 1024 === 512;
+    const certifiedGoal =
+      grid.cost[goal] &&
+      bounded.x % 1024 === 512 &&
+      bounded.y % 1024 === 512 &&
+      this.cell(target) === goal;
+    if (certifiedStart && bounded.x === position.x && bounded.y === position.y) return;
+    const preparing = !(certifiedStart && certifiedGoal && labels[start] === labels[goal]);
+    world.add(id, MoveIntent, bounded);
+    const direct = !preparing && uniform && grid.barriers.length === 0;
     this.routes.set(id, {
       definition,
-      goal,
+      goal: preparing ? -1 : goal,
       requested: { ...target },
-      target: destination,
-      path: direct ? [destination] : [],
+      target: bounded,
+      path: direct ? [bounded] : [],
       searching: !direct,
+      preparing,
       stuck: 0,
       repaths,
     });
     if (direct) return;
+    if (preparing) {
+      this.scheduler.submitAnchors([
+        {
+          force: world.get(id, OwnerForce, "force"),
+          entity: id,
+          issueTick: this.kernel.tick,
+          kind,
+          input: { position, requested: { ...target }, bounded, uniform },
+        },
+      ]);
+      return;
+    }
     this.scheduler.submit([
       {
         force: world.get(id, OwnerForce, "force"),
@@ -291,7 +291,27 @@ export class TerrainMovement {
     for (const id of [...this.routes.keys()].sort((a, b) => a - b))
       if (!world.isAlive(id) || !world.has(id, MoveIntent)) this.cancel(id);
     this.refreshOccupancy();
-    for (const result of this.scheduler.tick().results) {
+    const planned = this.scheduler.tick();
+    for (const prepared of planned.prepared) {
+      const id = prepared.request.entity,
+        route = this.routes.get(id);
+      if (!route) continue;
+      if (!prepared.result) {
+        this.fail(id, 1);
+        continue;
+      }
+      const result = prepared.result;
+      route.goal = result.goal;
+      route.target = result.destination;
+      route.preparing = false;
+      world.set(id, MoveIntent, "x", result.destination.x);
+      world.set(id, MoveIntent, "y", result.destination.y);
+      if (result.direct) {
+        route.path = [result.destination];
+        route.searching = false;
+      }
+    }
+    for (const result of planned.results) {
       const id = result.request.entity;
       const route = this.routes.get(id);
       if (!route) continue;
@@ -383,6 +403,7 @@ export class TerrainMovement {
         route.target.x,
         route.target.y,
         route.searching ? 1 : 0,
+        route.preparing ? 1 : 0,
         route.stuck,
         route.repaths,
         route.path.length,

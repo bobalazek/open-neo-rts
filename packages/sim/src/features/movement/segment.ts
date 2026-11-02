@@ -40,43 +40,104 @@ function intersects(a: Point, b: Point, c: Point, d: Point): boolean {
 }
 
 /** Swept circular clearance against the compiler's exact obstacles, cliffs and map boundary. */
-export function clearSegment(grid: NavigationGrid, a: Point, b: Point): boolean {
+function inBounds(grid: NavigationGrid, a: Point, b: Point): boolean {
   const r = grid.radiusSubcells;
+  return ![a, b].some(
+    (p) => p.x < r || p.y < r || p.x > grid.width * 1024 - r || p.y > grid.height * 1024 - r,
+  );
+}
+
+function clearsBarrier(
+  r: number,
+  a: Point,
+  b: Point,
+  [x0, y0, x1, y1]: readonly [number, number, number, number],
+): boolean {
   if (
-    [a, b].some(
-      (p) => p.x < r || p.y < r || p.x > grid.width * 1024 - r || p.y > grid.height * 1024 - r,
-    )
+    Math.max(a.x, b.x) + r < x0 ||
+    Math.min(a.x, b.x) - r > x1 ||
+    Math.max(a.y, b.y) + r < y0 ||
+    Math.min(a.y, b.y) - r > y1
   )
-    return false;
-  for (const [x0, y0, x1, y1] of grid.barriers) {
+    return true;
+  if ([a, b].some((p) => p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1)) return false;
+  const corners = [
+    { x: x0, y: y0 },
+    { x: x1, y: y0 },
+    { x: x1, y: y1 },
+    { x: x0, y: y1 },
+  ];
+  for (let i = 0; i < 4; i++) {
+    const c = corners[i] as Point;
+    const d = corners[(i + 1) % 4] as Point;
     if (
-      Math.max(a.x, b.x) + r < x0 ||
-      Math.min(a.x, b.x) - r > x1 ||
-      Math.max(a.y, b.y) + r < y0 ||
-      Math.min(a.y, b.y) - r > y1
+      intersects(a, b, c, d) ||
+      near(a, c, d, r) ||
+      near(b, c, d, r) ||
+      near(c, a, b, r) ||
+      near(d, a, b, r)
     )
-      continue;
-    if ([a, b].some((p) => p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1)) return false;
-    const corners = [
-      { x: x0, y: y0 },
-      { x: x1, y: y0 },
-      { x: x1, y: y1 },
-      { x: x0, y: y1 },
-    ];
-    for (let i = 0; i < 4; i++) {
-      const c = corners[i] as Point;
-      const d = corners[(i + 1) % 4] as Point;
-      if (
-        intersects(a, b, c, d) ||
-        near(a, c, d, r) ||
-        near(b, c, d, r) ||
-        near(c, a, b, r) ||
-        near(d, a, b, r)
-      )
-        return false;
-    }
+      return false;
   }
   return true;
+}
+
+export function clearSegment(grid: NavigationGrid, a: Point, b: Point): boolean {
+  return (
+    inBounds(grid, a, b) &&
+    grid.barriers.every((barrier) => clearsBarrier(grid.radiusSubcells, a, b, barrier))
+  );
+}
+
+export interface SweepState {
+  a: Point;
+  b: Point;
+  cursor: number;
+  status: "searching" | "clear" | "blocked";
+}
+
+/** One barrier (including broad-phase rejection) per credit; no hidden full-list sweep. */
+export class SegmentSweep {
+  private cursor = 0;
+  private status: SweepState["status"];
+  private readonly a: Point;
+  private readonly b: Point;
+  constructor(
+    private readonly grid: NavigationGrid,
+    a: Point,
+    b: Point,
+  ) {
+    this.a = { ...a };
+    this.b = { ...b };
+    this.status = !inBounds(grid, a, b) ? "blocked" : grid.barriers.length ? "searching" : "clear";
+  }
+  advance(): void {
+    if (this.status !== "searching") return;
+    const barrier = this.grid.barriers[this.cursor++] as readonly [number, number, number, number];
+    if (!clearsBarrier(this.grid.radiusSubcells, this.a, this.b, barrier)) this.status = "blocked";
+    else if (this.cursor === this.grid.barriers.length) this.status = "clear";
+  }
+  get result() {
+    return this.status;
+  }
+  snapshot(): SweepState {
+    return { a: { ...this.a }, b: { ...this.b }, cursor: this.cursor, status: this.status };
+  }
+  static restore(grid: NavigationGrid, state: SweepState): SegmentSweep {
+    if (
+      ![state.a.x, state.a.y, state.b.x, state.b.y, state.cursor].every(Number.isSafeInteger) ||
+      state.cursor < 0 ||
+      state.cursor > grid.barriers.length
+    )
+      throw new RangeError("Invalid segment sweep state");
+    const sweep = new SegmentSweep(grid, { ...state.a }, { ...state.b });
+    for (let i = 0; i < state.cursor; i++) {
+      if (sweep.result !== "searching") throw new RangeError("Invalid sweep continuation");
+      sweep.advance();
+    }
+    if (sweep.result !== state.status) throw new RangeError("Invalid sweep status");
+    return sweep;
+  }
 }
 
 /** Greedy string pulling; every retained segment has full circular clearance. */
