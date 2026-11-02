@@ -150,9 +150,11 @@ port.onmessage = ({ data }) => {
           if (type === "unit.move" || type === "unit.attackMove" || type === "unit.stop") {
             if (Array.isArray(fields.entities))
               fields.entities = fields.entities.map((handle) => projection.resolve(handle) ?? -1);
-          } else if (type === "economy.build") {
+          } else if (type === "economy.build" || type === "economy.assistConstruction") {
             if (Array.isArray(fields.builders))
               fields.builders = fields.builders.map((handle) => projection.resolve(handle) ?? -1);
+            if (type === "economy.assistConstruction")
+              fields.entity = projection.resolve(fields.entity) ?? -1;
           } else if (
             type === "debug.remove" ||
             type === "debug.setHealth" ||

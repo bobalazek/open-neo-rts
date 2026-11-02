@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 13, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 14, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -69,6 +69,15 @@ funds, once-only cancellation, destruction loss, clearance timeout and newer
 orders, structure-cap races and unit-disc overlap at footprint boundaries. The
 authored Industrial Reactor recipe is checked without changing its
 balance values. Debug state goldens remain unchanged.
+
+SIM14 adds canonical builder approach/progress state and an assistance command.
+Normal-start goldens are `ae83e3fd8c458e31` initially and `05e88e9b90e1c8b8` at
+tick two. Work checks cover actual arrival, assistance rates, leave/resume,
+blocked retry, unreachable fallback, zero/max duration, deaths, large radii and
+preserving newer orders during cleanup. The worker journey builds, stops,
+resumes and completes an authored reactor, checks power activation and refuses
+an unfinished-construction refund after completion. Debug state goldens remain
+unchanged.
 
 `setup` contains:
 

@@ -8,6 +8,7 @@ import { defineComponent } from "../../ecs";
 export const ConstructionSite = defineComponent("ConstructionSite", {});
 
 export * from "./sites";
+export * from "./work";
 
 export interface PlacementTerrain {
   width: number;

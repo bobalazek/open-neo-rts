@@ -381,6 +381,45 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.construction !== undefined) {
+      const progress = entity.construction;
+      if (
+        snapshot.mode !== "controlled" ||
+        entity.constructionSite !== true ||
+        !isRecord(progress) ||
+        Object.getPrototypeOf(progress) !== Object.prototype ||
+        Reflect.ownKeys(progress).length !== 4 ||
+        ![
+          progress.completedTicks,
+          progress.totalTicks,
+          progress.quarter,
+          progress.buildersWorking,
+        ].every(Number.isInteger) ||
+        Number(progress.completedTicks) < 0 ||
+        Number(progress.totalTicks) < 0 ||
+        Number(progress.totalTicks) > 0x7fffffff ||
+        Number(progress.completedTicks) > Number(progress.totalTicks) ||
+        Number(progress.quarter) < 0 ||
+        Number(progress.quarter) > 3 ||
+        (progress.completedTicks === progress.totalTicks && progress.quarter !== 0) ||
+        Number(progress.buildersWorking) < 0 ||
+        Number(progress.buildersWorking) > 0xffffffff
+      )
+        return false;
+    }
+    if (entity.constructionOrder !== undefined) {
+      const order = entity.constructionOrder;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(order) ||
+        Object.getPrototypeOf(order) !== Object.prototype ||
+        Reflect.ownKeys(order).length !== 2 ||
+        typeof order.site !== "string" ||
+        typeof order.state !== "string" ||
+        !["approaching", "working", "blocked"].includes(order.state)
+      )
+        return false;
+    }
     if (
       ![entity.force, entity.x, entity.y, entity.facing, entity.health, entity.maxHealth].every(
         Number.isInteger,

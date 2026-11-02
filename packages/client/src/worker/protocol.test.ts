@@ -151,3 +151,33 @@ test("worker replies validate construction markers and private clearance/refusal
   ])
     expect(isWorkerReply(reply(malformed))).toBe(false);
 });
+
+test("worker replies validate real construction progress and builder work state", () => {
+  const progress = { completedTicks: 2, quarter: 3, totalTicks: 100, buildersWorking: 2 };
+  const site = { ...entity, constructionSite: true, construction: progress };
+  for (const state of [["working"], ["blocked"], null, 1])
+    expect(
+      isWorkerReply(powerReply([power], [{ ...entity, constructionOrder: { site: "e2", state } }])),
+    ).toBe(false);
+  expect(isWorkerReply(powerReply([power], [site]))).toBe(true);
+  expect(
+    isWorkerReply(
+      powerReply([power], [{ ...entity, constructionOrder: { site: "e2", state: "working" } }]),
+    ),
+  ).toBe(true);
+  for (const malformed of [
+    { ...progress, completedTicks: -1 },
+    { ...progress, quarter: 4 },
+    { ...progress, totalTicks: 0x80000000 },
+    { ...progress, completedTicks: 100 },
+    { ...progress, buildersWorking: 0.5 },
+    { ...progress, extra: true },
+  ])
+    expect(isWorkerReply(powerReply([power], [{ ...site, construction: malformed }]))).toBe(false);
+  expect(isWorkerReply(powerReply([power], [{ ...entity, construction: progress }]))).toBe(false);
+  expect(
+    isWorkerReply(
+      powerReply([power], [{ ...entity, constructionOrder: { site: 42, state: "working" } }]),
+    ),
+  ).toBe(false);
+});

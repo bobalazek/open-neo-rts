@@ -43,7 +43,7 @@ banks; other Forces' balances remain private.
 
 ## Production and construction queues
 
-- **Units:** each production structure builds one unit at a time from a queue of up to 5. Several structures of the same kind build in parallel; there is no speed bonus for owning more beyond that. The cost is paid when that unit **starts** building, not when it's queued.
+- **Units:** production structures train one unit at a time, except the Barracks Complex's two active slots ([owner decision](../project/decisions/2026-11-02-production-slots.md)). The queue limit stays five items. Several structures of the same kind build independently; there is no speed bonus for owning more beyond that. Each slot pays when its unit **starts** building, not when queued.
 - **Structures:** builders construct them on site, and more builders build faster ([structures.md](structures.md#construction-and-builders)). Shift-placing queues several sites for the same builders.
 - **Cancel:** an item that hasn't started costs nothing to remove. Cancelling an item in progress refunds 100%.
 - **Destroyed mid-build:** if a production structure dies, its in-progress unit is refunded in full and the rest of the queue is dropped. A destroyed construction site loses what was spent on it ([structures.md](structures.md#construction-and-builders)).

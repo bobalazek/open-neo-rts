@@ -2,6 +2,9 @@
 import { hasGrant } from "../commands";
 import {
   CONSTRUCTION_REFUSALS,
+  CONSTRUCTION_WORK_STATES,
+  ConstructionApproach,
+  ConstructionProgress,
   ConstructionRequest,
   ConstructionSite,
 } from "../features/construction";
@@ -26,6 +29,13 @@ export interface PresentedEntity {
   order: { type: "move" | "attackMove"; x: number; y: number } | null;
   power?: { amount: number; enabled: boolean; powered: boolean };
   constructionSite?: true;
+  construction?: {
+    completedTicks: number;
+    quarter: number;
+    totalTicks: number;
+    buildersWorking: number;
+  };
+  constructionOrder?: { site: string; state: (typeof CONSTRUCTION_WORK_STATES)[number] };
 }
 export interface PresentedConstructionRequest {
   handle: string;
@@ -75,17 +85,26 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         const site = !!setup.normal && world.has(id, ConstructionSite);
         const inspectSite =
           site && hasGrant(setup.grants, seat, force, "economy.build", kernel.tick);
+        const definition = setup.definitions[world.get(id, Template, "definition")];
+        if (!definition) throw new Error("Entity has no definition");
+        const inspectBuilder =
+          !!setup.normal &&
+          definition.role === "builder" &&
+          hasGrant(setup.grants, seat, force, "economy.build", kernel.tick);
         // shortcut: no enemy vision before phase 2; expose only Forces this seat can command.
         if (
           mode !== "debug-no-fog" &&
           !hasGrant(setup.grants, seat, force, "unit.orders", kernel.tick) &&
           !inspectPower &&
-          !inspectSite
+          !inspectSite &&
+          !inspectBuilder
         )
           continue;
         const handle = handleOf(id);
-        const definition = setup.definitions[world.get(id, Template, "definition")];
-        if (!definition) throw new Error("Entity has no definition");
+        const approachSite =
+          setup.normal && world.has(id, ConstructionApproach)
+            ? world.get(id, ConstructionApproach, "site")
+            : 0;
         entities.push({
           handle,
           definition: definition.id,
@@ -96,6 +115,25 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
           ...(site && { constructionSite: true }),
+          ...(site &&
+            world.has(id, ConstructionProgress) && {
+              construction: {
+                completedTicks: world.get(id, ConstructionProgress, "completedTicks"),
+                quarter: world.get(id, ConstructionProgress, "quarter"),
+                totalTicks: definition.construction?.buildTicks as number,
+                buildersWorking: world.get(id, ConstructionProgress, "buildersWorking"),
+              },
+            }),
+          ...(approachSite &&
+            world.isAlive(approachSite) &&
+            world.has(approachSite, ConstructionSite) && {
+              constructionOrder: {
+                site: handleOf(approachSite),
+                state: CONSTRUCTION_WORK_STATES[
+                  world.get(id, ConstructionApproach, "state")
+                ] as (typeof CONSTRUCTION_WORK_STATES)[number],
+              },
+            }),
           order: world.has(id, MoveIntent)
             ? {
                 type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",

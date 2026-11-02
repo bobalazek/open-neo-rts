@@ -10,9 +10,11 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md). Phase 1b remains unfinished; its FPS/native-key work is deferred while functional gameplay takes priority. Pending gameplay decisions remain in [human-tasks.md](./human-tasks.md).
 
-- [ ] [2-10 · Builder work, completion and cancellation](./phases/2.md#2-10--builder-work-completion-and-cancellation). PR type: engine. Sites, paid cancellation and builder assignments are implemented; walking to work, progress and completion are next.
+- [ ] [2-11 · Unit queues, exits and rally points](./phases/2.md#2-11--unit-queues-exits-and-rally-points). PR type: engine. Builder completion and the production-slot contract are implemented/approved; wire real paid production and legal exits next.
+- [ ] [2-08a · Node extraction engine](./phases/2.md#2-08--operate-the-shared-node-extractor). PR type: engine. Implement canonical remaining amounts and approved power/output rules; normal construction integration follows builder completion.
+- [ ] [2-08b · Activate the approved extractor balance](./phases/2.md#2-08--operate-the-shared-node-extractor). PR type: balance after 2-08a. Apply the approved recipe/rates to the shared Resource Extractor separately from engine/schema changes.
 
-Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05) and paid construction-site placement (2-09, including 1B-42/1B-43) are implemented. CLI validation compiles all 137 authored definitions. SIM13 creates paid, occupying unfinished sites through the ordinary worker/replay path, with accepted radius/clearance rules and private request outcomes. Builder work/completion is next. The extractor's provisional economy is approved; ore operating rates remain pending.
+Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction-site placement (2-09, including 1B-42/1B-43) and builder work/completion (2-10) are implemented. CLI validation compiles all 137 authored definitions. SIM14 builders travel to legal adjacent positions, work at the approved assistance rates, leave/resume and complete real buildings. Paid production is next. The extractor's provisional economy is approved; ore operating rates remain pending.
 
 ## Deferred phase-1b acceptance
 
