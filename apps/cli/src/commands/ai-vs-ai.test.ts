@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { parseScenario, runScenario } from "@open-neo-rts/sim";
 import { aiMatchOptions, aiMatchScenario, aiMatchTrial, aiVsAi } from "./ai-vs-ai";
 
 test("AI match runner validates bounded distinct seeds, tick limit and required fresh output", () => {
@@ -51,6 +52,12 @@ test("original normal bot setup repeats, records honest tick caps and refuses to
       { seed: 7, tick: 2, hash: first.hash, completed: false, reproducible: true, winner: null },
     ]);
     expect(JSON.parse(readFileSync(join(out, "seed-7.scenario.json"), "utf8"))).toEqual(scenario);
+    expect(
+      runScenario(
+        parseScenario(JSON.parse(readFileSync(join(out, "seed-7.scenario.json"), "utf8"))),
+        { ticks: 2 },
+      ).at(-1),
+    ).toEqual({ tick: 2, hash: first.hash });
     expect(await aiVsAi(["--out", out, "--seeds", "7", "--ticks", "3"])).toBe(1);
     expect(readFileSync(join(out, "summary.json"), "utf8")).toBe(summary);
   } finally {
