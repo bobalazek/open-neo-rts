@@ -69,7 +69,7 @@ Live totals are private, final totals are public and frozen. The result screen
 shows real per-Force production, combat losses/destruction and separate resource
 income/spending/refunds. Missing totals are unavailable rather than invented zero;
 the narrow table scrolls with keyboard access. A real normal browser journey
-completes a450-credit Field Technician and verifies one unit built and450 spent
+completes a 450-credit Field Technician and verifies one unit built and 450 spent
 at surrender; screenshots cover desktop/narrow layouts. Score/APM/graphs and
 replay actions remain unavailable until their actual producers exist.
 
