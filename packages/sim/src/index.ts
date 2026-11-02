@@ -10,6 +10,7 @@ export * from "./features/events";
 export * from "./features/movement";
 export * from "./features/production";
 export * from "./features/projectiles";
+export * from "./features/victory";
 export * from "./features/vision";
 export * from "./kernel";
 export * from "./match";

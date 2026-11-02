@@ -383,3 +383,31 @@ test("discovered resource origins require exact public fields and a permitted ex
     expect(isWorkerReply(packet(bad))).toBe(false);
   expect(isWorkerReply(packet([node], "debug-no-fog"))).toBe(false);
 });
+
+test("victory replies validate sorted public defeats and one consistent final result", () => {
+  const active = { force: 1, team: 1, reason: "active", tick: null };
+  const lost = { force: 0, team: 0, reason: "eliminated", tick: 1 };
+  const victory = {
+    rule: "annihilation",
+    forces: [lost, active],
+    result: { tick: 1, winner: 1, reason: "lastManStanding" },
+  };
+  const packet = (value: unknown, tick = 1, mode = "controlled") => ({
+    id: 1,
+    state: { paused: true, speed: 1, snapshot: { tick, mode, entities: [], victory: value } },
+  });
+  expect(isWorkerReply(packet(victory))).toBe(true);
+  expect(isWorkerReply(packet({ ...victory, forces: [active], result: null }, 0))).toBe(true);
+  for (const bad of [
+    { ...victory, rule: "unsupported" },
+    { ...victory, forces: [active, lost] },
+    { ...victory, forces: [lost, lost] },
+    { ...victory, forces: [{ ...lost, tick: 2 }, active] },
+    { ...victory, forces: [lost, { ...active, tick: 1 }] },
+    { ...victory, result: { ...victory.result, winner: 0 } },
+    { ...victory, result: { tick: 1, winner: null, reason: "draw" } },
+    { ...victory, extra: 1 },
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet(victory, 1, "debug-no-fog"))).toBe(false);
+});

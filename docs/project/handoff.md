@@ -49,3 +49,10 @@ review found and closed structure-centre range handling; full repository/content
 batch passes on projectile28. Small original-gameplay fixture proof is not full
 Training Grounds or complete-match acceptance. Normal UI opponent activation and
 qualification remain 2-24b; full defeat/statistics/post-match work remains open.
+
+
+Task 2-22a implements SIM30 defeat/surrender/team result and terminal freeze.
+Independent review closed a terminal replay-loop hang; the shared replay/trace
+regression requests1000 ticks, ends at1, validates the trace and rejects later
+commands. Full integrated repository/content checks pass on projectile/basic-bot
+code. Statistics/APM, full save restoration and results UI are separate tasks.

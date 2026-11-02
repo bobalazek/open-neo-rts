@@ -29,6 +29,7 @@ import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { type PresentedCombatEvent, projectCombatEvents } from "../features/events/combat";
 import { MoveIntent } from "../features/movement";
 import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
+import type { VictorySnapshot } from "../features/victory";
 import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
@@ -88,6 +89,7 @@ export interface PresentedConstructionRequest {
   reason?: (typeof CONSTRUCTION_REFUSALS)[number];
 }
 export interface SeatSnapshot {
+  victory?: VictorySnapshot;
   tick: number;
   mode: ProjectionMode;
   entities: PresentedEntity[];
@@ -389,6 +391,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         tick: kernel.tick,
         mode,
         entities,
+        ...(kernel.victory && { victory: kernel.victory.snapshot() }),
         ...(kernel.economy && {
           banks: kernel.economy.snapshot(seat).filter((bank) => inspectEconomy(bank.force)),
         }),
