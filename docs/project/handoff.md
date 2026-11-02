@@ -49,3 +49,9 @@ Canonical cargo and queue state, current-grant privacy and copied bot cargo are
 integrated; five-credit/second actual Supply Truck activation is a separate balance
 change. Full repository/content checks pass; focused worker proof and publication
 are recorded on the task PR. Keep missing-rate definitions idle until activation.
+
+
+Task 2-07b activates SIM23 Supply Truck mining at the approved five credits/second,
+with original 500-credit capacity and cost/time untouched. Authored compiler
+assertions, scenario metadata and normal goldens are updated. Independent static
+review and repository/content checks pass; publication/CI follows.

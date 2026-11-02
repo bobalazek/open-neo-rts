@@ -10,7 +10,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-- [ ] [2-07b · Activate approved Supply Truck mining rate](./phases/2.md#2-07--harvester-mining-hauling-and-docking). PR type: balance after 2-07a; five credits/second, existing 500-credit capacity.
 - [ ] [2-23 · Host a bot seat with deterministic budgets](./phases/2.md#2-23--host-a-bot-seat-with-deterministic-budgets). PR type: engine. Use permitted observations and serialize bot state/handle continuity before first bot behavior.
 
 Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction sites/builders (2-09/2-10), node extraction (2-08a/b) and production (2-11a/b) are implemented. SIM18 activates Eastern Collective tier-1 exits and two Barracks slots using the real queue engine; existing costs/times and included Supply Truck remain intact. CLI validation compiles all 137 authored definitions. Ore hauling and permitted enemy observations are next.

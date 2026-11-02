@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 22, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 23, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -193,3 +193,11 @@ strict worker validation accepts only the public cargo summary. The fourth norma
 worker journey builds a real Supply Depot and unloads five credits of partial cargo
 using the accepted fixture rate and original 500-credit capacity. Actual Supply Truck
 rate activation remains a separate balance change. Debug scenario hashes are unchanged.
+
+
+SIM23 activates the accepted actual Supply Truck rate at five credits per second,
+retaining its 500-credit capacity, 1,300-credit price and 300-tick production time.
+Normal-start goldens are `8e54e5c2af9b33ed` initially and `4a6845966fc4bccd`
+at tick two. Authored compiler assertions keep that contract tied to the real unit.
+Debug scenario definition metadata now includes the rate; debug state hashes stay
+unchanged because normal harvesting is not registered in debug matches.
