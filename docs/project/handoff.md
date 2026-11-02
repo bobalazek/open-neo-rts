@@ -11,7 +11,7 @@ The owner [delegates missing gameplay choices](./decisions/2026-11-02-provisiona
 
 ## Delivered
 
-Main through PR #202 has SIM31 and the first connected local skirmish flow:
+Main through PR #202 and statistics PR #201 has SIM32 and the first connected local skirmish flow:
 Home/Quick start → Skirmish → Loading → actual human-controlled Force versus the
 basic Eastern Collective bot → canonical result → fresh same-setup rematch/Home.
 This functional flow is not the complete phase-2 acceptance or all roadmap phases.
@@ -59,12 +59,14 @@ six surviving Dragon Tanks.
 
 ## Current work and next steps
 
-PR #201 contains independently reviewed canonical production/combat/resource totals
+PR #201 adds independently reviewed canonical production/combat/resource totals
 under SIM32, with normal goldens ea8691a2ee5b2888/b2cfa6f8e3c37a56 and unchanged debug
 hashes. Repository/content checks, focused money/privacy/freeze/wire cases and five
-real-worker journeys passed. Its final CI is 41477024705; merge after green and
-resolve only the current documentation adjacency. Then show the real frozen totals
-on the result screen; do not fabricate score/APM/graphs.
+real-worker journeys passed. The engine CI is 41477024705; its results and current
+integration checks are recorded in the PR. These totals exclude initial kits,
+starting stock and voluntary removals; income, spending and refunds stay separate.
+Live totals are private, final totals are public and frozen. Next show the real
+frozen totals on the result screen; do not fabricate score/APM/graphs.
 
 Continue the in-game menu/settings, alerts, non-damage effects, wreck/salvage,
 required tier-1 signatures/abilities and veterancy, full version/content/map-checked

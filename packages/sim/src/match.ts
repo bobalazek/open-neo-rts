@@ -32,7 +32,7 @@ import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
 import { productionFeature } from "./features/production";
 import { initializeProjectiles } from "./features/projectiles";
-import { initializeVictory } from "./features/victory";
+import { initializeStatistics, initializeVictory } from "./features/victory";
 import { initializeVisibilityMemory, initializeVision } from "./features/vision";
 import { createKernel, type Kernel, register } from "./kernel";
 import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
@@ -46,7 +46,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 31;
+export const SIM_VERSION = 32;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -150,6 +150,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
+  initializeStatistics(kernel, setup);
   if (setup.normal) initializeExtraction(kernel, definitions);
   if (setup.normal) initializeOre(kernel);
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));

@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-02 — First canonical match counters](./2026-11-02-provisional-match-statistics.md) — Actual production, combat and resource totals, with private live observations and frozen public final results.
+
 One file per non-obvious decision. Append-only: once written, an entry isn't edited; a reversal is a new entry that references the old one. The bar for writing one: "would a future contributor re-argue this?"
 
 ## How to add one

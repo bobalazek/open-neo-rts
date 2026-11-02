@@ -1,10 +1,41 @@
 import { expect, test } from "bun:test";
+import { STAT_COUNTERS } from "@open-neo-rts/sim";
 import { isWorkerReply } from "./protocol";
 
 const resources = { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
 const reply = (banks: unknown, mode = "controlled") => ({
   id: 1,
   state: { paused: true, speed: 1, snapshot: { tick: 0, mode, entities: [], banks } },
+});
+
+test("statistics wire shape requires complete bounded counters and sorted private Force rows", () => {
+  const counters = Object.fromEntries(STAT_COUNTERS.map((key) => [key, 0]));
+  const packet = (statistics: unknown, mode = "controlled") => ({
+    id: 0,
+    state: { paused: true, speed: 1, snapshot: { tick: 0, mode, entities: [], statistics } },
+  });
+  expect(
+    isWorkerReply(packet([{ force: 0, counters: { ...counters, unitsBuilt: 0xffffffff } }])),
+  ).toBe(true);
+  for (const value of [
+    null,
+    {},
+    [{ force: 0, counters: {} }],
+    [{ force: 0, counters: { ...counters, creditsSpent: -1 } }],
+    [{ force: 0, counters: { ...counters, creditsSpent: 1.5 } }],
+    [{ force: 0, counters: { ...counters, creditsSpent: 0x100000000 } }],
+    [{ force: 0, counters: { ...counters, hidden: 1 } }],
+    [
+      { force: 1, counters },
+      { force: 1, counters },
+    ],
+    [
+      { force: 2, counters },
+      { force: 1, counters },
+    ],
+  ])
+    expect(isWorkerReply(packet(value))).toBe(false);
+  expect(isWorkerReply(packet([], "debug-no-fog"))).toBe(false);
 });
 
 test("worker replies accept bounded copied stock banks and retain bank-free debug packets", () => {

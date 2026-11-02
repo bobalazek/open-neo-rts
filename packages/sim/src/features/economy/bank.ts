@@ -146,7 +146,12 @@ export function initializeForceBanks(
           "salvage-points": world.get(id, ForceBank, "salvagePoints"),
         };
   };
-  const change = (force: number, input: unknown, direction: 1 | -1): BankResult => {
+  const change = (
+    force: number,
+    input: unknown,
+    direction: 1 | -1,
+    kind: "Gathered" | "Spent" | "Refunded",
+  ): BankResult => {
     const id = ids.get(force);
     if (id === undefined) return { ok: false, reason: "unknown_force" };
     const requested = amounts(input);
@@ -159,19 +164,21 @@ export function initializeForceBanks(
       next[resource] = value;
     }
     for (const resource of resources) world.set(id, ForceBank, FIELDS[resource], next[resource]);
+    kernel.statistics?.money(force, kind, requested);
     return success;
   };
-  const gain = (force: number, input: unknown) => change(force, input, 1);
+  const gain = (force: number, input: unknown) => change(force, input, 1, "Gathered");
+  const refund = (force: number, input: unknown) => change(force, input, 1, "Refunded");
   const banks: ForceBanks = Object.freeze({
     balance,
     spend(seat: number, force: number, input: unknown, scope: SpendScope): BankResult {
       if (!ids.has(force)) return { ok: false, reason: "unknown_force" };
       if (!spendScopes.includes(scope) || !hasGrant(permissions, seat, force, scope, kernel.tick))
         return { ok: false, reason: "no_grant" };
-      return change(force, input, -1);
+      return change(force, input, -1, "Spent");
     },
     gain,
-    refund: gain,
+    refund,
     refundBatch(payments: readonly BankSnapshot[]): BankResult {
       const totals = new Map<number, Record<StockResourceId, number>>();
       for (const payment of payments) {
@@ -192,7 +199,7 @@ export function initializeForceBanks(
         }
         totals.set(payment.force, total);
       }
-      for (const [force, total] of [...totals].sort(([a], [b]) => a - b)) gain(force, total);
+      for (const [force, total] of [...totals].sort(([a], [b]) => a - b)) refund(force, total);
       return success;
     },
     snapshot(seat: number): BankSnapshot[] {

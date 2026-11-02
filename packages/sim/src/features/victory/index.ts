@@ -5,6 +5,8 @@ import { type Feature, type Kernel, register } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { Health, OwnerForce, Template } from "../entities";
 
+export * from "./statistics";
+
 export const ELIMINATION_RULES = ["annihilation", "baseDestruction", "headquarters"] as const;
 export type EliminationRule = (typeof ELIMINATION_RULES)[number];
 export const DEFEAT_REASONS = ["active", "eliminated", "surrendered"] as const;
