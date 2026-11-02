@@ -375,3 +375,31 @@ test("unimplemented era selection and ambiguous effect quantities fail explicitl
     ),
   ).toThrow("Unsupported gameplay effect amount");
 });
+
+test("production capacity and exit cells remain authored data through compilation", () => {
+  const edited = roster.map((definition) =>
+    definition.id === barracks.id
+      ? {
+          ...definition,
+          productionSlots: 2,
+          exits: [
+            { side: "south", cell: [0, 1] },
+            { side: "south", cell: [2, 1] },
+          ],
+        }
+      : definition,
+  );
+  const compiled = compileGameplayCatalog(resolvePacks([pack("core", edited)], "0.1.0"));
+  const definition = compiled.definitions.find(
+    (definition) => definition.id === `core.${barracks.id}`,
+  );
+  expect(definition?.productionSlots).toBe(2);
+  expect(definition?.exits).toEqual([
+    { side: "south", cell: [0, 1] },
+    { side: "south", cell: [2, 1] },
+  ]);
+  expect(definition?.produces).toContain(`core.${soldier.id}`);
+  expect(() => toDefinition({ ...barracks, exits: [{ side: "south", cell: [0, 0] }] })).toThrow(
+    "exit cell must be on its declared footprint side",
+  );
+});

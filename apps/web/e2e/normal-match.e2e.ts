@@ -4,6 +4,9 @@ import { expect, test } from "@playwright/test";
 import faction from "../../../content/core/factions/eastern-collective/faction.json" with {
   type: "json",
 };
+import barracksBase from "../../../content/core/factions/eastern-collective/structures/barracks-complex/structure.json" with {
+  type: "json",
+};
 import headquarters from "../../../content/core/factions/eastern-collective/structures/command-center/structure.json" with {
   type: "json",
 };
@@ -46,28 +49,38 @@ const extractor = {
     oil: { resource: "credits" as const, amountPerSecond: 2 },
   },
 };
-const definitions = [headquarters, soldier, builder, truck, reactor, extractor].map((raw) => ({
-  ...toDefinition({ ...raw, id: `core.${raw.id}` }),
-  kind: raw.id.startsWith("unit:") ? "unit" : "structure",
-  role: raw.role,
-  pop: "pop" in raw ? raw.pop : 0,
-  tags: [],
-  construction:
-    raw === reactor
-      ? { cost: reactor.cost, buildTicks: reactor.buildTime * 20 }
-      : raw === extractor
-        ? { cost: extractor.cost, buildTicks: extractor.buildTime * 20 }
+const barracks = {
+  ...barracksBase,
+  productionSlots: 2,
+  exits: [
+    { side: "south" as const, cell: [0, 1] as const },
+    { side: "south" as const, cell: [2, 1] as const },
+  ],
+};
+const definitions = [headquarters, soldier, builder, truck, reactor, extractor, barracks].map(
+  (raw) => ({
+    ...toDefinition({ ...raw, id: `core.${raw.id}` }),
+    kind: raw.id.startsWith("unit:") ? "unit" : "structure",
+    role: raw.role,
+    pop: "pop" in raw ? raw.pop : 0,
+    tags: [],
+    construction:
+      "cost" in raw && "buildTime" in raw
+        ? { cost: raw.cost, buildTicks: raw.buildTime * 20 }
         : null,
-  requires: [],
-  producedBy: [],
-  produces: [],
-  builds: raw === builder ? [`core.${reactor.id}`, `core.${extractor.id}`] : [],
-  spawnsWith: [],
-  weapons: [],
-  abilities: [],
-  research: [],
-  adjacency: [],
-})) as GameplayDefinition[];
+    requires: [],
+    producedBy: [],
+    produces: raw === barracks ? [`core.${soldier.id}`] : [],
+    builds:
+      raw === builder ? [`core.${reactor.id}`, `core.${extractor.id}`, `core.${barracks.id}`] : [],
+    ...(raw === barracks && { productionSlots: barracks.productionSlots, exits: barracks.exits }),
+    spawnsWith: [],
+    weapons: [],
+    abilities: [],
+    research: [],
+    adjacency: [],
+  }),
+) as GameplayDefinition[];
 const map = {
   ...flatMap(32),
   spawns: [
@@ -107,7 +120,7 @@ const setup = createNormalMatchSetup({
   grants: [0, 1].map((force) => ({
     seat: force + 1,
     force,
-    scopes: ["unit.orders", "economy.build"],
+    scopes: ["unit.orders", "economy.build", "production.queue"],
     grantedAtTick: 0,
   })),
 });
@@ -426,4 +439,141 @@ test("normal worker builds an extractor and applies power and finite depletion",
   expect(actual.finalMaterials).toBe(3);
   expect(actual.finalExtraction).toEqual({ kind: "materials", remaining: 0, status: "depleted" });
   expect(actual.finalCredits).toBe(4200);
+});
+
+test("normal worker pays active production slots, refunds cancellation and rallies a produced unit", async ({
+  page,
+}) => {
+  await page.route("http://normal-match.test/**", (route) =>
+    route.fulfill({
+      contentType: route.request().url().endsWith("sim-worker.js")
+        ? "text/javascript"
+        : "text/html",
+      body: route.request().url().endsWith("sim-worker.js")
+        ? worker
+        : "<!doctype html><title>Production fixture</title>",
+    }),
+  );
+  await page.goto("http://normal-match.test/");
+  const actual = await page.evaluate(
+    async ({ client, setup }) => {
+      const url = URL.createObjectURL(new Blob([client], { type: "text/javascript" }));
+      const { createOfflineMatch } = (await import(
+        url
+      )) as typeof import("../../../packages/client/src/worker");
+      URL.revokeObjectURL(url);
+      let state: OfflineState | undefined;
+      const match = createOfflineMatch((next) => {
+        state = next;
+      });
+      const current = () =>
+        state?.snapshot.entities.find(
+          (entity) => entity.definition === "core.structure:eastern-collective/barracks-complex",
+        );
+      const credits = () => state?.snapshot.banks?.[0]?.resources.credits;
+      try {
+        await match.init({ setup, seat: 1, mode: "controlled" });
+        const initialHandles = new Set(state?.snapshot.entities.map((entity) => entity.handle));
+        const builders =
+          state?.snapshot.entities
+            .filter(
+              (entity) => entity.definition === "core.unit:eastern-collective/field-technician",
+            )
+            .map((entity) => entity.handle) ?? [];
+        const building = match.command("economy.build", {
+          force: 0,
+          definition: "core.structure:eastern-collective/barracks-complex",
+          builders,
+          x: 12 * 1024,
+          y: 6 * 1024,
+          facing: 16384,
+        });
+        await match.step();
+        const built = await building;
+        for (let ticks = 0; ticks < 600 && (!current() || current()?.constructionSite); ticks++)
+          await match.step();
+        const producer = current()?.handle;
+        const rallying = match.command("production.rally", {
+          entity: producer,
+          x: 22 * 1024,
+          y: 10 * 1024,
+        });
+        const enqueuing = [0, 1, 2].map(() =>
+          match.command("production.enqueue", {
+            entity: producer,
+            definition: "core.unit:eastern-collective/collective-soldier",
+          }),
+        );
+        await match.step();
+        const rally = await rallying;
+        const enqueued = await Promise.all(enqueuing);
+        const started = current()?.production;
+        const paid = credits();
+        const queued = started?.queue.find((item) => item.slot === null)?.handle;
+        const removingQueued = match.command("production.cancel", { item: queued });
+        const disabling = match.command("economy.power", { entity: producer, enabled: 0 });
+        await match.step();
+        const queuedCanceled = await removingQueued;
+        await disabling;
+        const beforePause = current()?.production?.queue.map((item) => [
+          item.completedTicks,
+          item.remainder,
+        ]);
+        for (let ticks = 0; ticks < 10; ticks++) await match.step();
+        const afterPause = current()?.production?.queue.map((item) => [
+          item.completedTicks,
+          item.remainder,
+        ]);
+        const active = current()?.production?.queue[0]?.handle;
+        const canceling = match.command("production.cancel", { item: active });
+        await match.step();
+        const activeCanceled = await canceling;
+        const refunded = credits();
+        const enabling = match.command("economy.power", { entity: producer, enabled: 1 });
+        await match.step();
+        await enabling;
+        const newSoldier = () =>
+          state?.snapshot.entities.find(
+            (entity) =>
+              entity.definition === "core.unit:eastern-collective/collective-soldier" &&
+              !initialHandles.has(entity.handle),
+          );
+        for (let ticks = 0; ticks < 200 && !newSoldier(); ticks++) await match.step();
+        return {
+          built,
+          rally,
+          enqueued,
+          started,
+          paid,
+          queuedCanceled,
+          beforePause,
+          afterPause,
+          activeCanceled,
+          refunded,
+          produced: newSoldier(),
+          finalCredits: credits(),
+          finalQueue: current()?.production?.queue.length,
+          producer: current(),
+          requests: state?.snapshot.constructionRequests,
+        };
+      } finally {
+        match.dispose();
+      }
+    },
+    { client, setup },
+  );
+  expect(actual.built).toBe("accepted");
+  expect(actual.rally, JSON.stringify(actual)).toBe("accepted");
+  expect(actual.enqueued).toEqual(["accepted", "accepted", "accepted"]);
+  expect(actual.started?.slots).toBe(2);
+  expect(actual.started?.queue).toHaveLength(3);
+  expect(actual.started?.queue.filter((item) => item.slot !== null)).toHaveLength(2);
+  expect(actual.paid).toBe(4300);
+  expect(actual.queuedCanceled).toBe("accepted");
+  expect(actual.afterPause).toEqual(actual.beforePause);
+  expect(actual.activeCanceled).toBe("accepted");
+  expect(actual.refunded).toBe(4400);
+  expect(actual.produced?.order).toEqual({ type: "move", x: 22 * 1024, y: 10 * 1024 });
+  expect(actual.finalCredits).toBe(4400);
+  expect(actual.finalQueue).toBe(0);
 });

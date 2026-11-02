@@ -351,6 +351,16 @@ export const SCHEMAS = {
     abilities: opt(arr(ability)),
     research: opt(arr(research)),
     spawnsWith: opt(arr(idOf("unit"))),
+    productionSlots: opt(
+      int(1, 5, "simultaneously active unit items; total player queue limit is five"),
+    ),
+    exits: opt(
+      arr(
+        obj({ side: oneOf(["north", "east", "south", "west"]), cell: arr(int(0, 7), 2, 2) }),
+        1,
+        8,
+      ),
+    ),
     dock: opt(bool()),
     pads: opt(int(1, 8, "aircraft pads")),
     garrison: opt(obj({ slots: int(1, 20) })),
