@@ -240,7 +240,7 @@ export function createNormalSession(
           surrender.disabled = true;
           try {
             hud?.cancel();
-            await activeMatch.pause(false);
+            if (latest?.paused) await activeMatch.pause(false);
             if (disposed) return;
             const result = await activeMatch.command("match.surrender", { force: 0 });
             if (disposed) return;
@@ -249,7 +249,7 @@ export function createNormalSession(
               surrender.disabled = false;
             }
           } catch (error) {
-            failed(error);
+            if (!latest?.snapshot.victory?.result) failed(error);
           } finally {
             busy = false;
           }
