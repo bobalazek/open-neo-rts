@@ -1,5 +1,5 @@
 import type { ArmorClass, ResolvedCatalog, ResourceId } from "@open-neo-rts/content";
-import { type Definition, toDefinition } from "./definitions";
+import { type Definition, type RepairDefinition, toDefinition } from "./definitions";
 import type { GameplayWeapon } from "./weapons";
 
 export type { GameplayWarhead, GameplayWeapon } from "./weapons";
@@ -42,18 +42,7 @@ export interface GameplayResearch {
   readonly effects: readonly GameplayEffect[];
 }
 
-export interface GameplayRepair {
-  readonly targets: {
-    readonly families: readonly string[];
-    readonly roles: readonly string[];
-    readonly tags: readonly string[];
-    readonly structures?: boolean;
-  };
-  readonly rateMilliHealthPerSecond: number;
-  readonly rangeSubcells?: number;
-  readonly costPerMille?: number;
-  readonly automatic?: boolean;
-}
+export type GameplayRepair = RepairDefinition;
 
 /** Authored gameplay inputs only; compilation does not make a definition playable. */
 export interface GameplayDefinition extends Definition {

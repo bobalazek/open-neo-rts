@@ -53,6 +53,69 @@ function workPositions(
   );
 }
 
+/** Shared finite approach policy for construction and paid structure repair. */
+export function approachStructure(
+  kernel: Kernel,
+  definitions: readonly Definition[],
+  builder: number,
+  site: number,
+): void {
+  const world = kernel.world;
+  if (!world.has(builder, ConstructionApproach))
+    world.add(builder, ConstructionApproach, {
+      site,
+      originX: world.get(builder, Transform, "x"),
+      originY: world.get(builder, Transform, "y"),
+    });
+  const state = world.get(builder, ConstructionApproach, "state");
+  if (state === 2) return; // An explicit assist order retries blocked approaches without an endless automatic order loop.
+  const target = {
+    x: world.get(builder, ConstructionApproach, "x"),
+    y: world.get(builder, ConstructionApproach, "y"),
+  };
+  const atTarget =
+    world.get(builder, Transform, "x") === target.x &&
+    world.get(builder, Transform, "y") === target.y;
+  if (
+    world.get(builder, ConstructionApproach, "next") > 0 &&
+    atTarget &&
+    !world.has(builder, MoveIntent) &&
+    kernel.movement?.canStand(builder, target)
+  ) {
+    world.set(builder, ConstructionApproach, "state", 1);
+    return;
+  }
+  if (state === 0 && world.has(builder, MoveIntent)) return;
+  world.set(builder, ConstructionApproach, "state", 0);
+  const positions = workPositions(kernel, definitions, builder, site);
+  let next = world.get(builder, ConstructionApproach, "next");
+  while (
+    next < positions.length &&
+    !kernel.movement?.canStand(builder, positions[next] as { x: number; y: number })
+  )
+    next++;
+  const point = positions[next];
+  if (!point) {
+    kernel.movement?.cancel(builder);
+    if (world.has(builder, MoveIntent)) world.remove(builder, MoveIntent);
+    world.set(builder, ConstructionApproach, "state", 2);
+    return;
+  }
+  world.set(builder, ConstructionApproach, "next", next + 1);
+  world.set(builder, ConstructionApproach, "x", point.x);
+  world.set(builder, ConstructionApproach, "y", point.y);
+  if (world.has(builder, MoveIntent)) world.remove(builder, MoveIntent);
+  if (world.has(builder, MovementFailure)) world.remove(builder, MovementFailure);
+  kernel.movement?.cancel(builder);
+  kernel.movement?.order(builder, point);
+  if (
+    !world.has(builder, MoveIntent) &&
+    world.get(builder, Transform, "x") === point.x &&
+    world.get(builder, Transform, "y") === point.y
+  )
+    world.set(builder, ConstructionApproach, "state", 1);
+}
+
 /** Actual on-site work only. Routes retain the movement feature's counted searches and fallback policy. */
 export function constructionWorkFeature(
   setup: Pick<MatchSetup, "definitions" | "grants">,
@@ -107,59 +170,7 @@ export function constructionWorkFeature(
               clearConstructionOrder(kernel, builder);
               continue;
             }
-            if (!world.has(builder, ConstructionApproach))
-              world.add(builder, ConstructionApproach, {
-                site,
-                originX: world.get(builder, Transform, "x"),
-                originY: world.get(builder, Transform, "y"),
-              });
-            const state = world.get(builder, ConstructionApproach, "state");
-            if (state === 2) continue; // An explicit assist order retries blocked approaches without an endless automatic order loop.
-            const target = {
-              x: world.get(builder, ConstructionApproach, "x"),
-              y: world.get(builder, ConstructionApproach, "y"),
-            };
-            const atTarget =
-              world.get(builder, Transform, "x") === target.x &&
-              world.get(builder, Transform, "y") === target.y;
-            if (
-              world.get(builder, ConstructionApproach, "next") > 0 &&
-              atTarget &&
-              !world.has(builder, MoveIntent) &&
-              kernel.movement?.canStand(builder, target)
-            ) {
-              world.set(builder, ConstructionApproach, "state", 1);
-              continue;
-            }
-            if (state === 0 && world.has(builder, MoveIntent)) continue;
-            world.set(builder, ConstructionApproach, "state", 0);
-            const positions = workPositions(kernel, definitions, builder, site);
-            let next = world.get(builder, ConstructionApproach, "next");
-            while (
-              next < positions.length &&
-              !kernel.movement?.canStand(builder, positions[next] as { x: number; y: number })
-            )
-              next++;
-            const point = positions[next];
-            if (!point) {
-              kernel.movement?.cancel(builder);
-              if (world.has(builder, MoveIntent)) world.remove(builder, MoveIntent);
-              world.set(builder, ConstructionApproach, "state", 2);
-              continue;
-            }
-            world.set(builder, ConstructionApproach, "next", next + 1);
-            world.set(builder, ConstructionApproach, "x", point.x);
-            world.set(builder, ConstructionApproach, "y", point.y);
-            if (world.has(builder, MoveIntent)) world.remove(builder, MoveIntent);
-            if (world.has(builder, MovementFailure)) world.remove(builder, MovementFailure);
-            kernel.movement?.cancel(builder);
-            kernel.movement?.order(builder, point);
-            if (
-              !world.has(builder, MoveIntent) &&
-              world.get(builder, Transform, "x") === point.x &&
-              world.get(builder, Transform, "y") === point.y
-            )
-              world.set(builder, ConstructionApproach, "state", 1);
+            approachStructure(kernel, definitions, builder, site);
           }
         },
       ],

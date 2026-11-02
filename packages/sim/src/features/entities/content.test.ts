@@ -17,7 +17,7 @@ import rocket from "../../../../../content/core/factions/eastern-collective/unit
 import truck from "../../../../../content/core/factions/eastern-collective/units/supply-truck/unit.json";
 import extractor from "../../../../../content/core/neutral/structures/resource-extractor/structure.json";
 import { compileGameplayCatalog } from "./content";
-import { toDefinition } from "./definitions";
+import { definitionSchema, toDefinition } from "./definitions";
 
 type Data = Record<string, unknown>;
 const roster = [
@@ -85,6 +85,52 @@ function pack(
 
 const unitId = (name: string) => `core.unit:eastern-collective/${name}`;
 const structureId = (name: string) => `core.structure:eastern-collective/${name}`;
+
+test("authored paid builder repair compiles into bounded integer match metadata without activating roster defaults", () => {
+  const repair = {
+    targets: { structures: true, roles: ["power"], tags: ["power"] },
+    rate: 10,
+    costPercent: 25,
+    range: 0,
+  };
+  const compiled = compileGameplayCatalog(
+    resolvePacks(
+      [
+        pack(
+          "core",
+          roster.map((definition) =>
+            definition === builder ? { ...builder, repair } : definition,
+          ),
+        ),
+      ],
+      "0.1.0",
+    ),
+  );
+  const unit = compiled.definitions.find(
+    (definition) => definition.id === unitId("field-technician"),
+  );
+  if (!unit) throw new Error("Missing authored builder");
+  expect(unit.repair).toEqual({
+    targets: { families: [], roles: ["power"], tags: ["power"], structures: true },
+    rateMilliHealthPerSecond: 10_000,
+    costPerMille: 250,
+    rangeSubcells: 0,
+  });
+  const base = toDefinition(builder);
+  expect(base.repair).toBeUndefined();
+  for (const metadata of [
+    unit.repair,
+    { ...unit.repair, rateMilliHealthPerSecond: -1 },
+    { ...unit.repair, rateMilliHealthPerSecond: 1_000_001 },
+    { ...unit.repair, costPerMille: 1001 },
+    { ...unit.repair, rangeSubcells: 0.5 },
+    { ...unit.repair, extra: true },
+  ]) {
+    const issues: import("@open-neo-rts/content").Issue[] = [];
+    definitionSchema.check({ ...base, repair: metadata }, "$", issues);
+    expect(issues.length === 0).toBe(metadata === unit.repair);
+  }
+});
 
 test("compiles the authored tier-1 roster once without changing frozen human-unit data", () => {
   const resolved = resolvePacks([pack()], "0.1.0");

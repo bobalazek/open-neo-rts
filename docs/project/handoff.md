@@ -63,3 +63,13 @@ integration are separately reviewed; root repository/content checks pass. Next
 flight/contact/damage consumes those intents in the same combat phase. Default
 missing aim is omnidirectional, missing forward arc is exact aim; bounded overflow
 defers launches in stable shooter/weapon order. No damage is applied by this task.
+
+
+Task 2-12a implements SIM25 half-receipt completed sales and paid adjacent manual
+builder repair with atomic producer refunds, carried fractions and private copied
+repair state. It preserves harvesting/targeting replacement rules. Original logic
+passed independent review; integrated root repository/content batch passes.
+2-12b will provisionally activate Field Technician structure repair using the
+existing content-format example: 10 HP/second and 25% full-repair credit price,
+adjacent/manual only. This is a recorded implementation default for later tuning,
+not an additional owner-approved balance or a playtest result.

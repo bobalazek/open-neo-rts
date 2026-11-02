@@ -4,6 +4,7 @@ import { type Feature, type Kernel, register } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { clearAttackOrder } from "../combat";
 import { ConstructionSite } from "../construction";
+import { suspendRepair } from "../construction/repair";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import { perimeterPoint } from "../entities/perimeter";
 import { MoveIntent, MovementFailure } from "../movement";
@@ -269,6 +270,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
           attach(kernel, id, definition);
           if (!world.has(id, Harvester)) continue;
           clearAttackOrder(kernel, id);
+          suspendRepair(kernel, id);
           stopRoute(kernel, id);
           world.set(id, Harvester, "enabled", 1);
           world.set(id, Harvester, "dock", 0);

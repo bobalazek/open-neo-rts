@@ -1,7 +1,11 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
 import { combatFeature } from "./features/combat";
-import { constructionFeature, constructionWorkFeature } from "./features/construction";
+import {
+  constructionFeature,
+  constructionWorkFeature,
+  structureRepairFeature,
+} from "./features/construction";
 import {
   checkNormalMatchSetup,
   copyNormalMatchSetup,
@@ -39,7 +43,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 24;
+export const SIM_VERSION = 25;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -95,6 +99,18 @@ export function createMatch(setup: MatchSetup): Kernel {
       ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
       ...(definition.requires && { requires: Object.freeze([...definition.requires]) }),
       ...(definition.builds && { builds: Object.freeze([...definition.builds]) }),
+      ...(definition.tags && { tags: Object.freeze([...definition.tags]) }),
+      ...(definition.repair && {
+        repair: Object.freeze({
+          ...definition.repair,
+          targets: Object.freeze({
+            ...definition.repair.targets,
+            families: Object.freeze([...definition.repair.targets.families]),
+            roles: Object.freeze([...definition.repair.targets.roles]),
+            tags: Object.freeze([...definition.repair.targets.tags]),
+          }),
+        }),
+      }),
       ...(definition.produces && { produces: Object.freeze([...definition.produces]) }),
       ...(definition.spawnsWith && { spawnsWith: Object.freeze([...definition.spawnsWith]) }),
       ...(definition.exits && {
@@ -135,6 +151,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeOre(kernel);
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
+  if (setup.normal) register(kernel, structureRepairFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, productionFeature({ ...setup, definitions }));
   if (setup.normal) initializeHarvesting(kernel, { definitions, grants: setup.grants });
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });

@@ -6,6 +6,7 @@ import { type Feature, type Kernel, stream } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { clearFireLine, combatPoint } from "../../physics/fire-line";
 import { BuilderConstruction, ConstructionSite, clearConstructionOrder } from "../construction";
+import { suspendRepair } from "../construction/repair";
 import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
@@ -180,6 +181,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
         if (!armed.length) return "bad_payload";
         for (const actor of armed) {
           suspendHarvesting(kernel, actor);
+          suspendRepair(kernel, actor);
           clearAttackOrder(kernel, actor);
           if (world.has(actor, BuilderConstruction)) clearConstructionOrder(kernel, actor);
           kernel.movement?.cancel(actor);

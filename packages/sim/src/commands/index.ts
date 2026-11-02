@@ -53,6 +53,9 @@ export interface ConstructionBuild extends DebugSpawn {
 }
 
 export interface Payloads {
+  "economy.sell": { entity: number };
+  "economy.repair": { entity: number; builders: number[] };
+  "economy.cancelRepair": { entity: number };
   "unit.harvest": UnitStop;
   "production.enqueue": { entity: number; definition: string };
   "production.cancel": { item: number };
@@ -117,6 +120,9 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "economy.sell": { entity: ID },
+  "economy.repair": { entity: ID, builders: IDS },
+  "economy.cancelRepair": { entity: ID },
   "unit.harvest": { entities: IDS },
   "production.enqueue": {
     entity: ID,

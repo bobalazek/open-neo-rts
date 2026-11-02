@@ -10,6 +10,12 @@ import {
   ConstructionSite,
 } from "../features/construction";
 import {
+  REPAIR_STATES,
+  RepairCredit,
+  RepairOrder,
+  RepairWork,
+} from "../features/construction/repair";
+import {
   type BankSnapshot,
   type ExtractionSnapshot,
   Harvester,
@@ -49,6 +55,8 @@ export interface PresentedEntity {
     buildersWorking: number;
   };
   constructionOrder?: { site: string; state: (typeof CONSTRUCTION_WORK_STATES)[number] };
+  repairOrder?: { target: string; state: (typeof REPAIR_STATES)[number]; workRemainder: number };
+  repair?: { creditCarry: number; repairersWorking: number };
   production?: {
     slots: number;
     queue: {
@@ -147,6 +155,11 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         if (!definition) throw new Error("Entity has no definition");
         const inspectBuilder =
           !!setup.normal && definition.role === "builder" && permits(force, "economy.build");
+        const inspectRepair =
+          !!setup.normal &&
+          (definition.role === "builder" ||
+            definition.id.split(":")[0]?.split(".").at(-1) === "structure") &&
+          permits(force, "economy.build");
         const inspectHarvester =
           !!setup.normal && world.has(id, Harvester) && inspectEconomy(force);
         const inspectProduction =
@@ -162,6 +175,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
               inspectPower ||
               inspectSite ||
               inspectBuilder ||
+              inspectRepair ||
               inspectHarvester ||
               inspectProduction)
         )
@@ -184,6 +198,24 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           facing: world.get(id, Transform, "facing"),
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
+          ...(inspectRepair &&
+            world.has(id, RepairCredit) && {
+              repair: {
+                creditCarry: world.get(id, RepairCredit, "carry"),
+                repairersWorking: world.get(id, RepairCredit, "working"),
+              },
+            }),
+          ...(inspectRepair &&
+            world.has(id, RepairOrder) &&
+            world.isAlive(world.get(id, RepairOrder, "target")) && {
+              repairOrder: {
+                target: handleOf(world.get(id, RepairOrder, "target")),
+                state: REPAIR_STATES[
+                  world.get(id, RepairOrder, "state")
+                ] as (typeof REPAIR_STATES)[number],
+                workRemainder: world.get(id, RepairWork, "remainder"),
+              },
+            }),
           ...(inspectHarvester && { harvesting: harvestSnapshot(kernel, id, definition) }),
           ...(attackTarget &&
             world.isAlive(attackTarget) &&

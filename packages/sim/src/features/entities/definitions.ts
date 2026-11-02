@@ -4,6 +4,7 @@ import {
   arr,
   bool,
   DOMAINS,
+  FAMILIES,
   type Issue,
   int,
   type MovementDomain,
@@ -21,6 +22,19 @@ import {
 import { strictObject } from "../../snapshots/schema";
 import { type GameplayWeapon, weaponSchema } from "./weapons";
 
+export interface RepairDefinition {
+  readonly targets: {
+    readonly families: readonly string[];
+    readonly roles: readonly string[];
+    readonly tags: readonly string[];
+    readonly structures?: boolean;
+  };
+  readonly rateMilliHealthPerSecond: number;
+  readonly rangeSubcells?: number;
+  readonly costPerMille?: number;
+  readonly automatic?: boolean;
+}
+
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
 export interface Definition {
   id: string;
@@ -34,6 +48,8 @@ export interface Definition {
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
   role?: string;
+  tags?: readonly string[];
+  repair?: RepairDefinition;
   harvestCapacity?: number;
   harvestAmountPerSecond?: number;
   dock?: boolean;
@@ -97,6 +113,25 @@ export const definitionSchema = strictObject({
   resistPerMille: opt(rec(int(0, 10000), new RegExp(`^(${WARHEAD_TAGS.join("|")})$`))),
   weapons: opt(arr(weaponSchema, 0, 32)),
   turretTurnAnglePerTick: opt(int(0, 0x10000)),
+  tags: opt(arr(str(/^[a-z0-9-]+$/), 0, 1000)),
+  repair: opt(
+    strictObject({
+      targets: strictObject({
+        families: arr(oneOf(FAMILIES), 0, FAMILIES.length),
+        roles: arr(
+          oneOf([...UNIT_ROLES, ...STRUCTURE_ROLES]),
+          0,
+          UNIT_ROLES.length + STRUCTURE_ROLES.length,
+        ),
+        tags: arr(str(/^[a-z0-9-]+$/), 0, 1000),
+        structures: opt(bool()),
+      }),
+      rateMilliHealthPerSecond: int(0, 1_000_000),
+      rangeSubcells: opt(int(0, 20 * 1024)),
+      costPerMille: opt(int(0, 1000)),
+      automatic: opt(bool()),
+    }),
+  ),
   construction: opt({
     json: { anyOf: [recipeSchema.json, { type: "null" }] },
     check(value, path, issues) {

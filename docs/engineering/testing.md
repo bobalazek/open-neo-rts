@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 24, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 25, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -212,3 +212,14 @@ A normal harvester regression verifies explicit attack/harvest order replacement
 preserves cargo. Move and builder assignment also clear explicit attack orders.
 No impact, damage or public firing event is claimed by this targeting task.
 Debug state hashes remain unchanged.
+
+
+SIM25 adds completed-structure sale, atomic multi-Force receipt refunds and paid
+adjacent builder repair with carried work/credit fractions. Normal goldens are
+`546cd5a52356f5c8` initially and `c8652b8de2ae48f3` at tick two. Checks cover
+sale/queue overflow atomicity, kit-only fallback receipts, exact total repair cost,
+stop/restart fractions, funds/permissions, approach/death/order replacement and
+copied private repair status. The original harvesting, targeting and production
+interfaces remain intact. Missing authored repair metadata remains unavailable;
+actual Field Technician activation is a separate balance change. Debug hashes
+remain unchanged. Full save-file identity remains separate.
