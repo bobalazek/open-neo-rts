@@ -25,13 +25,13 @@ Every structure has exactly one `role`. Roles are engine code (`packages/content
 
 Structures are built **on site by builder units**: the Alliance's Combat Engineer, the Collective's Field Technician, the Phoenix Initiative's Nanite Constructor. The headquarters trains builders.
 
-1. Select builders and pick a structure from the build panel. The cost is paid now.
-2. Place it on the grid (see Placement). A brick outline appears: the **construction site**.
+1. Select builders and pick a structure from the build panel. Previewing spends nothing.
+2. Place it on the grid (see Placement). Once placement and clearance succeed, pay the full cost atomically and create the **construction site**, shown as a brick outline.
 3. The builders walk there and build. Progress shows on the site and in the selection panel; the model assembles brick by brick.
 4. **More builders build faster**, with diminishing returns (the second builder adds 75% speed, the third 50%, and so on). Builders can be pulled off and the site waits, half-built, until someone continues.
 5. A finished structure starts working immediately.
 
-- **Cancel** a construction site to get a full refund of what hasn't been built yet, and half of what has.
+- **Cancel** an unfinished construction site to refund 100% of its paid cost, once.
 - A construction site can be attacked; if it's destroyed, the money is lost.
 - Builders also **repair** (costs credits over time) and **capture** enemy and neutral structures.
 - **Allied builders** can help build each other's structures when the lobby allows it, and always can on a team's wonder.
@@ -48,8 +48,8 @@ Structures snap to the map grid. Free-form placement doesn't exist.
 - **Every footprint cell** is on the same height level, so nothing straddles a cliff, and the whole footprint stays out of the map's 4-cell edge margin.
 - **Rotation:** at 0 the footprint's first row is at the back and the front faces south; each step turns it a quarter clockwise, as seen from above with north up.
 - **Shore structures** (shipyards, naval docks, sea walls) mix rules. A shipyard is 4×4 with the back row `land`, two middle rows `shore` and the front row `water`, so it sits half on the beach, half in the sea, and launches ships into deep water. Two `shore` rows fit both one- and two-cell shallow bands. The placement grid shows each cell's rule: green where it's satisfied, red with the reason where it isn't.
-- **Build radius:** new structures must be within a few cells of an existing structure of the same Force (defences have a smaller radius). In territory rulesets, own territory replaces the radius.
-- **Clearance:** units standing in the footprint are asked to move. Placement waits briefly, then fails with a message if they can't.
+- **Build radius:** every new footprint-cell center must be within six cells of a footprint-cell center of a completed same-Force structure; defenses and walls use three cells. Incomplete sites and extractors provide no radius. Remote node extractors are exempt. The starting headquarters needs no prior radius; missing paid recovery recipes remain unavailable. In territory rulesets, own territory replaces the radius. See the [accepted normal-construction contract](../project/decisions/2026-11-02-normal-construction.md).
+- **Clearance:** ask only controllable friendly units to leave the footprint in stable-ID order through normal pathfinding. Wait up to 40 ticks, then refuse if still blocked. Enemy or uncontrolled blockers refuse placement; cancellation/refusal never overwrites newer orders. Revalidate before site creation and payment. Debug spawning refuses occupied cells immediately.
 - **Exits and docks:** production structures have an exit cell (`socket_exit`) that must not be blocked; drop-off structures and pads have docking cells (`socket_dock`). Both are part of the footprint and shown while placing.
 - **Placing** creates a construction site that builders then work on (see Construction and builders). Shift-placing queues several sites for the same builders.
 

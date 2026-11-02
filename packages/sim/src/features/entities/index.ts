@@ -7,6 +7,7 @@ import type { Feature } from "../../kernel";
 import type { Definition } from "./definitions";
 import { checkSpawnPlacement } from "./placement";
 
+export * from "./content";
 export * from "./definitions";
 export {
   debugSpawnPlacement,

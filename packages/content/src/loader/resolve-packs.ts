@@ -18,6 +18,8 @@ export interface ResolvedCatalog {
   readonly packs: readonly PackIdentity[];
   /** Validated, frozen JSON snapshots, keyed by `<pack>.<definition ID>`. Human units remain raw. */
   readonly definitions: ReadonlyMap<string, Readonly<Data>>;
+  /** Reference lookup order: this pack first, then dependency depth-first preorder. */
+  readonly referenceScopes: ReadonlyMap<string, readonly string[]>;
   readonly gameplayHash: string;
   readonly cosmeticHash: string;
   readonly issues: readonly PackIssue[];
@@ -258,6 +260,7 @@ export function resolvePacks(
   if (errors.length) throw new PackResolutionError(errors);
 
   const definitions = new Map<string, Readonly<Data>>();
+  const referenceScopes = new Map<string, readonly string[]>();
   const identities: PackIdentity[] = [];
   for (const pack of ordered) {
     const manifest = manifests.get(pack.id) as Data;
@@ -333,6 +336,14 @@ export function resolvePacks(
       for (const dep of dependencies.get(id) ?? []) visit(dep);
     };
     for (const dep of dependencies.get(pack.id) ?? []) visit(dep);
+    const reachable: string[] = [];
+    const visitReference = (id: string) => {
+      if (reachable.includes(id)) return;
+      reachable.push(id);
+      for (const dep of dependencies.get(id) ?? []) visitReference(dep);
+    };
+    visitReference(pack.id);
+    referenceScopes.set(pack.id, Object.freeze(reachable));
     identities.push(
       Object.freeze({
         id: pack.id,
@@ -371,5 +382,12 @@ export function resolvePacks(
       "identity",
       `cosmetic hash mismatch: expected ${options.expectedCosmeticHash}, got ${cosmeticHash}`,
     );
-  return { packs: Object.freeze(identities), definitions, gameplayHash, cosmeticHash, ...checked };
+  return {
+    packs: Object.freeze(identities),
+    definitions,
+    referenceScopes,
+    gameplayHash,
+    cosmeticHash,
+    ...checked,
+  };
 }
