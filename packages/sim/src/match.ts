@@ -50,7 +50,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 40;
+export const SIM_VERSION = 41;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -93,6 +93,13 @@ export function createMatch(setup: MatchSetup): Kernel {
       }),
       ...(definition.resistPerMille && {
         resistPerMille: Object.freeze({ ...definition.resistPerMille }),
+      }),
+      ...(definition.powerAdjacency && {
+        powerAdjacency: Object.freeze(
+          definition.powerAdjacency.map((rule) =>
+            Object.freeze({ ...rule, tags: Object.freeze([...rule.tags]) }),
+          ),
+        ),
       }),
       ...(definition.footprint && {
         footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
@@ -158,7 +165,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   );
   register(kernel, movementFeature({ ...setup, definitions }));
   if (setup.normal) initializeDisable(kernel, definitions);
-  if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
+  if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants, definitions);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });
   if (setup.normal) initializeTransports(kernel, { ...setup, definitions });

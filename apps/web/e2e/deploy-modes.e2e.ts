@@ -684,3 +684,137 @@ test("the original Flame Tank delivers its authored beam and persistent burn thr
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });
+
+test("paid original reactors gain and lose their adjacency output through worker, HUD and replay", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded HUD integration runs in Chromium");
+  test.setTimeout(60_000);
+  const candidate = structuredClone(setup),
+    reactor = "core.structure:eastern-collective/industrial-reactor";
+  candidate.normal.settings.fog = "off";
+  candidate.normal.forces[0].start.units = [
+    { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
+  ];
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://reactor-adjacency.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>Reactor adjacency</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  await page.goto("http://reactor-adjacency.test/");
+  await page.evaluate(async (setup) => {
+    const moduleUrl = "/fixture.js";
+    const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+    window.deployFixture = await start(setup);
+  }, candidate);
+  try {
+    const built = await page.evaluate(async (reactor) => {
+      const f = window.deployFixture;
+      const builders = f
+        .state()!
+        .snapshot.entities.filter(
+          (row) => row.force === 0 && row.definition.endsWith("/field-technician"),
+        )
+        .map((row) => row.handle);
+      const receipts = [],
+        produced = [],
+        building = [];
+      for (const [index, x] of [22, 25].entries()) {
+        receipts.push(
+          await f.command("economy.build", {
+            definition: reactor,
+            force: 0,
+            builders,
+            x: x * 1024,
+            y: 18 * 1024,
+            facing: 16384,
+          }),
+        );
+        for (
+          let i = 0;
+          i < 40 &&
+          !f
+            .state()!
+            .snapshot.entities.some(
+              (row) => row.force === 0 && row.definition === reactor && row.constructionSite,
+            );
+          i++
+        )
+          await f.step(1);
+        f.select([reactor]);
+        building.push(document.querySelector("[data-details]")?.textContent ?? "");
+        const complete = () =>
+          f
+            .state()!
+            .snapshot.entities.filter(
+              (row) => row.force === 0 && row.definition === reactor && !row.constructionSite,
+            );
+        for (let i = 0; i < 500 && complete().length < index + 1; i++) await f.step(1);
+        produced.push(f.state()!.snapshot.power?.find((row) => row.force === 0)?.produced);
+      }
+      f.select([reactor]);
+      return {
+        receipts,
+        produced,
+        building,
+        reactors: f
+          .state()!
+          .snapshot.entities.filter((row) => row.force === 0 && row.definition === reactor),
+        credits: f.state()!.snapshot.banks?.find((row) => row.force === 0)?.resources.credits,
+      };
+    }, reactor);
+    expect(built.receipts).toEqual(["accepted", "accepted"]);
+    expect(built.produced).toEqual([160, 328]);
+    expect(built.building[0]).toContain("0 power");
+    expect(built.building[0]).not.toContain("Brownout");
+    expect(built.credits).toBe(3200);
+    expect(built.reactors).toHaveLength(2);
+    expect(
+      built.reactors.every(
+        (row) =>
+          row.power?.amount === 154 &&
+          row.power.baseAmount === 140 &&
+          row.power.sources?.length === 1,
+      ),
+    ).toBe(true);
+    await expect(page.locator("[data-details]")).toContainText("154 power");
+    await expect(page.locator("[data-details]")).toContainText("Base 140 · Adjacency:");
+    const off = await page.evaluate(async (handle) => {
+      const f = window.deployFixture;
+      return {
+        receipt: await f.command("economy.power", { entity: handle, enabled: 0 }),
+        produced: f.state()!.snapshot.power?.find((row) => row.force === 0)?.produced,
+      };
+    }, built.reactors[0]!.handle);
+    expect(off).toEqual({ receipt: "accepted", produced: 160 });
+    await expect(page.locator("[data-details]")).not.toContainText("Adjacency:");
+    await expect(page.locator("[data-details]")).toContainText("0 power");
+    const restored = await page.evaluate(async (handle) => {
+      const f = window.deployFixture;
+      return {
+        receipt: await f.command("economy.power", { entity: handle, enabled: 1 }),
+        produced: f.state()!.snapshot.power?.find((row) => row.force === 0)?.produced,
+      };
+    }, built.reactors[0]!.handle);
+    expect(restored).toEqual({ receipt: "accepted", produced: 328 });
+    await expect(page.locator("[data-details]")).toContainText("Adjacency:");
+    expect(
+      await page.evaluate(() => window.deployFixture.command("match.surrender", { force: 0 })),
+    ).toBe("accepted");
+    const record = parseMatchRecord(await page.evaluate(() => window.deployFixture.record()));
+    expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+    expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(() => window.deployFixture.dispose());
+  }
+});

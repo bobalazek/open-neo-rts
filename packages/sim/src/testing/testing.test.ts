@@ -29,6 +29,7 @@ describe("Eastern Collective tier-1 definitions", () => {
     expect(definitions).toEqual([
       {
         id: "unit:eastern-collective/collective-soldier",
+        tags: ["infantry"],
         pop: 1,
         role: "combat",
         health: 100,
@@ -40,6 +41,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/dragon-tank",
+        tags: ["vehicle"],
         pop: 3,
         role: "combat",
         health: 900,
@@ -51,6 +53,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/drone-hunter",
+        tags: ["infantry"],
         pop: 1,
         role: "combat",
         health: 100,
@@ -62,6 +65,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/field-technician",
+        tags: ["infantry", "engineer"],
         pop: 1,
         role: "builder",
         health: 100,
@@ -73,6 +77,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/metamorphic-apc",
+        tags: ["vehicle"],
         pop: 2,
         role: "transport",
         health: 600,
@@ -84,6 +89,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/rocket-trooper",
+        tags: ["infantry"],
         pop: 1,
         role: "combat",
         health: 100,
@@ -95,6 +101,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/supply-truck",
+        tags: ["vehicle", "harvester"],
         harvestCapacity: 500,
         harvestAmountPerSecond: 5,
         pop: 0,

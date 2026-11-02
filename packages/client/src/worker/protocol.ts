@@ -272,12 +272,31 @@ function isEntityPower(value: unknown): boolean {
   if (
     !isRecord(value) ||
     Object.getPrototypeOf(value) !== Object.prototype ||
-    Reflect.ownKeys(value).length !== 3
+    ![3, 5].includes(Reflect.ownKeys(value).length)
   )
     return false;
   const amount: unknown = Object.getOwnPropertyDescriptor(value, "amount")?.value;
   const enabled: unknown = Object.getOwnPropertyDescriptor(value, "enabled")?.value;
   const powered: unknown = Object.getOwnPropertyDescriptor(value, "powered")?.value;
+  const baseAmount: unknown = Object.getOwnPropertyDescriptor(value, "baseAmount")?.value;
+  const sources: unknown = Object.getOwnPropertyDescriptor(value, "sources")?.value;
+  if (
+    Reflect.ownKeys(value).length === 5 &&
+    (typeof baseAmount !== "number" ||
+      !Number.isInteger(baseAmount) ||
+      baseAmount < 1 ||
+      baseAmount > 500 ||
+      typeof amount !== "number" ||
+      amount < baseAmount ||
+      enabled !== true ||
+      powered !== true ||
+      !Array.isArray(sources) ||
+      sources.length < 1 ||
+      sources.length > 40 ||
+      new Set(sources).size !== sources.length ||
+      ![...sources].every((source) => typeof source === "string" && /^e[1-9][0-9]*$/.test(source)))
+  )
+    return false;
   return (
     typeof amount === "number" &&
     Number.isInteger(amount) &&

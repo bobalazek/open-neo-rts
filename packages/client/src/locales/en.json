@@ -129,6 +129,8 @@
   "ui.hud.cargo": "Cargo {value}/{capacity} · {state}",
   "ui.hud.extraction": "Reserve {value} · {state}",
   "ui.hud.powered": "Powered",
+  "ui.hud.power-amount": "{value} power",
+  "ui.hud.power-adjacency": "Base {base} · Adjacency: {sources}",
   "ui.hud.brownout": "Brownout · half production speed",
   "ui.hud.disabled": "Powered off",
   "ui.hud.moving": "Moving",
