@@ -8,6 +8,7 @@ import { createQuality, type GraphicsQuality } from "./scene/quality";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
+export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createPlacementOverlay } from "./overlays/placement";
 export { createRenderCounters } from "./scene/performance";
