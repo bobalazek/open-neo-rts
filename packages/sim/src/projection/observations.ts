@@ -4,8 +4,10 @@ import { createProjection, type SeatSnapshot } from ".";
 
 /** Each bot receives its own copy; changing it cannot change the next observation or simulation. */
 function copy(snapshot: SeatSnapshot): SeatSnapshot {
+  // Combat events and their opaque allocator are cosmetic, not restored gameplay inputs.
+  const { combatEvents: _combatEvents, ...gameplay } = snapshot;
   return {
-    ...snapshot,
+    ...gameplay,
     entities: snapshot.entities.map((entity) => ({
       ...entity,
       order: entity.order && { ...entity.order },
@@ -35,9 +37,6 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       fog: snapshot.fog.map((grid) => ({ ...grid, cells: grid.cells.slice() })),
     }),
     ...(snapshot.ghosts && { ghosts: snapshot.ghosts.map((ghost) => ({ ...ghost })) }),
-    ...(snapshot.combatEvents && {
-      combatEvents: snapshot.combatEvents.map((event) => ({ ...event })),
-    }),
   };
 }
 

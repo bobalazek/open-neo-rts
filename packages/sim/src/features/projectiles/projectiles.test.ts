@@ -54,6 +54,7 @@ function fixture(
     friendlyFire?: boolean;
     miss?: number;
     raised?: boolean;
+    targetSpeed?: number;
   } = {},
 ) {
   const weapon = options.weapon ?? gun;
@@ -64,6 +65,7 @@ function fixture(
     {
       ...unit,
       health: options.health ?? 1000,
+      speed: options.targetSpeed ?? unit.speed,
       armor: options.armor ?? "infantry",
       ...(options.resistance && { resistPerMille: options.resistance }),
     },
@@ -219,6 +221,66 @@ test("ballistic leading uses actual velocity and relative sweeps detect targets 
   );
   f.advance(8);
   expect(f.hp()).toBe(990);
+});
+
+test("immediate swept splash uses contact-time poses while delayed warheads and fuses use detonation poses", () => {
+  for (const mode of ["immediate", "delayed", "fuse"] as const) {
+    const f = fixture({
+      targetSpeed: 4096,
+      weapon: {
+        ...gun,
+        projectile: {
+          kind: "bullet",
+          speedSubcellsPerTick: 4096,
+          ...(mode === "fuse" && { fuseTicks: 1 }),
+        },
+        warheads: [
+          {
+            type: "damage",
+            amount: 10,
+            radiusSubcells: 1024,
+            tags: [],
+            ...(mode === "delayed" && { delayTicks: 1 }),
+          },
+        ],
+      },
+    });
+    f.kernel.world.destroy(f.actor);
+    f.kernel.world.set(f.target, Transform, "y", 18 * 1024 + 512);
+    f.advance();
+    const round = f.kernel.world.create();
+    f.kernel.world.add(round, Projectile, {
+      definition: 2,
+      weapon: 0,
+      force: 0,
+      ceiling: 255,
+      x: 22 * 1024 + 512,
+      y: 20 * 1024 + 512,
+      destinationX: 26 * 1024 + 512,
+      destinationY: 20 * 1024 + 512,
+      velocityX: 4096,
+      velocityY: 0,
+      speed: 4096,
+      life: 5,
+      born: 0,
+    });
+    step(f.kernel, [
+      {
+        tick: f.kernel.tick,
+        seat: 2,
+        sequence: 0,
+        type: "unit.move",
+        payload: { entities: [f.target], x: 24 * 1024 + 512, y: 22 * 1024 + 512 },
+      },
+    ]);
+    expect(f.kernel.world.get(f.target, Transform, "y")).toBe(22 * 1024 + 512);
+    expect(f.kernel.combatEvents?.some((event) => event.type === "impact")).toBe(mode !== "fuse");
+    expect(f.hp()).toBe(mode === "immediate" ? 990 : 1000);
+    f.advance();
+    expect(f.hp()).toBe(mode === "immediate" ? 990 : 1000);
+    expect(f.kernel.world.query(PendingImpact)).toEqual([]);
+    expect(f.kernel.world.query(Projectile)).toEqual([]);
+  }
 });
 
 test("missiles accelerate, obey turn limits, lose dead target references and expire without phantom damage", () => {

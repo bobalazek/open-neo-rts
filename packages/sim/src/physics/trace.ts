@@ -75,7 +75,7 @@ function circle(a: Point, b: Point, centre: Point, radius: number): Fraction | u
     d = length * scale;
   return n >= 0n && n <= d ? { n, d } : undefined;
 }
-function point(a: Point, b: Point, at: Fraction): Point {
+export function pointAt(a: Point, b: Point, at: Fraction): Point {
   return {
     x: a.x + Number((BigInt(b.x - a.x) * at.n) / at.d),
     y: a.y + Number((BigInt(b.y - a.y) * at.n) / at.d),
@@ -119,7 +119,7 @@ export function traceProjectile(
   const offer = (at: Fraction | undefined, entity: number, kind: Contact["kind"]) => {
     if (!at || compare(at, zero) < 0n || compare(at, one) > 0n) return;
     if (!hit || compare(at, hit.at) < 0n || (compare(at, hit.at) === 0n && entity < hit.entity))
-      hit = { ...point(a, b, at), at, entity, kind };
+      hit = { ...pointAt(a, b, at), at, entity, kind };
   };
   const blockers = weapon.projectile.blockedBy ?? [];
   for (const entity of world.query(Template, Transform, OwnerForce, Health)) {

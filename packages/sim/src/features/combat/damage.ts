@@ -1,7 +1,7 @@
 import { atan2, isqrt } from "@open-neo-rts/deterministic";
 import type { Kernel } from "../../kernel";
 import { combatPoint } from "../../physics/fire-line";
-import { entityBounds } from "../../physics/trace";
+import { entityBounds, type Fraction, pointAt } from "../../physics/trace";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import type { GameplayWarhead, GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
@@ -16,6 +16,11 @@ export interface DamageImpact {
   readonly fromY: number;
   readonly air: boolean;
   readonly maxLevel: number;
+  /** Only immediate swept impacts sample actors at contact time; delayed effects use current poses. */
+  readonly geometry?: {
+    readonly at: Fraction;
+    readonly motion: ReadonlyMap<number, { x: number; y: number }>;
+  };
 }
 
 function distance(
@@ -24,6 +29,7 @@ function distance(
   target: number,
   point: { x: number; y: number },
   radius: number,
+  centre: { x: number; y: number },
 ): number | undefined {
   const bounds = entityBounds(kernel, definitions, target);
   if (bounds) {
@@ -32,8 +38,7 @@ function distance(
     const squared = x * x + y * y;
     return squared <= radius * radius ? isqrt(squared) : undefined;
   }
-  const centre = combatPoint(kernel, definitions, target),
-    definition = definitions[kernel.world.get(target, Template, "definition")];
+  const definition = definitions[kernel.world.get(target, Template, "definition")];
   const squared = (point.x - centre.x) ** 2 + (point.y - centre.y) ** 2;
   const bodyRadius = definition?.radiusSubcells ?? 0;
   return squared <= (radius + bodyRadius) ** 2
@@ -94,7 +99,12 @@ export function applyDamageWarhead(
       (definition.domain === "air") !== impact.air
     )
       continue;
-    const centre = combatPoint(kernel, definitions, target),
+    const current = combatPoint(kernel, definitions, target),
+      previous = impact.geometry?.motion.get(target),
+      centre =
+        previous && impact.geometry && !definition.footprint
+          ? pointAt(previous, current, impact.geometry.at)
+          : current,
       terrain = kernel.map?.terrain;
     if (
       terrain &&
@@ -107,7 +117,7 @@ export function applyDamageWarhead(
       force === impact.force ||
       kernel.vision?.groupForForce(force) === kernel.vision?.groupForForce(impact.force);
     if (allied && (radius === 0 || !(warhead.friendlyFire ?? friendlyFire))) continue;
-    const range = radius > 0 ? distance(kernel, definitions, target, impact, radius) : 0;
+    const range = radius > 0 ? distance(kernel, definitions, target, impact, radius, centre) : 0;
     if (range === undefined) continue;
     const rings = warhead.falloffPerMille ?? [1000];
     const falloff =
@@ -119,7 +129,6 @@ export function applyDamageWarhead(
       ["light", "medium", "heavy", "naval"].includes(definition.armor ?? "") &&
       !definition.footprint
     ) {
-      const centre = combatPoint(kernel, definitions, target);
       const incoming = atan2(impact.fromY - centre.y, impact.fromX - centre.x);
       const difference = Math.abs(
         ((incoming - world.get(target, Transform, "facing") + 0x8000) & 0xffff) - 0x8000,

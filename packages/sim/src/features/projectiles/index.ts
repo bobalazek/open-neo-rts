@@ -4,9 +4,9 @@ import { defineComponent } from "../../ecs";
 import { type Kernel, register, stream } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { combatPoint } from "../../physics/fire-line";
-import { type Contact, traceProjectile } from "../../physics/trace";
+import { type Contact, type Fraction, traceProjectile } from "../../physics/trace";
 import { AttackOrder, clearAttackOrder, ShotIntent, WeaponState } from "../combat";
-import { applyDamageWarhead } from "../combat/damage";
+import { applyDamageWarhead, type DamageImpact } from "../combat/damage";
 import { Health, OwnerForce, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
@@ -124,6 +124,7 @@ export function initializeProjectiles(
       terrain?.level[Math.floor(point.y / 1024) * terrain.width + Math.floor(point.x / 1024)] ?? 0
     );
   };
+  const impactGeometry = new Map<number, DamageImpact["geometry"]>();
   const impact = (
     id: number,
     data: {
@@ -140,12 +141,14 @@ export function initializeProjectiles(
       fromY: number;
     },
     delay = 0,
+    geometry?: DamageImpact["geometry"],
   ) => {
     const weapon = weaponOf(data.definition, data.weapon);
     if (!weapon) {
       world.destroy(id);
       return;
     }
+    if (!delay && geometry) impactGeometry.set(id, geometry);
     if (world.has(id, Projectile)) world.remove(id, Projectile);
     world.add(id, PendingImpact, {
       ...data,
@@ -165,6 +168,7 @@ export function initializeProjectiles(
     id: number,
     hit: Contact | { x: number; y: number; entity: number },
     from: { x: number; y: number },
+    geometry?: DamageImpact["geometry"],
   ) => {
     const weapon = weaponOf(
       world.get(id, Projectile, "definition"),
@@ -184,37 +188,32 @@ export function initializeProjectiles(
       world.set(id, Projectile, "fuseDue", kernel.tick + weapon.projectile.fuseTicks);
       return;
     }
-    impact(id, {
-      shooter: world.get(id, Projectile, "shooter"),
-      force: world.get(id, Projectile, "force"),
-      definition: world.get(id, Projectile, "definition"),
-      weapon: world.get(id, Projectile, "weapon"),
-      direct: hit.entity,
-      air: world.get(id, Projectile, "air"),
-      ceiling: world.get(id, Projectile, "ceiling"),
-      x: hit.x,
-      y: hit.y,
-      fromX: from.x,
-      fromY: from.y,
-    });
+    impact(
+      id,
+      {
+        shooter: world.get(id, Projectile, "shooter"),
+        force: world.get(id, Projectile, "force"),
+        definition: world.get(id, Projectile, "definition"),
+        weapon: world.get(id, Projectile, "weapon"),
+        direct: hit.entity,
+        air: world.get(id, Projectile, "air"),
+        ceiling: world.get(id, Projectile, "ceiling"),
+        x: hit.x,
+        y: hit.y,
+        fromX: from.x,
+        fromY: from.y,
+      },
+      0,
+      geometry,
+    );
   };
   register(kernel, {
     components: [CombatMotion, Projectile, PendingImpact],
     systems: {
-      control: [
-        () => {
-          for (const id of world.query(Template, Transform, Health)) {
-            const point = { x: world.get(id, Transform, "x"), y: world.get(id, Transform, "y") };
-            if (world.has(id, CombatMotion)) {
-              world.set(id, CombatMotion, "x", point.x);
-              world.set(id, CombatMotion, "y", point.y);
-            } else world.add(id, CombatMotion, point);
-          }
-        },
-      ],
       combat: [
         () => {
           kernel.combatEvents = [];
+          impactGeometry.clear();
           for (const shot of world.query(ShotIntent)) {
             const definition = world.get(shot, ShotIntent, "definition"),
               index = world.get(shot, ShotIntent, "weapon"),
@@ -451,6 +450,12 @@ export function initializeProjectiles(
                     },
                   }
                 : weapon;
+            const duration: Fraction = shortened
+              ? {
+                  n: BigInt(Math.min(speed, isqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2))),
+                  d: BigInt(speed),
+                }
+              : { n: 1n, d: 1n };
             const hit = traceProjectile(kernel, definitions, {
               a,
               b,
@@ -461,12 +466,7 @@ export function initializeProjectiles(
               weapon: traceWeapon,
               motion,
               // A final short segment reaches its aim point before the end of this movement tick.
-              duration: shortened
-                ? {
-                    n: BigInt(Math.min(speed, isqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2))),
-                    d: BigInt(speed),
-                  }
-                : { n: 1n, d: 1n },
+              duration,
             });
             world.set(id, Projectile, "age", age + 1);
             if (hit?.kind === "boundary") {
@@ -474,7 +474,10 @@ export function initializeProjectiles(
               continue;
             }
             if (hit) {
-              strike(id, hit, a);
+              strike(id, hit, a, {
+                at: { n: hit.at.n * duration.n, d: hit.at.d * duration.d },
+                motion,
+              });
               continue;
             }
             world.set(id, Projectile, "x", b.x);
@@ -484,7 +487,7 @@ export function initializeProjectiles(
               b.y === destination.y &&
               (weapon.projectile.kind === "bullet" || !target)
             ) {
-              strike(id, { ...b, entity: 0 }, a);
+              strike(id, { ...b, entity: 0 }, a, { at: duration, motion });
               continue;
             }
             emitCombatEvent(kernel, {
@@ -528,6 +531,10 @@ export function initializeProjectiles(
                   fromY: world.get(id, PendingImpact, "fromY"),
                   air: world.get(id, PendingImpact, "air") === 1,
                   maxLevel: world.get(id, PendingImpact, "ceiling"),
+                  ...(world.get(id, PendingImpact, "tick") === kernel.tick &&
+                    !warhead.delayTicks && {
+                      geometry: impactGeometry.get(id),
+                    }),
                 },
                 friendlyFire,
               );
@@ -571,6 +578,16 @@ export function initializeProjectiles(
         },
       ],
     },
+  });
+  // Economy may spawn rally-moving units; capture before the first movement system.
+  kernel.systems.movement.unshift(() => {
+    for (const id of world.query(Template, Transform, Health)) {
+      const point = { x: world.get(id, Transform, "x"), y: world.get(id, Transform, "y") };
+      if (world.has(id, CombatMotion)) {
+        world.set(id, CombatMotion, "x", point.x);
+        world.set(id, CombatMotion, "y", point.y);
+      } else world.add(id, CombatMotion, point);
+    }
   });
   kernel.canLaunch = (definition, weapon) =>
     supported(weaponOf(definition, weapon)) &&
