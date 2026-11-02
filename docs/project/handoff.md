@@ -73,3 +73,10 @@ passed independent review; integrated root repository/content batch passes.
 existing content-format example: 10 HP/second and 25% full-repair credit price,
 adjacent/manual only. This is a recorded implementation default for later tuning,
 not an additional owner-approved balance or a playtest result.
+
+
+Task 2-12b activates SIM26 Field Technician repair metadata: manual adjacent
+structure repair at 10 HP/second and 25% full-repair credit price. The delegated
+provisional choice is recorded in its own decision, with actual compiler coverage;
+existing price/time/health/art remain unchanged. Full repository/content checks
+pass. Normal initializer stub and debug hashes remain unchanged; headers advance.
