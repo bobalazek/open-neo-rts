@@ -7,6 +7,8 @@ import { strictObject } from "../../snapshots/schema";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 
+export * from "./memory";
+
 export const FOG_MODES = ["standard", "explored", "off"] as const;
 export type FogMode = (typeof FOG_MODES)[number];
 export const CELL_VISION = { shroud: 0, explored: 1, visible: 2 } as const;

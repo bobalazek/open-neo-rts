@@ -21,8 +21,9 @@ import {
 import { type Component, World } from "../ecs";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
-import type { TerrainVision } from "../features/vision";
+import type { TerrainVision, VisibilityMemory } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
+import type { SeatSnapshot } from "../projection";
 
 const MAP_SERIALIZATION = Symbol("mapSerialization");
 const SETUP_IDENTITY = Symbol("setupIdentity");
@@ -73,12 +74,22 @@ export type ReadonlyWorld = Pick<World, "isAlive" | "has" | "get" | "query">;
 
 export interface ControllerView {
   readonly tick: number;
-  readonly world: ReadonlyWorld;
+  /** Copied, permitted observation from the completed previous tick; never a live World. */
+  readonly observation: Readonly<SeatSnapshot>;
 }
 
 /** A command as a controller issues it; the kernel fills in tick, seat and sequence. */
 export type ControllerCommand = {
-  [T in CommandType]: { type: T; payload: Payloads[T] };
+  [T in CommandType]: {
+    type: T;
+    payload: {
+      [P in keyof Payloads[T]]: P extends "entities" | "builders"
+        ? readonly (string | number)[]
+        : P extends "entity" | "item"
+          ? string | number
+          : Payloads[T][P];
+    };
+  };
 }[CommandType];
 
 /** A bot or script driving one seat. Only reads; acts through the commands it returns. */
@@ -104,6 +115,11 @@ export interface Kernel {
   movement?: TerrainMovement;
   /** Authoritative sight and explored history; only copied group grids may leave the host. */
   vision?: TerrainVision;
+  visibility?: VisibilityMemory;
+  observe?: (seat: number) => SeatSnapshot;
+  /** Capture completed state after advancing the tick, so scheduled grants match human snapshots. */
+  captureObservations?: () => void;
+  controllerPayload?: (seat: number, command: ControllerCommand) => unknown;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
@@ -206,6 +222,7 @@ export function step(kernel: Kernel, inputs: readonly unknown[]): LogEntry[] {
   }
   kernel.log.push(...entries);
   kernel.tick++;
+  kernel.captureObservations?.();
   if (kernel.tick % CHECKPOINT_INTERVAL === 0)
     kernel.checkpoints.push({ tick: kernel.tick, hash: checkpointHash(kernel) });
   return entries;
@@ -241,6 +258,7 @@ export function checkpointHash(kernel: Kernel): string {
   if (kernel[SETUP_IDENTITY] !== undefined) addString(h, kernel[SETUP_IDENTITY]);
   kernel.movement?.hashInto(h);
   kernel.vision?.hashInto(h);
+  kernel.visibility?.hashInto(h);
   return digest(h).hex;
 }
 
@@ -280,11 +298,17 @@ function queue(kernel: Kernel): void {
   const seats = [...kernel.controllers.keys()].sort((a, b) => a - b);
   for (const seat of seats) {
     const controller = kernel.controllers.get(seat) as Controller;
-    // ponytail: controllers read the live world mid-tick; give them the seat's projection from the end
-    // of the previous tick once projection/ exists (architecture.md §5).
-    for (const command of controller({ tick: kernel.tick, world: kernel.world }))
+    for (const command of controller({
+      tick: kernel.tick,
+      observation: kernel.observe?.(seat) ?? {
+        tick: kernel.tick,
+        mode: "controlled",
+        entities: [],
+      },
+    }))
       kernel.queued.push({
         ...command,
+        payload: kernel.controllerPayload?.(seat, command) ?? command.payload,
         tick: kernel.tick + 1,
         seat,
         sequence: kernel.queued.length,
