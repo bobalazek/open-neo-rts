@@ -17,7 +17,7 @@ export function desktopLockState(value: unknown): boolean | null {
       s.kCGSSessionOnConsoleKey === true,
   );
   const session = sessions.length === 1 ? sessions[0] : undefined;
-  if (!session || session.kCGSessionLoginDoneKey !== true) return null;
+  if (session?.kCGSessionLoginDoneKey !== true) return null;
   const locked = session.CGSSessionScreenIsLocked;
   return locked === undefined ? false : typeof locked === "boolean" ? locked : null;
 }
