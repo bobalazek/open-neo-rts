@@ -60,6 +60,7 @@ export const PendingImpact = defineComponent("PendingImpact", {
 });
 const live = (kernel: Kernel, id: number) =>
   kernel.world.isAlive(id) &&
+  kernel.world.has(id, Transform) &&
   kernel.world.has(id, Health) &&
   kernel.world.get(id, Health, "current") > 0;
 const angleDelta = (from: number, to: number) => ((to - from + 0x8000) & 0xffff) - 0x8000;

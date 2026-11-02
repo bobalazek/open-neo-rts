@@ -48,7 +48,9 @@ export function movementFeature(match: {
   ): Rejection | undefined {
     const { world, tick } = kernel;
     // Units may have died since the order was issued; IDs are never reused, so skip them.
-    const ids = entities.filter((id) => world.isAlive(id) && world.has(id, Template));
+    const ids = entities.filter(
+      (id) => world.isAlive(id) && world.has(id, Template) && world.has(id, Transform),
+    );
     const force = (id: number) => world.get(id, OwnerForce, "force");
     if (!ids.every((id) => hasGrant(grants, seat, force(id), "unit.orders", tick)))
       return "no_grant";
@@ -56,6 +58,7 @@ export function movementFeature(match: {
     if (target) kernel.movement?.refreshOccupancy();
     for (const id of ids) {
       if (target && kernel.unitModes?.active(id)) continue;
+      kernel.transport?.cancel(id);
       if (match.normal) suspendHarvesting(kernel, id);
       if (match.normal) clearAttackOrder(kernel, id);
       if (match.normal) suspendRepair(kernel, id);

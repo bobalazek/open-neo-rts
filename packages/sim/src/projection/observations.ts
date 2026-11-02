@@ -23,6 +23,12 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
     }),
     entities: snapshot.entities.map((entity) => ({
       ...entity,
+      ...(entity.cargo && {
+        cargo: {
+          ...entity.cargo,
+          passengers: entity.cargo.passengers.map((passenger) => ({ ...passenger })),
+        },
+      }),
       ...(entity.deploy && { deploy: { ...entity.deploy } }),
       order: entity.order && { ...entity.order },
       ...(entity.power && { power: { ...entity.power } }),
@@ -75,7 +81,12 @@ function controllerPayload(
     payload.builders = payload.builders.map(
       (handle) => projection.resolve(handle, "economy.build") ?? -1,
     );
-  if ("entity" in payload) payload.entity = projection.resolve(payload.entity) ?? -1;
+  if ("entity" in payload)
+    payload.entity =
+      projection.resolve(
+        payload.entity,
+        command.type === "unit.load" || command.type === "unit.unload" ? "unit.orders" : undefined,
+      ) ?? -1;
   if ("item" in payload) payload.item = projection.resolve(payload.item, "production.queue") ?? -1;
   return payload;
 }

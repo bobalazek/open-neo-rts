@@ -12,7 +12,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-43c · Mode transformation playback and disable integration](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle/effects; deploy commands and combat modifiers alone do not complete the signature.
-- [ ] [2-44 · Tier-1 APC transport lifecycle](./phases/2.md#2-44--tier-1-apc-transport-lifecycle). PR type: engine after deployment; boarding, cargo ownership, unloading and destroyed-transport outcomes.
+- [ ] [2-44b · Bunker Mode passenger fire](./phases/2.md#2-44--tier-1-apc-transport-lifecycle). PR type: engine after cargo lifecycle; actual passenger weapons fire through the deployed transport without granting independent sight or exposing hidden cargo.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
 - [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling after concrete bot fixes; persistent runner is implemented, but capped matches are incomplete and20 full-game outcomes remain unqualified.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.
@@ -20,7 +20,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 - [ ] [2-32b2 · Replay playback and detailed results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after the viewer and actual per-type/APM/history producers; summary totals and terminal input-record download are implemented.
 - [ ] [2-35b · Full replay metadata, keyframes and viewer](./phases/2.md#2-35--replay-recording-keyframes-and-viewer). PR type: engine after validated snapshot restore; terminal input records already verify by replaying the canonical setup and external commands.
 
-The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. SIM34 adds granted Siege/Bunker deploy/pack commands, cooldowns, movement locks and the authored combat modifiers alongside canonical summary statistics. All 137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
+The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. SIM35 adds APC boarding/unloading/ejection and private cargo manifests after granted Siege/Bunker modes and authored combat modifiers. All 137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
 
 ## Deferred phase-1b acceptance
 

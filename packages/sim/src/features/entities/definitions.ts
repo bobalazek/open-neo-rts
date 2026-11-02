@@ -67,6 +67,7 @@ export interface Definition {
   resistPerMille?: Readonly<Record<string, number>>;
   weapons?: readonly GameplayWeapon[];
   deployMode?: DeployModeDefinition;
+  transportSlots?: number;
   turretTurnAnglePerTick?: number;
   /** Missing/null means unavailable, never an implicit free construction recipe. */
   construction?: {
@@ -135,6 +136,7 @@ export const definitionSchema = strictObject({
     }),
   ),
   turretTurnAnglePerTick: opt(int(0, 0x10000)),
+  transportSlots: opt(int(1, 50)),
   tags: opt(arr(str(/^[a-z0-9-]+$/), 0, 1000)),
   repair: opt(
     strictObject({

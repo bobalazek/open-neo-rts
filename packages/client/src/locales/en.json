@@ -1,4 +1,8 @@
 {
+  "ui.hud.load": "Board transport",
+  "ui.hud.unload": "Unload infantry",
+  "ui.hud.transport-cargo": "Cargo {count}/{capacity} · boarding {boarding}",
+  "ui.hud.transport-full": "Transport capacity is reserved or full",
   "ui.home.title": "Open Neo RTS",
   "ui.home.intro": "Build a base. Command your Force.",
   "ui.home.single-player": "Single player",

@@ -13,6 +13,7 @@ import {
   Health,
   OwnerForce,
   Template,
+  Transform,
 } from "../entities";
 import { MoveIntent } from "../movement";
 
@@ -67,6 +68,7 @@ export function initializeUnitModes(
           .filter(
             (entity) =>
               world.has(entity, Template) &&
+              world.has(entity, Transform) &&
               world.has(entity, OwnerForce) &&
               world.has(entity, Health) &&
               world.get(entity, Health, "current") > 0,
@@ -126,6 +128,7 @@ export function initializeUnitModes(
         }
         for (const { entity, definition, activate } of changes) {
           if (activate) {
+            kernel.transport?.cancel(entity);
             kernel.movement?.cancel(entity);
             if (world.has(entity, MoveIntent)) world.remove(entity, MoveIntent);
             clearAttackOrder(kernel, entity);

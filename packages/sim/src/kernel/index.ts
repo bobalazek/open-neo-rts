@@ -22,6 +22,7 @@ import { type Component, World } from "../ecs";
 import type { UnitModes } from "../features/abilities";
 import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
+import type { UnitTransports } from "../features/entities/transport";
 import type { CombatEvent } from "../features/events/combat";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
 import type { MatchStatistics, MatchVictory } from "../features/victory";
@@ -110,6 +111,7 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  transport?: UnitTransports;
   unitModes?: UnitModes;
   statistics?: MatchStatistics;
   /** Derived capacity/availability check at the canonical shot handoff. */

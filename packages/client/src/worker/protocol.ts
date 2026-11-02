@@ -750,6 +750,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "repair",
             "repairOrder",
             "deploy",
+            "cargo",
           ].includes(key),
       ) ||
       !bounded(entity.force) ||
@@ -760,6 +761,31 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.cargo !== undefined) {
+      const cargo = entity.cargo;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(cargo) ||
+        !exact(cargo, ["capacity", "boarding", "passengers"]) ||
+        !bounded(cargo.capacity, 50) ||
+        Number(cargo.capacity) < 1 ||
+        !bounded(cargo.boarding, 50) ||
+        !Array.isArray(cargo.passengers) ||
+        cargo.passengers.length + Number(cargo.boarding) > Number(cargo.capacity) ||
+        ![...cargo.passengers].every(
+          (passenger: unknown) =>
+            isRecord(passenger) &&
+            exact(passenger, ["definition", "health", "maxHealth"]) &&
+            typeof passenger.definition === "string" &&
+            /^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(passenger.definition) &&
+            bounded(passenger.health, 0xffffffff) &&
+            Number(passenger.health) > 0 &&
+            bounded(passenger.maxHealth) &&
+            Number(passenger.maxHealth) > 0,
+        )
+      )
+        return false;
+    }
     if (entity.deploy !== undefined) {
       const deploy = entity.deploy;
       if (
