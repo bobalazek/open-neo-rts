@@ -32,6 +32,7 @@ import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../feature
 import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
+import { resourceNodeOrigin } from "../match-map";
 import { strictObject } from "../snapshots/schema";
 
 export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
@@ -97,6 +98,8 @@ export interface SeatSnapshot {
   fog?: VisionGrid[];
   ghosts?: PresentedGhost[];
   combatEvents?: PresentedCombatEvent[];
+  /** Static node origins discovered through permitted canonical exploration; no stock/claims. */
+  resourceNodes?: { kind: "materials" | "oil"; x: number; y: number }[];
 }
 
 export interface PresentedGhost {
@@ -393,7 +396,6 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           power: kernel.power.snapshot(seat).filter((power) => inspectEconomy(power.force)),
         }),
         ...(setup.normal && { constructionRequests }),
-        ...(mode === "controlled" && kernel.visibility && { fog, ghosts }),
         ...(setup.normal &&
           mode === "controlled" && {
             combatEvents: projectCombatEvents(
@@ -415,6 +417,34 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 if (previous) deathHandles.set(entity, { handle: previous, tick: kernel.tick });
                 return previous;
               },
+            ),
+          }),
+        ...(mode === "controlled" &&
+          kernel.visibility && {
+            fog,
+            ghosts,
+            resourceNodes: [
+              ...new Map(
+                (kernel.map?.resources ?? []).flatMap((resource) => {
+                  if (resource.kind === "ore") return [];
+                  const origin = resourceNodeOrigin(resource);
+                  if (
+                    !fog.some(
+                      (grid) =>
+                        origin.x >= 0 &&
+                        origin.y >= 0 &&
+                        origin.x < grid.width &&
+                        origin.y < grid.height &&
+                        (grid.cells[origin.y * grid.width + origin.x] ?? 0) > 0,
+                    )
+                  )
+                    return [];
+                  const node = { kind: resource.kind, x: origin.x * 1024, y: origin.y * 1024 };
+                  return [[`${node.y}:${node.x}:${node.kind}`, node] as const];
+                }),
+              ).values(),
+            ].sort(
+              (a, b) => a.y - b.y || a.x - b.x || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0),
             ),
           }),
       };

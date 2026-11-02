@@ -1,5 +1,12 @@
-import { type BotProgram, type DecisionState, idleProgram, runDecision } from "@open-neo-rts/ai";
-import { arr, int, str, unknown, validate } from "@open-neo-rts/content";
+import {
+  type BotProgram,
+  basicSkirmishProgram,
+  type DecisionState,
+  idleProgram,
+  runDecision,
+  type SkirmishMemory,
+} from "@open-neo-rts/ai";
+import { arr, bool, int, opt, type Schema, str, unknown, validate } from "@open-neo-rts/content";
 import { addString, type Hasher, type Stream } from "@open-neo-rts/deterministic";
 import { type Command, type Scope, validateCommands } from "../../commands";
 import { type ControllerCommand, type Kernel, registerController, stream } from "../../kernel";
@@ -9,12 +16,13 @@ import { strictObject } from "../../snapshots/schema";
 import { ConstructionRequest } from "../construction";
 import { OwnerForce } from "../entities";
 import { ProductionItem } from "../production";
+import { skirmishPolicy } from "./skirmish";
 
 /** Provisional counted candidate evaluations per seat per tick, independent of machine speed. */
 export const BOT_WORK_BUDGET = 64;
 const COMMAND_LIMIT = 64;
-export type SeatBotProgram = BotProgram<Readonly<SeatSnapshot>, ControllerCommand>;
-type State = DecisionState<ControllerCommand>;
+export type SeatBotProgram = BotProgram<Readonly<SeatSnapshot>, ControllerCommand, SkirmishMemory>;
+type State = DecisionState<ControllerCommand, SkirmishMemory>;
 interface HostedBot {
   seat: number;
   program: string;
@@ -98,10 +106,66 @@ function decisionState(value: unknown): State {
       },
     },
     pending: unknown(),
+    memory: opt(unknown()),
   });
   if (validate(schema, value).length) throw new Error("Invalid bot decision state");
   const state = value as State;
-  return { cursor: state.cursor, target: state.target, pending: commandList(state.pending) };
+  if (state.memory !== undefined) {
+    const handle = () => str(/^e[1-9][0-9]*$/);
+    const target = () => str(/^[eg][1-9][0-9]*$/);
+    const coordinate = () => int(0, (1 << 19) - 1);
+    const nullable = (schema: Schema): Schema => ({
+      json: {},
+      check(value, path, issues) {
+        if (value !== null) schema.check(value, path, issues);
+      },
+    });
+    const memory = strictObject({
+      stage: int(0, 4),
+      nextPlan: int(0, 0xffffffff),
+      buildAfter: int(0, 0xffffffff),
+      placement: int(0, 1088),
+      scout: int(0, 512 * 512 - 1),
+      scoutWork: int(0, 8),
+      owned: arr(handle(), 0, 10000),
+      enemy: nullable(target()),
+      goal: nullable(
+        strictObject({
+          x: coordinate(),
+          y: coordinate(),
+          until: int(0, 0xffffffff),
+          handle: nullable(target()),
+        }),
+      ),
+      avoid: nullable(strictObject({ handle: target(), until: int(0, 0xffffffff) })),
+      site: nullable(
+        strictObject({ handle: handle(), work: int(0, 0xffffffff), until: int(0, 0xffffffff) }),
+      ),
+      orders: arr(
+        strictObject({
+          handle: handle(),
+          x: coordinate(),
+          y: coordinate(),
+          until: int(0, 0xffffffff),
+          retreat: bool(),
+        }),
+        0,
+        10000,
+      ),
+    });
+    if (
+      validate(memory, state.memory).length ||
+      new Set(state.memory.owned).size !== state.memory.owned.length ||
+      new Set(state.memory.orders.map((order) => order.handle)).size !== state.memory.orders.length
+    )
+      throw new Error("Invalid skirmish memory");
+  }
+  return {
+    cursor: state.cursor,
+    target: state.target,
+    pending: commandList(state.pending),
+    ...(state.memory !== undefined && { memory: copy(state.memory) }),
+  };
 }
 const randomWords = (value: unknown): Stream => {
   const schema = strictObject({
@@ -379,6 +443,14 @@ export function registerBotSeat(
   return host;
 }
 export function initializeBotSeats(kernel: Kernel, setup: MatchSetup): void {
-  for (const bot of setup.normal?.bots ?? [])
-    registerBotSeat(kernel, setup, { seat: bot.seat, program: bot.kind }, idleProgram());
+  for (const bot of setup.normal?.bots ?? []) {
+    const decide =
+      bot.kind === "basic-skirmish"
+        ? basicSkirmishProgram(skirmishPolicy(setup, bot.force as number))
+        : undefined;
+    const program: SeatBotProgram = decide
+      ? ({ state, ...input }) => decide({ ...input, state: { ...state, pending: [] } })
+      : idleProgram();
+    registerBotSeat(kernel, setup, { seat: bot.seat, program: bot.kind }, program);
+  }
 }
