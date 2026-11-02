@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   ArcRotateCamera,
-  type DirectionalLight,
+  DirectionalLight,
   Matrix,
   MeshBuilder,
   NullEngine,
@@ -51,6 +51,7 @@ test("affine caster fitting matches all eight reference corners across live tran
           value: reverse,
         });
         for (let i = 0; i < 6; i++) {
+          if (i === 3) box.bakeTransformIntoVertices(Matrix.Scaling(1.25, 2, 0.8));
           box.position.set(23 * i - 50, i, 40 - 17 * i);
           box.rotation.set(i * 0.2, i * 0.7, i * 0.3);
           box.scaling.set(i % 2 ? -1.7 : 0.25, i + 0.3, 2);
@@ -104,6 +105,57 @@ test("affine caster fitting matches all eight reference corners across live tran
     light.customProjectionMatrixBuilder = custom;
     installAffineShadowFit(light)();
     expect(light.customProjectionMatrixBuilder).toBe(custom);
+  } finally {
+    restore();
+    scene.dispose();
+    engine.dispose();
+  }
+});
+
+test("an unprimed affine fit retains its own cache across empty receiver queries", () => {
+  const engine = new NullEngine();
+  const scene = createScene(engine);
+  const camera = new ArcRotateCamera("test", 1, 1, 60, Vector3.Zero(), scene);
+  const light = scene.getLightByName("sun") as DirectionalLight;
+  const reference = new DirectionalLight("reference", light.direction.clone(), scene);
+  light.autoCalcShadowZBounds = reference.autoCalcShadowZBounds = true;
+  const caster = MeshBuilder.CreateBox("only caster", {}, scene);
+  caster.position.set(7, 9, 17);
+  caster.computeWorldMatrix(true);
+  const view = Matrix.LookAtLH(new Vector3(3, 17, -9), Vector3.Zero(), Vector3.Up());
+  const restore = installAffineShadowFit(light);
+  try {
+    const fitted = Matrix.Identity();
+    const expected = Matrix.Identity();
+    light.setShadowProjectionMatrix(fitted, view, [caster]);
+    reference.setShadowProjectionMatrix(expected, view, [caster]);
+    for (let i = 0; i < 16; i++) expect(fitted.m[i]).toBeCloseTo(expected.m[i] as number, 6);
+    light.autoUpdateExtends = reference.autoUpdateExtends = false;
+    const receiver = Matrix.Identity();
+    const referenceReceiver = Matrix.Identity();
+    light.setShadowProjectionMatrix(receiver, view, []);
+    reference.setShadowProjectionMatrix(referenceReceiver, view, []);
+    expect(receiver.equals(fitted)).toBe(true);
+    expect(referenceReceiver.equals(expected)).toBe(true);
+    expect(light.shadowMinZ).toBeCloseTo(reference.shadowMinZ, 6);
+    expect(light.shadowMaxZ).toBeCloseTo(reference.shadowMaxZ, 6);
+    light.shadowFrustumSize = reference.shadowFrustumSize = 90;
+    light.setShadowProjectionMatrix(receiver, view, []);
+    reference.setShadowProjectionMatrix(referenceReceiver, view, []);
+    expect(receiver.equals(referenceReceiver)).toBe(true);
+    light.shadowFrustumSize = reference.shadowFrustumSize = 0;
+    light.setShadowProjectionMatrix(receiver, view, []);
+    expect(receiver.equals(fitted)).toBe(true);
+    light.autoCalcShadowZBounds = reference.autoCalcShadowZBounds = false;
+    Reflect.set(light, "shadowMinZ", undefined);
+    Reflect.set(light, "shadowMaxZ", undefined);
+    Reflect.set(reference, "shadowMinZ", undefined);
+    Reflect.set(reference, "shadowMaxZ", undefined);
+    camera.maxZ = 0;
+    light.setShadowProjectionMatrix(receiver, view, []);
+    reference.setShadowProjectionMatrix(referenceReceiver, view, []);
+    for (let i = 0; i < 16; i++)
+      expect(receiver.m[i]).toBeCloseTo(referenceReceiver.m[i] as number, 6);
   } finally {
     restore();
     scene.dispose();
