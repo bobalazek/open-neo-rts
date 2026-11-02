@@ -1,8 +1,33 @@
 // Canonical result summary and local rematch navigation. Phase 2.
-import type { VictorySnapshot } from "@open-neo-rts/sim";
+import type { ForceStatisticsSnapshot, VictorySnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
 
-export function matchResult(victory: VictorySnapshot, force: number) {
+const columns = [
+  { label: "ui.result.units", keys: ["unitsBuilt", "unitsLost", "unitsDestroyed"] },
+  {
+    label: "ui.result.structures",
+    keys: ["structuresBuilt", "structuresLost", "structuresDestroyed"],
+  },
+  { label: "ui.result.credits", keys: ["creditsGathered", "creditsSpent", "creditsRefunded"] },
+  {
+    label: "ui.result.materials",
+    keys: ["materialsGathered", "materialsSpent", "materialsRefunded"],
+  },
+  {
+    label: "ui.hud.industrial",
+    keys: ["industrialCapacityGathered", "industrialCapacitySpent", "industrialCapacityRefunded"],
+  },
+  {
+    label: "ui.hud.salvage",
+    keys: ["salvagePointsGathered", "salvagePointsSpent", "salvagePointsRefunded"],
+  },
+] as const;
+
+export function matchResult(
+  victory: VictorySnapshot,
+  force: number,
+  statistics?: ForceStatisticsSnapshot[],
+) {
   if (!victory.result) return null;
   const own = victory.forces.find((entry) => entry.force === force);
   const result = victory.result;
@@ -25,18 +50,24 @@ export function matchResult(victory: VictorySnapshot, force: number) {
           ? "ui.result.rule-base"
           : "ui.result.rule-annihilation",
     ),
-    rows: victory.forces.map((entry) => ({
-      name: text(entry.force === force ? "ui.result.your-force" : "ui.result.other-force", {
-        force: entry.force + 1,
-      }),
-      status: text(
-        entry.reason === "surrendered"
-          ? "ui.result.surrendered"
-          : entry.reason === "eliminated"
-            ? "ui.result.eliminated"
-            : "ui.result.survived",
-      ),
-    })),
+    rows: victory.forces.map((entry) => {
+      const counters = statistics?.find((row) => row.force === entry.force)?.counters;
+      return {
+        name: text(entry.force === force ? "ui.result.your-force" : "ui.result.other-force", {
+          force: entry.force + 1,
+        }),
+        status: text(
+          entry.reason === "surrendered"
+            ? "ui.result.surrendered"
+            : entry.reason === "eliminated"
+              ? "ui.result.eliminated"
+              : "ui.result.survived",
+        ),
+        ...(counters && {
+          totals: columns.map(({ keys }) => keys.map((key) => counters[key]).join(" / ")),
+        }),
+      };
+    }),
   };
 }
 
@@ -47,13 +78,43 @@ export function postMatchScreen(
   force: number,
   rematch: () => void,
   home: () => void,
+  statistics?: ForceStatisticsSnapshot[],
 ) {
-  const result = matchResult(victory, force);
+  const result = matchResult(victory, force, statistics);
   if (!result) throw new Error("Cannot present an unfinished match");
   const dialog = document.createElement("dialog");
   dialog.className = "match-result";
   dialog.setAttribute("aria-labelledby", "match-result-title");
   dialog.innerHTML = `<p class="eyebrow">${text("ui.result.title")}</p><h1 id="match-result-title"></h1><p data-result-summary></p><table><thead><tr><th scope="col">${text("ui.result.force")}</th><th scope="col">${text("ui.result.outcome")}</th></tr></thead><tbody></tbody></table><div class="setup-actions"><button type="button" class="primary" data-rematch>${text("ui.result.rematch")}</button><button type="button" data-home>${text("ui.result.home")}</button></div>`;
+  const table = dialog.querySelector("table")!;
+  const scroll = document.createElement("div");
+  scroll.className = "result-totals";
+  table.before(scroll);
+  scroll.append(table);
+  const shown = columns
+    .map((column, index) => ({ ...column, index }))
+    .filter(
+      ({ keys, index }) =>
+        index < 4 || statistics?.some((row) => keys.some((key) => row.counters[key] > 0)),
+    );
+  if (statistics) {
+    dialog.classList.add("has-totals");
+    const caption = document.createElement("p");
+    caption.id = "match-totals-legend";
+    caption.className = "result-totals-legend";
+    caption.textContent = text("ui.result.totals-legend");
+    scroll.before(caption);
+    table.setAttribute("aria-describedby", caption.id);
+    scroll.tabIndex = 0;
+    scroll.setAttribute("role", "region");
+    scroll.setAttribute("aria-label", text("ui.result.totals"));
+    for (const column of shown) {
+      const heading = document.createElement("th");
+      heading.scope = "col";
+      heading.textContent = text(column.label);
+      table.tHead?.rows[0]?.append(heading);
+    }
+  }
   dialog.querySelector("h1")!.textContent = result.title;
   dialog.querySelector("[data-result-summary]")!.textContent = text("ui.result.summary", {
     winner: result.winner,
@@ -65,6 +126,8 @@ export function postMatchScreen(
     const row = body.insertRow();
     row.insertCell().textContent = entry.name;
     row.insertCell().textContent = entry.status;
+    if (statistics)
+      for (const { index } of shown) row.insertCell().textContent = entry.totals?.[index] ?? "—";
   }
   dialog.addEventListener("keydown", (event) => event.stopPropagation());
   dialog.addEventListener("cancel", (event) => event.preventDefault());

@@ -1,5 +1,35 @@
 import { expect, test } from "@playwright/test";
 
+test("real paid production reaches the frozen final totals on desktop and narrow layouts", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded authored production/result journey");
+  test.setTimeout(120_000);
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.goto("/");
+  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  await page.getByRole("button", { name: /Idle producers 1/ }).click();
+  await page.locator('[data-definition="core.unit:eastern-collective/field-technician"]').click();
+  await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
+  await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Defeat", exact: true });
+  await expect(dialog).toBeVisible();
+  const cells = dialog.getByRole("row", { name: /Your Force Surrendered/ }).getByRole("cell");
+  await expect(cells.nth(2)).toHaveText("1 / 0 / 0");
+  await expect(cells.nth(3)).toHaveText("0 / 0 / 0");
+  await expect(cells.nth(4)).toHaveText("0 / 450 / 0");
+  await expect(cells.nth(5)).toHaveText("0 / 0 / 0");
+  await page.screenshot({ path: info.outputPath("match-totals-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(dialog.getByRole("region", { name: "Final Force totals" })).toBeVisible();
+  await page.screenshot({ path: info.outputPath("match-totals-mobile.png") });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+});
+
 test("a terminal result arriving before a stale surrender resume rejection stays visible", async ({
   page,
 }, info) => {

@@ -1,5 +1,9 @@
 import { expect, test } from "bun:test";
-import type { VictorySnapshot } from "@open-neo-rts/sim";
+import {
+  type ForceStatisticsSnapshot,
+  STAT_COUNTERS,
+  type VictorySnapshot,
+} from "@open-neo-rts/sim";
 import { matchResult } from ".";
 
 const victory: VictorySnapshot = {
@@ -33,4 +37,38 @@ test("draw and unfinished matches cannot become a fabricated win", () => {
   expect(draw?.title).toBe("Draw");
   expect(draw?.winner).toBe("No team remains");
   expect(draw?.duration).toBe("0:01");
+});
+
+test("final totals match Force IDs and preserve separate production, combat and resource counts", () => {
+  const counters = Object.fromEntries(
+    STAT_COUNTERS.map((key) => [key, 0]),
+  ) as ForceStatisticsSnapshot["counters"];
+  const statistics = [
+    {
+      force: 1,
+      counters: {
+        ...counters,
+        unitsBuilt: 2,
+        unitsLost: 1,
+        unitsDestroyed: 5,
+        creditsGathered: 90,
+        creditsSpent: 70,
+        creditsRefunded: 10,
+        materialsGathered: 3,
+        materialsSpent: 1,
+      },
+    },
+  ];
+  const before = JSON.stringify(statistics);
+  const result = matchResult(victory, 0, statistics);
+  expect(result?.rows[0]?.totals).toBeUndefined();
+  expect(result?.rows[1]?.totals).toEqual([
+    "2 / 1 / 5",
+    "0 / 0 / 0",
+    "90 / 70 / 10",
+    "3 / 1 / 0",
+    "0 / 0 / 0",
+    "0 / 0 / 0",
+  ]);
+  expect(JSON.stringify(statistics)).toBe(before);
 });
