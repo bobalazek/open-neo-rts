@@ -51,6 +51,152 @@ for (const force of setup.normal.forces)
 const tank = "core.unit:eastern-collective/dragon-tank";
 const apc = "core.unit:eastern-collective/metamorphic-apc";
 
+test("the original infantry earn visible ranks and private XP from actual damage, while Off preserves baseline health and replay", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded original-catalog veterancy journey");
+  test.setTimeout(90_000);
+  const soldier = "core.unit:eastern-collective/collective-soldier";
+  const builder = "core.unit:eastern-collective/field-technician";
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://veterancy.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>Unit veterancy</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  for (const enabled of [true, false]) {
+    const candidate = structuredClone(setup);
+    candidate.normal.settings.fog = "off";
+    candidate.normal.settings.veterancy = enabled;
+    candidate.normal.settings.highGroundMissPerMille = 0;
+    // Isolate XP from the original HQ's defensive guns using a real granted power command.
+    candidate.grants.push({ seat: 1, force: 1, scopes: ["economy.build"], grantedAtTick: 0 });
+    candidate.normal.forces[0].start.units = [
+      { unit: builder, count: 2, pop: 1, role: "builder" },
+      { unit: soldier, count: 1, pop: 1, role: "combat" },
+    ];
+    candidate.normal.forces[1].start.units = [{ unit: builder, count: 1, pop: 1, role: "builder" }];
+    candidate.map.spawns.find((spawn: { id: string }) => spawn.id === "south-east").position = [
+      34 * 1024,
+      20 * 1024,
+    ];
+    await page.goto(`http://veterancy.test/?enabled=${enabled}`);
+    await page.evaluate(async (setup) => {
+      const moduleUrl = "/fixture.js";
+      const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+      window.deployFixture = await start(setup);
+      const headquarters = window.deployFixture
+        .state()!
+        .snapshot.entities.find(
+          (row) => row.force === 1 && row.definition.endsWith("/command-center"),
+        )!;
+      const result = await window.deployFixture.command("economy.power", {
+        entity: headquarters.handle,
+        enabled: 0,
+      });
+      if (result !== "accepted") throw new Error(`HQ shutdown failed: ${result}`);
+    }, candidate);
+    try {
+      const approach = await page.evaluate(
+        async ({ soldier, builder }) => {
+          const f = window.deployFixture;
+          const rows = f.state()!.snapshot.entities;
+          const source = rows.find((row) => row.force === 0 && row.definition === soldier)!;
+          const target = rows.find((row) => row.force === 1 && row.definition === builder)!;
+          const headquarters = rows.find(
+            (row) => row.force === 1 && row.definition.endsWith("/command-center"),
+          )!;
+          const dx = target.x - (headquarters.x + 1536),
+            dy = target.y - (headquarters.y + 1536);
+          const goal =
+            Math.abs(dx) >= Math.abs(dy)
+              ? { x: target.x + Math.sign(dx) * 3 * 1024, y: target.y }
+              : { x: target.x, y: target.y + Math.sign(dy) * 3 * 1024 };
+          const moved = await f.command("unit.move", { entities: [source.handle], ...goal });
+          let arrived = false;
+          for (let tick = 0; tick < 900; tick++) {
+            const current = f
+              .state()!
+              .snapshot.entities.find((row) => row.handle === source.handle)!;
+            if (!current)
+              throw new Error(
+                JSON.stringify({
+                  missing: source,
+                  moved,
+                  tick: f.state()!.snapshot.tick,
+                  rows: f.state()!.snapshot.entities.map((row) => ({
+                    handle: row.handle,
+                    definition: row.definition,
+                    force: row.force,
+                    health: row.health,
+                    x: row.x,
+                    y: row.y,
+                  })),
+                }),
+              );
+            if ((current.x - goal.x) ** 2 + (current.y - goal.y) ** 2 <= 256 ** 2) {
+              arrived = true;
+              break;
+            }
+            await f.step(1);
+          }
+          f.select([soldier]);
+          f.target(builder, 1);
+          return { moved, arrived, source: source.handle, target: target.handle };
+        },
+        { soldier, builder },
+      );
+      expect(approach).toMatchObject({ moved: "accepted", arrived: true });
+      await page.getByRole("button", { name: "W · Attack target", exact: true }).click();
+      await page.locator("canvas").click();
+      await expect(page.locator("[data-result]")).toContainText("Command accepted");
+      const result = await page.evaluate(async ({ source, target }) => {
+        const f = window.deployFixture;
+        for (
+          let tick = 0;
+          tick < 300 && f.state()!.snapshot.entities.some((row) => row.handle === target);
+          tick++
+        )
+          await f.step(1);
+        return {
+          unit: f.state()!.snapshot.entities.find((row) => row.handle === source),
+          targetAlive: f.state()!.snapshot.entities.some((row) => row.handle === target),
+        };
+      }, approach);
+      expect(result.targetAlive).toBe(false);
+      expect(result.unit).toMatchObject({
+        health: enabled ? 130 : 100,
+        maxHealth: enabled ? 130 : 100,
+      });
+      if (enabled) {
+        expect(result.unit?.veterancy).toEqual({ rank: 3, xp: 409600, nextXp: 409600 });
+        await expect(page.locator("[data-details]")).toContainText("Rank 3/3");
+        await expect(page.locator("[data-details]")).toContainText("XP 400/400");
+      } else {
+        expect(result.unit?.veterancy).toBeUndefined();
+        await expect(page.locator("[data-details]")).not.toContainText("Rank");
+      }
+      expect(
+        await page.evaluate(() => window.deployFixture.command("match.surrender", { force: 0 })),
+      ).toBe("accepted");
+      const record = parseMatchRecord(await page.evaluate(() => window.deployFixture.record()));
+      expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+      expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    } finally {
+      await page.evaluate(() => window.deployFixture.dispose());
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
 test("paid original infantry earn industrial capacity and activate the authored Force Surge through HUD and replay", async ({
   page,
 }, info) => {

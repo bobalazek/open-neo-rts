@@ -31,6 +31,7 @@ interface Entity {
   moving: boolean;
   health: number;
   maxHealth: number;
+  rank?: number;
   construction?: number;
   working?: boolean;
   workElapsed?: number;
@@ -309,12 +310,19 @@ export function createEntityPresentation(
       const bar =
         !options.ghost &&
         (selected.has(handle) ||
+          !!entity.rank ||
           entity.health < entity.maxHealth ||
           entity.construction !== undefined);
       if (bar) {
         const anchor = entity.root.position.clone();
         anchor.y += (entity.height ?? 1.6) + 0.35;
-        status.update(handle, anchor, entity.maxHealth > 0 ? entity.health / entity.maxHealth : 0);
+        status.update(
+          handle,
+          anchor,
+          entity.maxHealth > 0 ? entity.health / entity.maxHealth : 0,
+          false,
+          entity.rank,
+        );
         if (entity.construction !== undefined) {
           anchor.y += 0.25;
           status.update(`construction:${handle}`, anchor, entity.construction, true);
@@ -412,6 +420,7 @@ export function createEntityPresentation(
         }
         entity.health = projected.health;
         entity.maxHealth = projected.maxHealth;
+        entity.rank = projected.veterancy?.rank;
         entity.construction = projected.construction
           ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
             Math.max(1, projected.construction.totalTicks * 4)

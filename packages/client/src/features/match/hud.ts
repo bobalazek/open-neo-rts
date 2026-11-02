@@ -1083,6 +1083,20 @@ export function createMatchHud(
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
     if (entity.disabled) lines.push(text("ui.hud.emp-disabled"));
     if (entity.burning) lines.push(text("ui.hud.burning"));
+    if (entity.veterancy) {
+      lines.push(
+        text("ui.hud.veterancy", {
+          rank: entity.veterancy.rank,
+        }),
+      );
+      if (entity.veterancy.xp !== undefined && entity.veterancy.nextXp !== undefined)
+        lines.push(
+          text("ui.hud.xp", {
+            current: Math.floor(entity.veterancy.xp / 1024),
+            next: Math.floor(entity.veterancy.nextXp / 1024),
+          }),
+        );
+    }
     if (entity.productionSurge && entity.productionSurge.until > (snapshot?.tick ?? 0))
       lines.push(
         text("ui.hud.surge-active", {
