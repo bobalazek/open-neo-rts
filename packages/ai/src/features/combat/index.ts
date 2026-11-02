@@ -37,6 +37,16 @@ export function army(
   const matching = previous?.x === x && previous.y === y && previous.retreat === retreat;
   if (target && !retreat) {
     const other = definitions.get(target.definition);
+    let targetX = target.x,
+      targetY = target.y;
+    // Match sim combatPoint: static origins are the rotated footprint's top-left corner.
+    if (other?.footprint) {
+      const [width, depth] = other.footprint;
+      const rotated = (((target.facing >>> 14) + 3) & 1) !== 0;
+      targetX += (rotated ? depth : width) * 512;
+      targetY += (rotated ? width : depth) * 512;
+    }
+    const squared = distance(entity, { x: targetX, y: targetY });
     const supported = definition.weapons.some((weapon) => {
       const domain = other?.footprint
         ? "structure"
@@ -48,8 +58,8 @@ export function army(
       return (
         (weapon.targets.includes(domain) ||
           (domain === "structure" && weapon.targets.includes("ground"))) &&
-        distance(entity, target) >= weapon.rangeSubcells[0] ** 2 &&
-        distance(entity, target) <= weapon.rangeSubcells[1] ** 2
+        squared >= weapon.rangeSubcells[0] ** 2 &&
+        squared <= weapon.rangeSubcells[1] ** 2
       );
     });
     if (supported) {

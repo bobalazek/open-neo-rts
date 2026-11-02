@@ -109,6 +109,125 @@ test("current hostile opaque targets attack while allied targets are excluded an
   expect(damaged.commands.some((command) => command.type === "unit.move")).toBe(true);
   expect(damaged.commands.some((command) => command.type === "unit.attack")).toBe(false);
 });
+test("structure range uses its rotated footprint centre with inclusive minimum and maximum boundaries", () => {
+  const cases: {
+    name: string;
+    footprint: [number, number];
+    facing: number;
+    x: number;
+    y: number;
+    min: number;
+    type: "unit.attack" | "unit.attackMove";
+    stale?: boolean;
+  }[] = [
+    {
+      name: "square origin is close but centre is outside",
+      footprint: [3, 3],
+      facing: 0x4000,
+      x: 10 * 1024 + 512,
+      y: 10 * 1024 + 512,
+      min: 0,
+      type: "unit.attackMove",
+    },
+    {
+      name: "square maximum boundary",
+      footprint: [3, 3],
+      facing: 0x4000,
+      x: 10 * 1024 + 512,
+      y: 11 * 1024 + 512,
+      min: 0,
+      type: "unit.attack",
+    },
+    {
+      name: "one subcell outside with a stale attack lock",
+      footprint: [3, 3],
+      facing: 0x4000,
+      x: 10 * 1024 + 511,
+      y: 11 * 1024 + 512,
+      min: 0,
+      type: "unit.attackMove",
+      stale: true,
+    },
+    {
+      name: "unrotated rectangle maximum boundary",
+      footprint: [2, 4],
+      facing: 0x4000,
+      x: 10 * 1024,
+      y: 12 * 1024,
+      min: 0,
+      type: "unit.attack",
+    },
+    {
+      name: "quarter turn moves rectangle centre outside range",
+      footprint: [2, 4],
+      facing: 0x8000,
+      x: 10 * 1024,
+      y: 12 * 1024,
+      min: 0,
+      type: "unit.attackMove",
+    },
+    {
+      name: "rotated rectangle maximum boundary",
+      footprint: [2, 4],
+      facing: 0x8000,
+      x: 11 * 1024,
+      y: 11 * 1024,
+      min: 0,
+      type: "unit.attack",
+    },
+    {
+      name: "rotated rectangle minimum boundary",
+      footprint: [2, 4],
+      facing: 0x8000,
+      x: 13 * 1024,
+      y: 11 * 1024,
+      min: 3 * 1024,
+      type: "unit.attack",
+    },
+    {
+      name: "one subcell inside minimum range",
+      footprint: [2, 4],
+      facing: 0x8000,
+      x: 13 * 1024 + 1,
+      y: 11 * 1024,
+      min: 3 * 1024,
+      type: "unit.attackMove",
+    },
+  ];
+  for (const row of cases) {
+    const decide = basicSkirmishProgram({
+      ...policy,
+      definitions: [
+        ...policy.definitions.filter((definition) => definition.id !== "soldier"),
+        {
+          id: "soldier",
+          role: "combat",
+          domain: "foot",
+          weapons: [{ targets: ["ground"], rangeSubcells: [row.min, 5 * 1024] }],
+        },
+        { id: "enemy-base", role: "headquarters", footprint: row.footprint },
+      ],
+    });
+    const view = {
+      ...observation([
+        entity("e1", "hq"),
+        {
+          ...entity("e2", "soldier"),
+          x: row.x,
+          y: row.y,
+          ...(row.stale && { attackTarget: "e3" }),
+        },
+        { ...entity("e3", "enemy-base", 3), x: 14 * 1024, y: 10 * 1024, facing: row.facing },
+      ]),
+      fog: [{ width: 32, height: 32, cells: new Uint8Array(32 * 32).fill(2) }],
+    };
+    const result = runDecision(decide, view, state(), createStream(9, "ai:1"), 64);
+    expect({ name: row.name, type: result.commands[0]?.type }).toEqual({
+      name: row.name,
+      type: row.type,
+    });
+  }
+});
 test("waves use permitted structure ghosts only as positions, and dropped ghost goals are forgotten", () => {
   const decide = basicSkirmishProgram(policy);
   const own = [
