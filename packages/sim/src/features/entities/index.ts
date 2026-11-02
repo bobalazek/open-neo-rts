@@ -38,6 +38,7 @@ export function spawnEntity(
   world.add(id, Transform, { x, y, facing });
   world.add(id, Health, { current: definition.health });
   kernel.power?.attach(id, definition);
+  kernel.extraction?.attach(id, definition);
   return id;
 }
 

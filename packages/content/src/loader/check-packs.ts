@@ -180,6 +180,19 @@ export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: M
       const rows = list(def.cells);
       if (Array.isArray(def.nodeKinds) && new Set(def.nodeKinds).size !== def.nodeKinds.length)
         add("error", pack.id, file, "nodeKinds must be distinct");
+      if (
+        isObject(def.extraction) &&
+        (def.role !== "extractor" ||
+          !Array.isArray(def.nodeKinds) ||
+          Object.keys(def.extraction).length !== def.nodeKinds.length ||
+          def.nodeKinds.some((kind) => !Object.hasOwn(def.extraction as object, kind)))
+      )
+        add(
+          "error",
+          pack.id,
+          file,
+          "extraction requires one output for each bound node kind on an extractor",
+        );
       if (rows.length > 0 && (rows.length !== d || rows.some((r) => r.length !== w)))
         add("error", pack.id, file, `cells must be ${d} rows of ${w} letters, matching footprint`);
       if (id.startsWith("map:"))

@@ -26,7 +26,7 @@ content/
 
 ## Node placement
 
-Node-bound structures declare `nodeKinds`, a nonempty list of `materials` and/or `oil`, separately from their ordinary footprint `cells` terrain rules. `extractor` is the shared producer role. Its debug placement must match a specific node anchor and may ignore only that exact node's resource occupancy. Node markers in maps use `kind: materials` with a required `amount`, or `kind: oil` with an optional amount until depletion is decided. Only ore fields may declare a radius. Phase-1b extractor content intentionally omits cost, build time and yield; a later normal-match compiler must require an approved economy contract rather than treating omissions as free/instant production.
+Node-bound structures declare `nodeKinds`, a nonempty list of `materials` and/or `oil`, separately from their ordinary footprint `cells` terrain rules. `extractor` is the shared producer role. Placement must match a specific node anchor and may ignore only that exact node's resource occupancy. Node markers in maps use `kind: materials` with a required `amount`, or `kind: oil` with an optional amount; oil without an amount is unlimited. Only ore fields may declare a radius. An operating extractor declares `extraction` with one output per supported node kind: for example, `"materials": { "resource": "materials", "amountPerSecond": 1 }`. Outputs are credits or materials, with positive whole units per second. The simulation accumulates fractional work, halves output in brownout and stops it while powered off or unfinished. Missing construction recipes remain unavailable, never implicitly free or instant.
 
 ## Manifest
 

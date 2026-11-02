@@ -9,7 +9,7 @@ import type {
   SeatSnapshot,
   SpawnPlacement,
 } from "@open-neo-rts/sim";
-import { CONSTRUCTION_REFUSALS } from "@open-neo-rts/sim";
+import { CONSTRUCTION_REFUSALS, EXTRACTION_STATUSES } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
   /** Tick evaluated by the authoritative checker. */
@@ -165,6 +165,29 @@ function isBankSnapshot(value: unknown): boolean {
         amount <= 0x7fffffff
       );
     })
+  );
+}
+
+function isExtractionSnapshot(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Reflect.ownKeys(value).length !== 3
+  )
+    return false;
+  const kind: unknown = Object.getOwnPropertyDescriptor(value, "kind")?.value;
+  const remaining: unknown = Object.getOwnPropertyDescriptor(value, "remaining")?.value;
+  const status: unknown = Object.getOwnPropertyDescriptor(value, "status")?.value;
+  if (!EXTRACTION_STATUSES.some((valid) => valid === status)) return false;
+  if (status === "invalid_node") return kind === null && remaining === null;
+  if (kind !== "materials" && kind !== "oil") return false;
+  if (remaining === null) return kind === "oil" && status !== "depleted";
+  return (
+    typeof remaining === "number" &&
+    Number.isInteger(remaining) &&
+    remaining >= 0 &&
+    remaining <= 0x7fffffff &&
+    (status !== "depleted" || remaining === 0)
   );
 }
 
@@ -420,6 +443,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       )
         return false;
     }
+    if (
+      entity.extraction !== undefined &&
+      (snapshot.mode !== "controlled" || !isExtractionSnapshot(entity.extraction))
+    )
+      return false;
     if (
       ![entity.force, entity.x, entity.y, entity.facing, entity.health, entity.maxHealth].every(
         Number.isInteger,

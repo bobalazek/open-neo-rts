@@ -50,7 +50,7 @@ export interface MatchMap {
 export interface MatchResource {
   readonly kind: "ore" | "materials" | "oil";
   readonly position: readonly [number, number];
-  /** Oil may omit an amount: its depletion policy is not decided. */
+  /** Oil without an authored amount is unlimited; other deposits are finite. */
   readonly amount?: number;
   readonly radius?: number;
 }

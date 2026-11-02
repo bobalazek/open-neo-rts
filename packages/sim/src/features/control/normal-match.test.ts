@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { parseTerrain } from "@open-neo-rts/content";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchMap, SIM_VERSION, toMatchResources } from "../../match";
+import { resourceNodeOrigin } from "../../match-map";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { StructurePower } from "../economy";
 import {
@@ -11,6 +12,7 @@ import {
   type GameplayDefinition,
   Health,
   OwnerForce,
+  spawnEntity,
   Template,
   Transform,
   toDefinition,
@@ -118,11 +120,49 @@ function state() {
   return createNormalMatchSetup(options());
 }
 
+test("normal setup preserves data-defined extractor rates and copies their immutable match inputs", () => {
+  const input = options();
+  const base = catalog.definitions.find(
+    (definition) => definition.kind === "structure",
+  ) as GameplayDefinition;
+  const producer: GameplayDefinition = {
+    ...base,
+    id: "core.structure:neutral/producer",
+    role: "extractor",
+    power: -10,
+    footprint: [2, 2],
+    nodeKinds: ["materials"],
+    extraction: { materials: { resource: "materials", amountPerSecond: 1 } },
+  };
+  const setup = createNormalMatchSetup({
+    ...input,
+    catalog: { ...catalog, definitions: [...catalog.definitions, producer] },
+  });
+  const definition = setup.definitions.find((definition) => definition.id === producer.id);
+  expect(definition?.extraction).toEqual(producer.extraction);
+  const kernel = createMatch(setup);
+  const matchProducer = setup.definitions.findIndex((definition) => definition.id === producer.id);
+  const resource = setup.map.resources?.find((resource) => resource.kind === "materials");
+  if (!resource) throw new Error("Missing fixture material node");
+  const origin = resourceNodeOrigin(resource);
+  const entity = spawnEntity(kernel, matchProducer, producer, {
+    definition: producer.id,
+    force: 1,
+    x: origin.x * 1024,
+    y: origin.y * 1024,
+    facing: 0,
+  });
+  Reflect.set(producer.extraction?.materials as object, "amountPerSecond", 9999);
+  for (let tick = 0; tick < 20; tick++) step(kernel, []);
+  expect(kernel.economy?.balance(1)?.materials).toBe(1);
+  expect(kernel.extraction?.snapshot(entity)?.remaining).toBe((resource.amount as number) - 1);
+});
+
 test("normal initialization creates the authored headquarters, two builders, harvester and three infantry per Force without commands", () => {
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"ae83e3fd8c458e31"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"8257214c396e5970"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -193,7 +233,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "05e88e9b90e1c8b8",
+        "hash": "d66fd6da6a662ec8",
         "tick": 2,
       },
     ]
