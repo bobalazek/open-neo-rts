@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 43,
+  "simVersion": 44,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -23,7 +23,8 @@
         "turnRate": 65536,
         "footprint": [3, 3],
         "exits": [{ "side": "south", "cell": [1, 2] }],
-        "power": -40
+        "power": -40,
+        "productionReward": { "resource": "industrial-capacity", "amount": 1, "cap": 100 }
       },
       {
         "id": "prop:temperate/rock-outcrop",

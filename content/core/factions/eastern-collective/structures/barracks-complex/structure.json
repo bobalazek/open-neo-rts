@@ -4,6 +4,7 @@
   "name": "Barracks Complex",
   "description": "Large-scale infantry training: trains two at a time.",
   "role": "production",
+  "productionReward": { "resource": "industrial-capacity", "amount": 1, "cap": 100 },
   "cost": {
     "credits": 500
   },

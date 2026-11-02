@@ -136,7 +136,14 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
     grants: [0, 1].map((force) => ({
       seat: force + 1,
       force,
-      scopes: ["unit.orders", "unit.abilities", "economy.build", "production.queue", "surrender"],
+      scopes: [
+        "unit.orders",
+        "unit.abilities",
+        "economy.build",
+        "production.queue",
+        "commander.abilities",
+        "surrender",
+      ],
       grantedAtTick: 0,
     })),
   });

@@ -87,7 +87,13 @@ const unitId = (name: string) => `core.unit:eastern-collective/${name}`;
 const structureId = (name: string) => `core.structure:eastern-collective/${name}`;
 
 test("Force production Surge requires explicit scope and a single bounded supported effect", () => {
-  const ability = headquarters.abilities[0]!;
+  const ability = {
+    ...headquarters.abilities[0]!,
+    effects: headquarters.abilities[0]!.effects.map((effect) => {
+      const { scope: _scope, ...unscoped } = effect;
+      return unscoped;
+    }),
+  };
   const compile = (value: Data) =>
     compileGameplayCatalog(
       resolvePacks(
@@ -335,6 +341,14 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
     ],
   });
   expect(definitions.get(structureId("command-center"))).toMatchObject({
+    productionReward: { resource: "industrial-capacity", amount: 1, cap: 100 },
+    productionSurge: {
+      id: "production-surge",
+      perMille: 1500,
+      durationTicks: 400,
+      cooldownTicks: 2400,
+      cost: { "industrial-capacity": 20 },
+    },
     construction: null,
     power: 20,
     produces: [unitId("field-technician")],
@@ -347,6 +361,13 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
       },
     ],
   });
+  for (const name of ["command-center", "barracks-complex", "war-factory"])
+    expect(definitions.get(structureId(name))?.productionReward).toEqual({
+      resource: "industrial-capacity",
+      amount: 1,
+      cap: 100,
+    });
+  expect(definitions.get(structureId("supply-depot"))?.productionReward).toBeUndefined();
   expect(definitions.get("core.structure:neutral/resource-extractor")).toMatchObject({
     construction: { cost: { credits: 800 }, buildTicks: 400 },
     extraction: {

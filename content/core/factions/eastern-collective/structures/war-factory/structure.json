@@ -4,6 +4,7 @@
   "name": "War Factory",
   "description": "Mass production facility for vehicles.",
   "role": "production",
+  "productionReward": { "resource": "industrial-capacity", "amount": 1, "cap": 100 },
   "tags": ["factory"],
   "cost": {
     "credits": 2000
