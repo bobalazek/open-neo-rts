@@ -31,6 +31,7 @@ let paused = true;
 let speed = 1;
 let sequence = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
+let nextTickAt = 0;
 let queued: { id: number; command: Command }[] = [];
 let diagnostics: ReturnType<typeof createDebugDiagnostics>;
 let tickMs: number | undefined;
@@ -65,13 +66,23 @@ function tick() {
   });
   publish(0);
 }
-function schedule() {
+function schedule(restart = true) {
   clearTimeout(timer);
-  if (!paused)
-    timer = setTimeout(() => {
-      tick();
-      schedule();
-    }, 50 / speed);
+  if (!paused) {
+    const now = performance.now();
+    if (restart) nextTickAt = now + 50 / speed;
+    timer = setTimeout(
+      () => {
+        const now = performance.now();
+        const interval = 50 / speed;
+        // Rebase after suspension; normal ticks include publication work in their deadline.
+        nextTickAt = (now - nextTickAt >= interval ? now : nextTickAt) + interval;
+        tick();
+        schedule(false);
+      },
+      Math.max(0, nextTickAt - now),
+    );
+  }
 }
 
 port.onmessage = ({ data }) => {
