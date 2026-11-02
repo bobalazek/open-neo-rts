@@ -3,6 +3,7 @@ import { parseTerrain } from "@open-neo-rts/content";
 import { checkpointHash, registerController, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
+import { Disabled } from "../combat/disable";
 import { ConstructionSite } from "../construction";
 import { StructurePower } from "../economy";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
@@ -192,6 +193,54 @@ function cancel(kernel: ReturnType<typeof createMatch>, item: number, seat = 1) 
 function ticks(kernel: ReturnType<typeof createMatch>, count: number) {
   for (let i = 0; i < count; i++) step(kernel, []);
 }
+
+test("EMP pauses paid production and supply without resetting work or the manual power switch", () => {
+  const weapon: GameplayWeapon = {
+    id: "emp",
+    targets: ["ground"],
+    rangeSubcells: [0, 1024],
+    reloadTicks: 20,
+    projectile: { kind: "instant" },
+    warheads: [{ type: "disable", durationTicks: 10, tags: ["emp"] }],
+  };
+  const { kernel, building } = fixture({ weapon, duration: 6 });
+  const { world } = kernel;
+  step(kernel, [enqueue(kernel, building)]);
+  const item = itemIds(kernel)[0]!;
+  expect(world.get(item, ProductionItem, "completedTicks")).toBe(1);
+  const credits = kernel.economy?.balance(0)?.credits;
+  world.add(building, Disabled, { until: kernel.tick + 3 });
+  expect(kernel.power?.balance(0)?.produced).toBe(0);
+  expect(kernel.power?.powered(building)).toBe(false);
+  ticks(kernel, 3);
+  expect(world.get(item, ProductionItem, "completedTicks")).toBe(1);
+  expect(kernel.economy?.balance(0)?.credits).toBe(credits);
+  expect(kernel.power?.balance(0)?.produced).toBe(20);
+  expect(world.get(building, StructurePower, "enabled")).toBe(1);
+  step(kernel, [
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 0,
+      type: "economy.power",
+      payload: { entity: building, enabled: 0 },
+    },
+  ]);
+  ticks(kernel, 3);
+  expect(world.get(item, ProductionItem, "completedTicks")).toBe(1);
+  step(kernel, [
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 0,
+      type: "economy.power",
+      payload: { entity: building, enabled: 1 },
+    },
+  ]);
+  ticks(kernel, 8);
+  expect(units(kernel)).toHaveLength(1);
+  expect(kernel.economy?.balance(0)?.credits).toBe(credits);
+});
 function exitCells(kernel: ReturnType<typeof createMatch>, building: number) {
   const x = Math.floor(kernel.world.get(building, Transform, "x") / 1024),
     y = Math.floor(kernel.world.get(building, Transform, "y") / 1024);

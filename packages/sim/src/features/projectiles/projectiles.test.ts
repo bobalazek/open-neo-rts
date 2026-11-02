@@ -1,12 +1,21 @@
 import { expect, test } from "bun:test";
 import { checkpointHash, createKernel, register, step } from "../../kernel";
-import { createMatch, type MatchSetup } from "../../match";
+import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
+import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder, combatFeature, ShotIntent, WeaponState } from "../combat";
-import { warheadDamage } from "../combat/damage";
+import { applyWarhead, warheadDamage } from "../combat/damage";
+import { Disabled } from "../combat/disable";
 import { BuilderConstruction, ConstructionSite } from "../construction";
-import { type Definition, entitiesFeature, Health, spawnEntity, Transform } from "../entities";
+import {
+  type Definition,
+  entitiesFeature,
+  Health,
+  spawnEntity,
+  Template,
+  Transform,
+} from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent, MAX_COMBAT_EVENTS } from "../events/combat";
 import { movementFeature } from "../movement";
@@ -55,6 +64,7 @@ function fixture(
     miss?: number;
     raised?: boolean;
     targetSpeed?: number;
+    targetDomain?: Definition["domain"];
   } = {},
 ) {
   const weapon = options.weapon ?? gun;
@@ -67,6 +77,7 @@ function fixture(
       health: options.health ?? 1000,
       speed: options.targetSpeed ?? unit.speed,
       armor: options.armor ?? "infantry",
+      domain: options.targetDomain ?? unit.domain,
       ...(options.resistance && { resistPerMille: options.resistance }),
     },
     { ...hq, id: "structure:flight/blocker", footprint: [1, 1] },
@@ -147,6 +158,171 @@ function fixture(
     ]);
   return { kernel, setup, definitions, actor, target, spawn, advance, hp, fire };
 }
+
+const emp: GameplayWeapon = {
+  ...gun,
+  projectile: { kind: "instant" },
+  warheads: [
+    { type: "damage", amount: 10, tags: [] },
+    { type: "disable", durationTicks: 20, tags: ["emp"] },
+  ],
+};
+
+test("mixed EMP shots deal damage and pause a vehicle's existing route until the exclusive deadline", () => {
+  const f = fixture({ weapon: emp, targetDomain: "tracked", armor: "heavy" });
+  const { kernel, target } = f,
+    world = kernel.world;
+  step(kernel, [
+    {
+      tick: 0,
+      seat: 2,
+      sequence: 0,
+      type: "unit.move",
+      payload: {
+        entities: [target],
+        x: 28 * 1024 + 512,
+        y: 20 * 1024 + 512,
+      },
+    },
+  ]);
+  // The automatic shot hits the moving tank's rear during that same tick.
+  expect(f.hp()).toBe(985);
+  expect(world.get(target, Disabled, "until")).toBe(20);
+  const paused = world.get(target, Transform, "x");
+  expect(kernel.movement?.snapshot().routes.some((route) => route.entity === target)).toBe(true);
+  f.advance(19);
+  expect(world.get(target, Transform, "x")).toBe(paused);
+  expect(kernel.disabled?.(target)).toBe(false);
+  f.advance();
+  expect(world.has(target, Disabled)).toBe(false);
+  expect(world.get(target, Transform, "x")).toBeGreaterThan(paused);
+});
+
+test("EMP respects infantry and zero-tag immunity, duration resistance, refresh and expired/dead targets", () => {
+  for (const options of [
+    { targetDomain: "foot" as const },
+    {
+      targetDomain: "tracked" as const,
+      resistance: { emp: 0 },
+    },
+  ]) {
+    const f = fixture({ weapon: emp, ...options });
+    f.fire();
+    expect(f.hp()).toBe(990);
+    expect(f.kernel.disabled?.(f.target)).toBe(false);
+  }
+  const f = fixture({ weapon: emp, targetDomain: "tracked", resistance: { emp: 500 } });
+  f.fire();
+  const { world } = f.kernel;
+  expect(world.get(f.target, Disabled, "until")).toBe(10);
+  f.advance(2);
+  const impact = {
+    force: 0,
+    direct: f.target,
+    x: 0,
+    y: 0,
+    fromX: 0,
+    fromY: 0,
+    air: false,
+    maxLevel: 255,
+  };
+  applyWarhead(f.kernel, f.definitions, emp, emp.warheads[1]!, impact, false);
+  expect(world.get(f.target, Disabled, "until")).toBe(13);
+  applyWarhead(
+    f.kernel,
+    f.definitions,
+    emp,
+    { type: "disable", durationTicks: 2, tags: ["emp"] },
+    impact,
+    false,
+  );
+  expect(world.get(f.target, Disabled, "until")).toBe(13);
+  world.destroy(f.target);
+  expect(f.kernel.disabled?.(f.target)).toBe(false);
+  expect(() =>
+    applyWarhead(f.kernel, f.definitions, emp, emp.warheads[1]!, impact, false),
+  ).not.toThrow();
+});
+
+test("EMP's delayed area uses existing geometry and friendly-fire rules; projection reveals no deadline", () => {
+  const weapon = {
+    ...emp,
+    warheads: [
+      { type: "disable", durationTicks: 20, delayTicks: 3, radiusSubcells: 1024, tags: ["emp"] },
+    ],
+  };
+  const f = fixture({ weapon, targetDomain: "tracked", friendlyFire: false });
+  const ally = f.spawn(3, 0, 24, 21);
+  f.fire();
+  expect(f.kernel.disabled?.(f.target)).toBe(false);
+  f.advance(3);
+  expect(f.kernel.disabled?.(f.target)).toBe(true);
+  expect(f.kernel.disabled?.(ally)).toBe(false);
+  const visible = createProjection(f.setup, 1, "controlled")
+    .snapshot(f.kernel)
+    .entities.find((row) => row.force === 1 && row.definition === unit.id);
+  expect(visible?.disabled).toBe(true);
+  expect(visible).not.toHaveProperty("until");
+});
+
+test("EMP combat from actual starting kits replays the canonical deadline, paused route and final hash", () => {
+  const base = fixture({ weapon: emp, targetDomain: "tracked" }).setup;
+  const setup: MatchSetup = {
+    ...base,
+    definitions: base.definitions.map((definition, index) =>
+      index === 3 ? { ...definition, weapons: [emp] } : definition,
+    ),
+    normal: {
+      ...base.normal!,
+      forces: base.normal!.forces.map((force) => ({
+        ...force,
+        start: {
+          ...force.start,
+          units: [
+            ...force.start.units,
+            {
+              unit: base.definitions[force.index === 0 ? 2 : 3]!.id,
+              count: 1,
+              pop: 1,
+              role: "combat",
+            },
+          ],
+        },
+      })),
+    },
+  };
+  const kernel = createMatch(setup),
+    world = kernel.world;
+  const actor = world.query(Template).find((id) => world.get(id, Template, "definition") === 2)!;
+  const target = world.query(Template).find((id) => world.get(id, Template, "definition") === 3)!;
+  const commands = [
+    {
+      tick: 0,
+      seat: 1,
+      sequence: 0,
+      type: "unit.attackMove" as const,
+      payload: {
+        entities: [actor],
+        x: world.get(target, Transform, "x"),
+        y: world.get(target, Transform, "y"),
+      },
+    },
+  ];
+  expect(step(kernel, commands)[0]?.result).toBe("accepted");
+  let observed = false;
+  for (let i = 0; i < 200; i++) {
+    step(kernel, []);
+    observed ||= kernel.disabled?.(target) === true;
+  }
+  expect(observed).toBe(true);
+  const scenario = parseScenario({
+    format: SCENARIO_FORMAT,
+    simVersion: SIM_VERSION,
+    setup,
+    commands,
+  });
+  expect(runScenario(scenario, { ticks: kernel.tick }).at(-1)?.hash).toBe(checkpointHash(kernel));
+});
 
 test("instant resolves now; bullets travel for real ticks and strike once without tunnelling", () => {
   const instant = fixture({ weapon: { ...gun, projectile: { kind: "instant" } } });

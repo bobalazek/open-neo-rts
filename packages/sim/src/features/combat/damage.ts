@@ -6,6 +6,7 @@ import { type Definition, Health, OwnerForce, Template, Transform } from "../ent
 import type { GameplayWarhead, GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
 import { weaponTargets } from ".";
+import { applyDisable } from "./disable";
 
 export interface DamageImpact {
   readonly damageBonus?: number;
@@ -76,7 +77,7 @@ export function warheadDamage(
   return numerator === 0n ? 0 : Math.max(1, Number(numerator / denominator));
 }
 
-export function applyDamageWarhead(
+export function applyWarhead(
   kernel: Kernel,
   definitions: readonly Definition[],
   weapon: GameplayWeapon,
@@ -84,7 +85,7 @@ export function applyDamageWarhead(
   impact: DamageImpact,
   friendlyFire: boolean,
 ): void {
-  if (warhead.type !== "damage") return;
+  if (warhead.type !== "damage" && warhead.type !== "disable") return;
   const { world } = kernel;
   const radius = warhead.radiusSubcells ?? 0;
   const targets =
@@ -134,6 +135,10 @@ export function applyDamageWarhead(
       radius > 0
         ? (rings[Math.min(rings.length - 1, Math.floor((range * rings.length) / radius))] ?? 1000)
         : 1000;
+    if (warhead.type === "disable") {
+      applyDisable(kernel, target, definition, warhead, falloff);
+      continue;
+    }
     let facing = 1000;
     if (
       ["light", "medium", "heavy", "naval"].includes(definition.armor ?? "") &&

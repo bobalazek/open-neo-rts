@@ -82,7 +82,7 @@ export class UnitTransports {
     const { world } = this.kernel;
     return {
       capacity,
-      firing: this.firingEnabled(id),
+      firing: this.firingEnabled(id) && !this.kernel.disabled?.(id),
       boarding: world
         .query(Boarding)
         .filter((unit) => world.get(unit, Boarding, "transport") === id).length,
@@ -141,6 +141,7 @@ export class UnitTransports {
       )
     )
       return "no_grant";
+    if (this.kernel.disabled?.(transport)) return "immobile";
     const reservations = world
       .query(Boarding)
       .filter((id) => world.get(id, Boarding, "transport") === transport && !actors.includes(id));
@@ -229,6 +230,7 @@ export class UnitTransports {
       )
     )
       return "no_grant";
+    if (this.kernel.disabled?.(transport)) return "immobile";
     const passengers = this.passengers(transport);
     if (!passengers.length) return "bad_payload";
     this.kernel.movement?.refreshOccupancy();
@@ -255,6 +257,7 @@ export class UnitTransports {
         this.stop(id);
         continue;
       }
+      if (this.kernel.disabled?.(transport)) continue;
       const at = this.position(id),
         target = this.position(transport);
       const range =

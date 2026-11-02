@@ -417,8 +417,9 @@ export function createEntityPresentation(
             Math.max(1, projected.construction.totalTicks * 4)
           : undefined;
         const working =
-          projected.constructionOrder?.state === "working" ||
-          projected.repairOrder?.state === "working";
+          !projected.disabled &&
+          (projected.constructionOrder?.state === "working" ||
+            projected.repairOrder?.state === "working");
         if (working !== entity.working) entity.workElapsed = 0;
         entity.working = working;
         if (

@@ -6,7 +6,7 @@ import type { MatchSetup } from "../../match";
 import { combatPoint } from "../../physics/fire-line";
 import { type Contact, type Fraction, traceProjectile } from "../../physics/trace";
 import { AttackOrder, clearAttackOrder, ShotIntent, WeaponState } from "../combat";
-import { applyDamageWarhead, type DamageImpact } from "../combat/damage";
+import { applyWarhead, type DamageImpact } from "../combat/damage";
 import { Health, OwnerForce, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
@@ -71,7 +71,7 @@ const velocity = (facing: number, speed: number) => ({
 const supported = (weapon: GameplayWeapon | undefined): weapon is GameplayWeapon =>
   !!weapon &&
   ["instant", "bullet", "missile"].includes(weapon.projectile.kind) &&
-  weapon.warheads.every((warhead) => warhead.type === "damage") &&
+  weapon.warheads.every((warhead) => ["damage", "disable"].includes(warhead.type)) &&
   (weapon.projectile.kind === "instant" ||
     ((weapon.projectile.speedSubcellsPerTick ?? 0) > 0 && weapon.projectile.flightTicks !== 0)) &&
   (weapon.projectile.kind !== "missile" ||
@@ -526,7 +526,7 @@ export function initializeProjectiles(
                 kernel.tick < world.get(id, PendingImpact, "tick") + (warhead.delayTicks ?? 0)
               )
                 continue;
-              applyDamageWarhead(
+              applyWarhead(
                 kernel,
                 definitions,
                 weapon,

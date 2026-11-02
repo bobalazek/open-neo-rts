@@ -381,6 +381,7 @@ export class TerrainMovement {
       route.searching = result.status === "searching";
     }
     for (const [id, route] of [...this.routes].sort(([a], [b]) => a - b)) {
+      if (this.kernel.disabled?.(id)) continue;
       const position = this.position(id);
       while (route.path[0]?.x === position.x && route.path[0]?.y === position.y) route.path.shift();
       const waypoint = route.path[0];
