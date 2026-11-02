@@ -22,6 +22,10 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-02 — Existing Eastern Collective tier 1 is provisional first-playable content](./2026-11-02-first-playable-scope.md) — Use existing authored numbers in the Training Grounds mirror, then balance after the loop works.
+
+- [2026-11-02 — Build gameplay before finishing performance acceptance](./2026-11-02-gameplay-before-performance.md) — Proceed with functional gameplay while keeping unfinished phase-1b acceptance explicit.
+
 - [2026-11-01 — One neutral extractor for both node types](./2026-11-01-neutral-extractor.md) — Any faction builds the shared neutral structure on raw-material or oil nodes.
 
 - [2026-11-01 — Movement domains and water](./2026-11-01-movement-water-table.md) — One accepted water table; wheeled shallow movement is 50% speed and air uses no grid.

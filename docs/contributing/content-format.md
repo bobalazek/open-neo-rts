@@ -52,6 +52,20 @@ The loader never scans folders: `manifest.json` lists every definition file, and
 
 **Versions and compatibility:** `version` (semver) and `engine` (supported range); `dependencies`, `optionalDependencies` and `conflicts` with version ranges; `"gameplay": false` for packs that only change looks or text, which don't need to match in multiplayer. Saves and replays record every pack's ID, version and hash.
 
+The current shared loader supports stable numeric `major.minor.patch` versions
+without leading zeroes, exact versions and `=`, `<`, `<=`, `>`, `>=`, `^`, `~`
+comparisons, whitespace-separated intersections and `||` alternatives. It rejects
+prereleases, build metadata, wildcards, partial versions and hyphen ranges rather
+than guessing. Triplets follow [SemVer](https://semver.org/); supported comparison,
+caret and tilde semantics follow [npm's range definitions](https://github.com/npm/node-semver#ranges).
+Required dependencies must be present; optional dependencies are version-checked
+and become reference scope when present. A matching conflict rejects the catalog.
+All selected packs are supplied explicitly; resolution does not download or pick
+versions. Definition IDs are qualified by pack, so matching local IDs in different
+packs remain distinct. `gameplay: false` currently permits locale-only packs;
+cosmetic definition overrides are not implemented and are refused. Unknown or
+unsupported definition groups are refused when nonempty.
+
 ## IDs
 
 IDs follow folders, so they're unique and readable:

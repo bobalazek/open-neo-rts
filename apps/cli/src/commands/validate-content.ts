@@ -2,7 +2,13 @@
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { checkPacks, type PackInput, parseGlb, validateModel } from "@open-neo-rts/content";
+import {
+  type PackInput,
+  PackResolutionError,
+  parseGlb,
+  resolvePacks,
+  validateModel,
+} from "@open-neo-rts/content";
 
 function walk(dir: string, root = dir): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -13,6 +19,7 @@ function walk(dir: string, root = dir): string[] {
 
 export async function validateContent(args: string[]): Promise<number> {
   const root = args[0] ?? "content";
+  const bytes = new Map<string, Uint8Array>();
   const packs: PackInput[] = readdirSync(root)
     .filter((id) => statSync(join(root, id)).isDirectory() && id !== "schemas")
     .map((id) => {
@@ -31,10 +38,22 @@ export async function validateContent(args: string[]): Promise<number> {
           .filter((f) => f.endsWith(".r8"))
           .map((f) => [f, new Uint8Array(readFileSync(join(dir, f)))] as const),
       );
+      for (const file of files)
+        if (!file.endsWith(".json") && !file.includes("/source/"))
+          bytes.set(`${id}/${file}`, new Uint8Array(readFileSync(join(dir, file))));
       return { id, files, json, layers };
     });
 
-  const { issues, models } = checkPacks(packs);
+  let catalog: ReturnType<typeof resolvePacks>;
+  try {
+    catalog = resolvePacks(packs, "0.1.0", { bytes });
+  } catch (error) {
+    if (!(error instanceof PackResolutionError)) throw error;
+    for (const issue of error.issues) console.log(`✖ ${issue.file}: ${issue.message}`);
+    return 1;
+  }
+  const { models } = catalog;
+  const issues = [...catalog.issues];
   for (const m of models) {
     const bytes = new Uint8Array(readFileSync(join(root, m.pack, m.file)));
     try {
@@ -50,6 +69,9 @@ export async function validateContent(args: string[]): Promise<number> {
   for (const i of issues) console.log(`${i.level === "error" ? "✖" : "⚠"} ${i.file}: ${i.message}`);
   console.log(
     `${packs.length} packs, ${models.length} models checked: ${errors} errors, ${issues.length - errors} warnings`,
+  );
+  console.log(
+    `Content identity: gameplay ${catalog.gameplayHash}, cosmetic ${catalog.cosmeticHash}`,
   );
   return errors > 0 ? 1 : 0;
 }
