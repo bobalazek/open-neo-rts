@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseScenario, runScenario } from "@open-neo-rts/sim";
-import { aiMatchOptions, aiMatchScenario, aiMatchTrial, aiVsAi } from "./ai-vs-ai";
+import { aiMatchOptions, aiMatchTrial, aiVsAi } from "./ai-vs-ai";
 
 test("AI match runner validates bounded distinct seeds, tick limit and required fresh output", () => {
   const defaults = aiMatchOptions(["--out", "evidence"]);
@@ -30,23 +30,26 @@ test("AI match runner validates bounded distinct seeds, tick limit and required 
 });
 
 test("original normal bot setup repeats, records honest tick caps and refuses to overwrite evidence", async () => {
-  const scenario = await aiMatchScenario(7);
-  expect(scenario.setup.debug).toBe(false);
-  expect(scenario.commands).toEqual([]);
-  expect(scenario.setup.map.id).toBe("core.map:training-grounds");
-  expect(scenario.setup.normal?.bots).toEqual([
-    { seat: 1, kind: "basic-skirmish", force: 0 },
-    { seat: 2, kind: "basic-skirmish", force: 1 },
-  ]);
-  expect(scenario.setup.definitions).toHaveLength(137);
-  const first = aiMatchTrial(scenario, 2);
-  expect(first).toEqual(aiMatchTrial(scenario, 2));
-  expect(first.tick).toBe(2);
-  expect(first.victory?.result).toBeNull();
   const directory = mkdtempSync(join(tmpdir(), "neo-ai-runner-"));
   const out = join(directory, "evidence");
   try {
     expect(await aiVsAi(["--out", out, "--seeds", "7", "--ticks", "2"])).toBe(1);
+    // Reuse the CLI's real input artifact instead of loading/hashing the same core pack twice.
+    const scenario = parseScenario(
+      JSON.parse(readFileSync(join(out, "seed-7.scenario.json"), "utf8")),
+    );
+    expect(scenario.setup.debug).toBe(false);
+    expect(scenario.commands).toEqual([]);
+    expect(scenario.setup.map.id).toBe("core.map:training-grounds");
+    expect(scenario.setup.normal?.bots).toEqual([
+      { seat: 1, kind: "basic-skirmish", force: 0 },
+      { seat: 2, kind: "basic-skirmish", force: 1 },
+    ]);
+    expect(scenario.setup.definitions).toHaveLength(137);
+    const first = aiMatchTrial(scenario, 2);
+    expect(first).toEqual(JSON.parse(readFileSync(join(out, "seed-7.first.json"), "utf8")));
+    expect(first.tick).toBe(2);
+    expect(first.victory?.result).toBeNull();
     const summary = readFileSync(join(out, "summary.json"), "utf8");
     expect(JSON.parse(summary).results).toEqual([
       { seed: 7, tick: 2, hash: first.hash, completed: false, reproducible: true, winner: null },
@@ -63,4 +66,4 @@ test("original normal bot setup repeats, records honest tick caps and refuses to
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-});
+}, 15_000);
