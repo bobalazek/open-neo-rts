@@ -164,6 +164,8 @@ port.onmessage = ({ data }) => {
                 (handle) => projection.resolve(handle, "unit.orders") ?? -1,
               );
             fields.entity = projection.resolve(fields.entity, "unit.orders") ?? -1;
+          } else if (type === "commander.activate") {
+            fields.entity = projection.resolve(fields.entity, "commander.abilities") ?? -1;
           } else if (type === "unit.deploy") {
             if (Array.isArray(fields.entities))
               fields.entities = fields.entities.map(

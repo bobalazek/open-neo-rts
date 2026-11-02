@@ -1,10 +1,14 @@
 import { expect, test } from "bun:test";
 import { parseTerrain } from "@open-neo-rts/content";
 import { checkpointHash, registerController, step } from "../../kernel";
-import { createMatch, type MatchSetup } from "../../match";
+import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
+import { SCENARIO_FORMAT } from "../../snapshots";
+import { replayScenario } from "../../snapshots/replay";
+import { ProductionSurge } from "../abilities";
 import { Disabled } from "../combat/disable";
 import { ConstructionSite } from "../construction";
+import { registerBotSeat } from "../control/bots";
 import { StructurePower } from "../economy";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
@@ -76,6 +80,9 @@ function fixture(
     radius?: number;
     expires?: number;
     weapon?: GameplayWeapon;
+    industrial?: boolean;
+    industrialStock?: number;
+    cost?: number;
   } = {},
 ) {
   const t = parseTerrain(32, 32, {}),
@@ -88,13 +95,23 @@ function fixture(
       ...producer,
       productionSlots: options.slots ?? 2,
       ...(options.gift && { spawnsWith: [truck.id] }),
+      ...(options.industrial && {
+        productionReward: { resource: "industrial-capacity" as const, amount: 1, cap: 100 },
+        productionSurge: {
+          id: "production-surge",
+          perMille: 1500,
+          durationTicks: 4,
+          cooldownTicks: 10,
+          cost: { "industrial-capacity": 20 },
+        },
+      }),
     },
     worker,
     {
       ...combat,
       ...(options.weapon && { weapons: [options.weapon], armor: "infantry" }),
       radiusSubcells: options.radius ?? 128,
-      construction: { cost: { credits: 100 }, buildTicks: options.duration ?? 2 },
+      construction: { cost: { credits: options.cost ?? 100 }, buildTicks: options.duration ?? 2 },
     },
     vehicle,
     harvester,
@@ -124,8 +141,19 @@ function fixture(
       objects: [],
     },
     forces: [{ index: 0, faction: "faction:production" }],
-    seats: [1, 2],
+    seats: [1, 2, ...(options.industrial ? [3] : [])],
     grants: [
+      ...(options.industrial
+        ? [
+            {
+              seat: 1,
+              force: 0,
+              scopes: ["commander.abilities" as const, "surrender" as const],
+              grantedAtTick: 0,
+            },
+            { seat: 3, force: 0, scopes: ["commander.abilities" as const], grantedAtTick: 0 },
+          ]
+        : []),
       { seat: 1, force: 0, scopes: ["unit.orders", "economy.build"], grantedAtTick: 0 },
       {
         seat: 1,
@@ -148,7 +176,10 @@ function fixture(
           start: {
             structures: [producer.id],
             units: [{ unit: worker.id, count: 1, pop: 1, role: "builder" }],
-            resources: { credits: startingCredits },
+            resources: {
+              credits: startingCredits,
+              ...(options.industrial && { "industrial-capacity": options.industrialStock ?? 20 }),
+            },
           },
         },
       ],
@@ -193,6 +224,218 @@ function cancel(kernel: ReturnType<typeof createMatch>, item: number, seat = 1) 
 function ticks(kernel: ReturnType<typeof createMatch>, count: number) {
   for (let i = 0; i < count; i++) step(kernel, []);
 }
+
+function surge(kernel: ReturnType<typeof createMatch>, entity: number, seat = 1, sequence = 0) {
+  return {
+    tick: kernel.tick,
+    sequence,
+    seat,
+    type: "commander.activate" as const,
+    payload: { entity, ability: "production-surge" },
+  };
+}
+
+test("industrial awards require a paid legal output, cap once, and exclude gifts, kits and zero receipts", () => {
+  const { kernel, building } = fixture({ industrial: true, industrialStock: 99, duration: 0 });
+  const blockers = blockExits(kernel, building);
+  expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(99);
+  step(kernel, [enqueue(kernel, building), enqueue(kernel, building, soldier.id, 1)]);
+  ticks(kernel, 2);
+  expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(99);
+  expect(itemIds(kernel)).toHaveLength(2);
+  for (const id of blockers) kernel.world.destroy(id);
+  step(kernel, []);
+  expect(units(kernel)).toHaveLength(2);
+  expect(itemIds(kernel)).toHaveLength(0);
+  expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(100);
+  ticks(kernel, 2);
+  expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(100);
+
+  const free = fixture({ industrial: true, industrialStock: 0, duration: 0, cost: 0, gift: true });
+  step(free.kernel, [enqueue(free.kernel, free.building)]);
+  expect(units(free.kernel)).toHaveLength(1);
+  expect(units(free.kernel, 4)).toHaveLength(1);
+  expect(free.kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(0);
+  const canceled = fixture({ industrial: true, industrialStock: 0, duration: 20 });
+  step(canceled.kernel, [enqueue(canceled.kernel, canceled.building)]);
+  expect(cancel(canceled.kernel, itemIds(canceled.kernel)[0]!)).toBe("accepted");
+  expect(canceled.kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(0);
+});
+
+test("Surge spends once across all providers and preserves exact work through brownout, shutdown and expiry", () => {
+  const { kernel, building, setup } = fixture({ industrial: true, duration: 100 });
+  const { world } = kernel;
+  const second = spawnEntity(kernel, 0, setup.definitions[0]!, {
+    definition: producer.id,
+    force: 0,
+    x: 24 * 1024,
+    y: 24 * 1024,
+    facing: 0,
+  });
+  step(kernel, [enqueue(kernel, building), enqueue(kernel, second, soldier.id, 1)]);
+  const [firstItem, secondItem] = itemIds(kernel);
+  expect(world.get(firstItem!, ProductionItem, "completedTicks")).toBe(1);
+  const activated = step(kernel, [surge(kernel, building), surge(kernel, second, 1, 1)]);
+  expect(activated.map((item) => item.result)).toEqual(["accepted", "cooldown"]);
+  expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(0);
+  for (const item of [firstItem!, secondItem!]) {
+    expect(world.get(item, ProductionItem, "completedTicks")).toBe(2);
+    expect(world.get(item, ProductionItem, "remainder")).toBe(500);
+  }
+  world.set(second, StructurePower, "amount", -40);
+  step(kernel, []);
+  expect(state(kernel, firstItem!)).toBe("brownout");
+  expect(world.get(firstItem!, ProductionItem, "completedTicks")).toBe(3);
+  expect(world.get(firstItem!, ProductionItem, "remainder")).toBe(250);
+  world.set(building, StructurePower, "enabled", 0);
+  ticks(kernel, 3);
+  expect(world.get(firstItem!, ProductionItem, "completedTicks")).toBe(3);
+  expect(world.get(firstItem!, ProductionItem, "remainder")).toBe(250);
+  expect(kernel.productionSurges?.rate(0)).toBe(1000);
+  world.set(building, StructurePower, "enabled", 1);
+  world.set(second, StructurePower, "amount", 20);
+  step(kernel, []);
+  expect(world.get(firstItem!, ProductionItem, "completedTicks")).toBe(4);
+  expect(world.get(firstItem!, ProductionItem, "remainder")).toBe(250);
+  expect(step(kernel, [surge(kernel, second)])[0]?.result).toBe("cooldown");
+});
+
+test("Surge requires current Commander grant, funds and an operational completed provider", () => {
+  for (const condition of ["no_grant", "funds", "off", "emp", "site"] as const) {
+    const { kernel, building } = fixture({
+      industrial: true,
+      industrialStock: condition === "funds" ? 19 : 20,
+      ...(condition === "emp" && {
+        weapon: {
+          id: "emp",
+          targets: ["ground" as const],
+          rangeSubcells: [0, 1024] as const,
+          reloadTicks: 20,
+          projectile: { kind: "instant" as const },
+          warheads: [{ type: "disable" as const, durationTicks: 10, tags: ["emp"] }],
+        },
+      }),
+    });
+    if (condition === "off") kernel.world.set(building, StructurePower, "enabled", 0);
+    if (condition === "emp") kernel.world.add(building, Disabled, { until: 5 });
+    if (condition === "site") kernel.world.add(building, ConstructionSite);
+    const before = kernel.economy?.balance(0)?.["industrial-capacity"];
+    const result = step(kernel, [surge(kernel, building, condition === "no_grant" ? 2 : 1)])[0]
+      ?.result;
+    expect(result).toBe(
+      condition === "funds"
+        ? "insufficient_funds"
+        : condition === "site"
+          ? "bad_payload"
+          : condition === "no_grant"
+            ? "no_grant"
+            : "immobile",
+    );
+    expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(before);
+    expect(kernel.productionSurges?.rate(0)).toBe(1000);
+  }
+});
+
+test("Commander-only control can use private Surge without seeing banks, and replay retains its Force lifetime", () => {
+  const a = fixture({ industrial: true, duration: 100 }),
+    b = fixture({ industrial: true, duration: 100 });
+  const projection = createProjection(a.setup, 3, "controlled");
+  const view = projection.snapshot(a.kernel),
+    provider = view.entities.find((entity) => entity.productionSurge)!;
+  expect(provider).toBeDefined();
+  expect(view.banks).toEqual([]);
+  expect(view.power).toEqual([]);
+  expect(projection.resolve(provider.handle, "commander.abilities")).toBe(a.building);
+  expect(projection.resolve(provider.handle, "production.queue")).toBeUndefined();
+  expect(
+    createProjection(a.setup, 2, "controlled")
+      .snapshot(a.kernel)
+      .entities.every((entity) => !entity.productionSurge),
+  ).toBe(true);
+  const command = {
+    type: "commander.activate" as const,
+    payload: { entity: provider.handle, ability: "production-surge" },
+  };
+  expect(a.kernel.controllerPayload?.(3, command)).toEqual({
+    entity: a.building,
+    ability: "production-surge",
+  });
+  expect(step(a.kernel, [surge(a.kernel, a.building, 3)])[0]?.result).toBe("accepted");
+  step(b.kernel, [surge(b.kernel, b.building, 3)]);
+  expect(checkpointHash(a.kernel)).toBe(checkpointHash(b.kernel));
+  a.kernel.captureObservations?.();
+  const copy = a.kernel
+    .observe?.(3)
+    .entities.find((entity) => entity.productionSurge)?.productionSurge;
+  if (copy) copy.readyAt = 9999;
+  expect(
+    a.kernel.observe?.(3).entities.find((entity) => entity.productionSurge)?.productionSurge
+      ?.readyAt,
+  ).toBe(10);
+  const replayable = createMatch(a.setup);
+  const activation = surge(replayable, a.building, 3);
+  step(replayable, [activation]);
+  expect(
+    checkpointHash(
+      replayScenario(
+        {
+          format: SCENARIO_FORMAT,
+          simVersion: SIM_VERSION,
+          setup: a.setup,
+          commands: [activation],
+        },
+        1,
+      ),
+    ),
+  ).toBe(checkpointHash(replayable));
+  for (const current of [a, b]) current.kernel.world.destroy(current.building);
+  expect(a.kernel.productionSurges?.rate(0)).toBe(1500);
+  expect(
+    b.kernel.world.get(b.kernel.world.query(ProductionSurge)[0]!, ProductionSurge, "readyAt"),
+  ).toBe(10);
+  ticks(a.kernel, 4);
+  ticks(b.kernel, 4);
+  expect(a.kernel.productionSurges?.rate(0)).toBe(1000);
+  expect(checkpointHash(a.kernel)).toBe(checkpointHash(b.kernel));
+});
+
+test("Commander-only bot proposals require a grant at both proposal and execution ticks", () => {
+  for (const expiry of [1, 2]) {
+    const source = fixture({ industrial: true });
+    const setup: MatchSetup = {
+      ...source.setup,
+      grants: source.setup.grants.map((grant) =>
+        grant.seat === 3 ? { ...grant, expiresAtTick: expiry } : grant,
+      ),
+    };
+    const kernel = createMatch(setup);
+    registerBotSeat(
+      kernel,
+      setup,
+      { seat: 3, program: "fixture-surge" },
+      ({ observation, state, work }) => {
+        const provider = observation.entities.find((entity) => entity.productionSurge);
+        return {
+          state: { ...state, cursor: state.cursor + 1 },
+          commands:
+            provider && state.cursor === 0 && work.take()
+              ? [
+                  {
+                    type: "commander.activate",
+                    payload: { entity: provider.handle, ability: provider.productionSurge!.id },
+                  },
+                ]
+              : [],
+        };
+      },
+    );
+    step(kernel, []);
+    expect(kernel.queued).toHaveLength(expiry === 1 ? 0 : 1);
+    const outcome = step(kernel, []);
+    expect(outcome[0]?.result).toBe(expiry === 1 ? undefined : "accepted");
+    expect(kernel.economy?.balance(0)?.["industrial-capacity"]).toBe(expiry === 1 ? 20 : 0);
+  }
+});
 
 test("EMP pauses paid production and supply without resetting work or the manual power switch", () => {
   const weapon: GameplayWeapon = {

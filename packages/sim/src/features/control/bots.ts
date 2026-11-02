@@ -259,15 +259,17 @@ export class BotSeats {
   private grantedFor(command: Command, now: number, execution: number): (force: number) => boolean {
     const { seat } = command;
     const scopes: readonly Scope[] =
-      command.type === "match.surrender"
-        ? ["surrender"]
-        : command.type.startsWith("unit.")
-          ? ["unit.orders"]
-          : command.type.startsWith("production.")
-            ? ["production.queue"]
-            : command.type === "economy.power"
-              ? ["economy.build", "economy.transfer", "production.queue", "research.spend"]
-              : ["economy.build"];
+      command.type === "commander.activate"
+        ? ["commander.abilities"]
+        : command.type === "match.surrender"
+          ? ["surrender"]
+          : command.type.startsWith("unit.")
+            ? ["unit.orders"]
+            : command.type.startsWith("production.")
+              ? ["production.queue"]
+              : command.type === "economy.power"
+                ? ["economy.build", "economy.transfer", "production.queue", "research.spend"]
+                : ["economy.build"];
     return (force: number) =>
       scopes.some(
         (scope) =>

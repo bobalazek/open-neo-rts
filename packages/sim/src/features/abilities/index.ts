@@ -17,6 +17,8 @@ import {
 } from "../entities";
 import { MoveIntent } from "../movement";
 
+export { ProductionSurge, ProductionSurges } from "./production-surge";
+
 export const UnitMode = defineComponent("UnitMode", { active: "u8", readyAt: "u32" });
 const resources = ["credits", "industrial-capacity", "materials", "salvage-points"] as const;
 
