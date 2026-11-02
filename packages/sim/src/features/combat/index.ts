@@ -25,6 +25,7 @@ export const WeaponState = defineComponent("WeaponState", {
 });
 /** Internal one-tick handoff. Never project these authoritative IDs or hidden firing origins. */
 export const ShotIntent = defineComponent("ShotIntent", {
+  damageBonus: "i32",
   tick: "u32",
   shooter: "u32",
   force: "u32",
@@ -120,7 +121,9 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
     const a = combatPoint(kernel, definitions, shooter),
       b = combatPoint(kernel, definitions, target);
     const squared = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
-    return squared >= weapon.rangeSubcells[0] ** 2 && squared <= weapon.rangeSubcells[1] ** 2;
+    const maximum =
+      kernel.unitModes?.range(shooter, weapon.rangeSubcells[1]) ?? weapon.rangeSubcells[1];
+    return squared >= weapon.rangeSubcells[0] ** 2 && squared <= maximum ** 2;
   };
   const choose = (kernel: Kernel, shooter: number, weapon: GameplayWeapon) => {
     const world = kernel.world;
@@ -297,16 +300,20 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               ) ??
                 true)
             ) {
-              const radius = weapon.rangeSubcells[1]
+              const maximum =
+                kernel.unitModes?.range(shooter, weapon.rangeSubcells[1]) ??
+                weapon.rangeSubcells[1];
+              const radius = maximum
                 ? mulDiv(
                     weapon.scatterSubcells ?? 0,
                     isqrt((aim.x - origin.x) ** 2 + (aim.y - origin.y) ** 2),
-                    weapon.rangeSubcells[1],
+                    maximum,
                   )
                 : 0;
               const offset = scatter(kernel, radius);
               const shot = world.create();
               world.add(shot, ShotIntent, {
+                damageBonus: kernel.unitModes?.damageBonus(shooter) ?? 0,
                 tick: kernel.tick,
                 shooter,
                 force: world.get(shooter, OwnerForce, "force"),

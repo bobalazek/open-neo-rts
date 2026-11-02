@@ -8,6 +8,48 @@ const reply = (banks: unknown, mode = "controlled") => ({
   state: { paused: true, speed: 1, snapshot: { tick: 0, mode, entities: [], banks } },
 });
 
+test("deploy wire data accepts public state and optional private cooldown but rejects malformed metadata", () => {
+  const packet = (deploy: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1,
+        mode,
+        entities: [
+          {
+            handle: "e1",
+            definition: "core.unit:fixture/tank",
+            force: 0,
+            x: 1024,
+            y: 1024,
+            facing: 0,
+            health: 900,
+            maxHealth: 900,
+            order: null,
+            deploy,
+          },
+        ],
+      },
+    },
+  });
+  const publicMode = { id: "siege-mode", active: true };
+  expect(isWorkerReply(packet(publicMode))).toBe(true);
+  expect(isWorkerReply(packet({ ...publicMode, readyAt: 60 }))).toBe(true);
+  for (const bad of [
+    { ...publicMode, active: 1 },
+    { ...publicMode, id: "" },
+    { ...publicMode, readyAt: -1 },
+    { ...publicMode, readyAt: 0.5 },
+    { ...publicMode, readyAt: 0x1_0000_0000 },
+    { ...publicMode, cost: 100 },
+    { ...publicMode, [Symbol("hidden")]: true },
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet(publicMode, "debug-no-fog"))).toBe(false);
+});
+
 test("statistics wire shape requires complete bounded counters and sorted private Force rows", () => {
   const counters = Object.fromEntries(STAT_COUNTERS.map((key) => [key, 0]));
   const packet = (statistics: unknown, mode = "controlled") => ({

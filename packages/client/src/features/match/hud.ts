@@ -209,6 +209,19 @@ export function createMatchHud(
   const commandButtons = labels.map((label, i) =>
     button(`${keys[i]} · ${text(label)}`, () => activate(i), get("[data-commands]")),
   );
+  const deployButton = button(
+    text("ui.hud.deploy-toggle"),
+    () => {
+      cancel();
+      void issue("unit.deploy", {
+        entities: units()
+          .filter((entity) => definitions.get(entity.definition)?.gameplay.deployMode)
+          .map((entity) => entity.handle),
+      });
+    },
+    get(".hud-command-panel"),
+  );
+  deployButton.dataset.deploy = "";
   function activate(index: number) {
     if (commandButtons[index]?.disabled) return;
     const selectedUnits = units(),
@@ -238,6 +251,12 @@ export function createMatchHud(
     else if (index === 5) {
       cancel();
       void issue("unit.stop", { entities: ids });
+    } else if (
+      index === 6 &&
+      !selectedBuilders.length &&
+      selectedUnits.some((entity) => definitions.get(entity.definition)?.gameplay.deployMode)
+    ) {
+      deployButton.click();
     } else if (index === 6 || index === 7)
       arm({
         type: index === 6 ? "economy.assistConstruction" : "economy.repair",
@@ -601,17 +620,43 @@ export function createMatchHud(
     const lines = selected.slice(0, 8).map((entity) => describe(entity));
     details.textContent = lines.join("\n") || text("ui.hud.select-help");
     const disabled = busy || options.paused();
+    const deployments = selectedUnits.filter(
+      (entity) => definitions.get(entity.definition)?.gameplay.deployMode,
+    );
+    const cooldown = Math.max(
+      0,
+      ...deployments.map((entity) => (entity.deploy?.readyAt ?? 0) - (snapshot?.tick ?? 0)),
+    );
+    deployButton.hidden = deployments.length === 0;
+    deployButton.disabled =
+      disabled ||
+      cooldown > 0 ||
+      deployments.some((entity) => entity.deploy?.readyAt === undefined);
+    deployButton.setAttribute(
+      "aria-pressed",
+      String(deployments.length > 0 && deployments.every((entity) => entity.deploy?.active)),
+    );
+    deployButton.title =
+      cooldown > 0
+        ? text("ui.hud.deploy-cooldown", { seconds: Math.ceil(cooldown / 20) })
+        : text("ui.hud.deploy-toggle");
     renderSites(disabled);
     const eligible = [
-      selectedUnits.some((entity) => (definitions.get(entity.definition)?.gameplay.speed ?? 0) > 0),
+      selectedUnits.some(
+        (entity) =>
+          !entity.deploy?.active && (definitions.get(entity.definition)?.gameplay.speed ?? 0) > 0,
+      ),
       selectedUnits.some((entity) => !!definitions.get(entity.definition)?.gameplay.weapons.length),
       selectedUnits.some(
         (entity) => definitions.get(entity.definition)?.gameplay.role === "harvester",
       ),
       !!structure?.production && !structure.constructionSite,
+      selectedUnits.some(
+        (entity) =>
+          !entity.deploy?.active && (definitions.get(entity.definition)?.gameplay.speed ?? 0) > 0,
+      ),
       selectedUnits.length > 0,
-      selectedUnits.length > 0,
-      selectedBuilders.length > 0,
+      selectedBuilders.length > 0 || (deployments.length > 0 && !deployButton.disabled),
       selectedBuilders.some((entity) => !!definitions.get(entity.definition)?.gameplay.repair),
       !!structure &&
         (!!structure.constructionSite ||
@@ -645,6 +690,8 @@ export function createMatchHud(
         String(mode !== undefined && mode.type === targetingTypes[index]),
       );
     });
+    if (commandButtons[6])
+      commandButtons[6].textContent = `D · ${text(!selectedBuilders.length && deployments.length ? "ui.hud.deploy-toggle" : "ui.hud.assist")}`;
     commandButtons[9]?.replaceChildren(
       document.createTextNode(
         `X · ${text(structure?.power?.enabled ? "ui.hud.power-off" : "ui.hud.power-on")}`,
@@ -933,12 +980,24 @@ export function createMatchHud(
     ];
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
     const definition = definitions.get(entity.definition)?.gameplay;
+    const deployed = entity.deploy?.active ? definition?.deployMode : undefined;
+    if (entity.deploy)
+      lines.push(
+        text(entity.deploy.active ? "ui.hud.deployed" : "ui.hud.packed", {
+          name:
+            definition?.abilities.find((ability) => ability.id === entity.deploy?.id)?.name ??
+            entity.deploy.id,
+        }),
+      );
     if (definition?.armor) lines.push(text("ui.hud.armor", { value: definition.armor }));
     if (definition?.weapons.length)
       lines.push(
         text("ui.hud.weapon-stats", {
           range: definition.weapons
-            .map((weapon) => `${weapon.rangeSubcells[0] / 1024}–${weapon.rangeSubcells[1] / 1024}`)
+            .map(
+              (weapon) =>
+                `${weapon.rangeSubcells[0] / 1024}–${(deployed ? Math.floor((weapon.rangeSubcells[1] * deployed.rangePerMille) / 1000) + deployed.rangeBonusSubcells : weapon.rangeSubcells[1]) / 1024}`,
+            )
             .join(", "),
           reload: definition.weapons.map((weapon) => weapon.reloadTicks / 20).join(", "),
         }),
@@ -1055,6 +1114,8 @@ function recipeText(definition: GameplayDefinition) {
 
 function refusal(value: unknown) {
   const reasons = {
+    cooldown: "ui.hud.deploy-not-ready",
+    immobile: "ui.hud.deploy-immobile",
     bad_payload: "ui.hud.refusal-payload",
     no_grant: "ui.hud.refusal-grant",
     insufficient_funds: "ui.hud.no-funds",

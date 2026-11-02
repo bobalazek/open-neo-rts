@@ -23,6 +23,7 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
     }),
     entities: snapshot.entities.map((entity) => ({
       ...entity,
+      ...(entity.deploy && { deploy: { ...entity.deploy } }),
       order: entity.order && { ...entity.order },
       ...(entity.power && { power: { ...entity.power } }),
       ...(entity.extraction && { extraction: { ...entity.extraction } }),
@@ -64,7 +65,11 @@ function controllerPayload(
   const payload = { ...command.payload } as Record<string, unknown>;
   if ("entities" in payload && Array.isArray(payload.entities))
     payload.entities = payload.entities.map(
-      (handle) => projection.resolve(handle, "unit.orders") ?? -1,
+      (handle) =>
+        projection.resolve(
+          handle,
+          command.type === "unit.deploy" ? "unit.abilities" : "unit.orders",
+        ) ?? -1,
     );
   if ("builders" in payload && Array.isArray(payload.builders))
     payload.builders = payload.builders.map(

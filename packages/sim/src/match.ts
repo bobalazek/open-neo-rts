@@ -1,5 +1,6 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
+import { initializeUnitModes } from "./features/abilities";
 import { combatFeature } from "./features/combat";
 import {
   constructionFeature,
@@ -46,7 +47,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 32;
+export const SIM_VERSION = 33;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -81,6 +82,12 @@ export function createMatch(setup: MatchSetup): Kernel {
     Object.freeze({
       ...definition,
       ...(definition.weapons && { weapons: copyWeapons(definition.weapons) }),
+      ...(definition.deployMode && {
+        deployMode: Object.freeze({
+          ...definition.deployMode,
+          cost: Object.freeze({ ...definition.deployMode.cost }),
+        }),
+      }),
       ...(definition.resistPerMille && {
         resistPerMille: Object.freeze({ ...definition.resistPerMille }),
       }),
@@ -149,6 +156,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   register(kernel, movementFeature({ ...setup, definitions }));
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
+  if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
   initializeStatistics(kernel, setup);
   if (setup.normal) initializeExtraction(kernel, definitions);
