@@ -7,6 +7,7 @@ import {
   ShadowGenerator,
   SSAO2RenderingPipeline,
 } from "@babylonjs/core";
+import { installAffineShadowFit } from "./affine-shadow-fit";
 import { setSceneShadows } from "./shadows";
 
 export type GraphicsQuality = "low" | "medium" | "high" | "ultra";
@@ -59,6 +60,7 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
       const shadowMap = shadows.getShadowMap();
       if (shadowMap) {
         const previous = sun.autoUpdateExtends;
+        const releaseProjection = installAffineShadowFit(sun);
         // Fit every refreshed map, then retain that same fit for its receiver passes.
         const before = shadowMap.onBeforeBindObservable.add(() => {
           sun.autoUpdateExtends = true;
@@ -75,6 +77,7 @@ export function createQuality(scene: Scene, camera: Camera, sun: DirectionalLigh
           shadowMap.onAfterUnbindObservable.remove(after);
           shadowMap.onDisposeObservable.remove(disposedMap);
           sun.autoUpdateExtends = previous;
+          releaseProjection();
         };
       }
       // SSAO2 supports both WebGL2 and WebGPU; omit it on devices without the required MRT support.
