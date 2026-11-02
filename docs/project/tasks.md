@@ -18,7 +18,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 - [ ] [2-31 · In-game pause/menu and settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine; existing pause/surrender/results are not a complete menu.
 - [ ] [2-32b · Statistics and replay actions on results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after canonical statistics and replay export/viewer; no fabricated counters.
 
-Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction sites/builders (2-09/2-10), node extraction (2-08a/b) and production (2-11a/b) are implemented. SIM18 activates Eastern Collective tier-1 exits and two Barracks slots using the real queue engine; existing costs/times and included Supply Truck remain intact. CLI validation compiles all 137 authored definitions. Ore hauling and permitted enemy observations are next.
+The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. Main uses SIM31; canonical summary statistics are in PR #201 under SIM32. All137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
 
 ## Deferred phase-1b acceptance
 
