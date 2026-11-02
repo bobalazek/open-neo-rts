@@ -1,6 +1,6 @@
 // Copied presentation data only. Fog and enemy visibility arrive in phase 2.
 import { hasGrant } from "../commands";
-import type { BankSnapshot } from "../features/economy";
+import { type BankSnapshot, type PowerSnapshot, StructurePower } from "../features/economy";
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { MoveIntent } from "../features/movement";
 import type { Kernel } from "../kernel";
@@ -19,6 +19,7 @@ export interface PresentedEntity {
   health: number;
   maxHealth: number;
   order: { type: "move" | "attackMove"; x: number; y: number } | null;
+  power?: { amount: number; enabled: boolean; powered: boolean };
 }
 export interface SeatSnapshot {
   tick: number;
@@ -26,6 +27,7 @@ export interface SeatSnapshot {
   entities: PresentedEntity[];
   /** Present only for normal matches, with economic grants checked at this tick. */
   banks?: BankSnapshot[];
+  power?: PowerSnapshot[];
 }
 
 /** Per-seat handles never contain ECS IDs. Keep this object inside the authoritative host. */
@@ -42,10 +44,12 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       for (const id of kernel.world.query(Template, OwnerForce, Transform, Health)) {
         const world = kernel.world;
         const force = world.get(id, OwnerForce, "force");
+        const inspectPower = kernel.power?.canInspect(seat, force) && world.has(id, StructurePower);
         // shortcut: no enemy vision before phase 2; expose only Forces this seat can command.
         if (
           mode !== "debug-no-fog" &&
-          !hasGrant(setup.grants, seat, force, "unit.orders", kernel.tick)
+          !hasGrant(setup.grants, seat, force, "unit.orders", kernel.tick) &&
+          !inspectPower
         )
           continue;
         let handle = handles.get(id);
@@ -72,6 +76,14 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 y: world.get(id, MoveIntent, "y"),
               }
             : null,
+          ...(kernel.power &&
+            inspectPower && {
+              power: {
+                amount: world.get(id, StructurePower, "amount"),
+                enabled: world.get(id, StructurePower, "enabled") === 1,
+                powered: kernel.power.powered(id),
+              },
+            }),
         });
       }
       return {
@@ -79,6 +91,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         mode,
         entities,
         ...(kernel.economy && { banks: kernel.economy.snapshot(seat) }),
+        ...(kernel.power && { power: kernel.power.snapshot(seat) }),
       };
     },
     resolve(handle: unknown): number | undefined {

@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 11,
+  "simVersion": 12,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -18,7 +18,8 @@
         "health": 2600,
         "speed": 0,
         "turnRate": 65536,
-        "footprint": [3, 3]
+        "footprint": [3, 3],
+        "power": -40
       },
       {
         "id": "prop:temperate/rock-outcrop",

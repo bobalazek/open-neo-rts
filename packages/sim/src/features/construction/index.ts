@@ -2,6 +2,10 @@
 // Radius and unit clearance remain owner-gated; this checker implements static footprint rules only.
 
 import { BUILDABLE, EDGE_MARGIN, RAMP, SURFACES, WATER } from "@open-neo-rts/content";
+import { defineComponent } from "../../ecs";
+
+/** Present only while unfinished; the builder feature will own work/progress separately. */
+export const ConstructionSite = defineComponent("ConstructionSite", {});
 
 export interface PlacementTerrain {
   width: number;

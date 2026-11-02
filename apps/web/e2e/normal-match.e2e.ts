@@ -144,14 +144,26 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
           facing: 0,
         });
         const handle = state?.snapshot.entities[0]?.handle;
+        const headquarters = state?.snapshot.entities.find((entity) => entity.power);
+        const toggle = match.command("economy.power", { entity: headquarters?.handle, enabled: 0 });
         const order = match.command("unit.stop", { entities: [handle] });
         await match.step();
         const result = await order;
+        const toggled = await toggle;
         const exportGated = await match.exportLog().then(
           () => false,
           () => true,
         );
-        return { failed, initial, gated, result, tick: state?.snapshot.tick, exportGated };
+        return {
+          failed,
+          initial,
+          gated,
+          result,
+          toggled,
+          power: state?.snapshot.power,
+          tick: state?.snapshot.tick,
+          exportGated,
+        };
       } finally {
         match.dispose();
       }
@@ -169,6 +181,11 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
     },
   ]);
   expect(actual.gated).toBe("debug_only");
+  expect(actual.initial?.snapshot.power).toEqual([
+    { force: 0, produced: 20, used: 0, brownout: false },
+  ]);
+  expect(actual.toggled).toBe("accepted");
+  expect(actual.power).toEqual([{ force: 0, produced: 0, used: 0, brownout: false }]);
   expect(actual.result).toBe("accepted");
   expect(actual.tick).toBe(1);
   expect(actual.exportGated).toBe(true);

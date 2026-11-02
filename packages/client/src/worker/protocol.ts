@@ -167,6 +167,48 @@ function isBankSnapshot(value: unknown): boolean {
   );
 }
 
+function isPowerSnapshot(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Reflect.ownKeys(value).length !== 4
+  )
+    return false;
+  for (const key of ["force", "used", "produced"]) {
+    const amount: unknown = Object.getOwnPropertyDescriptor(value, key)?.value;
+    if (
+      typeof amount !== "number" ||
+      !Number.isInteger(amount) ||
+      amount < 0 ||
+      amount > 0x7fffffff
+    )
+      return false;
+  }
+  const brownout: unknown = Object.getOwnPropertyDescriptor(value, "brownout")?.value;
+  return typeof brownout === "boolean" && brownout === Number(value.used) > Number(value.produced);
+}
+
+function isEntityPower(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Reflect.ownKeys(value).length !== 3
+  )
+    return false;
+  const amount: unknown = Object.getOwnPropertyDescriptor(value, "amount")?.value;
+  const enabled: unknown = Object.getOwnPropertyDescriptor(value, "enabled")?.value;
+  const powered: unknown = Object.getOwnPropertyDescriptor(value, "powered")?.value;
+  return (
+    typeof amount === "number" &&
+    Number.isInteger(amount) &&
+    amount >= -0x80000000 &&
+    amount <= 0x7fffffff &&
+    typeof enabled === "boolean" &&
+    typeof powered === "boolean" &&
+    (enabled || !powered)
+  );
+}
+
 export function isOverlayData(value: unknown): value is DebugOverlayData {
   if (!isRecord(value) || !Number.isSafeInteger(value.tick) || Number(value.tick) < 0) return false;
   for (const [key, layers] of [
@@ -285,6 +327,20 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       previous = Number(bank.force);
     }
   }
+  if (snapshot.power !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.power) ||
+      snapshot.power.length > 8 ||
+      ![...snapshot.power].every(isPowerSnapshot)
+    )
+      return false;
+    let previous = -1;
+    for (const power of snapshot.power) {
+      if (Number(power.force) <= previous) return false;
+      previous = Number(power.force);
+    }
+  }
   return snapshot.entities.every((entity: unknown) => {
     if (
       !isRecord(entity) ||
@@ -296,6 +352,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       ![entity.force, entity.x, entity.y, entity.facing, entity.health, entity.maxHealth].every(
         Number.isInteger,
       )
+    )
+      return false;
+    if (
+      entity.power !== undefined &&
+      (snapshot.mode !== "controlled" || !isEntityPower(entity.power))
     )
       return false;
     return (
