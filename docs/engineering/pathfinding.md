@@ -21,17 +21,36 @@ to be passable. Costs stay exact integers even at the largest grid and cell cost
 component, using octile distance then row-major cell index. A blocked start has no destination. Labels
 and fallback scans are bounded by the grid size; ordinary same-component targets use constant time.
 A physically clear off-centre position can join a swept-visible passable centre without teleporting.
-The normal passable-centre start remains the fast path. Otherwise deterministic perimeter scans choose
-the nearest visible anchor (squared distance, then row-major index), preferring the requested goal
-component. Blocked or disconnected goals retain nearest-reachable fallback. The common corner case
-finishes locally; unusual positions may scan the finite map, with no arbitrary distance cap or grid
-sort. Each cell is considered at most once for visibility, at most 262,144 centres on a 512×512 map;
-component/fallback goal scans are linear integer work. Only a closer candidate for a component needs
-a swept check. This work occurs during order/repath planning, not every movement tick.
+The normal passable-centre start remains the fast path. Otherwise counted spatial traversal chooses
+exactly the nearest swept-visible centre (squared distance, then row-major index), preferring the
+requested goal component. If that component has no visible anchor, nearest-reachable goal distance
+and row-major ties choose among the other visible components. No candidate is accepted provisionally,
+and no distance cap or per-order full-grid sort is used. `reachableStart` remains the synchronous SIM7
+reference/offline oracle; the kernel uses `AnchorSearch`.
+
+Immutable profile indexes group passable row spans by navigation component and conservative physical
+region. Their bounding trees answer exact octile nearest-goal queries, including mixed goals, without
+repeating a full map scan for every unit. Visibility traversal subdivides row spans down to individual
+centres when necessary. Squared-distance lower bounds preserve nearest-anchor ties. A box can also be
+excluded when its four corner rays all hit the **same concrete barrier**: the shadow of that convex
+radius-expanded rectangle from a fixed point is convex. Each corner predicate is counted separately;
+uncertified boxes always subdivide. The two-entry blocker memo only avoids repeated work; eviction
+never removes a candidate. Partial certificates and geometry traversal are canonical pending state.
+
+Physical regions start with the compiler's pre-inflation cardinal costs/connections. A shared cell edge
+is removed only when open intervals inscribed inside radius-expanded barriers strictly cover the
+entire edge, including its endpoints. Integer square-root rounding can leave extra connectivity but
+cannot exclude a legal crossing. Touching intervals and tangent endpoints stay connected. A clear
+continuous segment induces a cardinal crossing chain: at a grid vertex, retained endpoint crossings
+connect the adjacent cells; an adjacent original blocked cell or cliff would intersect that segment.
+Thus even vertex/tangent joins cannot cross these conservative labels. Radius zero retains the
+original cardinal regions. These labels are deliberately distinct from the inflated centre graph,
+including physically traversable turning corridors that have no passable centre chain.
+
 The former synchronous 64×64 disconnected-goal fallback needed 1,801 sweeps/about 127 ms locally.
-[Issue #149](https://github.com/bobalazek/open-neo-rts/issues/149) adds counted preparation and a
-physical-region exclusion; completion latency and full-goal tests remain acceptance gates before
-the phase exit. `reachableStart` remains a synchronous reference/offline helper, not the kernel path.
+[Issue #149](https://github.com/bobalazek/open-neo-rts/issues/149) adds counted preparation and these
+shared derived indexes. Completion latency, cold index cost and full-goal tests remain acceptance gates
+before the phase exit.
 
 Map matches now register ground path following and bounded direct air movement. Mapless kernel tests
 retain the phase-1a flat movement helper. Map units require their original domain and integer radius
@@ -39,14 +58,14 @@ at setup/replay validation. `toDefinition` projects owner-authored `movement.dom
 `domains` once; no roster-specific movement rule is introduced.
 
 The match shares 4,096 planning credits across all Forces, domains and radii through one scheduler.
-One credit visits an anchor/goal cell or transition, tests one geometry barrier, or expands one A* node.
+One credit visits a spatial node or transition, tests one geometry predicate, or expands one A* node.
 Start validation, component/goal fallback, destination checks and direct visibility all retain counted
 continuations. Exact passable start/goal centres use compiler-certified clearance without a sweep.
 Anchor preparation rotates between requests while ready A* work retains FIFO order; a Force alternates
 these phases under the existing player-order-before-repath priority. Pending preparation does not move
 or consume the stuck timer. Cursors, candidates and partial sweeps hash/serialize and cancel on
-replacement, removal, stop or occupancy invalidation. Physical cardinal regions captured before radius
-inflation exclude only joins that a physical sweep cannot cross. Cold profile compilation, existing
+replacement, removal, stop or occupancy invalidation. Physical regions exclude only joins that a physical sweep cannot cross. Cold profile compilation and
+index construction, existing
 path smoothing, snapshot/hash and per-unit following remain separate costs; this is not a bound on
 every operation in a tick.
 Swept circular segment checks string-pull paths against exact static rectangles, cliff edges and map

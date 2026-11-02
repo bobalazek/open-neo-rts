@@ -11,7 +11,8 @@ import {
 import type { Kernel } from "../../kernel";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent, MovementFailure } from ".";
-import { compileNavigation, type NavigationGrid, type NavigationObject } from "./navigation";
+import { type AnchorGrid, indexAnchors } from "./anchor-search";
+import { compileNavigation, type NavigationObject } from "./navigation";
 import { PathScheduler } from "./path-scheduler";
 import { labelReachability } from "./reachability";
 import { clearSegment, type Point, smoothPath } from "./segment";
@@ -27,9 +28,7 @@ interface Route {
   stuck: number;
   repaths: number;
 }
-interface Profile {
-  grid: NavigationGrid;
-  labels: Uint32Array;
+interface Profile extends AnchorGrid {
   uniform: boolean;
 }
 
@@ -123,8 +122,7 @@ export class TerrainMovement {
     );
     const first = grid.cost.findIndex((cost) => cost !== 0);
     profile = {
-      grid,
-      labels: labelReachability(grid),
+      ...indexAnchors(grid, labelReachability(grid)),
       uniform: grid.cost.every(
         (cost, index) =>
           cost === 0 ||

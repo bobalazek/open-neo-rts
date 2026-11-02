@@ -13,6 +13,7 @@ import {
 import { isqrt } from "@open-neo-rts/deterministic";
 import { type MatchMap, matchMapSchema } from "../../match-map";
 import { canTraverse, NAV_DIRECTIONS, type NavGrid } from "./path-search";
+import { type BarrierNode, indexBarriers } from "./segment";
 
 /** Original content projection; deliberately separate from persistent simulation definitions. */
 export interface NavigationDefinition {
@@ -27,13 +28,14 @@ export type NavigationObject = MatchMap["objects"][number];
 export interface NavigationGrid extends NavGrid {
   /** Exact static obstruction geometry; derived from the immutable map, not simulation state. */
   barriers: readonly (readonly [number, number, number, number])[];
+  barrierTree: readonly BarrierNode[];
   domain: GroundDomain;
   radiusSubcells: number;
   /** Largest circular radius at each cell centre, capped at the content maximum (8 cells). */
   clearanceSubcells: Uint16Array;
   /** Physical terrain/occupancy speed; centre-clearance inflation does not change it. */
   speedPercent: Uint8Array;
-  /** Pre-inflation cardinal connectivity. A physically clear sweep cannot cross these regions. */
+  /** Conservative physical connectivity, including certified impassable radius-width crossings. */
   physicalRegions: Uint32Array;
 }
 
@@ -173,6 +175,27 @@ export function compileNavigation(
   const barriers: [number, number, number, number][] = [];
   const east = new Uint32Array(cells);
   const south = new Uint32Array(cells);
+  // Inscribed OPEN intervals: uncertainty and a shared tangent endpoint stay connected.
+  const cuts = new Map<number, [number, number][]>();
+  const cut = (
+    edge: number,
+    fixed: number,
+    start: number,
+    a0: number,
+    a1: number,
+    b0: number,
+    b1: number,
+  ) => {
+    const dx = distance(fixed, fixed, a0, a1);
+    if (dx >= radiusSubcells) return;
+    const reach = isqrt(radiusSubcells * radiusSubcells - dx * dx);
+    const lo = b0 - reach,
+      hi = b1 + reach;
+    if (lo >= start + CELL || hi <= start) return;
+    const list = cuts.get(edge);
+    if (list) list.push([lo, hi]);
+    else cuts.set(edge, [[lo, hi]]);
+  };
   for (let y = 0; y < rows; y++)
     for (let x = 0; x < width; x++) {
       const i = y * width + x;
@@ -200,6 +223,11 @@ export function compileNavigation(
       for (let x = left; x <= right; x++) {
         const i = y * width + x;
         if (!cost[i]) continue;
+        if (radiusSubcells) {
+          if (x + 1 < width && cost[i + 1]) cut(2 * i, (x + 1) * CELL, y * CELL, x0, x1, y0, y1);
+          if (y + 1 < rows && cost[i + width])
+            cut(2 * i + 1, (y + 1) * CELL, x * CELL, y0, y1, x0, x1);
+        }
         const px = x * CELL + HALF;
         const py = y * CELL + HALF;
         const dx = distance(px, px, x0, x1);
@@ -230,9 +258,49 @@ export function compileNavigation(
       }
     }
   const physicalRegions = new Uint32Array(cells);
+  const physicalConnections = new Uint8Array(connections);
+  const covered = (
+    edge: number,
+    fixed: number,
+    start: number,
+    span: number,
+    fixedSpan: number,
+  ): boolean => {
+    if (fixed < radiusSubcells || fixed > fixedSpan - radiusSubcells) return true;
+    const intervals = cuts.get(edge) ?? [];
+    if (start < radiusSubcells) intervals.push([-1, radiusSubcells]);
+    if (start + CELL > span - radiusSubcells) intervals.push([span - radiusSubcells, span + 1]);
+    intervals.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    let reach = start;
+    for (const [lo, hi] of intervals) {
+      if (lo >= reach) return false;
+      reach = Math.max(reach, hi);
+      if (reach > start + CELL) return true;
+    }
+    return false;
+  };
+  if (radiusSubcells)
+    for (let y = 0; y < rows; y++)
+      for (let x = 0; x < width; x++) {
+        const i = y * width + x;
+        if (!cost[i]) continue;
+        if (x + 1 < width && covered(2 * i, (x + 1) * CELL, y * CELL, rows * CELL, width * CELL)) {
+          physicalConnections[i] = (physicalConnections[i] as number) & ~(1 << 4);
+          physicalConnections[i + 1] = (physicalConnections[i + 1] as number) & ~(1 << 3);
+        }
+        if (
+          y + 1 < rows &&
+          covered(2 * i + 1, (y + 1) * CELL, x * CELL, width * CELL, rows * CELL)
+        ) {
+          physicalConnections[i] = (physicalConnections[i] as number) & ~(1 << 6);
+          physicalConnections[i + width] = (physicalConnections[i + width] as number) & ~(1 << 1);
+        }
+      }
   const flood: number[] = [];
   let region = 0;
-  // Every allowed diagonal has an orthogonal decomposition, so cardinal labels suffice.
+  // A clear segment crosses only uncertified edges. At a grid vertex, strict-open
+  // coverage retains both endpoint crossings; adjacent blocked terrain/cliffs would
+  // intersect the segment itself. Thus even corner/tangent joins have a cardinal chain.
   for (let start = 0; start < cells; start++) {
     if (!cost[start] || physicalRegions[start]) continue;
     physicalRegions[start] = ++region;
@@ -241,7 +309,7 @@ export function compileNavigation(
     for (let cursor = 0; cursor < flood.length; cursor++) {
       const cell = flood[cursor] as number;
       for (const direction of [1, 3, 4, 6]) {
-        if (!((connections[cell] as number) & (1 << direction))) continue;
+        if (!((physicalConnections[cell] as number) & (1 << direction))) continue;
         const [dx, dy] = NAV_DIRECTIONS[direction] as readonly [number, number];
         const next = cell + dx + dy * width;
         if (!cost[next] || physicalRegions[next]) continue;
@@ -259,6 +327,7 @@ export function compileNavigation(
   }
   const grid: NavigationGrid = {
     barriers,
+    barrierTree: indexBarriers(barriers),
     width,
     height: rows,
     domain,

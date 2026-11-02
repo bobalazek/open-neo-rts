@@ -1,19 +1,21 @@
 import { addInt, addString, type Hasher } from "@open-neo-rts/deterministic";
+import { AnchorIndex, NearestAnchor, type NearestState } from "./anchor-index";
 import type { NavigationGrid } from "./navigation";
-import { clearSegment, type Point, SegmentSweep, type SweepState } from "./segment";
+import { type Point, SegmentSweep, type SweepState } from "./segment";
+import { VisibleAnchor, type VisibleState } from "./visible-anchor";
 
 const Phase = {
   Centre: 0,
   Physical: 1,
   Preferred: 2,
-  Rings: 3,
+  Visible: 3,
   Fallback: 4,
   Goal: 5,
   Destination: 6,
   Direct: 7,
   Done: 8,
 } as const;
-const Purpose = { Centre: 0, Physical: 1, Candidate: 2, Destination: 3, Direct: 4 } as const;
+const Purpose = { Centre: 0, Physical: 1, Destination: 2, Direct: 3 } as const;
 
 export interface AnchorInput {
   position: Point;
@@ -24,6 +26,10 @@ export interface AnchorInput {
 export interface AnchorGrid {
   grid: NavigationGrid;
   labels: Uint32Array;
+  index: AnchorIndex;
+}
+export function indexAnchors(grid: NavigationGrid, labels: Uint32Array): AnchorGrid {
+  return { grid, labels, index: new AnchorIndex(grid, labels) };
 }
 export interface AnchorResult {
   start: number;
@@ -31,16 +37,9 @@ export interface AnchorResult {
   destination: Point;
   direct: boolean;
 }
-interface Best {
-  component: number;
-  cell: number;
-  distance: number;
-}
 export interface AnchorState {
   phase: number;
   scan: number;
-  ring: number;
-  offset: number;
   preferred: number;
   preferredGoal: number;
   goalDistance: number;
@@ -50,15 +49,17 @@ export interface AnchorState {
   purpose: number;
   destination: Point;
   direct: boolean;
-  anchors: Best[];
   sweep: SweepState | null;
+  nearest: NearestState | null;
+  visible: VisibleState | null;
 }
 
-/** Counted SIM7 join selection. Each advance visits one cell, transition, or barrier. */
+/** Counted SIM7 join selection. One transition, spatial node, or geometry predicate per advance. */
 export class AnchorSearch {
-  private readonly state: Omit<AnchorState, "anchors" | "sweep">;
-  private readonly anchors = new Map<number, Best>();
+  private readonly state: Omit<AnchorState, "sweep" | "nearest" | "visible">;
   private sweep: SegmentSweep | undefined;
+  private nearest: NearestAnchor | undefined;
+  private visible: VisibleAnchor | undefined;
   private readonly x: number;
   private readonly y: number;
   private readonly containing: number;
@@ -82,8 +83,6 @@ export class AnchorSearch {
     this.state = {
       phase: Phase.Centre,
       scan: 0,
-      ring: 0,
-      offset: 0,
       preferred: 0,
       preferredGoal: -1,
       goalDistance: Number.MAX_SAFE_INTEGER,
@@ -114,6 +113,14 @@ export class AnchorSearch {
       Math.floor(cell / this.data.grid.width) - Math.floor(this.input.requested.y / 1024),
     );
     return 10 * Math.max(dx, dy) + 4 * Math.min(dx, dy);
+  }
+  private beginNearest(root: number | undefined): void {
+    this.nearest = new NearestAnchor(
+      this.data.index,
+      Math.floor(this.input.requested.x / 1024),
+      Math.floor(this.input.requested.y / 1024),
+      root,
+    );
   }
   private eligible(cell: number): boolean {
     return !!this.data.labels[cell] && this.data.grid.physicalRegions[cell] === this.region;
@@ -167,14 +174,7 @@ export class AnchorSearch {
       if (goal >= 0 && this.eligible(goal)) {
         s.preferred = this.data.labels[goal] as number;
         s.preferredGoal = goal;
-        s.phase = Phase.Rings;
-      }
-    } else if (s.purpose === Purpose.Candidate) {
-      if (clear) {
-        const p = this.centre(s.candidate),
-          distance = (p.x - this.input.position.x) ** 2 + (p.y - this.input.position.y) ** 2;
-        const component = this.data.labels[s.candidate] as number;
-        this.anchors.set(component, { component, cell: s.candidate, distance });
+        s.phase = Phase.Visible;
       }
     } else if (s.purpose === Purpose.Destination) {
       if (clear) s.destination = { ...this.input.bounded };
@@ -188,6 +188,51 @@ export class AnchorSearch {
     const s = this.state,
       { grid, labels } = this.data;
     if (this.finished) return;
+    if (this.visible) {
+      this.visible.advance();
+      if (!this.visible.finished) return;
+      const cell = this.visible.result;
+      this.visible = undefined;
+      if (s.phase === Phase.Visible) {
+        if (cell >= 0) {
+          s.selected = cell;
+          this.resolveGoal();
+        } else {
+          s.phase = Phase.Fallback;
+          s.scan = 0;
+          s.goalDistance = Number.MAX_SAFE_INTEGER;
+        }
+      } else if (cell >= 0) {
+        s.candidate = cell;
+        this.beginNearest(this.data.index.components.get(labels[cell] as number));
+      }
+      return;
+    }
+    if (this.nearest) {
+      this.nearest.advance();
+      if (!this.nearest.finished) return;
+      const cell = this.nearest.result;
+      this.nearest = undefined;
+      if (s.phase === Phase.Preferred) {
+        if (cell < 0) s.phase = Phase.Done;
+        else {
+          s.preferred = labels[cell] as number;
+          s.preferredGoal = cell;
+          s.phase = Phase.Visible;
+        }
+      } else if (s.phase === Phase.Goal) {
+        s.goal = cell;
+        s.phase = cell < 0 ? Phase.Done : Phase.Destination;
+      } else if (cell >= 0) {
+        const d = this.distance(cell);
+        if (d < s.goalDistance || (d === s.goalDistance && cell < s.goal)) {
+          s.selected = s.candidate;
+          s.goal = cell;
+          s.goalDistance = d;
+        }
+      }
+      return;
+    }
     if (this.sweep) {
       this.sweep.advance();
       if (this.sweep.result !== "searching") this.acceptSweep();
@@ -204,81 +249,29 @@ export class AnchorSearch {
     } else if (s.phase === Phase.Physical)
       this.beginSweep(this.input.position, this.input.position, Purpose.Physical);
     else if (s.phase === Phase.Preferred) {
-      if (s.scan === labels.length) {
-        s.phase = s.preferred ? Phase.Rings : Phase.Done;
-        return;
-      }
-      const cell = s.scan++;
-      if (!this.eligible(cell)) return;
-      const d = this.distance(cell);
-      if (d < s.goalDistance) {
-        s.goalDistance = d;
-        s.preferred = labels[cell] as number;
-        s.preferredGoal = cell;
-      }
-    } else if (s.phase === Phase.Rings) {
-      const limit = Math.max(this.x, this.y, grid.width - 1 - this.x, grid.height - 1 - this.y),
-        count = s.ring ? 8 * s.ring : 1;
-      if (s.offset === count) {
-        const best = this.anchors.get(s.preferred);
-        if (best && best.distance < (s.ring * 1024 + 512) ** 2) {
-          s.selected = best.cell;
-          this.resolveGoal();
-          return;
-        }
-        if (s.ring === limit) {
-          s.phase = Phase.Fallback;
-          s.scan = 0;
-          s.goalDistance = Number.MAX_SAFE_INTEGER;
-          return;
-        }
-        s.ring++;
-        s.offset = 0;
-        return;
-      }
-      const r = s.ring,
-        n = s.offset++,
-        row = 2 * r + 1;
-      let x = this.x,
-        y = this.y;
-      if (r) {
-        if (n < row) {
-          x = this.x - r + n;
-          y = this.y - r;
-        } else if (n < row + 2 * (2 * r - 1)) {
-          const i = n - row;
-          x = this.x + (i % 2 ? r : -r);
-          y = this.y - r + 1 + Math.floor(i / 2);
-        } else {
-          x = this.x - r + n - row - 2 * (2 * r - 1);
-          y = this.y + r;
-        }
-      }
-      if (x < 0 || y < 0 || x >= grid.width || y >= grid.height) return;
-      const cell = y * grid.width + x;
-      if (cell === this.containing || !this.eligible(cell)) return;
-      const p = this.centre(cell),
-        distance = (p.x - this.input.position.x) ** 2 + (p.y - this.input.position.y) ** 2;
-      const old = this.anchors.get(labels[cell] as number);
-      if (old && (distance > old.distance || (distance === old.distance && cell > old.cell)))
-        return;
-      s.candidate = cell;
-      this.beginSweep(this.input.position, p, Purpose.Candidate);
+      this.beginNearest(this.data.index.regions.get(this.region));
+    } else if (s.phase === Phase.Visible) {
+      this.visible = new VisibleAnchor(
+        grid,
+        this.data.index,
+        this.input.position,
+        this.data.index.components.get(s.preferred),
+      );
     } else if (s.phase === Phase.Fallback) {
-      if (s.scan === labels.length) {
+      const components = this.data.index.regionComponents.get(this.region) ?? [];
+      if (s.scan === components.length) {
         if (s.selected < 0) s.phase = Phase.Done;
         else this.resolveGoal();
         return;
       }
-      const cell = s.scan++,
-        anchor = this.anchors.get(labels[cell] as number);
-      if (!anchor) return;
-      const d = this.distance(cell);
-      if (d < s.goalDistance) {
-        s.selected = anchor.cell;
-        s.goal = cell;
-        s.goalDistance = d;
-      }
+      const component = components[s.scan++] as number;
+      if (component === s.preferred) return;
+      this.visible = new VisibleAnchor(
+        grid,
+        this.data.index,
+        this.input.position,
+        this.data.index.components.get(component),
+      );
     } else if (s.phase === Phase.Goal) {
       const requested = this.requestedCell();
       if (s.scan === 0 && requested >= 0 && labels[requested] === labels[s.selected]) {
@@ -286,17 +279,7 @@ export class AnchorSearch {
         s.phase = Phase.Destination;
         return;
       }
-      if (s.scan === labels.length) {
-        s.phase = s.goal < 0 ? Phase.Done : Phase.Destination;
-        return;
-      }
-      const cell = s.scan++;
-      if (labels[cell] !== labels[s.selected]) return;
-      const d = this.distance(cell);
-      if (d < s.goalDistance) {
-        s.goal = cell;
-        s.goalDistance = d;
-      }
+      this.beginNearest(this.data.index.components.get(labels[s.selected] as number));
     } else if (s.phase === Phase.Destination) {
       s.destination = this.centre(s.goal);
       const boundedCell =
@@ -326,10 +309,9 @@ export class AnchorSearch {
     return {
       ...this.state,
       destination: { ...this.state.destination },
-      anchors: [...this.anchors.values()]
-        .sort((a, b) => a.component - b.component)
-        .map((a) => ({ ...a })),
       sweep: this.sweep?.snapshot() ?? null,
+      nearest: this.nearest?.snapshot() ?? null,
+      visible: this.visible?.snapshot() ?? null,
     };
   }
   hashInto(h: Hasher): void {
@@ -337,8 +319,6 @@ export class AnchorSearch {
     for (const n of [
       s.phase,
       s.scan,
-      s.ring,
-      s.offset,
       s.preferred,
       s.preferredGoal,
       s.goalDistance,
@@ -351,15 +331,24 @@ export class AnchorSearch {
       s.direct ? 1 : 0,
     ])
       addInt(h, n);
-    addInt(h, this.anchors.size);
-    for (const a of [...this.anchors.values()].sort((a, b) => a.component - b.component))
-      for (const n of [a.component, a.cell, a.distance]) addInt(h, n);
     const sweep = this.sweep?.snapshot();
     addInt(h, sweep ? 1 : 0);
     if (sweep) {
-      for (const n of [sweep.a.x, sweep.a.y, sweep.b.x, sweep.b.y, sweep.cursor]) addInt(h, n);
+      for (const n of [sweep.a.x, sweep.a.y, sweep.b.x, sweep.b.y, sweep.cursor, sweep.blocker])
+        addInt(h, n);
       addString(h, sweep.status);
+      addInt(h, sweep.stack.length);
+      for (const n of sweep.stack) addInt(h, n);
     }
+    const nearest = this.nearest?.snapshot();
+    addInt(h, nearest ? 1 : 0);
+    if (nearest) {
+      for (const n of [nearest.best, nearest.distance, nearest.visits, nearest.stack.length])
+        addInt(h, n);
+      for (const n of nearest.stack) addInt(h, n);
+    }
+    addInt(h, this.visible ? 1 : 0);
+    this.visible?.hashInto(h);
   }
   static restore(data: AnchorGrid, input: AnchorInput, state: AnchorState): AnchorSearch {
     const search = new AnchorSearch(data, input),
@@ -367,8 +356,6 @@ export class AnchorSearch {
     const ints = [
       state.phase,
       state.scan,
-      state.ring,
-      state.offset,
       state.preferred,
       state.preferredGoal,
       state.goalDistance,
@@ -385,12 +372,8 @@ export class AnchorSearch {
       state.phase > 8 ||
       state.scan < 0 ||
       state.scan > cells ||
-      state.ring < 0 ||
-      state.ring > Math.max(data.grid.width, data.grid.height) ||
-      state.offset < 0 ||
-      state.offset > Math.max(1, 8 * state.ring) ||
       state.purpose < 0 ||
-      state.purpose > 4 ||
+      state.purpose > 3 ||
       state.preferred < 0 ||
       state.preferred > cells ||
       state.goalDistance < 0 ||
@@ -399,33 +382,12 @@ export class AnchorSearch {
       throw new RangeError("Invalid anchor continuation");
     for (const cell of [state.selected, state.goal, state.candidate, state.preferredGoal])
       if (cell < -1 || cell >= cells) throw new RangeError("Invalid anchor cell");
-    let previous = 0;
-    for (const best of state.anchors) {
-      if (
-        !Number.isInteger(best.component) ||
-        best.component <= previous ||
-        best.cell < 0 ||
-        best.cell >= cells ||
-        data.labels[best.cell] !== best.component
-      )
-        throw new RangeError("Invalid anchor candidate");
-      const p = search.centre(best.cell),
-        distance = (p.x - input.position.x) ** 2 + (p.y - input.position.y) ** 2;
-      if (best.distance !== distance || !clearSegment(data.grid, input.position, p))
-        throw new RangeError("Invalid visible anchor");
-      search.anchors.set(best.component, { ...best });
-      previous = best.component;
-    }
-    const { anchors: _, sweep, ...rest } = state;
+    const { sweep, nearest, visible, ...rest } = state;
     Object.assign(search.state, rest, { destination: { ...state.destination } });
     if (sweep) {
-      const phaseForPurpose = [
-        Phase.Centre,
-        Phase.Physical,
-        Phase.Rings,
-        Phase.Destination,
-        Phase.Direct,
-      ][state.purpose];
+      const phaseForPurpose = [Phase.Centre, Phase.Physical, Phase.Destination, Phase.Direct][
+        state.purpose
+      ];
       const expectedA =
         state.purpose === Purpose.Destination ? search.centre(state.goal) : input.position;
       const expectedB =
@@ -433,14 +395,11 @@ export class AnchorSearch {
           ? search.centre(search.containing)
           : state.purpose === Purpose.Physical
             ? input.position
-            : state.purpose === Purpose.Candidate
-              ? search.centre(state.candidate)
-              : state.purpose === Purpose.Destination
-                ? input.bounded
-                : state.destination;
+            : state.purpose === Purpose.Destination
+              ? input.bounded
+              : state.destination;
       if (
         state.phase !== phaseForPurpose ||
-        (state.purpose === Purpose.Candidate && state.candidate < 0) ||
         (state.purpose === Purpose.Destination && state.goal < 0) ||
         sweep.a.x !== expectedA.x ||
         sweep.a.y !== expectedA.y ||
@@ -450,6 +409,44 @@ export class AnchorSearch {
         throw new RangeError("Sweep does not match anchor phase");
       search.sweep = SegmentSweep.restore(data.grid, sweep);
     }
+    if (nearest) {
+      if (
+        ![Phase.Preferred, Phase.Goal, Phase.Fallback].includes(state.phase as 2 | 4 | 5) ||
+        sweep
+      )
+        throw new RangeError("Nearest query does not match anchor phase");
+      search.nearest = NearestAnchor.restore(
+        data.index,
+        Math.floor(input.requested.x / 1024),
+        Math.floor(input.requested.y / 1024),
+        state.phase === Phase.Preferred
+          ? data.index.regions.get(search.region)
+          : data.index.components.get(
+              data.labels[state.phase === Phase.Goal ? state.selected : state.candidate] as number,
+            ),
+        nearest,
+      );
+    }
+    if (visible) {
+      if (sweep || nearest || (state.phase !== Phase.Visible && state.phase !== Phase.Fallback))
+        throw new RangeError("Visible query does not match anchor phase");
+      const component =
+        state.phase === Phase.Visible
+          ? state.preferred
+          : data.index.regionComponents.get(search.region)?.[state.scan - 1];
+      search.visible = VisibleAnchor.restore(
+        data.grid,
+        data.index,
+        input.position,
+        data.index.components.get(component as number),
+        visible,
+      );
+    }
+    if (
+      state.phase === Phase.Fallback &&
+      state.scan > (data.index.regionComponents.get(search.region)?.length ?? 0)
+    )
+      throw new RangeError("Invalid fallback cursor");
     return search;
   }
 }
