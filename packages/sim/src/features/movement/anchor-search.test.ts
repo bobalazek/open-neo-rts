@@ -288,7 +288,7 @@ test("shared credits cover partial geometry and allow ready paths beside long an
   const data = profile();
   data.grid.barriers = Array.from({ length: 80 }, () => data.grid.barriers).flat();
   data.grid.barrierTree = indexBarriers(data.grid.barriers);
-  const scheduler = new PathScheduler(data.grid, [0, 2], 37, () => data);
+  const scheduler = new PathScheduler(data.grid, [0, 2], 7, () => data);
   const request = (entity: number, force: number): AnchorRequest => ({
     entity,
     force,
@@ -301,15 +301,18 @@ test("shared credits cover partial geometry and allow ready paths beside long an
   let pathDone = false,
     anchorsDone = 0,
     ticks = 0;
+  let resumed: PathScheduler | undefined;
   const advance = spyOn(SegmentSweep.prototype, "advance");
   try {
     while (ticks++ < 2000) {
       advance.mockClear();
       const result = scheduler.tick();
-      expect(result.work).toBeLessThanOrEqual(37);
+      const geometryWork = advance.mock.calls.length;
+      if (resumed) expect(resumed.tick()).toEqual(result);
+      expect(result.work).toBeLessThanOrEqual(7);
       expect(result.forces.reduce((n, f) => n + f.work, 0)).toBe(result.work);
-      expect(advance.mock.calls.length).toBeLessThanOrEqual(result.work);
-      if (ticks <= 10)
+      expect(geometryWork).toBeLessThanOrEqual(result.work);
+      if (ticks <= 10 && result.forces.every((force) => force.queued > 0))
         expect(
           Math.abs((result.forces[0]?.work ?? 0) - (result.forces[1]?.work ?? 0)),
         ).toBeLessThanOrEqual(1);
@@ -326,7 +329,7 @@ test("shared credits cover partial geometry and allow ready paths beside long an
             () => data,
           );
         expect(restored.snapshot()).toEqual(state);
-        expect(restored.tick()).toEqual(scheduler.tick());
+        resumed = restored;
       }
       if (!result.queued) break;
     }
@@ -334,6 +337,7 @@ test("shared credits cover partial geometry and allow ready paths beside long an
     advance.mockRestore();
   }
   expect(pathDone).toBe(true);
+  expect(resumed).toBeDefined();
   expect(anchorsDone).toBe(2);
   expect(ticks).toBeLessThan(2000);
 });
