@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 20, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 21, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -127,6 +127,16 @@ copied grids, strict same-match load and derived-cache rebuild. Normal startup
 wires vision; debug can explicitly opt in without changing its default hashes.
 `load()` validates feature layout/groups; the future outer save envelope owns
 sim/map/content identity. No ghost/client fog publication is claimed until 2-19.
+
+SIM21 publishes permitted fog/entities and canonical last-seen structure ghosts.
+Normal-start goldens are `21a72d86e553f749` initially and `eaa9b33495e51921` at
+tick two. Regressions cover hidden changes, re-observed empty sites, private
+work/economy, expired grants, stale/ghost handles, copied AI observations and
+grant-transition parity. Production integration additionally deep-copies queue
+items/rallies and resolves bot cancellation through private item handles.
+The default debug path retains numeric scripted commands and state hashes;
+controllers receive observations rather than a live World. Full-save bot-handle
+continuity and event-producing integrations remain their later tasks.
 
 `setup` contains:
 

@@ -1,5 +1,5 @@
-// Copied presentation data only. Fog and enemy visibility arrive in phase 2.
-import { hasGrant } from "../commands";
+// Seat-permitted copied state. Canonical fog and structure memory live in the vision feature.
+import { hasGrant, type Scope } from "../commands";
 import {
   CONSTRUCTION_REFUSALS,
   CONSTRUCTION_WORK_STATES,
@@ -17,6 +17,7 @@ import {
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { MoveIntent } from "../features/movement";
 import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
+import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
 
@@ -76,6 +77,22 @@ export interface SeatSnapshot {
   banks?: BankSnapshot[];
   power?: PowerSnapshot[];
   constructionRequests?: PresentedConstructionRequest[];
+  fog?: VisionGrid[];
+  ghosts?: PresentedGhost[];
+}
+
+export interface PresentedGhost {
+  handle: string;
+  group: number;
+  definition: string;
+  force: number;
+  x: number;
+  y: number;
+  facing: number;
+  health: number;
+  maxHealth: number;
+  seen: number;
+  constructionSite?: true;
 }
 
 /** Per-seat handles never contain ECS IDs. Keep this object inside the authoritative host. */
@@ -85,9 +102,21 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
   const handles = new Map<number, string>();
   let nextHandle = 1;
   let visible = new Map<string, number>();
+  const ghostHandles = new Map<number, string>();
+  let nextGhost = 1;
+  let current: Kernel | undefined;
   return {
     snapshot(kernel: Kernel): SeatSnapshot {
+      current = kernel;
       visible = new Map();
+      const permits = (force: number, scope: Scope) =>
+        kernel.visibility
+          ? kernel.visibility.permits(seat, force, scope)
+          : hasGrant(setup.grants, seat, force, scope, kernel.tick);
+      const inspectEconomy = (force: number) =>
+        (["economy.build", "economy.transfer", "production.queue", "research.spend"] as const).some(
+          (scope) => permits(force, scope),
+        );
       for (const id of handles.keys()) if (!kernel.world.isAlive(id)) handles.delete(id);
       const handleOf = (id: number) => {
         let handle = handles.get(id);
@@ -102,33 +131,31 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       for (const id of kernel.world.query(Template, OwnerForce, Transform, Health)) {
         const world = kernel.world;
         const force = world.get(id, OwnerForce, "force");
-        const inspectPower = kernel.power?.canInspect(seat, force) && world.has(id, StructurePower);
+        const inspectPower =
+          inspectEconomy(force) &&
+          kernel.power?.canInspect(seat, force) &&
+          world.has(id, StructurePower);
         const site = !!setup.normal && world.has(id, ConstructionSite);
-        const inspectSite =
-          site && hasGrant(setup.grants, seat, force, "economy.build", kernel.tick);
+        const inspectSite = site && permits(force, "economy.build");
         const definition = setup.definitions[world.get(id, Template, "definition")];
         if (!definition) throw new Error("Entity has no definition");
         const inspectBuilder =
-          !!setup.normal &&
-          definition.role === "builder" &&
-          hasGrant(setup.grants, seat, force, "economy.build", kernel.tick);
+          !!setup.normal && definition.role === "builder" && permits(force, "economy.build");
         const inspectProduction =
           !!setup.normal &&
           !!(definition.produces?.length || definition.spawnsWith?.length) &&
-          hasGrant(setup.grants, seat, force, "production.queue", kernel.tick);
-        // shortcut: no enemy vision before phase 2; expose only Forces this seat can command.
+          permits(force, "production.queue");
+        const controlled = permits(force, "unit.orders");
         if (
           mode !== "debug-no-fog" &&
-          !hasGrant(setup.grants, seat, force, "unit.orders", kernel.tick) &&
-          !inspectPower &&
-          !inspectSite &&
-          !inspectBuilder &&
-          !inspectProduction
+          !(kernel.visibility
+            ? kernel.visibility.canSeeEntity(seat, id)
+            : controlled || inspectPower || inspectSite || inspectBuilder || inspectProduction)
         )
           continue;
         const handle = handleOf(id);
         const approachSite =
-          setup.normal && world.has(id, ConstructionApproach)
+          inspectBuilder && world.has(id, ConstructionApproach)
             ? world.get(id, ConstructionApproach, "site")
             : 0;
         entities.push({
@@ -176,7 +203,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 : null,
             },
           }),
-          ...(site &&
+          ...(inspectSite &&
             world.has(id, ConstructionProgress) && {
               construction: {
                 completedTicks: world.get(id, ConstructionProgress, "completedTicks"),
@@ -187,6 +214,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             }),
           ...(approachSite &&
             world.isAlive(approachSite) &&
+            (!kernel.visibility || kernel.visibility.canSeeEntity(seat, approachSite)) &&
             world.has(approachSite, ConstructionSite) && {
               constructionOrder: {
                 site: handleOf(approachSite),
@@ -197,13 +225,14 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             }),
           ...(inspectPower &&
             kernel.extraction?.snapshot(id) && { extraction: kernel.extraction.snapshot(id) }),
-          order: world.has(id, MoveIntent)
-            ? {
-                type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",
-                x: world.get(id, MoveIntent, "x"),
-                y: world.get(id, MoveIntent, "y"),
-              }
-            : null,
+          order:
+            (mode === "debug-no-fog" || controlled) && world.has(id, MoveIntent)
+              ? {
+                  type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",
+                  x: world.get(id, MoveIntent, "x"),
+                  y: world.get(id, MoveIntent, "y"),
+                }
+              : null,
           ...(kernel.power &&
             inspectPower && {
               power: {
@@ -219,7 +248,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         for (const id of kernel.world.query(ConstructionRequest)) {
           const world = kernel.world,
             force = world.get(id, ConstructionRequest, "force");
-          if (!hasGrant(setup.grants, seat, force, "economy.build", kernel.tick)) continue;
+          if (!permits(force, "economy.build")) continue;
           const refused = world.get(id, ConstructionRequest, "status") === 1;
           constructionRequests.push({
             handle: handleOf(id),
@@ -235,17 +264,87 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             }),
           });
         }
+      const fog: VisionGrid[] = [];
+      const ghosts: PresentedGhost[] = [];
+      if (mode === "controlled" && kernel.visibility) {
+        for (const { force } of kernel.visibility.groupsForSeat(seat)) {
+          const grid = kernel.vision?.copyGrid(force);
+          if (grid) fog.push(grid);
+        }
+        const present = new Set(visible.values());
+        for (const { group, record } of kernel.visibility.recordsForSeat(seat)) {
+          if (present.has(record.entity)) continue;
+          const definition = setup.definitions[record.definition];
+          if (!definition) throw new Error("Unknown remembered structure definition");
+          let handle = ghostHandles.get(record.entity);
+          if (!handle) {
+            handle = `g${nextGhost++}`;
+            ghostHandles.set(record.entity, handle);
+          }
+          ghosts.push({
+            handle,
+            group,
+            definition: definition.id,
+            force: record.force,
+            x: record.x,
+            y: record.y,
+            facing: record.facing,
+            health: record.health,
+            maxHealth: definition.health,
+            seen: record.seen,
+            ...(record.site && { constructionSite: true }),
+          });
+        }
+      }
+      const published = new Set(visible.values());
+      for (const id of handles.keys()) if (!published.has(id)) handles.delete(id);
       return {
         tick: kernel.tick,
         mode,
         entities,
-        ...(kernel.economy && { banks: kernel.economy.snapshot(seat) }),
-        ...(kernel.power && { power: kernel.power.snapshot(seat) }),
+        ...(kernel.economy && {
+          banks: kernel.economy.snapshot(seat).filter((bank) => inspectEconomy(bank.force)),
+        }),
+        ...(kernel.power && {
+          power: kernel.power.snapshot(seat).filter((power) => inspectEconomy(power.force)),
+        }),
         ...(setup.normal && { constructionRequests }),
+        ...(mode === "controlled" && kernel.visibility && { fog, ghosts }),
       };
     },
-    resolve(handle: unknown): number | undefined {
-      return typeof handle === "string" ? visible.get(handle) : undefined;
+    resolve(handle: unknown, scope?: Scope): number | undefined {
+      const id = typeof handle === "string" ? visible.get(handle) : undefined;
+      if (id === undefined || !current?.world.isAlive(id)) return undefined;
+      if (mode === "debug-no-fog") return id;
+      const { world } = current;
+      const request = !!setup.normal && world.has(id, ConstructionRequest);
+      const item = !!setup.normal && world.has(id, ProductionItem);
+      const force = request
+        ? world.get(id, ConstructionRequest, "force")
+        : item
+          ? world.get(id, ProductionItem, "force")
+          : world.has(id, OwnerForce)
+            ? world.get(id, OwnerForce, "force")
+            : undefined;
+      if (force === undefined) return undefined;
+      const permits = (required: Scope) =>
+        current?.visibility
+          ? current.visibility.permits(seat, force, required)
+          : hasGrant(setup.grants, seat, force, required, current?.tick ?? 0);
+      if (scope && !permits(scope)) return undefined;
+      if (request) return permits("economy.build") ? id : undefined;
+      if (item) return permits("production.queue") ? id : undefined;
+      return current.visibility
+        ? current.visibility.canSeeEntity(seat, id)
+          ? id
+          : undefined
+        : permits("unit.orders") ||
+            permits("economy.build") ||
+            permits("economy.transfer") ||
+            permits("production.queue") ||
+            permits("research.spend")
+          ? id
+          : undefined;
     },
   };
 }

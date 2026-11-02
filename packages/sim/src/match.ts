@@ -23,9 +23,10 @@ import {
 import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
 import { productionFeature } from "./features/production";
-import { initializeVision } from "./features/vision";
+import { initializeVisibilityMemory, initializeVision } from "./features/vision";
 import { createKernel, type Kernel, register } from "./kernel";
 import { checkMatchMap, type MatchMap, matchMapSchema } from "./match-map";
+import { initializeObservations } from "./projection/observations";
 
 export {
   type MatchMap,
@@ -35,7 +36,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 20;
+export const SIM_VERSION = 21;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -129,5 +130,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, productionFeature({ ...setup, definitions }));
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });
+  if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
+  initializeObservations(kernel, { ...setup, definitions });
   return kernel;
 }

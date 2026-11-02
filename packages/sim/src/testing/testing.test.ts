@@ -29,7 +29,6 @@ describe("Eastern Collective tier-1 definitions", () => {
     expect(definitions).toEqual([
       {
         id: "unit:eastern-collective/collective-soldier",
-        visionSubcells: 7168,
         pop: 1,
         role: "combat",
         health: 100,
@@ -37,10 +36,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "foot",
         radiusSubcells: 256,
+        visionSubcells: 7168,
       },
       {
         id: "unit:eastern-collective/dragon-tank",
-        visionSubcells: 8192,
         pop: 3,
         role: "combat",
         health: 900,
@@ -48,10 +47,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "tracked",
         radiusSubcells: 870,
+        visionSubcells: 8192,
       },
       {
         id: "unit:eastern-collective/drone-hunter",
-        visionSubcells: 8192,
         pop: 1,
         role: "combat",
         health: 100,
@@ -59,10 +58,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "foot",
         radiusSubcells: 256,
+        visionSubcells: 8192,
       },
       {
         id: "unit:eastern-collective/field-technician",
-        visionSubcells: 6144,
         pop: 1,
         role: "builder",
         health: 100,
@@ -70,10 +69,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "foot",
         radiusSubcells: 256,
+        visionSubcells: 6144,
       },
       {
         id: "unit:eastern-collective/metamorphic-apc",
-        visionSubcells: 7168,
         pop: 2,
         role: "transport",
         health: 600,
@@ -81,10 +80,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "wheeled",
         radiusSubcells: 768,
+        visionSubcells: 7168,
       },
       {
         id: "unit:eastern-collective/rocket-trooper",
-        visionSubcells: 7168,
         pop: 1,
         role: "combat",
         health: 100,
@@ -92,10 +91,10 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "foot",
         radiusSubcells: 256,
+        visionSubcells: 7168,
       },
       {
         id: "unit:eastern-collective/supply-truck",
-        visionSubcells: 6144,
         pop: 0,
         role: "harvester",
         health: 900,
@@ -103,6 +102,7 @@ describe("Eastern Collective tier-1 definitions", () => {
         turnRate: 65536,
         domain: "wheeled",
         radiusSubcells: 819,
+        visionSubcells: 6144,
       },
     ]);
     const first = definitions[0];
@@ -218,7 +218,7 @@ test("scripted controllers issue fixed commands at fixed ticks for next-tick exe
   expect(kernel.world.get(1, Transform, "x")).toBe(1178);
   expect(kernel.world.has(1, MoveIntent)).toBe(false);
   expect(kernel.log.filter((e) => e.source === "controller").map((e) => e.tick)).toEqual([1, 3]);
-  const view = { tick: 0, world: kernel.world };
+  const view = { tick: 0, observation: { tick: 0, mode: "controlled" as const, entities: [] } };
   expect(controller(view)).toEqual([move]);
   expect(controller({ ...view, tick: 1 })).toEqual([]);
   expect(controller(view)).toEqual([move]);
