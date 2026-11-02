@@ -12,7 +12,7 @@ export async function startModelCheck(canvas: HTMLCanvasElement) {
       <label>Model <input type="file" accept=".glb" /></label>
       <label>Team colour <input type="color" value="#d8443a" /></label>
       <label>Animation <select disabled><option value="">Rest pose</option></select></label>
-      <a href="/">Terrain view</a>
+      <a href="/debug?terrain=1">Terrain view</a>
     </div>
     <p role="status">Open a GLB to inspect its team colours and animation clips.</p>
     <p class="model-check-help">Drag to orbit · Scroll to zoom</p>`;

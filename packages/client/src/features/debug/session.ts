@@ -42,7 +42,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       <label>Map <select name="map" aria-label="Map"></select></label>
       <label>Seed <input name="seed" type="text" inputmode="numeric" value="1" /></label>
       <button type="button" name="reload">Reload session</button>
-      <a href="/">Terrain view</a><a href="/debug?models=1">Model check</a>
+      <a href="/debug?terrain=1">Terrain view</a><a href="/debug?models=1">Model check</a>
       <a href="/debug?scene=terrain-200">Load 200-unit terrain scene</a>
     </div>
     <fieldset><legend>Forces</legend><div data-forces></div><button type="button" name="add-force">Add Force</button></fieldset>

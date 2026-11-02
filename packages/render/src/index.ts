@@ -13,6 +13,7 @@ export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createPlacementOverlay } from "./overlays/placement";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
+export { CELL_SIZE, LEVEL_HEIGHT } from "./terrain";
 export {
   createMapPresentation,
   type MapDecoration,

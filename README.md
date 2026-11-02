@@ -1,6 +1,6 @@
 # Open Neo RTS
 
-Open Neo RTS is an open-source real-time strategy game inspired by a couple of classic RTS games that I played in my childhood. The game is under active development and is not yet playable. Over the next couple of weeks, I will be adding mainly ideas and feature I may want to implement in the game and once I feel it's ready, I (or, you know, Claude/Codex) will start with the implementation.
+Open Neo RTS is an open-source real-time strategy game inspired by classic RTS games. It is under active development: the browser can start a normal local match preview, while the complete skirmish loop is being built. See the [current phase plan](docs/project/phases/2.md) for delivered systems and remaining work.
 
 Design docs live in [docs/](docs/README.md). Want to help? See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -15,6 +15,7 @@ Design docs live in [docs/](docs/README.md). Want to help? See [CONTRIBUTING.md]
 
 ```sh
 git lfs install    # once; assets use Git LFS
+git lfs pull       # original core assets are required for normal matches
 bun install
 bun run dev        # web client
 bun run check      # lint + format check (bun run fix to apply)
@@ -23,6 +24,11 @@ bun run test
 bun run build
 bun neo            # project CLI: lists commands (e.g. bun neo validate-assets)
 ```
+
+The browser opens Home. Use Single player → Skirmish setup or Quick start for
+the supported local preview. Developer tools remain at `/debug`; terrain inspection
+is `/debug?terrain=1`. Missing core assets preserve Home/debug and explain why a
+normal match cannot start.
 
 ## Repository layout
 

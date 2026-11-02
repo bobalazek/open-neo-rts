@@ -244,3 +244,10 @@ and refusal of human commands for bot-owned seats. The AI package is pure and
 host-independent; only internal workspace dependency direction changes. Normal
 stub/debug goldens stay unchanged without configured bots. Full save-file identity
 and actual gameplay policy remain separate tasks.
+
+The normal local-flow browser batch exercises saved setup/spawn refusal, canceled
+loading followed by real initialization, worker failure/retry, pause and history
+cleanup against the integrated worker. Root's six exact Chromium journeys passed
+in 13.2 seconds on an isolated SwiftShader server, including the four existing
+construction/extraction/production/hauling worker cases. No foreground FPS or
+WebGPU hardware acceptance is implied.

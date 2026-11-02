@@ -1,2 +1,2 @@
 [serve.static]
-plugins = ["./catalog-plugin.ts"]
+plugins = ["./catalog-plugin.ts", "./normal-catalog-plugin.ts"]
