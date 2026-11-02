@@ -80,3 +80,11 @@ structure repair at 10 HP/second and 25% full-repair credit price. The delegated
 provisional choice is recorded in its own decision, with actual compiler coverage;
 existing price/time/health/art remain unchanged. Full repository/content checks
 pass. Normal initializer stub and debug hashes remain unchanged; headers advance.
+
+
+Task 2-23 implements SIM27 deterministic bot-seat hosting and canonical private
+handle/decision/stream/queue continuity. Independent review found and closed enemy
+attack target authorization and stale queued-reference restore defects; focused
+reproductions and the integrated repository/content batch pass. The shipped normal
+policy is explicitly idle; the real build/economy/scouting/combat policy is under
+2-24/2-25. Do not label idle hosting as an opposing skirmish AI.

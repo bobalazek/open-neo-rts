@@ -1,4 +1,5 @@
 // Seat-permitted copied state. Canonical fog and structure memory live in the vision feature.
+import { arr, int, validate } from "@open-neo-rts/content";
 import { hasGrant, type Scope } from "../commands";
 import { AttackOrder } from "../features/combat";
 import {
@@ -30,6 +31,7 @@ import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../feature
 import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
+import { strictObject } from "../snapshots/schema";
 
 export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
 
@@ -109,6 +111,17 @@ export interface PresentedGhost {
   constructionSite?: true;
 }
 
+/** Trusted host save state only: these authoritative IDs never enter seat snapshots. */
+export interface ProjectionState {
+  format: 1;
+  nextHandle: number;
+  nextGhost: number;
+  handles: number[][];
+  ghostHandles: number[][];
+}
+export type SeatProjection = ReturnType<typeof createProjection>;
+const HANDLE_MAX = 0xfffffffe;
+
 /** Per-seat handles never contain ECS IDs. Keep this object inside the authoritative host. */
 export function createProjection(setup: MatchSetup, seat: number, mode: ProjectionMode) {
   if (!setup.seats.includes(seat)) throw new Error("Unknown player seat");
@@ -135,6 +148,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       const handleOf = (id: number) => {
         let handle = handles.get(id);
         if (!handle) {
+          if (nextHandle > HANDLE_MAX) throw new Error("Projection handles exhausted");
           handle = `e${nextHandle++}`;
           handles.set(id, handle);
         }
@@ -333,6 +347,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           if (!definition) throw new Error("Unknown remembered structure definition");
           let handle = ghostHandles.get(record.entity);
           if (!handle) {
+            if (nextGhost > HANDLE_MAX) throw new Error("Projection ghost handles exhausted");
             handle = `g${nextGhost++}`;
             ghostHandles.set(record.entity, handle);
           }
@@ -400,6 +415,65 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             permits("research.spend")
           ? id
           : undefined;
+    },
+    serialize(): ProjectionState {
+      const rows = (mapping: Map<number, string>) =>
+        [...mapping]
+          .sort(([a], [b]) => a - b)
+          .map(([entity, handle]) => [entity, Number(handle.slice(1))]);
+      return {
+        format: 1,
+        nextHandle,
+        nextGhost,
+        handles: rows(handles),
+        ghostHandles: rows(ghostHandles),
+      };
+    },
+    validateState(value: unknown, kernel: Kernel): ProjectionState {
+      const row = arr(int(1, HANDLE_MAX), 2, 2);
+      const schema = strictObject({
+        format: int(1, 1),
+        nextHandle: int(1, HANDLE_MAX + 1),
+        nextGhost: int(1, HANDLE_MAX + 1),
+        handles: arr(row),
+        ghostHandles: arr(row),
+      });
+      if (validate(schema, value).length) throw new Error("Invalid projection mapping");
+      const state = value as ProjectionState;
+      for (const [rows, next, live] of [
+        [state.handles, state.nextHandle, true],
+        [state.ghostHandles, state.nextGhost, false],
+      ] as const) {
+        let previous = 0;
+        const used = new Set<number>();
+        for (const [id = 0, handle = 0] of rows) {
+          if (
+            id <= previous ||
+            handle >= next ||
+            used.has(handle) ||
+            (live && !kernel.world.isAlive(id))
+          )
+            throw new Error("Invalid projection mapping row");
+          previous = id;
+          used.add(handle);
+        }
+      }
+      return {
+        ...state,
+        handles: state.handles.map((row) => [...row]),
+        ghostHandles: state.ghostHandles.map((row) => [...row]),
+      };
+    },
+    load(value: unknown, kernel: Kernel): void {
+      const state = this.validateState(value, kernel);
+      handles.clear();
+      ghostHandles.clear();
+      visible.clear();
+      for (const [id = 0, handle = 0] of state.handles) handles.set(id, `e${handle}`);
+      for (const [id = 0, handle = 0] of state.ghostHandles) ghostHandles.set(id, `g${handle}`);
+      nextHandle = state.nextHandle;
+      nextGhost = state.nextGhost;
+      current = kernel;
     },
   };
 }

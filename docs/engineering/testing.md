@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 26, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 27, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -231,3 +231,16 @@ recorded provisional default. The authored compiler assertion verifies all targe
 rate, cost, range and automatic fields. Existing normal fixture goldens remain
 `546cd5a52356f5c8` and `c8652b8de2ae48f3`: that initializer fixture deliberately
 supplies a minimal catalog without repair metadata. Debug hashes are unchanged.
+
+
+SIM27 adds deterministic hosted bot seats with counted work, cursor/target/pending
+decisions, seeded streams, canonical private projection handle allocators and
+already-resolved queued commands. Same-match restore validates atomically and
+retains stale queued references for ordinary execution-time refusal. Regressions
+reproduce enemy-target ownership rejection and a production cancellation whose
+item completes after AI emission, then compare restored twin continuation.
+A real worker-thread check verifies idle host initialization, private seat output
+and refusal of human commands for bot-owned seats. The AI package is pure and
+host-independent; only internal workspace dependency direction changes. Normal
+stub/debug goldens stay unchanged without configured bots. Full save-file identity
+and actual gameplay policy remain separate tasks.
