@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { ok as assert } from "node:assert/strict";
 import {
   Color3,
+  FreeCamera,
   InstancedMesh,
   Mesh,
   NullEngine,
@@ -261,6 +262,46 @@ test("poses convert subcells to metres, follow ramps, and interpolate wrapped fa
     expect(ring?.isPickable).toBe(false);
     layer.select([]);
     expect(f.scene.getMeshByName("selected entity")).toBeNull();
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("same-frame picks preserve forced animated child matrices and world bounds", async () => {
+  const f = fixture();
+  const camera = new FreeCamera("test", new Vector3(2, 10, -12), f.scene);
+  camera.setTarget(new Vector3(2, 1, 2));
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("dragon-tank"),
+    movementDomain: "tracked",
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("tank")]), 0);
+    f.scene.render(false, true);
+    const tank = root(f.scene, "tank");
+    const child = tank.getChildMeshes().find((mesh) => mesh.name === "turret_primitive0");
+    const turret = tank.getDescendants().find((node) => node.name === "turret");
+    const idle = f.scene.animationGroups.find((group) => group.isPlaying && group.name === "idle");
+    assert(child && turret && idle);
+    const rest = child.computeWorldMatrix(true).clone();
+    idle.goToFrame(idle.to / 4);
+    turret.getWorldMatrix();
+    layer.render(25);
+    layer.pick(256, 256);
+    child.computeWorldMatrix(false);
+    const actual = child.computeWorldMatrix(true).clone();
+    const bounds = child.getBoundingInfo().boundingBox;
+    const actualBounds = [bounds.minimumWorld.asArray(), bounds.maximumWorld.asArray()];
+    for (const node of [tank, ...tank.getChildTransformNodes(false)]) node.unfreezeWorldMatrix();
+    const expected = child.computeWorldMatrix(true).clone();
+    const expectedBounds = child.getBoundingInfo().boundingBox;
+    expect(actual.equals(rest)).toBe(false);
+    expect(actual.equals(expected)).toBe(true);
+    expect(actualBounds).toEqual([
+      expectedBounds.minimumWorld.asArray(),
+      expectedBounds.maximumWorld.asArray(),
+    ]);
   } finally {
     layer.dispose();
     f.dispose();

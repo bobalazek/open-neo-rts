@@ -1,10 +1,12 @@
 import {
-  type AbstractMesh,
+  AbstractMesh,
   type AssetContainer,
   Color3,
+  InstancedMesh,
   Matrix,
   Mesh,
   MeshBuilder,
+  Node,
   type Scene,
   StandardMaterial,
   TransformNode,
@@ -35,6 +37,7 @@ interface Entity {
   ring?: ReturnType<Mesh["createInstance"]>;
   foundation?: Mesh;
   foundationPose?: string;
+  cachedWorldMatrices?: readonly TransformNode[];
 }
 interface Template {
   force: number;
@@ -220,6 +223,10 @@ export function createEntityPresentation(
         entity.clip = clip;
       }
       entity.playback.setRate(playbackRate);
+      if (entity.cachedWorldMatrices) {
+        // shortcut: stock-node dirty hooks checked on pinned Babylon; recheck on version upgrade.
+        for (const node of entity.cachedWorldMatrices) Node.prototype.markAsDirty.call(node);
+      }
     }
   }
 
@@ -299,6 +306,28 @@ export function createEntityPresentation(
                   ),
                 ],
               );
+              if (
+                !instance.skeletons.length &&
+                !meshes.some((mesh) => mesh.morphTargetManager) &&
+                nodes.every(
+                  (node) =>
+                    (node.constructor === TransformNode ||
+                      node.constructor === Mesh ||
+                      node.constructor === InstancedMesh) &&
+                    node.markAsDirty ===
+                      (node instanceof AbstractMesh
+                        ? AbstractMesh.prototype.markAsDirty
+                        : TransformNode.prototype.markAsDirty) &&
+                    !node.isWorldMatrixFrozen &&
+                    !node.isWorldMatrixCameraDependent() &&
+                    !node.infiniteDistance &&
+                    !node.customMarkAsDirty,
+                )
+              ) {
+                // Invalidate every owned node directly: TransformNode skips descendants when already dirty.
+                for (const node of nodes) node.freezeWorldMatrix();
+                current.cachedWorldMatrices = [current.root, ...nodes];
+              }
               render(frameAt);
             })
             .finally(() => {
