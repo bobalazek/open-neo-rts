@@ -22,6 +22,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-02 — Normal construction radius, clearance and payment](./2026-11-02-normal-construction.md) — Six/three-cell radius, 40-tick clearance, payment at site creation and full unfinished cancellation refund.
+
 - [2026-11-02 — Existing Eastern Collective tier 1 is provisional first-playable content](./2026-11-02-first-playable-scope.md) — Use existing authored numbers in the Training Grounds mirror, then balance after the loop works.
 
 - [2026-11-02 — Build gameplay before finishing performance acceptance](./2026-11-02-gameplay-before-performance.md) — Proceed with functional gameplay while keeping unfinished phase-1b acceptance explicit.

@@ -9,6 +9,7 @@ import {
   resolvePacks,
   validateModel,
 } from "@open-neo-rts/content";
+import { compileGameplayCatalog } from "@open-neo-rts/sim";
 
 function walk(dir: string, root = dir): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -54,6 +55,15 @@ export async function validateContent(args: string[]): Promise<number> {
   }
   const { models } = catalog;
   const issues = [...catalog.issues];
+  try {
+    const gameplay = compileGameplayCatalog(catalog);
+    console.log(
+      `Gameplay compiled: ${gameplay.definitions.length} definitions, ${gameplay.factions.length} factions`,
+    );
+  } catch (error) {
+    console.log(`✖ Gameplay compilation: ${(error as Error).message}`);
+    return 1;
+  }
   for (const m of models) {
     const bytes = new Uint8Array(readFileSync(join(root, m.pack, m.file)));
     try {

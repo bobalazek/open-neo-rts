@@ -10,9 +10,10 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md). Phase 1b remains unfinished; its FPS/native-key work is deferred while functional gameplay takes priority. Pending gameplay decisions remain in [human-tasks.md](./human-tasks.md).
 
-- [ ] [2-02 · Compile first-playable gameplay definitions](./phases/2.md#2-02--compile-first-playable-gameplay-definitions). PR type: engine. The existing Eastern Collective tier-1 content is approved provisionally.
+- [ ] [2-03 · Initialize a normal match and starting kit](./phases/2.md#2-03--initialize-a-normal-match-and-starting-kit). PR type: engine.
+- [ ] [1B-42 · Enforce the accepted build-radius policy](./phases/1b.md#1b-42--enforce-the-accepted-build-radius-policy). PR type: engine; functional construction work under the accepted six/three-cell rules.
 
-Shared pack resolution and content identity (2-01) are implemented. CLI validation and browser parity use the shared loader; gameplay-unit compilation is next.
+Shared pack resolution/content identity (2-01) and integer gameplay compilation (2-02) are implemented. CLI validation compiles all 137 authored definitions. Startup, bank and construction are the next functional dependencies.
 
 ## Deferred phase-1b acceptance
 
