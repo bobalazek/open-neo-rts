@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 17, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 18, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -103,6 +103,14 @@ The worker journey constructs a Barracks fixture, pays only active slots, cancel
 queued/paid items, pauses work on power-off and produces a rallying soldier.
 Actual authored production metadata activation is a separate faction change.
 Debug state hashes remain unchanged.
+
+SIM18 activates actual tier-1 producer exits and two Barracks slots. Normal-start
+goldens become `591ee483e603a15d` initially and `e42e33c5cd6e2094` at tick two;
+the starting headquarters now carries its authored exit. Compiler assertions
+check exits, slots, produced units and the valid zero-population included truck.
+The War Factory scenario metadata follows conversion; debug state hashes remain
+unchanged. The synthetic 2×2 extractor fixture explicitly omits inherited 3×3
+headquarters exits instead of weakening semantic validation.
 
 `setup` contains:
 
