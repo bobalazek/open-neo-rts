@@ -26,6 +26,7 @@ import { MoveIntent, MovementFailure } from "../movement";
 import { ProductionGifts, ProductionItem, ProductionRally } from "../production";
 import { ForceBank } from "./bank";
 import { Extraction, ResourceNode } from "./extraction";
+import { OreCell } from "./ore";
 import { StructurePower } from "./power";
 
 const extractor: Definition = {
@@ -293,6 +294,7 @@ test("canonical snapshots include fractional progress and deposit state, with id
     ProductionItem,
     ProductionGifts,
     ProductionRally,
+    OreCell,
   ])
     restored.register(component);
   restored.load(f.kernel.world.serialize());

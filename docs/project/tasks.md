@@ -10,7 +10,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-- [ ] [2-06 · Ore state, depletion and regrowth](./phases/2.md#2-06--ore-state-depletion-and-regrowth). PR type: engine. Accepted field-total stock and provisional regrowth; candidate is under review.
 - [ ] [2-07 · Harvester mining, hauling and docking](./phases/2.md#2-07--harvester-mining-hauling-and-docking). PR type: engine after 2-06, with accepted mining/unloading values.
 - [ ] [2-18 · Vision grids and terrain line of sight](./phases/2.md#2-18--vision-grids-and-terrain-line-of-sight). PR type: engine. Terrain/opaque-props-first scope accepted; candidate awaits integration.
 - [ ] [2-19 · Filter snapshots, events and bot observations](./phases/2.md#2-19--filter-snapshots-events-and-bot-observations). PR type: engine after 2-18.

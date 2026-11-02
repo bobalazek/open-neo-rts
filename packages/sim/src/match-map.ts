@@ -119,6 +119,51 @@ export function resourceNodeOrigin(resource: MatchResource): { x: number; y: num
   };
 }
 
+export interface OreCellCap {
+  readonly cell: number;
+  readonly cap: number;
+}
+
+/** A field amount is one budget, shared across its clipped integer disc in row-major order. */
+export function compileOreCells(map: Pick<MatchMap, "terrain" | "resources">): OreCellCap[] {
+  const { width, height } = map.terrain;
+  const caps = new Map<number, number>();
+  for (const resource of map.resources ?? []) {
+    if (resource.kind !== "ore") continue;
+    if (
+      !Number.isInteger(resource.amount) ||
+      (resource.amount ?? 0) < 1 ||
+      (resource.amount ?? 0) > 0x7fffffff
+    )
+      throw new Error("Ore fields require a bounded positive whole-field amount");
+    const covered: number[] = [];
+    const radius = resource.radius ?? 1024;
+    const [px, py] = resource.position;
+    for (
+      let y = Math.max(0, Math.ceil((py - radius) / 1024));
+      y <= Math.min(height - 1, Math.floor((py + radius) / 1024));
+      y++
+    )
+      for (
+        let x = Math.max(0, Math.ceil((px - radius) / 1024));
+        x <= Math.min(width - 1, Math.floor((px + radius) / 1024));
+        x++
+      )
+        if (resourceOccupies(resource, x, y)) covered.push(y * width + x);
+    if (!covered.length) throw new Error("Ore field has no in-bounds integer-disc cells");
+    const amount = resource.amount as number;
+    const quotient = Math.floor(amount / covered.length);
+    const remainder = amount % covered.length;
+    for (const [index, cell] of covered.entries()) {
+      const cap = (caps.get(cell) ?? 0) + quotient + (index < remainder ? 1 : 0);
+      if (cap > 0x7fffffff)
+        throw new Error("Overlapping ore cell capacity exceeds the signed 32-bit range");
+      caps.set(cell, cap);
+    }
+  }
+  return [...caps].sort(([a], [b]) => a - b).map(([cell, cap]) => ({ cell, cap }));
+}
+
 export const matchMapSchema = strictObject({
   id: idOf("map"),
   terrain: strictObject({
@@ -153,6 +198,14 @@ export function checkMatchMap(
   issues: Issue[],
   path = "$.setup.map",
 ): void {
+  try {
+    compileOreCells(map);
+  } catch (error) {
+    issues.push({
+      path: `${path}.resources`,
+      message: error instanceof Error ? error.message : "Invalid ore fields",
+    });
+  }
   for (const [index, definition] of definitions.entries()) {
     if (definition.id.split(":")[0]?.split(".").at(-1) !== "unit") continue;
     for (const field of ["domain", "radiusSubcells"] as const)
