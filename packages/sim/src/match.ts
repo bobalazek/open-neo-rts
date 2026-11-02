@@ -51,7 +51,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 43;
+export const SIM_VERSION = 44;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
