@@ -54,7 +54,8 @@ jobs:
   # Cross-engine determinism: the same golden digests in Chromium, Firefox and WebKit as in Bun.
   browsers:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Includes browser installation and the full software-WebGL journey suite.
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
