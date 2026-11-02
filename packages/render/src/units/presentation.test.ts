@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { ok as assert } from "node:assert/strict";
 import {
+  ArcRotateCamera,
   Color3,
   InstancedMesh,
   Mesh,
@@ -8,6 +9,7 @@ import {
   type PBRMaterial,
   Scene,
   Vector3,
+  Viewport,
 } from "@babylonjs/core";
 import { parseTerrain, RAMP, WATER } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
@@ -57,6 +59,48 @@ function fixture() {
     },
   };
 }
+
+test("box selection projects rendered centres into the top-origin canvas under asymmetric HUD insets", async () => {
+  const engine = new NullEngine({
+    renderWidth: 1280,
+    renderHeight: 720,
+    textureSize: 512,
+    deterministicLockstep: false,
+    lockstepMaxSteps: 4,
+  });
+  engine.getRenderingCanvas = () => ({ clientWidth: 1280, clientHeight: 720 }) as HTMLCanvasElement;
+  const scene = new Scene(engine);
+  scene.useRightHandedSystem = true;
+  const camera = new ArcRotateCamera(
+    "selection",
+    Math.PI / 2,
+    0.7,
+    20,
+    new Vector3(2, 0, 2),
+    scene,
+  );
+  camera.viewport = new Viewport(0, 300 / 720, 1, 370 / 720);
+  scene.activeCamera = camera;
+  const layer = createEntityPresentation(scene, parseTerrain(8, 8, {}), async () => ({
+    bytes: await bytes(),
+    movementDomain: "foot",
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("visible")]), 0);
+    scene.updateTransformMatrix(true);
+    expect(
+      root(scene, "visible")
+        .getChildMeshes()
+        .some((mesh) => mesh.getTotalVertices() > 0),
+    ).toBe(true);
+    expect(layer.inRectangle(630, 225, 650, 245)).toEqual(["visible"]);
+    expect(layer.inRectangle(630, 475, 650, 495)).toEqual([]);
+  } finally {
+    layer.dispose();
+    scene.dispose();
+    engine.dispose();
+  }
+});
 
 test("static model origins follow the rotated authoritative footprint anchor", async () => {
   const f = fixture();

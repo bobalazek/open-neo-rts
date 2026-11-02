@@ -508,6 +508,8 @@ export function createEntityPresentation(
       const canvas = scene.getEngine().getRenderingCanvas();
       if (!camera || !canvas) return [];
       const viewport = camera.viewport.toGlobal(canvas.clientWidth, canvas.clientHeight);
+      // Renderer viewports start at the bottom; projection and pointer boxes start at the top.
+      viewport.y = canvas.clientHeight - viewport.y - viewport.height;
       const handles: string[] = [];
       for (const [handle, entity] of entities) {
         if (
