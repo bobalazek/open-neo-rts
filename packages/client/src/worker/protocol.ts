@@ -747,6 +747,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "constructionOrder",
             "production",
             "attackTarget",
+            "disabled",
             "repair",
             "repairOrder",
             "deploy",
@@ -761,6 +762,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.cargo !== undefined) {
       const cargo = entity.cargo;
       if (

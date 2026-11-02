@@ -455,3 +455,111 @@ test("the authored Rocket Trooper fires from Bunker Mode beyond the APC gun rang
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });
+
+test("the original Tesla weapon disables a Dragon Tank through the real worker and HUD", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded HUD integration runs in Chromium");
+  test.setTimeout(60_000);
+  const candidate = structuredClone(setup);
+  const tesla = "core.unit:eastern-collective/tesla-trooper";
+  candidate.normal.settings.fog = "off";
+  candidate.normal.settings.highGroundMissPerMille = 0;
+  candidate.normal.forces[0].start.units = [
+    { unit: "core.unit:eastern-collective/field-technician", count: 1, pop: 1, role: "builder" },
+    { unit: tank, count: 1, pop: 3, role: "combat" },
+  ];
+  candidate.normal.forces[1].start.units = [
+    { unit: "core.unit:eastern-collective/field-technician", count: 1, pop: 1, role: "builder" },
+    { unit: tesla, count: 1, pop: 1, role: "combat" },
+  ];
+  const east = candidate.map.spawns.find((spawn: { id: string }) => spawn.id === "south-east");
+  east.position = [28 * 1024, 20 * 1024];
+  // This fixture controls both sides to stage an actual original-weapon impact.
+  candidate.grants.push({ seat: 1, force: 1, grantedAtTick: 0, scopes: ["unit.orders"] });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://emp-warhead.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>EMP warhead</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  await page.goto("http://emp-warhead.test/");
+  await page.evaluate(async (setup) => {
+    const moduleUrl = "/fixture.js";
+    const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+    window.deployFixture = await start(setup);
+  }, candidate);
+  try {
+    const impact = await page.evaluate(
+      async ([tank, tesla]) => {
+        const f = window.deployFixture;
+        const target = f
+          .state()!
+          .snapshot.entities.find((row) => row.force === 0 && row.definition === tank)!;
+        const shooter = f
+          .state()!
+          .snapshot.entities.find((row) => row.force === 1 && row.definition === tesla)!;
+        const receipt = await f.command("unit.move", {
+          entities: [shooter.handle],
+          x: target.x + 2 * 1024,
+          y: target.y,
+        });
+        let observed = f.state()!.snapshot.entities.find((row) => row.handle === target.handle);
+        for (let i = 0; i < 500 && observed && !observed.disabled; i++) {
+          await f.step(1);
+          observed = f.state()!.snapshot.entities.find((row) => row.handle === target.handle);
+        }
+        f.select([tank!]);
+        return {
+          receipt,
+          before: target.health,
+          after: observed?.health,
+          disabled: observed?.disabled,
+          handle: target.handle,
+        };
+      },
+      [tank, tesla],
+    );
+    expect(impact.receipt).toBe("accepted");
+    expect(impact.disabled).toBe(true);
+    expect(impact.after).toBeLessThan(impact.before);
+    await expect(page.locator("[data-details]")).toContainText("Disabled by EMP");
+    const recovery = await page.evaluate(async (handle) => {
+      const f = window.deployFixture;
+      let elapsed = 0;
+      while (
+        elapsed < 21 &&
+        f.state()!.snapshot.entities.find((row) => row.handle === handle)?.disabled
+      ) {
+        await f.step(1);
+        elapsed++;
+      }
+      return {
+        elapsed,
+        disabled:
+          f.state()!.snapshot.entities.find((row) => row.handle === handle)?.disabled ?? false,
+      };
+    }, impact.handle);
+    // The first observed snapshot already includes the impact tick of its one-second EMP.
+    expect(recovery.elapsed).toBe(19);
+    expect(recovery.disabled).toBe(false);
+    await expect(page.locator("[data-details]")).not.toContainText("Disabled by EMP");
+    expect(
+      await page.evaluate(() => window.deployFixture.command("match.surrender", { force: 0 })),
+    ).toBe("accepted");
+    const record = parseMatchRecord(await page.evaluate(() => window.deployFixture.record()));
+    expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
+    expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(() => window.deployFixture.dispose());
+  }
+});

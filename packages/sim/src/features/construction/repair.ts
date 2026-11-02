@@ -212,6 +212,7 @@ export function structureRepairFeature(setup: Pick<MatchSetup, "definitions" | "
               world.set(id, RepairOrder, "state", REPAIR_STATES.indexOf("grant"));
               continue;
             }
+            if (kernel.disabled?.(id)) continue;
             approachStructure(kernel, definitions, id, target);
             world.set(id, RepairOrder, "state", world.get(id, ConstructionApproach, "state"));
           }
@@ -232,6 +233,7 @@ export function structureRepairFeature(setup: Pick<MatchSetup, "definitions" | "
             Health,
           )) {
             if (!world.has(id, RepairOrder)) continue;
+            if (kernel.disabled?.(id)) continue;
             const target = world.get(id, RepairOrder, "target");
             if (
               !live(kernel, id) ||

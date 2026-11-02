@@ -52,7 +52,9 @@ export function initializeForcePower(
     ids.includes(world.get(entity, OwnerForce, "force")) &&
     !world.has(entity, ConstructionSite);
   const enabled = (entity: number) =>
-    complete(entity) && world.get(entity, StructurePower, "enabled") === 1;
+    complete(entity) &&
+    !kernel.disabled?.(entity) &&
+    world.get(entity, StructurePower, "enabled") === 1;
   const balance = (force: number): PowerSnapshot | undefined => {
     if (!ids.includes(force)) return undefined;
     let used = 0,

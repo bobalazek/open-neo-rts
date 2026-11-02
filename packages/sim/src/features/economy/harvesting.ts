@@ -188,6 +188,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
       .query(Template, Transform, OwnerForce, Health)
       .filter(
         (dock) =>
+          !kernel.disabled?.(dock) &&
           !(
             world.get(id, Harvester, "avoidUntil") > kernel.tick &&
             world.get(id, Harvester, "avoidDock") === dock
@@ -291,7 +292,12 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
             if (definition && live(kernel, id)) attach(kernel, id, definition);
           }
           for (const id of world.query(Harvester, Template, Transform, Health, OwnerForce)) {
-            if (!live(kernel, id) || world.get(id, Harvester, "enabled") !== 1) continue;
+            if (
+              !live(kernel, id) ||
+              kernel.disabled?.(id) ||
+              world.get(id, Harvester, "enabled") !== 1
+            )
+              continue;
             const definition = definitionOf(kernel, id);
             if (!definition?.harvestCapacity || !definition.harvestAmountPerSecond) continue;
             let state = status(kernel, id);
@@ -304,6 +310,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
               setStatus(kernel, id, "idle");
               state = "idle";
             }
+            if (dock && kernel.disabled?.(dock)) continue;
             if (state === "queued" || state === "unloading" || state === "bank_full") {
               if (head(kernel, dock) !== id) continue;
               const point = dockPoint(kernel, id, dock);
@@ -379,7 +386,12 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
         (kernel) => {
           const world = kernel.world;
           for (const id of world.query(Harvester, Template, Transform, Health, OwnerForce)) {
-            if (!live(kernel, id) || world.get(id, Harvester, "enabled") !== 1) continue;
+            if (
+              !live(kernel, id) ||
+              kernel.disabled?.(id) ||
+              world.get(id, Harvester, "enabled") !== 1
+            )
+              continue;
             const definition = definitionOf(kernel, id);
             if (!definition?.harvestCapacity || !definition.harvestAmountPerSecond) continue;
             const cargo = world.get(id, Harvester, "cargo");
@@ -405,6 +417,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
                 point = dockPoint(kernel, id, dock);
               if (
                 !point ||
+                kernel.disabled?.(dock) ||
                 head(kernel, dock) !== id ||
                 distance(position(kernel, id), point) !== 0 ||
                 world.has(id, MoveIntent)

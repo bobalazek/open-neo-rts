@@ -4,6 +4,7 @@ import supplyTruck from "../../../../../content/core/factions/eastern-collective
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup, toMatchResources } from "../../match";
 import { createProjection } from "../../projection";
+import { Disabled, initializeDisable } from "../combat/disable";
 import { ConstructionSite } from "../construction";
 import {
   type Definition,
@@ -206,6 +207,38 @@ test("normal trucks seek real stock, accumulate five whole credits per second an
   expect(f.kernel.economy?.balance(0)?.credits).toBe(1000);
 });
 
+test("EMP suspends a mining truck without consuming ore or losing partial work/cargo", () => {
+  const f = fixture({ capacity: 500 });
+  initializeDisable(f.kernel, [
+    {
+      ...truck,
+      weapons: [
+        {
+          id: "emp",
+          targets: ["ground"],
+          rangeSubcells: [0, 1024],
+          reloadTicks: 20,
+          projectile: { kind: "instant" },
+          warheads: [{ type: "disable", durationTicks: 20, tags: ["emp"] }],
+        },
+      ],
+    },
+  ]);
+  f.command("unit.harvest");
+  f.until(() => f.state() === "mining");
+  f.advance(7);
+  const work = f.kernel.world.get(f.id, Harvester, "miningWork"),
+    cargo = f.cargo();
+  const remaining = oreCells(f.kernel.world).reduce((sum, cell) => sum + cell.remaining, 0);
+  f.kernel.world.add(f.id, Disabled, { until: f.kernel.tick + 20 });
+  f.advance(20);
+  expect(f.cargo()).toBe(cargo);
+  expect(f.kernel.world.get(f.id, Harvester, "miningWork")).toBe(work);
+  expect(oreCells(f.kernel.world).reduce((sum, cell) => sum + cell.remaining, 0)).toBe(remaining);
+  f.advance(20);
+  expect(f.cargo()).toBe(cargo + 5);
+});
+
 test("full trucks travel to a legal external dock, unload for forty ticks and credit exactly once", () => {
   const f = fixture();
   f.spawn();
@@ -220,6 +253,40 @@ test("full trucks travel to a legal external dock, unload for forty ticks and cr
   expect(f.kernel.economy?.balance(0)?.credits).toBe(1010);
   f.command("unit.stop");
   f.advance(80);
+  expect(f.kernel.economy?.balance(0)?.credits).toBe(1010);
+});
+
+test("EMP pauses an existing dock's partial unload and resumes its remaining work exactly once", () => {
+  const f = fixture();
+  initializeDisable(f.kernel, [
+    {
+      ...truck,
+      weapons: [
+        {
+          id: "emp",
+          targets: ["ground"],
+          rangeSubcells: [0, 1024],
+          reloadTicks: 20,
+          projectile: { kind: "instant" },
+          warheads: [{ type: "disable", durationTicks: 20, tags: ["emp"] }],
+        },
+      ],
+    },
+  ]);
+  const dock = f.spawn();
+  f.until(() => f.state() === "unloading");
+  f.advance(7);
+  expect(f.kernel.world.get(f.id, Harvester, "unloadTicks")).toBe(8);
+  f.kernel.world.add(dock, Disabled, { until: f.kernel.tick + 5 });
+  f.advance(5);
+  expect(f.kernel.world.get(f.id, Harvester, "unloadTicks")).toBe(8);
+  expect(f.kernel.world.get(f.id, Harvester, "dock")).toBe(dock);
+  expect(f.cargo()).toBe(10);
+  expect(f.kernel.economy?.balance(0)?.credits).toBe(1000);
+  f.advance(31);
+  expect(f.cargo()).toBe(10);
+  f.advance(1);
+  expect(f.cargo()).toBe(0);
   expect(f.kernel.economy?.balance(0)?.credits).toBe(1010);
 });
 

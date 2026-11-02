@@ -170,7 +170,7 @@ export function constructionWorkFeature(
               clearConstructionOrder(kernel, builder);
               continue;
             }
-            approachStructure(kernel, definitions, builder, site);
+            if (!kernel.disabled?.(builder)) approachStructure(kernel, definitions, builder, site);
           }
         },
       ],
@@ -188,6 +188,7 @@ export function constructionWorkFeature(
               .filter(
                 (id) =>
                   live(kernel, id) &&
+                  !kernel.disabled?.(id) &&
                   world.get(id, BuilderConstruction, "target") === site &&
                   world.get(id, ConstructionApproach, "state") === 1 &&
                   !world.has(id, MoveIntent) &&

@@ -84,6 +84,7 @@ export interface PresentedEntity {
     rally: { x: number; y: number } | null;
   };
   attackTarget?: string;
+  disabled?: true;
 }
 export interface PresentedConstructionRequest {
   handle: string;
@@ -242,6 +243,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           y: world.get(id, Transform, "y"),
           facing: world.get(id, Transform, "facing"),
           health: world.get(id, Health, "current"),
+          ...(kernel.disabled?.(id) && { disabled: true }),
           maxHealth: definition.health,
           ...(inspectRepair &&
             world.has(id, RepairCredit) && {

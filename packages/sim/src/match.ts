@@ -2,6 +2,7 @@ import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
 import { initializeUnitModes } from "./features/abilities";
 import { combatFeature } from "./features/combat";
+import { initializeDisable } from "./features/combat/disable";
 import {
   constructionFeature,
   constructionWorkFeature,
@@ -48,7 +49,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 38;
+export const SIM_VERSION = 39;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -155,6 +156,7 @@ export function createMatch(setup: MatchSetup): Kernel {
     setup.forces.map((f) => f.index),
   );
   register(kernel, movementFeature({ ...setup, definitions }));
+  if (setup.normal) initializeDisable(kernel, definitions);
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });
