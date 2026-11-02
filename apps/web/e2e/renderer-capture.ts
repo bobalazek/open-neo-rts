@@ -16,6 +16,7 @@ import {
   originalSceneCommands,
   summarizeCapture,
 } from "./renderer-capture-results";
+import { desktopLockState, mainDisplayState } from "./renderer-desktop";
 
 const root = resolve(import.meta.dir, "../../..");
 type Surface = Pick<Awaited<ReturnType<typeof createRenderer>>, "engine" | "scene" | "camera"> & {
@@ -34,8 +35,16 @@ function desktop() {
   // shortcut: qualification uses macOS lock/display probes; add equivalent checks before accepting another OS.
   if (process.platform !== "darwin")
     return { locked: null, mainAwake: null, hardware: {}, displays: [] };
-  const registry = execFileSync("/usr/sbin/ioreg", ["-n", "Root", "-d", "1"], { encoding: "utf8" });
-  const lock = registry.match(/"CGSSessionScreenIsLocked"\s*=\s*(Yes|No)/)?.[1];
+  const registry = execFileSync("/usr/sbin/ioreg", ["-a", "-n", "Root", "-d", "1"]);
+  const locked = desktopLockState(
+    JSON.parse(
+      execFileSync("/usr/bin/plutil", ["-convert", "json", "-o", "-", "--", "-"], {
+        input: registry,
+        encoding: "utf8",
+      }),
+    ),
+  );
+  const nativeDisplay = mainDisplayState();
   const raw = JSON.parse(
     execFileSync(
       "/usr/sbin/system_profiler",
@@ -55,11 +64,10 @@ function desktop() {
       asleep: d.spdisplays_asleep,
       resolution: d.spdisplays_resolution,
     }));
-  const main = displays.find((d) => d.main);
   return {
-    locked: lock === undefined ? null : lock === "Yes",
-    mainAwake:
-      main?.asleep === "spdisplays_no" ? true : main?.asleep === "spdisplays_yes" ? false : null,
+    locked,
+    mainAwake: nativeDisplay.active && !nativeDisplay.asleep,
+    nativeDisplay,
     hardware: { model: h.machine_model, chip: h.chip_type, memory: h.physical_memory },
     displays,
   };
