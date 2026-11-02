@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 28, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 29, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -263,3 +263,14 @@ explicit compiled authored rifle fixture, orders a currently visible in-range
 soldier attack, and verifies actual damage/death plus scoped eN/pN publication.
 All five normal worker journeys pass. A preexisting repair regression now expects
 a zero-health actor to be removed, preserving its no-revival assertion.
+
+
+SIM29 adds the first normal basic-skirmish bot policy. Focused proof uses original
+Eastern Collective gameplay JSON on a small flat map and reaches a paid Dragon Tank
+using real builder work, stock spending, five-credit/second cargo hauling and
+material extraction. Policy memory, budgets, opaque mappings, queues and random
+state have deterministic twin/restore coverage. Independent review caught and
+closed a structure-origin range mismatch with rotated footprint boundary cases.
+The no-bot normal initializer goldens remain `2a670245f8e608c0` and
+`fcb5865d3da9dc4a`; debug hashes remain unchanged. Full Training Grounds play and
+20 complete AI matches are not supplied by these focused cases.

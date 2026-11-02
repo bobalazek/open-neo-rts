@@ -28,6 +28,7 @@ import {
 } from "../movement/navigation";
 import { labelReachability } from "../movement/reachability";
 import { FOG_MODES, type FogMode } from "../vision";
+import { skirmishPolicy } from "./skirmish";
 
 export interface NormalMatchSettings {
   readonly startingCredits: number;
@@ -45,8 +46,11 @@ export interface NormalMatchSetup {
     readonly players: { readonly min: number; readonly max: number };
   };
   readonly settings: NormalMatchSettings;
-  /** Explicit passive hosts until gameplay policies are implemented. */
-  readonly bots?: readonly { readonly seat: number; readonly kind: "idle" }[];
+  readonly bots?: readonly {
+    readonly seat: number;
+    readonly kind: "idle" | "basic-skirmish";
+    readonly force?: number;
+  }[];
   readonly forces: readonly {
     readonly index: number;
     readonly team: number;
@@ -133,7 +137,17 @@ export const normalMatchSchema = strictObject({
     friendlyFire: opt(bool()),
     highGroundMissPerMille: opt(int(0, 1000)),
   }),
-  bots: opt(arr(strictObject({ seat: int(1, 0x7fffffff), kind: oneOf(["idle"]) }), 0, 16)),
+  bots: opt(
+    arr(
+      strictObject({
+        seat: int(1, 0x7fffffff),
+        kind: oneOf(["idle", "basic-skirmish"]),
+        force: opt(index()),
+      }),
+      0,
+      16,
+    ),
+  ),
   forces: arr(
     strictObject({
       index: index(),
@@ -309,6 +323,19 @@ export function checkNormalMatchSetup(setup: MatchSetup): void {
     )
       refuse("bot seats must be unique declared seats with an active initial grant");
     botSeats.add(bot.seat);
+    if (bot.kind === "idle" && bot.force !== undefined)
+      refuse("idle bots have no Force policy selection");
+    if (bot.kind === "basic-skirmish") {
+      if (
+        bot.force === undefined ||
+        !forceIds.has(bot.force) ||
+        !(["unit.orders", "economy.build", "production.queue"] as const).every((scope) =>
+          hasGrant(setup.grants, bot.seat, bot.force as number, scope, 0),
+        )
+      )
+        refuse("basic skirmish needs one declared Force with initial unit/build/production grants");
+      skirmishPolicy(setup, bot.force);
+    }
   }
   if (forceIds.size !== setup.forces.length || seats.size !== setup.seats.length)
     refuse("Force and seat IDs must be unique");
@@ -408,7 +435,13 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         bots: Object.freeze(
           [...normal.bots]
             .sort((a, b) => a.seat - b.seat)
-            .map((bot) => Object.freeze({ seat: bot.seat, kind: bot.kind })),
+            .map((bot) =>
+              Object.freeze({
+                seat: bot.seat,
+                kind: bot.kind,
+                ...(bot.force !== undefined && { force: bot.force }),
+              }),
+            ),
         ),
       }),
       forces: Object.freeze(

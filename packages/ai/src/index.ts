@@ -1,28 +1,29 @@
 // Bot players: read observations, emit commands. Deterministic, budgets in work units.
 import type { Stream } from "@open-neo-rts/deterministic";
 
-export interface DecisionState<Command> {
+export interface DecisionState<Command, Memory = undefined> {
   cursor: number;
   target: string | null;
   pending: readonly Command[];
+  memory?: Memory;
 }
 export interface WorkBudget {
   /** One call per evaluated candidate/work unit. False means resume from the saved cursor next tick. */
   take(): boolean;
   readonly used: number;
 }
-export type BotProgram<Observation, Command> = (input: {
+export type BotProgram<Observation, Command, Memory = undefined> = (input: {
   readonly observation: Observation;
-  readonly state: DecisionState<Command>;
+  readonly state: DecisionState<Command, Memory>;
   readonly random: Stream;
   readonly work: WorkBudget;
-}) => { state: DecisionState<Command>; commands: readonly Command[] };
+}) => { state: DecisionState<Command, Memory>; commands: readonly Command[] };
 
 /** Host-independent runner: it receives copies and returns decisions, never applies simulation state. */
-export function runDecision<Observation, Command>(
-  program: BotProgram<Observation, Command>,
+export function runDecision<Observation, Command, Memory = undefined>(
+  program: BotProgram<Observation, Command, Memory>,
   observation: Observation,
-  state: DecisionState<Command>,
+  state: DecisionState<Command, Memory>,
   random: Stream,
   limit: number,
 ) {
@@ -45,9 +46,16 @@ export function runDecision<Observation, Command>(
 }
 
 /** Hosting capability only. Economy/scouting/combat policies are separate phase-2 tasks. */
-export function idleProgram<Observation, Command>(): BotProgram<Observation, Command> {
+export function idleProgram<Observation, Command, Memory = undefined>(): BotProgram<
+  Observation,
+  Command,
+  Memory
+> {
   return ({ state, work }) => {
     work.take();
     return { state, commands: [] };
   };
 }
+
+export * from "./features/economy";
+export * from "./features/production";

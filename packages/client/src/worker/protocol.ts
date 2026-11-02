@@ -523,6 +523,44 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
   }
+  if (snapshot.resourceNodes !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.resourceNodes) ||
+      !Array.isArray(snapshot.fog) ||
+      !isFog(snapshot.fog)
+    )
+      return false;
+    let previous = "";
+    for (const node of snapshot.resourceNodes) {
+      if (
+        !isRecord(node) ||
+        !exact(node, ["kind", "x", "y"]) ||
+        !["materials", "oil"].includes(String(node.kind)) ||
+        !Number.isSafeInteger(node.x) ||
+        !Number.isSafeInteger(node.y) ||
+        Number(node.x) < 0 ||
+        Number(node.y) < 0 ||
+        Number(node.x) % 1024 !== 0 ||
+        Number(node.y) % 1024 !== 0 ||
+        !snapshot.fog.some(
+          (grid: unknown) =>
+            isRecord(grid) &&
+            Number(node.x) < Number(grid.width) * 1024 &&
+            Number(node.y) < Number(grid.height) * 1024 &&
+            grid.cells instanceof Uint8Array &&
+            (grid.cells[
+              Math.floor(Number(node.y) / 1024) * Number(grid.width) +
+                Math.floor(Number(node.x) / 1024)
+            ] ?? 0) > 0,
+        )
+      )
+        return false;
+      const key = `${String(node.y).padStart(6, "0")}:${String(node.x).padStart(6, "0")}:${node.kind}`;
+      if (previous && key <= previous) return false;
+      previous = key;
+    }
+  }
   if (snapshot.banks !== undefined) {
     if (
       snapshot.mode !== "controlled" ||
