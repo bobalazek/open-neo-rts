@@ -2,7 +2,11 @@
   "author": "Borut Balazek",
   "nodes": [
     {
+      "name": "deploy_chassis"
+    },
+    {
       "name": "hull",
+      "parent": "deploy_chassis",
       "bricks": [
         {
           "at": [-3.2, 1, -6.6],
@@ -196,8 +200,18 @@
       ]
     },
     {
-      "name": "wheel_l0",
+      "name": "deploy_wheels_l",
       "parent": "hull",
+      "at": [0, 0, 0]
+    },
+    {
+      "name": "deploy_wheels_r",
+      "parent": "hull",
+      "at": [0, 0, 0]
+    },
+    {
+      "name": "wheel_l0",
+      "parent": "deploy_wheels_l",
       "at": [3.85, 1.08, 4.4],
       "bricks": [
         {
@@ -227,7 +241,7 @@
     },
     {
       "name": "wheel_r0",
-      "parent": "hull",
+      "parent": "deploy_wheels_r",
       "at": [-3.85, 1.08, 4.4],
       "bricks": [
         {
@@ -257,7 +271,7 @@
     },
     {
       "name": "wheel_l1",
-      "parent": "hull",
+      "parent": "deploy_wheels_l",
       "at": [3.85, 1.08, 1.5],
       "bricks": [
         {
@@ -287,7 +301,7 @@
     },
     {
       "name": "wheel_r1",
-      "parent": "hull",
+      "parent": "deploy_wheels_r",
       "at": [-3.85, 1.08, 1.5],
       "bricks": [
         {
@@ -317,7 +331,7 @@
     },
     {
       "name": "wheel_l2",
-      "parent": "hull",
+      "parent": "deploy_wheels_l",
       "at": [3.85, 1.08, -1.5],
       "bricks": [
         {
@@ -347,7 +361,7 @@
     },
     {
       "name": "wheel_r2",
-      "parent": "hull",
+      "parent": "deploy_wheels_r",
       "at": [-3.85, 1.08, -1.5],
       "bricks": [
         {
@@ -377,7 +391,7 @@
     },
     {
       "name": "wheel_l3",
-      "parent": "hull",
+      "parent": "deploy_wheels_l",
       "at": [3.85, 1.08, -4.4],
       "bricks": [
         {
@@ -407,7 +421,7 @@
     },
     {
       "name": "wheel_r3",
-      "parent": "hull",
+      "parent": "deploy_wheels_r",
       "at": [-3.85, 1.08, -4.4],
       "bricks": [
         {
@@ -455,6 +469,38 @@
     "darken": 0.65
   },
   "animations": {
+    "deploy": {
+      "duration": 3,
+      "tracks": [
+        {
+          "node": "deploy_chassis",
+          "translation": [
+            [0, [0, 0, 0]],
+            [0.5, [0, 0, 0]],
+            [2.5, [0, -0.92, 0]],
+            [3, [0, -0.92, 0]]
+          ]
+        },
+        {
+          "node": "deploy_wheels_l",
+          "translation": [
+            [0, [0, 0, 0]],
+            [0.5, [0, 0, 0]],
+            [2.5, [-1.35, 1.2, 0]],
+            [3, [-1.35, 1.2, 0]]
+          ]
+        },
+        {
+          "node": "deploy_wheels_r",
+          "translation": [
+            [0, [0, 0, 0]],
+            [0.5, [0, 0, 0]],
+            [2.5, [1.35, 1.2, 0]],
+            [3, [1.35, 1.2, 0]]
+          ]
+        }
+      ]
+    },
     "idle": {
       "duration": 3,
       "loop": true,

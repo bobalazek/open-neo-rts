@@ -36,6 +36,9 @@ interface Entity {
   working?: boolean;
   workElapsed?: number;
   attackElapsed?: number;
+  deployed: boolean;
+  deployElapsed?: number;
+  deployHistory?: number[];
   deathElapsed?: number;
   height?: number;
   root?: TransformNode;
@@ -189,6 +192,7 @@ export function createEntityPresentation(
     for (const entity of entities.values()) {
       if (entity.attackElapsed !== undefined) entity.attackElapsed += delta;
       if (entity.working) entity.workElapsed = (entity.workElapsed ?? 0) + delta;
+      if (entity.deployElapsed !== undefined) entity.deployElapsed += delta;
     }
     for (const [handle, entity] of dying) {
       entity.deathElapsed = (entity.deathElapsed ?? 0) + delta;
@@ -202,6 +206,7 @@ export function createEntityPresentation(
         continue;
       }
       entity.playback.seek(entity.deathElapsed);
+      sampleDeployment(entity);
     }
     pruneTemplates();
     const alpha =
@@ -307,6 +312,7 @@ export function createEntityPresentation(
         const length = entity.playback.duration(work);
         entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
       }
+      sampleDeployment(entity);
       const bar =
         !options.ghost &&
         (selected.has(handle) ||
@@ -332,6 +338,19 @@ export function createEntityPresentation(
         status.remove(`construction:${handle}`);
       }
     }
+  }
+
+  function sampleDeployment(entity: Entity) {
+    if (!entity.playback) return;
+    const length = entity.playback.duration("deploy");
+    if (entity.deployHistory) {
+      let elapsed = 0;
+      for (const span of entity.deployHistory) elapsed = length - Math.min(length, elapsed + span);
+      entity.deployElapsed = elapsed + (entity.deployElapsed ?? 0);
+      entity.deployHistory = undefined;
+    }
+    const elapsed = Math.min(length, entity.deployElapsed ?? length);
+    entity.playback.deploy(entity.deployed ? elapsed : length - elapsed);
   }
 
   return {
@@ -379,6 +398,7 @@ export function createEntityPresentation(
             entity.attackElapsed = undefined;
             entity.playback.play("death");
             entity.playback.seek(0);
+            sampleDeployment(entity);
             for (const mesh of entity.root.getChildMeshes()) {
               meshHandles.delete(mesh);
               mesh.isPickable = false;
@@ -410,6 +430,7 @@ export function createEntityPresentation(
             moving: false,
             health: projected.health,
             maxHealth: projected.maxHealth,
+            deployed: projected.deploy?.active ?? false,
           };
           entities.set(handle, entity);
         } else {
@@ -421,6 +442,19 @@ export function createEntityPresentation(
         entity.health = projected.health;
         entity.maxHealth = projected.maxHealth;
         entity.rank = projected.veterancy?.rank;
+        const deployed = projected.deploy?.active ?? false;
+        if (deployed !== entity.deployed) {
+          if (entity.playback) {
+            const length = entity.playback.duration("deploy");
+            entity.deployElapsed = length - Math.min(length, entity.deployElapsed ?? length);
+          } else {
+            // The authored duration is unknown until import; retain time between observed toggles.
+            entity.deployHistory ??= [];
+            if (entity.deployElapsed !== undefined) entity.deployHistory.push(entity.deployElapsed);
+            entity.deployElapsed = 0;
+          }
+          entity.deployed = deployed;
+        }
         entity.construction = projected.construction
           ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
             Math.max(1, projected.construction.totalTicks * 4)

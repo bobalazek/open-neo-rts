@@ -9,6 +9,7 @@ import {
   NullEngine,
   type PBRMaterial,
   Scene,
+  TransformNode,
   Vector3,
   Viewport,
 } from "@babylonjs/core";
@@ -323,7 +324,9 @@ test("poses convert subcells to metres, follow ramps, and interpolate wrapped fa
     expect(tankClips.length).toBeGreaterThan(0);
     expect(tankClips.every((group) => group.speedRatio === 0)).toBe(true);
     layer.setPlaybackRate(8);
-    expect(tankClips.every((group) => group.speedRatio === 8)).toBe(true);
+    expect(tankClips.every((group) => group.speedRatio === (group.name === "deploy" ? 0 : 8))).toBe(
+      true,
+    );
     expect(() => layer.setPlaybackRate(-1)).toThrow("Invalid playback rate");
     layer.select(["tank"]);
     const ring = f.scene.getMeshByName("selected entity");
@@ -746,5 +749,220 @@ test("late original model loads catch up an attack without replaying it, and dea
   } finally {
     layer.dispose();
     f.dispose();
+  }
+});
+
+test("original vehicle stances layer with fire, hold on reveal/pause, and reverse without resetting other instances", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async (definition) => ({
+    bytes: await bytes(definition),
+    movementDomain: "tracked",
+  }));
+  const vehicle = (handle: string, definition: string, active: boolean) =>
+    entity(handle, { definition, deploy: { id: "mode", active } });
+  const part = (handle: string, name: string) => {
+    const node = root(f.scene, handle)
+      .getDescendants()
+      .find((node) => node.name === name);
+    assert(node instanceof Mesh || node instanceof TransformNode);
+    return node;
+  };
+  try {
+    await layer.accept(
+      snapshot(0, [
+        vehicle("tank", "dragon-tank", false),
+        vehicle("other", "dragon-tank", true),
+        vehicle("apc", "metamorphic-apc", false),
+      ]),
+      0,
+    );
+    expect(part("tank", "deploy_chassis").position.y).toBe(0);
+    expect(part("other", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    await layer.accept(
+      snapshot(1, [
+        vehicle("tank", "dragon-tank", true),
+        vehicle("other", "dragon-tank", true),
+        vehicle("apc", "metamorphic-apc", true),
+      ]),
+      50,
+    );
+    layer.render(1550);
+    const midway = part("tank", "deploy_chassis").position.y;
+    expect(midway).toBeLessThan(0);
+    expect(midway).toBeGreaterThan(-0.125);
+    expect(part("apc", "deploy_wheels_l").position.x).toBeLessThan(0);
+    expect(part("other", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    layer.setPlaybackRate(0);
+    layer.render(9000);
+    expect(part("tank", "deploy_chassis").position.y).toBe(midway);
+    layer.setPlaybackRate(8);
+    // The caller's clock already measures simulation milliseconds; never multiply it twice.
+    layer.render(9100);
+    expect(part("tank", "deploy_chassis").position.y).toBeGreaterThan(-0.125);
+    layer.render(10500);
+    expect(part("tank", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    expect(part("apc", "deploy_chassis").position.y).toBeCloseTo(-0.23);
+    const fired = {
+      ...snapshot(2, [
+        vehicle("tank", "dragon-tank", true),
+        vehicle("other", "dragon-tank", true),
+        vehicle("apc", "metamorphic-apc", true),
+      ]),
+      combatEvents: [{ type: "launch" as const, entity: "tank", x: 1024, y: 1024 }],
+    };
+    await layer.accept(fired, 10500);
+    layer.render(10550);
+    expect(part("tank", "barrel").position.z).toBeLessThan(-0.2);
+    expect(part("tank", "deploy_cannon").rotationQuaternion?.x).not.toBe(0);
+    expect(part("tank", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    expect(part("other", "barrel").position.z).toBe(0);
+    // A real scene animation pass must not restore the deployment channels to rest.
+    const camera = new ArcRotateCamera("stance", 0, 1, 20, Vector3.Zero(), f.scene);
+    f.scene.activeCamera = camera;
+    f.scene.render();
+    expect(part("tank", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    await layer.accept(fired, 10550);
+    expect(part("tank", "barrel").position.z).toBeLessThan(-0.2);
+    await layer.accept(snapshot(3, [vehicle("tank", "dragon-tank", false)]), 11000);
+    layer.render(12500);
+    expect(part("tank", "deploy_chassis").position.y).toBeGreaterThan(-0.125);
+    expect(part("tank", "deploy_chassis").position.y).toBeLessThan(0);
+    const reverse = part("tank", "deploy_chassis").position.y;
+    await layer.accept(snapshot(4, [vehicle("tank", "dragon-tank", true)]), 12500);
+    expect(part("tank", "deploy_chassis").position.y).toBeCloseTo(reverse);
+    layer.render(14000);
+    expect(part("tank", "deploy_chassis").position.y).toBeCloseTo(-0.125);
+    await layer.accept(snapshot(5, [vehicle("tank", "dragon-tank", false)]), 14000);
+    layer.render(17000);
+    expect(part("tank", "deploy_chassis").position.y).toBe(0);
+    expect(part("tank", "deploy_cannon").position.z).toBe(0.875);
+    await layer.accept(snapshot(6, []), 17000);
+    expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("a late vehicle load catches up mode changes and removed loaders never resurrect", async () => {
+  const f = fixture();
+  let resolve: ((data: Uint8Array) => void) | undefined;
+  const pending = new Promise<Uint8Array>((done) => {
+    resolve = done;
+  });
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await pending,
+    movementDomain: "tracked",
+  }));
+  const tank = (handle: string, active: boolean) =>
+    entity(handle, { deploy: { id: "mode", active } });
+  try {
+    const first = layer.accept(snapshot(0, [tank("late", false), tank("removed", true)]), 0);
+    const second = layer.accept(snapshot(1, [tank("late", true)]), 50);
+    layer.render(4050);
+    resolve?.(await bytes("dragon-tank"));
+    await Promise.all([first, second]);
+    const chassis = root(f.scene, "late")
+      .getDescendants()
+      .find((node) => node.name === "deploy_chassis");
+    assert(chassis instanceof TransformNode);
+    expect(chassis.position.y).toBeCloseTo(-0.125);
+    expect(f.scene.getTransformNodeByName("entity removed")).toBeNull();
+    layer.render(5050);
+    expect(chassis.position.y).toBeCloseTo(-0.125);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("retained death freezes a partial deployment instead of returning the chassis to rest", async () => {
+  const f = fixture();
+  const data = await bytes("dragon-tank");
+  const length = new DataView(data.buffer, data.byteOffset).getUint32(12, true);
+  const json = new TextDecoder().decode(data.subarray(20, 20 + length));
+  // Test-only alias gives the original vehicle a retained death clip without changing its geometry.
+  const patched = json.replace('"name":"fire_recoil"', '"name":"death"      ');
+  expect(patched).not.toBe(json);
+  expect(patched.length).toBe(json.length);
+  data.set(new TextEncoder().encode(patched), 20);
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: data,
+    movementDomain: "tracked",
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("tank", { deploy: { id: "mode", active: false } })]), 0);
+    await layer.accept(snapshot(1, [entity("tank", { deploy: { id: "mode", active: true } })]), 50);
+    layer.render(1550);
+    const actor = root(f.scene, "tank");
+    const chassis = actor.getDescendants().find((node) => node.name === "deploy_chassis");
+    assert(chassis instanceof TransformNode);
+    const held = chassis.position.y;
+    expect(held).toBeLessThan(0);
+    await layer.accept(
+      { ...snapshot(2, []), combatEvents: [{ type: "death", entity: "tank", x: 1024, y: 1024 }] },
+      1550,
+    );
+    layer.render(1750);
+    expect(chassis.position.y).toBe(held);
+    expect(actor.getChildMeshes().every((mesh) => !mesh.isPickable)).toBe(true);
+    layer.render(2050);
+    expect(actor.isDisposed()).toBe(true);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("reversals before import match an already loaded APC, including legal paused single-step toggles", async () => {
+  const data = await bytes("metamorphic-apc");
+  for (const paused of [false, true]) {
+    const ready = fixture(),
+      late = fixture();
+    let resolve: ((data: Uint8Array) => void) | undefined;
+    const pending = new Promise<Uint8Array>((done) => {
+      resolve = done;
+    });
+    const loaded = createEntityPresentation(ready.scene, ready.terrain, async () => ({
+      bytes: data,
+      movementDomain: "wheeled",
+    }));
+    const delayed = createEntityPresentation(late.scene, late.terrain, async () => ({
+      bytes: await pending,
+      movementDomain: "wheeled",
+    }));
+    const state = (tick: number, active: boolean) =>
+      snapshot(tick, [entity("apc", { deploy: { id: "bunker", active } })]);
+    try {
+      await loaded.accept(state(0, false), 0);
+      const first = delayed.accept(state(0, false), 0);
+      if (paused) {
+        loaded.setPlaybackRate(0);
+        delayed.setPlaybackRate(0);
+      }
+      await loaded.accept(state(1, true), paused ? 0 : 50);
+      const deploy = delayed.accept(state(1, true), paused ? 0 : 50);
+      await loaded.accept(state(61, false), paused ? 0 : 1550);
+      const pack = delayed.accept(state(61, false), paused ? 0 : 1550);
+      loaded.render(paused ? 0 : 2050);
+      delayed.render(paused ? 0 : 2050);
+      resolve?.(data);
+      await Promise.all([first, deploy, pack]);
+      for (const name of ["deploy_chassis", "deploy_wheels_l", "deploy_wheels_r"]) {
+        const part = (scene: Scene) => {
+          const node = root(scene, "apc")
+            .getChildTransformNodes()
+            .find((node) => node.name === name);
+          assert(node);
+          return node.position.asArray();
+        };
+        expect(part(late.scene)).toEqual(part(ready.scene));
+      }
+    } finally {
+      loaded.dispose();
+      delayed.dispose();
+      ready.dispose();
+      late.dispose();
+    }
   }
 });
