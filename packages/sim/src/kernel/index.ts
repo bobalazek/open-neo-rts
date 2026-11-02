@@ -23,6 +23,7 @@ import type { TerrainMovement } from "../features/movement/terrain-movement";
 import { copyMatchMap, type MatchMap } from "../match-map";
 
 const MAP_SERIALIZATION = Symbol("mapSerialization");
+const SETUP_IDENTITY = Symbol("setupIdentity");
 
 /**
  * Tick phases in run order (architecture.md §5). Command handlers run at the start of `ingest` and
@@ -99,6 +100,7 @@ export interface Kernel {
   readonly map: MatchMap | undefined;
   /** Immutable canonical input, retained privately so debug publication never recopies terrain. */
   readonly [MAP_SERIALIZATION]: string | undefined;
+  readonly [SETUP_IDENTITY]: string | undefined;
   /** u32. */
   readonly seed: number;
   readonly debug: boolean;
@@ -116,7 +118,12 @@ export interface Kernel {
   readonly checkpoints: { tick: number; hash: string }[];
 }
 
-export function createKernel(match: { seed: number; debug: boolean; map?: MatchMap }): Kernel {
+export function createKernel(match: {
+  seed: number;
+  debug: boolean;
+  map?: MatchMap;
+  setupIdentity?: string;
+}): Kernel {
   const { seed, debug } = match;
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff)
     throw new RangeError(`Match seed must be a u32 integer, got ${seed}`);
@@ -125,6 +132,7 @@ export function createKernel(match: { seed: number; debug: boolean; map?: MatchM
     world: new World(),
     map,
     [MAP_SERIALIZATION]: map && JSON.stringify(map),
+    [SETUP_IDENTITY]: match.setupIdentity,
     seed,
     debug,
     tick: 0,
@@ -221,6 +229,7 @@ export function checkpointHash(kernel: Kernel): string {
     );
   const map = kernel[MAP_SERIALIZATION];
   if (map !== undefined) addString(h, map);
+  if (kernel[SETUP_IDENTITY] !== undefined) addString(h, kernel[SETUP_IDENTITY]);
   kernel.movement?.hashInto(h);
   return digest(h).hex;
 }

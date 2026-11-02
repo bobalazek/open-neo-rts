@@ -1,6 +1,13 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
 import {
+  checkNormalMatchSetup,
+  copyNormalMatchSetup,
+  initializeNormalMatch,
+  type NormalMatchSetup,
+  normalMatchIdentity,
+} from "./features/control/normal-match";
+import {
   checkDefinitions,
   type Definition,
   definitionSchema,
@@ -19,7 +26,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 9;
+export const SIM_VERSION = 10;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -31,6 +38,8 @@ export interface MatchSetup {
   seats: readonly number[];
   grants: readonly Grant[];
   definitions: readonly Definition[];
+  /** Resolved first-playable initialization; omitted by debug previews. */
+  normal?: NormalMatchSetup;
 }
 
 /** Validates/copies static map input, then registers features in their fixed order. */
@@ -45,7 +54,9 @@ export function createMatch(setup: MatchSetup): Kernel {
     throw new Error(
       `Invalid match map:\n${issues.map(({ path, message }) => `${path}: ${message}`).join("\n")}`,
     );
-  const kernel = createKernel(setup);
+  checkNormalMatchSetup(setup);
+  setup = copyNormalMatchSetup(setup);
+  const kernel = createKernel({ ...setup, setupIdentity: normalMatchIdentity(setup) });
   const definitions = setup.definitions.map((definition) =>
     Object.freeze({
       ...definition,
@@ -70,5 +81,6 @@ export function createMatch(setup: MatchSetup): Kernel {
     setup.forces.map((f) => f.index),
   );
   register(kernel, movementFeature({ ...setup, definitions }));
+  initializeNormalMatch(kernel, { ...setup, definitions });
   return kernel;
 }
