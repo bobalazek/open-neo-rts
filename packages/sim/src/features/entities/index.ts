@@ -26,16 +26,18 @@ export const Health = defineComponent("Health", { current: "u32" });
 
 /** Shared allocation after the caller validates definition, ownership and placement. */
 export function spawnEntity(
-  { world }: Kernel,
+  kernel: Kernel,
   index: number,
   definition: Definition,
   { force, x, y, facing }: DebugSpawn,
 ): number {
+  const { world } = kernel;
   const id = world.create();
   world.add(id, Template, { definition: index });
   world.add(id, OwnerForce, { force });
   world.add(id, Transform, { x, y, facing });
   world.add(id, Health, { current: definition.health });
+  kernel.power?.attach(id, definition);
   return id;
 }
 

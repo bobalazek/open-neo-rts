@@ -55,6 +55,17 @@ banks; other Forces' balances remain private.
 - **Brownout** when used > produced: production and research run at 50%, powered defences go offline, radar is disabled. Selling or losing a power plant can trigger it mid-fight.
 - Structures can be **powered down** manually to free power for others.
 
+Normal matches implement this with ECS power amounts and enable flags. Only
+completed, enabled structures contribute supply or draw. Turning a producer off
+also removes its supply. Completion, destruction, ownership changes and toggles
+affect totals immediately. The `economy.power` command requires current build
+permission and a private entity handle at the worker boundary. Projected power
+totals and per-structure states follow the same economic visibility policy as
+stock banks. Operational helpers expose 0 for disabled/incomplete production,
+500 per-mille during brownout and 1,000 normally; powered consumers go offline
+in brownout while positive producers remain online. Production, research,
+defense and radar systems consume those helpers when implemented.
+
 ## Sharing, trading and markets
 
 **Shared Command** means one Force and one bank: every controller with `economy.*` grants spends from it. Separate Forces never share a bank; they trade.

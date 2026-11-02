@@ -7,7 +7,7 @@ import {
   type NormalMatchSetup,
   normalMatchIdentity,
 } from "./features/control/normal-match";
-import { initializeForceBanks } from "./features/economy";
+import { initializeForceBanks, initializeForcePower } from "./features/economy";
 import {
   checkDefinitions,
   type Definition,
@@ -27,7 +27,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 11;
+export const SIM_VERSION = 12;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -82,6 +82,7 @@ export function createMatch(setup: MatchSetup): Kernel {
     setup.forces.map((f) => f.index),
   );
   register(kernel, movementFeature({ ...setup, definitions }));
+  if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
   return kernel;

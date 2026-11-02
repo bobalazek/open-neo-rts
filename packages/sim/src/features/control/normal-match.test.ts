@@ -4,6 +4,7 @@ import { parseTerrain } from "@open-neo-rts/content";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchMap, SIM_VERSION, toMatchResources } from "../../match";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
+import { StructurePower } from "../economy";
 import {
   type Definition,
   type GameplayCatalog,
@@ -121,13 +122,15 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"59224a8b433ff77c"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"6b57c6d06dca4510"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
   expect(kernel.queued).toEqual([]);
+  expect(kernel.world.query(StructurePower)).toHaveLength(2);
   for (const force of [1, 2]) {
     expect(kernel.economy?.balance(force)?.credits).toBe(5000);
+    expect(kernel.power?.balance(force)).toEqual({ force, used: 0, produced: 20, brownout: false });
     const counts = new Map<string, number>();
     for (const id of ids.filter((id) => kernel.world.get(id, OwnerForce, "force") === force)) {
       const definition = setup.definitions[
@@ -190,7 +193,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "1314cf05d33bed96",
+        "hash": "36853bd25b4f04d0",
         "tick": 2,
       },
     ]
@@ -200,6 +203,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
 test("Force/seat/grant/key order is canonical, while settings, teams and content identity affect hashes", () => {
   const first = options();
   const initial = createNormalMatchSetup(first);
+  const initialHash = checkpointHash(createMatch(initial));
   const reordered = createNormalMatchSetup({
     ...first,
     forces: [...first.forces].reverse(),
@@ -211,16 +215,14 @@ test("Force/seat/grant/key order is canonical, while settings, teams and content
       seat: grant.seat,
     })),
   });
-  expect(checkpointHash(createMatch(reordered))).toBe(checkpointHash(createMatch(initial)));
+  expect(checkpointHash(createMatch(reordered))).toBe(initialHash);
   for (const next of [
     { ...first, seed: 43 },
     { ...first, settings: { startingCredits: 1234 } },
     { ...first, catalog: { ...catalog, gameplayHash: "abcdef1234567890" } },
     { ...first, forces: first.forces.map((force) => ({ ...force, team: 9 })) },
   ])
-    expect(checkpointHash(createMatch(createNormalMatchSetup(next)))).not.toBe(
-      checkpointHash(createMatch(initial)),
-    );
+    expect(checkpointHash(createMatch(createNormalMatchSetup(next)))).not.toBe(initialHash);
 });
 
 test("normal setup owns permission and starting-kit metadata after creation", () => {

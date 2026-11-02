@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 11, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 12, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -52,6 +52,12 @@ their IDs. Normal-start initial/two-tick goldens are `59224a8b433ff77c` and
 bank tests cover same-tick affordability, rejected mutations, grant lifetimes and
 private projections. The worker journey checks the permitted 5,000-credit bank
 and excludes the opposing bank.
+
+SIM12 adds normal power state and site-marker registration. Normal-start goldens
+are `6b57c6d06dca4510` initially and `36853bd25b4f04d0` at tick two; debug state
+goldens stay unchanged. Power regressions cover exact capacity, brownout,
+completion, producer loss, manual shutdown, ownership, permissions and copied
+private views. The worker journey verifies private HQ supply and a real toggle.
 
 `setup` contains:
 
