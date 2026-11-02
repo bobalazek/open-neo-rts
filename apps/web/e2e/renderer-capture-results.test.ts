@@ -1,5 +1,52 @@
 import { expect, test } from "bun:test";
-import { type CaptureSamples, summarizeCapture } from "./renderer-capture-results";
+import dragon from "../../../content/core/factions/eastern-collective/units/dragon-tank/unit.json";
+import { catalogEntry } from "../../../packages/client/src/features/debug/catalog";
+import { spawnAtCell } from "../../../packages/client/src/features/debug/palette";
+import {
+  oppositeBase,
+  performanceScene,
+} from "../../../packages/client/src/features/debug/performance-scene";
+import type { Command } from "../../../packages/sim/src/commands";
+import {
+  type CaptureSamples,
+  originalSceneCommands,
+  summarizeCapture,
+} from "./renderer-capture-results";
+
+test("original commands match real scene helpers, including UI-to-binary facing", () => {
+  const spawns = performanceScene().spawns,
+    entry = catalogEntry(dragon);
+  const commands: Command[] = [
+    ...spawns.map(
+      (s, i): Command => ({
+        tick: 0,
+        seat: 1,
+        sequence: i,
+        type: "debug.spawn",
+        payload: spawnAtCell(entry, s.force, s.x, s.y, s.rotation),
+      }),
+    ),
+    ...spawns.map(
+      (s, i): Command => ({
+        tick: 1,
+        seat: 1,
+        sequence: 200 + i,
+        type: "unit.move",
+        payload: { entities: [i + 1], ...oppositeBase(s.x, s.y) },
+      }),
+    ),
+  ];
+  expect(originalSceneCommands(commands)).toBe(true);
+  const first = commands[0];
+  if (first?.type !== "debug.spawn") throw new Error("Missing spawn");
+  first.payload.facing = 0;
+  expect(originalSceneCommands(commands)).toBe(false);
+  first.payload.facing = 16384;
+  const move = commands[200];
+  if (move?.type !== "unit.move") throw new Error("Missing move");
+  move.payload.x++;
+  expect(originalSceneCommands(commands)).toBe(false);
+});
 
 function samples(): CaptureSamples {
   const first = Array.from({ length: 200 }, (_, i) => ({ handle: `e${i}`, x: i, y: 0 }));

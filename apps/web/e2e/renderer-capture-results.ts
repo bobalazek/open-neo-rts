@@ -1,3 +1,38 @@
+import type { Command } from "../../../packages/sim/src/commands";
+
+/** Freeze authored commands independently of the live scene builder. */
+export function originalSceneCommands(commands: readonly Command[]) {
+  return (
+    commands.length === 400 &&
+    Array.from({ length: 200 }, (_, i) => {
+      const group = Math.floor(i / 50),
+        x = (group % 2 ? 94 : 12) + (i % 10) * 2,
+        y = (group < 2 ? 12 : 94) + Math.floor((i % 50) / 10) * 2;
+      const spawn = commands[i],
+        move = commands[200 + i];
+      return (
+        spawn?.type === "debug.spawn" &&
+        spawn.tick === 0 &&
+        spawn.seat === 1 &&
+        spawn.sequence === i &&
+        spawn.payload.definition === "core.unit:eastern-collective/dragon-tank" &&
+        spawn.payload.force === 0 &&
+        spawn.payload.facing === 16384 &&
+        spawn.payload.x === x * 1024 + 512 &&
+        spawn.payload.y === y * 1024 + 512 &&
+        move?.type === "unit.move" &&
+        move.tick === 1 &&
+        move.seat === 1 &&
+        move.sequence === 200 + i &&
+        move.payload.entities.length === 1 &&
+        move.payload.entities[0] === i + 1 &&
+        move.payload.x === (127 - x) * 1024 + 512 &&
+        move.payload.y === (127 - y) * 1024 + 512
+      );
+    }).every(Boolean)
+  );
+}
+
 export interface CapturePose {
   handle: string;
   x: number;

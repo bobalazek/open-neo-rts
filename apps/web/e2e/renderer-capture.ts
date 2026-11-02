@@ -11,7 +11,11 @@ import {
 import type { createRenderer } from "../../../packages/render/src";
 import { parseScenario } from "../../../packages/sim/src/snapshots";
 import catalog from "../catalog-plugin";
-import { type CaptureSamples, summarizeCapture } from "./renderer-capture-results";
+import {
+  type CaptureSamples,
+  originalSceneCommands,
+  summarizeCapture,
+} from "./renderer-capture-results";
 
 const root = resolve(import.meta.dir, "../../..");
 type Surface = Pick<Awaited<ReturnType<typeof createRenderer>>, "engine" | "scene" | "camera"> & {
@@ -86,6 +90,7 @@ async function capture(diagnostic: boolean) {
   const directory = resolve(root, "test-results", "renderer-capture", String(Date.now()));
   let server: ReturnType<typeof Bun.serve> | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  let watchdog: ReturnType<typeof setTimeout> | undefined;
   try {
     if (power) {
       await Bun.sleep(250);
@@ -186,6 +191,9 @@ async function capture(diagnostic: boolean) {
       headless: diagnostic,
       args: ["--window-position=0,0"],
     });
+    watchdog = setTimeout(() => {
+      void browser?.close().catch(() => {});
+    }, 180000);
     const page = await browser.newPage({
       viewport: { width: 1280, height: 720 },
       deviceScaleFactor: 1,
@@ -453,31 +461,7 @@ async function capture(diagnostic: boolean) {
       scenario.setup.map.id === "core.map:training-grounds" &&
       scenario.setup.map.terrain.width === 128 &&
       scenario.setup.map.terrain.height === 128 &&
-      scenario.commands.length === 400 &&
-      Array.from({ length: 200 }, (_, i) => {
-        const group = Math.floor(i / 50),
-          x = (group % 2 ? 94 : 12) + (i % 10) * 2,
-          y = (group < 2 ? 12 : 94) + Math.floor((i % 50) / 10) * 2;
-        const spawn = scenario.commands[i],
-          move = scenario.commands[200 + i];
-        return (
-          spawn?.type === "debug.spawn" &&
-          spawn.tick === 0 &&
-          spawn.seat === 1 &&
-          spawn.payload.definition === "core.unit:eastern-collective/dragon-tank" &&
-          spawn.payload.force === 0 &&
-          spawn.payload.facing === 0 &&
-          spawn.payload.x === x * 1024 + 512 &&
-          spawn.payload.y === y * 1024 + 512 &&
-          move?.type === "unit.move" &&
-          move.tick === 1 &&
-          move.seat === 1 &&
-          move.payload.entities.length === 1 &&
-          move.payload.entities[0] === i + 1 &&
-          move.payload.x === (127 - x) * 1024 + 512 &&
-          move.payload.y === (127 - y) * 1024 + 512
-        );
-      }).every(Boolean);
+      originalSceneCommands(scenario.commands);
     if (!originalScene) reasons.push("Original map, seed, spawn or move command changed");
     if (errors.length) reasons.push("Page errors occurred");
     const report = {
@@ -490,6 +474,8 @@ async function capture(diagnostic: boolean) {
       browser: browser.version(),
       before,
       after,
+      desktopObservation:
+        "OS lock/display probes before and after only; no continuous OS-state proof. Browser focus/visibility events cover the measurement window; their relation to OS lock is unverified.",
       errors,
       targets: { renderFps: 60, workerHz: 20 },
       acceptance: "Measurements only; no automated phase-exit or GPU/presentation-time claim",
@@ -513,6 +499,7 @@ async function capture(diagnostic: boolean) {
     await Bun.write(resolve(directory, "failure.txt"), String(error)).catch(() => {});
     throw error;
   } finally {
+    clearTimeout(watchdog);
     try {
       await browser?.close();
     } finally {
