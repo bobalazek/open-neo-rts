@@ -39,4 +39,4 @@ These come from explicit, sometimes strong, feedback.
 - Biome formats Markdown and reflows tables, so re-read a doc after `bun run fix` before an exact-string edit.
 - `content/schemas` is generated and excluded from Biome: edit `packages/content/src/schemas/definitions.ts`, then run `bun neo generate-schemas`.
 - `packages/content` compiles without DOM or Bun types because the sim shares it; file I/O belongs in `apps/cli`.
-- Git LFS tracks binaries. CI's code job pulls only the five renderer-test GLBs listed in `ci.yml`; the content job pulls all LFS with a cache.
+- Git LFS tracks binaries. CI's code job pulls only the five renderer-test GLBs and two Training Grounds layers listed in `ci.yml`; the content job pulls all LFS with a cache.
