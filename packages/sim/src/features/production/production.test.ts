@@ -5,8 +5,10 @@ import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { ConstructionSite } from "../construction";
 import { StructurePower } from "../economy";
-import { type Definition, OwnerForce, spawnEntity, Template, Transform } from "../entities";
+import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
+import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
+import { CombatMotion, Projectile } from "../projectiles";
 import { PRODUCTION_STATUSES, ProductionGifts, ProductionItem } from ".";
 
 const worker: Definition = {
@@ -72,6 +74,7 @@ function fixture(
     gift?: boolean;
     radius?: number;
     expires?: number;
+    weapon?: GameplayWeapon;
   } = {},
 ) {
   const t = parseTerrain(32, 32, {}),
@@ -88,6 +91,7 @@ function fixture(
     worker,
     {
       ...combat,
+      ...(options.weapon && { weapons: [options.weapon], armor: "infantry" }),
       radiusSubcells: options.radius ?? 128,
       construction: { cost: { credits: 100 }, buildTicks: options.duration ?? 2 },
     },
@@ -501,4 +505,65 @@ test("cross-producer starts spend in enqueue order even when the earlier produce
   expect(state(kernel, later as number)).toBe("funds");
   expect(kernel.world.get(later as number, ProductionItem, "slot")).toBe(0);
   expect(kernel.economy?.balance(0)?.credits).toBe(0);
+});
+
+test("production-born rally movers participate in swept projectile collision in their birth tick", () => {
+  const weapon: GameplayWeapon = {
+    id: "crossing",
+    targets: ["ground"],
+    rangeSubcells: [0, 10000],
+    reloadTicks: 1000,
+    projectile: { kind: "bullet", speedSubcellsPerTick: 1024 },
+    warheads: [{ type: "damage", amount: 10, tags: [] }],
+  };
+  const { kernel, building } = fixture({ duration: 2, weapon });
+  const [exitX, exitY] = exitCells(kernel, building)[0];
+  const x = exitX * 1024 + 512,
+    y = exitY * 1024 + 512;
+  step(kernel, [
+    enqueue(kernel, building),
+    {
+      tick: 0,
+      sequence: 1,
+      seat: 1,
+      type: "production.rally",
+      payload: { entity: building, x, y: y + 6 * 1024 },
+    },
+  ]);
+  expect(units(kernel)).toEqual([]);
+  const round = kernel.world.create();
+  kernel.world.add(round, Projectile, {
+    definition: 2,
+    weapon: 0,
+    force: 1,
+    ceiling: 255,
+    x: x - 512,
+    y: y + 512,
+    destinationX: x + 512,
+    destinationY: y + 512,
+    velocityX: 1024,
+    speed: 1024,
+    life: 5,
+    born: 0,
+  });
+  step(kernel, []);
+  const born = units(kernel)[0] as number;
+  expect(born).toBeDefined();
+  expect(kernel.world.get(born, CombatMotion, "y")).toBe(y);
+  expect(kernel.world.get(born, Transform, "y")).toBe(y + 1024);
+  expect(kernel.world.get(born, Health, "current")).toBe(40);
+  expect(kernel.world.isAlive(round)).toBe(false);
+});
+
+test("a paid producer killed in combat is destroyed and refunded in that same tick once", () => {
+  const { kernel, building } = fixture({ duration: 10 });
+  kernel.systems.combat.push(() => {
+    if (kernel.world.isAlive(building)) kernel.world.set(building, Health, "current", 0);
+  });
+  step(kernel, [enqueue(kernel, building)]);
+  expect(kernel.world.isAlive(building)).toBe(false);
+  expect(itemIds(kernel)).toEqual([]);
+  expect(kernel.economy?.balance(0)?.credits).toBe(5000);
+  step(kernel, []);
+  expect(kernel.economy?.balance(0)?.credits).toBe(5000);
 });

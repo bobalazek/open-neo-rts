@@ -21,6 +21,7 @@ import {
 import { type Component, World } from "../ecs";
 import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
+import type { CombatEvent } from "../features/events/combat";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
 import type { TerrainVision, VisibilityMemory } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
@@ -107,6 +108,10 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  /** Derived capacity/availability check at the canonical shot handoff. */
+  canLaunch?: (definition: number, weapon: number) => boolean;
+  /** Presentation-only output from the completed tick; never read by gameplay systems. */
+  combatEvents?: CombatEvent[];
   /** Authoritative stock balances exist only for initialized normal matches. */
   economy?: ForceBanks;
   /** Completed-structure power capacity and brownout; values live in World. */

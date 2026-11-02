@@ -20,6 +20,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 ## Index
 
+- [2026-11-02 — Provisional projectile resolution](./2026-11-02-provisional-projectile-resolution.md) — Physical uphill misses, authored damage and contact-time geometry under delegated defaults.
+
 - [2026-11-02 — Provisional Field Technician repair](./2026-11-02-provisional-builder-repair.md) — Manual adjacent structure repair at 10 HP/second and 25% full-repair credit price under delegated defaults.
 
 Newest first.

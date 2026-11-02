@@ -26,6 +26,7 @@ import {
   StructurePower,
 } from "../features/economy";
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
+import { type PresentedCombatEvent, projectCombatEvents } from "../features/events/combat";
 import { MoveIntent } from "../features/movement";
 import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
 import type { VisionGrid } from "../features/vision";
@@ -95,6 +96,7 @@ export interface SeatSnapshot {
   constructionRequests?: PresentedConstructionRequest[];
   fog?: VisionGrid[];
   ghosts?: PresentedGhost[];
+  combatEvents?: PresentedCombatEvent[];
 }
 
 export interface PresentedGhost {
@@ -131,10 +133,16 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
   let visible = new Map<string, number>();
   const ghostHandles = new Map<number, string>();
   let nextGhost = 1;
+  const roundHandles = new Map<number, string>();
+  let nextRound = 1;
+  const deathHandles = new Map<number, { handle: string; tick: number }>();
   let current: Kernel | undefined;
   return {
     snapshot(kernel: Kernel): SeatSnapshot {
       current = kernel;
+      const previousHandles = new Map([...handles].filter(([, handle]) => visible.has(handle)));
+      for (const [entity, remembered] of deathHandles)
+        if (remembered.tick !== kernel.tick) deathHandles.delete(entity);
       visible = new Map();
       const permits = (force: number, scope: Scope) =>
         kernel.visibility
@@ -367,6 +375,12 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         }
       }
       const published = new Set(visible.values());
+      for (const round of roundHandles.keys())
+        if (
+          !kernel.world.isAlive(round) &&
+          !(kernel.combatEvents ?? []).some((event) => event.round === round)
+        )
+          roundHandles.delete(round);
       for (const id of handles.keys()) if (!published.has(id)) handles.delete(id);
       return {
         tick: kernel.tick,
@@ -380,6 +394,29 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         }),
         ...(setup.normal && { constructionRequests }),
         ...(mode === "controlled" && kernel.visibility && { fog, ghosts }),
+        ...(setup.normal &&
+          mode === "controlled" && {
+            combatEvents: projectCombatEvents(
+              kernel,
+              seat,
+              (round) => {
+                let handle = roundHandles.get(round);
+                if (!handle) {
+                  handle = `p${nextRound++}`;
+                  roundHandles.set(round, handle);
+                }
+                return handle;
+              },
+              (entity, type) => {
+                const current = handles.get(entity);
+                if (current && visible.get(current) === entity) return current;
+                if (type !== "death") return;
+                const previous = deathHandles.get(entity)?.handle ?? previousHandles.get(entity);
+                if (previous) deathHandles.set(entity, { handle: previous, tick: kernel.tick });
+                return previous;
+              },
+            ),
+          }),
       };
     },
     resolve(handle: unknown, scope?: Scope): number | undefined {

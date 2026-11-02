@@ -10,7 +10,7 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-- [ ] [2-14 · Integer projectile motion and collision](./phases/2.md#2-14--integer-projectile-motion-and-collision). PR type: engine after targeting; apply authored flight/blockers before damage.
+- [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-29 · Match HUD, build panel and control groups](./phases/2.md#2-29--match-hud-build-panel-and-control-groups). PR type: engine after normal flow; real build/production/order controls. Minimap follows in 2-30.
 - [ ] [2-24/2-25 · First economy and army bot](./phases/2.md#2-24--first-bot-economy-and-build-order). PR type: engine after hosted bot seats; granted real commands and permitted targets only.
 

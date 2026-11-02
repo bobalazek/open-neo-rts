@@ -288,7 +288,15 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               : world.get(state, WeaponState, "reloadAt");
             if (kernel.tick < due || emitted >= MAX_SHOT_INTENTS) continue;
             let shots = remaining || weapon.burst?.count || 1;
-            while (shots > 0 && emitted < MAX_SHOT_INTENTS) {
+            while (
+              shots > 0 &&
+              emitted < MAX_SHOT_INTENTS &&
+              (kernel.canLaunch?.(
+                world.get(shooter, Template, "definition"),
+                world.get(state, WeaponState, "weapon"),
+              ) ??
+                true)
+            ) {
               const radius = weapon.rangeSubcells[1]
                 ? mulDiv(
                     weapon.scatterSubcells ?? 0,
