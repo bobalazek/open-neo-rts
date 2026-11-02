@@ -2,7 +2,11 @@
   "author": "Borut Balazek",
   "nodes": [
     {
+      "name": "deploy_chassis"
+    },
+    {
       "name": "hull",
+      "parent": "deploy_chassis",
       "bricks": [
         {
           "at": [-3.2, 0.6, -6.2],
@@ -164,8 +168,13 @@
       ]
     },
     {
-      "name": "track_l",
+      "name": "deploy_track_l",
       "parent": "hull",
+      "at": [0, 0, 0]
+    },
+    {
+      "name": "track_l",
+      "parent": "deploy_track_l",
       "at": [4.4, 0, 0],
       "bricks": [
         {
@@ -194,8 +203,13 @@
       ]
     },
     {
-      "name": "track_r",
+      "name": "deploy_track_r",
       "parent": "hull",
+      "at": [0, 0, 0]
+    },
+    {
+      "name": "track_r",
+      "parent": "deploy_track_r",
       "at": [-4.4, 0, 0],
       "bricks": [
         {
@@ -327,9 +341,14 @@
       ]
     },
     {
-      "name": "barrel",
+      "name": "deploy_cannon",
       "parent": "turret",
       "at": [0, 0.95, 3.5],
+      "bricks": []
+    },
+    {
+      "name": "barrel",
+      "parent": "deploy_cannon",
       "bricks": [
         {
           "at": [-1.2, -0.7, -0.1],
@@ -599,6 +618,38 @@
     }
   ],
   "animations": {
+    "deploy": {
+      "duration": 3,
+      "tracks": [
+        {
+          "node": "deploy_track_l",
+          "translation": [
+            [0, [0, 0, 0]],
+            [1, [0.7, 0, 0]],
+            [1.8, [0.7, 0.5, 0]],
+            [3, [0.7, 0.5, 0]]
+          ]
+        },
+        {
+          "node": "deploy_track_r",
+          "translation": [
+            [0, [0, 0, 0]],
+            [1, [-0.7, 0, 0]],
+            [1.8, [-0.7, 0.5, 0]],
+            [3, [-0.7, 0.5, 0]]
+          ]
+        },
+        {
+          "node": "deploy_chassis",
+          "translation": [[0, [0, 0, 0]], [1, [0, 0, 0]], [1.8, [0, -0.5, 0]], [3, [0, -0.5, 0]]]
+        },
+        {
+          "node": "deploy_cannon",
+          "rotation": [[0, [0, 0, 0]], [1, [0, 0, 0]], [2.6, [-14, 0, 0]], [3, [-14, 0, 0]]],
+          "translation": [[0, [0, 0, 0]], [1.8, [0, 0, 0]], [2.6, [0, 0, 0.8]], [3, [0, 0, 0.8]]]
+        }
+      ]
+    },
     "fire_recoil": {
       "duration": 0.5,
       "tracks": [
