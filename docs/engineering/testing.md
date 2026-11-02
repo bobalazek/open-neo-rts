@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 6, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 7, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 `setup` contains:
 
@@ -53,7 +53,7 @@ The JSON envelope is `{ "format": 2, "simVersion": 6, "setup": { ... }, "command
 
 ### Phase-1a divergence traces
 
-`bun neo run <scenario> [--seed N] [--ticks T] --trace <file>` keeps the normal checkpoint output and writes a versioned JSON trace. `traceScenario`, exported from `@open-neo-rts/sim`, produces the same data in browsers without file I/O. The envelope is `{ format: 1, simVersion: 6, scenario, hashes, events }`. `scenario` embeds the full format-2 command log and effective map setup, including an overridden seed; `hashes` contains `{ tick, hash }` for tick 0 and every completed step; `events` is the kernel developer event log, including command results. `parseTrace` rejects unsupported versions, unknown fields, malformed values, missing/reordered ticks, truncated scenarios and events that do not match their commands.
+`bun neo run <scenario> [--seed N] [--ticks T] --trace <file>` keeps the normal checkpoint output and writes a versioned JSON trace. `traceScenario`, exported from `@open-neo-rts/sim`, produces the same data in browsers without file I/O. The envelope is `{ format: 1, simVersion: 7, scenario, hashes, events }`. `scenario` embeds the full format-2 command log and effective map setup, including an overridden seed; `hashes` contains `{ tick, hash }` for tick 0 and every completed step; `events` is the kernel developer event log, including command results. `parseTrace` rejects unsupported versions, unknown fields, malformed values, missing/reordered ticks, truncated scenarios and events that do not match their commands.
 
 `bun neo run --compare <trace-a> <trace-b>` exits 0 with `Traces match` when all hashes match. Otherwise it exits 1 and prints the first differing or missing tick, both recorded hashes, both event logs for the step that produced that state, and a per-entity/component/field diff of canonical ECS state after replay to that tick. State tick N means N steps have completed: its producing command events have tick N−1. Null diff values mean an entity/component/field is absent; `$entity` reports entity presence, `$present` component presence, and `$world.nextId` the ID allocator. An ended trace has a null recorded hash and replays only to its end.
 

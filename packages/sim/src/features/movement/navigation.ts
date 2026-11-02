@@ -31,7 +31,7 @@ export interface NavigationGrid extends NavGrid {
   radiusSubcells: number;
   /** Largest circular radius at each cell centre, capped at the content maximum (8 cells). */
   clearanceSubcells: Uint16Array;
-  /** Physical speed percentage, independent of route costs. Zero for blocked cells. */
+  /** Physical terrain/occupancy speed; centre-clearance inflation does not change it. */
   speedPercent: Uint8Array;
 }
 
@@ -231,8 +231,8 @@ export function compileNavigation(
   const required = radiusSubcells * radiusSubcells;
   for (let i = 0; i < cells; i++) {
     clearanceSubcells[i] = cost[i] ? isqrt(centre[i] as number) : 0;
-    if ((centre[i] as number) < required) cost[i] = 0;
     if (!cost[i]) speedPercent[i] = 0;
+    if ((centre[i] as number) < required) cost[i] = 0;
   }
   const grid: NavigationGrid = {
     barriers,
