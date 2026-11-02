@@ -85,6 +85,8 @@ export class PathScheduler {
   private readonly anchorCursors: number[];
   private readonly anchorOrders: number[];
   private readonly turns: number[];
+  /** Derived membership only; canonical state remains the queues and their cursors. */
+  private readonly queuedEntities = new Set<number>();
   private cursor = 0;
   constructor(
     private readonly grid: RequestGrid,
@@ -128,6 +130,7 @@ export class PathScheduler {
         request: copyRequest(request),
         search: null,
       });
+      this.queuedEntities.add(request.entity);
     }
     for (const queue of this.queues) queue.sort((a, b) => compare(a.request, b.request));
   }
@@ -145,20 +148,43 @@ export class PathScheduler {
       )
         throw new RangeError("Invalid anchor input");
     }
+    const touched = new Set<number>();
     for (const request of requests) {
       this.cancel(request.entity);
-      this.anchors[this.forces.indexOf(request.force)]?.push({
+      const index = this.forces.indexOf(request.force),
+        queue = this.anchors[index] as PendingAnchor[];
+      const pending: PendingAnchor = {
         request: copyAnchor(request),
         search: null,
-      });
+      };
+      if (requests.length === 1) {
+        const last = queue.at(-1);
+        if (!last || compare(last.request, request) <= 0) queue.push(pending);
+        else {
+          let low = 0,
+            high = queue.length;
+          while (low < high) {
+            const middle = Math.floor((low + high) / 2);
+            if (compare((queue[middle] as PendingAnchor).request, request) <= 0) low = middle + 1;
+            else high = middle;
+          }
+          queue.splice(low, 0, pending);
+        }
+      } else queue.push(pending);
+      this.queuedEntities.add(request.entity);
+      if (request.kind === "order")
+        this.anchorOrders[index] = (this.anchorOrders[index] as number) + 1;
+      touched.add(index);
     }
-    for (const [index, queue] of this.anchors.entries()) {
-      queue.sort((a, b) => compare(a.request, b.request));
-      this.anchorOrders[index] = queue.filter((p) => p.request.kind === "order").length;
-    }
+    // Batch cancellation observes the old append-before-sort intermediate indices.
+    if (requests.length > 1)
+      for (const index of touched)
+        this.anchors[index]?.sort((a, b) => compare(a.request, b.request));
   }
   private removeAnchor(force: number, index: number): void {
     const queue = this.anchors[force] as PendingAnchor[];
+    const pending = queue[index];
+    if (pending) this.queuedEntities.delete(pending.request.entity);
     if (queue[index]?.request.kind === "order")
       this.anchorOrders[force] = (this.anchorOrders[force] as number) - 1;
     queue.splice(index, 1);
@@ -168,6 +194,7 @@ export class PathScheduler {
   }
   cancel(entity: number): void {
     if (!isId(entity)) throw new RangeError("Path entity must be a nonnegative int32 ID");
+    if (!this.queuedEntities.has(entity)) return;
     for (const [force, queue] of this.queues.entries()) {
       const i = queue.findIndex((p) => p.request.entity === entity);
       if (i !== -1) queue.splice(i, 1);
@@ -176,6 +203,7 @@ export class PathScheduler {
       );
       if (j !== -1) this.removeAnchor(force, j);
     }
+    this.queuedEntities.delete(entity);
   }
   tick(): PathTickResult {
     const forces = this.forces.map((force) => ({
@@ -233,6 +261,7 @@ export class PathScheduler {
               goal: result.goal,
             };
             paths.push({ request, search: null });
+            this.queuedEntities.add(request.entity);
             paths.sort((a, b) => compare(a.request, b.request));
           } else counter.completed++;
         }
@@ -248,6 +277,7 @@ export class PathScheduler {
         counter.expansions += used;
         if (path.search.finished) {
           paths.shift();
+          this.queuedEntities.delete(path.request.entity);
           counter.completed++;
         }
       }
