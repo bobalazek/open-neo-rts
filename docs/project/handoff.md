@@ -160,7 +160,7 @@ ask routine approval questions.
 PR #221 merged at 5febf7cc3802b0708e6baff2551f6bc0583fd048; its whole source
 tree equals the reviewed 3187fa622190bdb6394a2dc9a19de91912aa6c58 candidate.
 
-## Canonical veterancy, SIM45 candidate
+## Canonical veterancy, SIM45 merged
 
 `/tmp/neo-veterancy`, branch `codex/unit-veterancy`, delivers 2-46a under the
 [recorded provisional contract](./decisions/2026-11-02-provisional-veterancy.md).
@@ -180,8 +180,9 @@ Preserved probes `/tmp/neo-veterancy-timer-review.ts` and
 200, then health 110→111 and carry 600 over 20 ticks. A permanent regression
 matches it. Bounded engine review accepted. Repository fix/typecheck/test/build/
 content checks pass, including actual launch, passenger credit, delayed shots,
-burn, numeric bounds, Off, privacy/copy/wire, registered World roundtrip and
-terminal normal input-record replay. Normal fixture goldens are now
+burn, numeric bounds, Off, privacy/copy/wire and terminal normal input-record
+replay. The original low-level XP World case was later found to skip damage;
+use the SIM46 correction below for actual nonzero restore evidence. Normal fixture goldens are now
 80f19002522632f2/ddb0b89a2a3b9fff for the new canonical fields/default setting;
 debug digests and catalog identities stay unchanged. The extraction test's
 manual restore component list includes both new components.
@@ -197,3 +198,52 @@ evidence with known stalled outcomes, not the later SIM45 exit. The separate
 SIM42 seed-6 repair already completed naturally twice. Do not rerun historical
 batches or restart FPS/native-key profiling. Full phase 2 and phases 3–5 remain
 unfinished; continue functional gameplay and remaining roadmap delivery.
+
+
+PR #222 merged at 3909cef8be1c8dabd5a81d29d8106fb4cad54cb0 with an identical
+source tree to reviewed c3b759dd50a2dc032060915794eae0add6bc2899.
+
+## Refundable-site XP correction, SIM46 candidate
+
+`/tmp/neo-veterancy-credit-fix`, branch `codex/veterancy-construction-credit`,
+closes a real zero-cost XP loop. The preserved independent probe
+`/tmp/neo-veterancy-refund-review.ts` placed a paid 600-credit/10-material site,
+dealt 10 actual HP damage at zero progress, earned 66,560 XP, then canceled for
+a full refund. Repeating twice promoted the attacker with no lasting resource
+cost. Unfinished ConstructionSite actors now update damage history but award
+no XP. Completed structures still award bounded damage credit, and the owner’s
+approved full-refund rule is unchanged.
+
+The new permanent regression failed before the guard with XP 66,560 and now
+passes two real build/damage/cancel cycles plus real builder completion and
+completed-structure credit. Independent rerun of the exact exploit probe
+confirmed unchanged 100→90 HP and full refund with no XP. Bounded review
+accepted. The old low-level restore fixture had no vision, so allied-group
+comparison skipped its damage. It now initializes real Force groups and the
+site marker, asserts HP 2, nonzero XP/rank, lifetime-budget carry 2 and repair
+carry 130 before serialization, loads an equally registered fresh World with
+the explicit clock, then checks identical damage/repair continuation and hash.
+Independent rerun passed with all preconditions. This remains a World unit
+check, not a complete game-save loader.
+
+Final repository checks pass. SIM46 and all three scenario headers align;
+startup/debug fixture hashes and actual catalog identities remain unchanged
+because those fixtures do not award refundable-site XP.
+
+The accepted 2-46b UI work is preserved at 86f41140e708f830928fc3d660df9cbd3a78d581
+in `/tmp/neo-veterancy-ui`, branch `codex/veterancy-presentation`, awaiting this
+fix parent. It adds strict backward-compatible saved setup On/Off, HUD rank/XP
+and shared unpickable scene chevrons. It passed repository checks and 18
+Chromium/WebKit cases with 10 expected non-Chromium HUD skips. Its original
+Soldier/Field Technician journey uses actual movement/HUD attack, a real
+granted enemy-HQ shutdown to isolate XP, no health/XP/definition edits, On/Off
+health/rank/XP assertions and two complete terminal Bun replays. A mobile
+checkbox screenshot was inspected. Stubbed picking/test-only setup and no
+physical-chevron/natural active-HQ match proof remain explicit. Rebase only
+that one UI commit onto the merged correction, preserve its patch, add final
+task/status documentation and verify the assembled parent before merging it.
+
+Continue mode animation, remaining effects/lifecycle/orders and complete
+persistence/replay/audio/help/content tools, then remaining roadmap phases.
+All phases remain unfinished. Keep the terminal SIM39 batch and all repair
+probes; no new historical reruns or FPS/native-key profiling.
