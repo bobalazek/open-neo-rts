@@ -40,6 +40,11 @@ export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
 
 export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
+  cargo?: {
+    capacity: number;
+    boarding: number;
+    passengers: { definition: string; health: number; maxHealth: number }[];
+  };
   deploy?: { id: string; active: boolean; readyAt?: number };
   handle: string;
   definition: string;
@@ -220,6 +225,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             : 0;
         const deployment = kernel.unitModes?.snapshot(id);
         entities.push({
+          ...(controlled &&
+            kernel.transport?.snapshot(id) && { cargo: kernel.transport.snapshot(id) }),
           ...(deployment && {
             deploy: {
               id: deployment.id,
@@ -485,6 +492,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       if (scope && !permits(scope)) return undefined;
       if (request) return permits("economy.build") ? id : undefined;
       if (item) return permits("production.queue") ? id : undefined;
+      if (!world.has(id, Transform)) return undefined;
       return current.visibility
         ? current.visibility.canSeeEntity(seat, id)
           ? id

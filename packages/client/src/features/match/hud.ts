@@ -19,6 +19,7 @@ type Mode =
         | "unit.move"
         | "unit.attackMove"
         | "unit.attack"
+        | "unit.load"
         | "economy.assistConstruction"
         | "economy.repair"
         | "production.rally";
@@ -184,6 +185,7 @@ export function createMatchHud(
       "unit.move": "ui.hud.move",
       "unit.attackMove": "ui.hud.attack-move",
       "unit.attack": "ui.hud.attack",
+      "unit.load": "ui.hud.load",
       "economy.assistConstruction": "ui.hud.assist",
       "economy.repair": "ui.hud.repair",
       "production.rally": "ui.hud.rally",
@@ -222,6 +224,30 @@ export function createMatchHud(
     get(".hud-command-panel"),
   );
   deployButton.dataset.deploy = "";
+  const loadButton = button(
+    text("ui.hud.load"),
+    () =>
+      arm({
+        type: "unit.load",
+        handles: units()
+          .filter((entity) => definitions.get(entity.definition)?.gameplay.domain === "foot")
+          .map((entity) => entity.handle),
+      }),
+    get(".hud-command-panel"),
+  );
+  loadButton.dataset.load = "";
+  const unloadButton = button(
+    `U · ${text("ui.hud.unload")}`,
+    () => {
+      const transport = units().find((entity) => entity.cargo);
+      if (transport) {
+        cancel();
+        void issue("unit.unload", { entity: transport.handle });
+      }
+    },
+    get(".hud-command-panel"),
+  );
+  unloadButton.dataset.unload = "";
   function activate(index: number) {
     if (commandButtons[index]?.disabled) return;
     const selectedUnits = units(),
@@ -408,10 +434,12 @@ export function createMatchHud(
         return;
       }
       if (
-        active.type === "unit.attack"
-          ? entity.force === options.force
-          : entity.force !== options.force ||
-            definitions.get(entity.definition)?.gameplay.kind !== "structure"
+        active.type === "unit.load"
+          ? entity.force !== options.force || !entity.cargo
+          : active.type === "unit.attack"
+            ? entity.force === options.force
+            : entity.force !== options.force ||
+              definitions.get(entity.definition)?.gameplay.kind !== "structure"
       ) {
         feedback("ui.hud.wrong-target");
         return;
@@ -430,7 +458,7 @@ export function createMatchHud(
       cancel();
       void issue(
         active.type,
-        active.type === "unit.attack"
+        active.type === "unit.attack" || active.type === "unit.load"
           ? { entities: active.handles, entity: handle }
           : { builders: active.handles, entity: handle },
       );
@@ -493,7 +521,19 @@ export function createMatchHud(
         enemy = snapshot?.entities.find(
           (entity) => entity.handle === targetHandle && entity.force !== options.force,
         );
-      if (
+      const transport = snapshot?.entities.find(
+        (entity) =>
+          entity.handle === targetHandle && entity.force === options.force && entity.cargo,
+      );
+      const infantry = selected.filter(
+        (entity) => definitions.get(entity.definition)?.gameplay.domain === "foot",
+      );
+      if (transport && infantry.length)
+        void issue("unit.load", {
+          entity: transport.handle,
+          entities: infantry.map((entity) => entity.handle),
+        });
+      else if (
         enemy &&
         selected.some((entity) => definitions.get(entity.definition)?.gameplay.weapons.length)
       )
@@ -569,6 +609,10 @@ export function createMatchHud(
         }
       }
       const index = keys.findIndex((key) => event.code === `Key${key}`);
+      if (event.code === "KeyU") {
+        event.preventDefault();
+        unloadButton.click();
+      }
       if (index >= 0) {
         event.preventDefault();
         activate(index);
@@ -590,6 +634,17 @@ export function createMatchHud(
       owned = own();
     const selectedUnits = units(),
       selectedBuilders = builders();
+    loadButton.hidden = !selectedUnits.some(
+      (entity) => definitions.get(entity.definition)?.gameplay.domain === "foot",
+    );
+    loadButton.disabled = busy || options.paused();
+    const transports = selectedUnits.filter((entity) => entity.cargo);
+    unloadButton.hidden = !transports.length;
+    unloadButton.disabled =
+      busy ||
+      options.paused() ||
+      transports.length !== 1 ||
+      !transports[0]?.cargo?.passengers.length;
     const structure = owned.find(
       (entity) => definitions.get(entity.definition)?.gameplay.kind === "structure",
     );
@@ -980,6 +1035,20 @@ export function createMatchHud(
     ];
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
     const definition = definitions.get(entity.definition)?.gameplay;
+    if (entity.cargo)
+      lines.push(
+        text("ui.hud.transport-cargo", {
+          count: entity.cargo.passengers.length,
+          capacity: entity.cargo.capacity,
+          boarding: entity.cargo.boarding,
+        }) +
+          entity.cargo.passengers
+            .map(
+              (passenger) =>
+                ` · ${name(passenger.definition)} ${passenger.health}/${passenger.maxHealth}`,
+            )
+            .join(""),
+      );
     const deployed = entity.deploy?.active ? definition?.deployMode : undefined;
     if (entity.deploy)
       lines.push(
@@ -1114,6 +1183,7 @@ function recipeText(definition: GameplayDefinition) {
 
 function refusal(value: unknown) {
   const reasons = {
+    transport_full: "ui.hud.transport-full",
     cooldown: "ui.hud.deploy-not-ready",
     immobile: "ui.hud.deploy-immobile",
     bad_payload: "ui.hud.refusal-payload",

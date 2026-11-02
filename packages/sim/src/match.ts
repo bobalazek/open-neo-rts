@@ -28,6 +28,7 @@ import {
   definitionSchema,
   entitiesFeature,
 } from "./features/entities";
+import { initializeTransports } from "./features/entities/transport";
 import { copyWeapons } from "./features/entities/weapons";
 import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
@@ -47,7 +48,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 34;
+export const SIM_VERSION = 35;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -157,6 +158,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });
+  if (setup.normal) initializeTransports(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
   initializeStatistics(kernel, setup);
   if (setup.normal) initializeExtraction(kernel, definitions);

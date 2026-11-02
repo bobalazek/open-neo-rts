@@ -96,6 +96,8 @@ export function applyDamageWarhead(
   for (const target of targets) {
     if (
       !world.has(target, Health) ||
+      !world.has(target, Template) ||
+      !world.has(target, Transform) ||
       !world.has(target, OwnerForce) ||
       world.get(target, Health, "current") === 0
     )

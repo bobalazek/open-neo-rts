@@ -430,6 +430,28 @@ test("worker replies validate bounded private production queues, work and point 
     expect(isWorkerReply(powerReply([power], [{ ...entity, production: malformed }]))).toBe(false);
 });
 
+test("private cargo packets bound manifests and reservations without exposing canonical IDs", () => {
+  const passenger = {
+    definition: "core.unit:eastern-collective/collective-soldier",
+    health: 100,
+    maxHealth: 100,
+  };
+  const cargo = { capacity: 5, boarding: 1, passengers: [passenger] };
+  expect(isWorkerReply(powerReply([power], [{ ...entity, cargo }]))).toBe(true);
+  for (const bad of [
+    { ...cargo, capacity: 0 },
+    { ...cargo, capacity: 51 },
+    { ...cargo, boarding: 5 },
+    { ...cargo, boarding: -1 },
+    { ...cargo, passengers: [{ ...passenger, entity: 5 }] },
+    { ...cargo, passengers: [{ ...passenger, health: 0 }] },
+    { ...cargo, passengers: [{ ...passenger, definition: "structure:enemy/bunker" }] },
+    { ...cargo, passengers: Array(1) },
+    { ...cargo, [Symbol("extra")]: 1 },
+  ])
+    expect(isWorkerReply(powerReply([power], [{ ...entity, cargo: bad }]))).toBe(false);
+});
+
 test("discovered resource origins require exact public fields and a permitted explored cell", () => {
   const cells = new Uint8Array(16);
   cells[5] = 1;

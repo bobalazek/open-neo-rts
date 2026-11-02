@@ -11,7 +11,8 @@ export async function start(setup: MatchSetup) {
   if (!canvas) throw new Error("Missing canvas");
   const abort = new AbortController();
   let state: OfflineState | undefined,
-    selection: string[] = [];
+    selection: string[] = [],
+    targetHandle: string | null = null;
   const errors: string[] = [];
   const match = createOfflineMatch(
     (next) => {
@@ -47,8 +48,8 @@ export async function start(setup: MatchSetup) {
         selection = [...handles];
         hud.update();
       },
-      pick: () => null,
-      pickCell: () => null,
+      pick: () => targetHandle,
+      pickCell: () => (targetHandle ? { x: 0, y: 0 } : null),
       command,
       preview: () => {},
       paused: () => false,
@@ -61,6 +62,11 @@ export async function start(setup: MatchSetup) {
     state: () => state,
     errors: () => errors,
     command,
+    target(id: string) {
+      targetHandle =
+        state?.snapshot.entities.find((entity) => entity.force === 0 && entity.definition === id)
+          ?.handle ?? null;
+    },
     select(ids: string[]) {
       selection =
         state?.snapshot.entities

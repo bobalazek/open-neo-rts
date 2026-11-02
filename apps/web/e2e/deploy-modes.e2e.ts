@@ -158,3 +158,87 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });
+
+test("the actual APC boards the original infantry through HUD targeting and unloads with U", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "chromium", "Bounded transport HUD integration runs in Chromium");
+  test.setTimeout(60_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("http://transport.test/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({
+      contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
+      body:
+        path === "/fixture.js"
+          ? fixture
+          : path === "/sim-worker.js"
+            ? worker
+            : '<!doctype html><title>APC transport</title><canvas tabindex="0"></canvas>',
+    });
+  });
+  await page.goto("http://transport.test/");
+  await page.evaluate(async (setup) => {
+    const moduleUrl = "/fixture.js";
+    const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
+    window.deployFixture = await start(setup);
+    window.deployFixture.select([
+      "core.unit:eastern-collective/collective-soldier",
+      "core.unit:eastern-collective/field-technician",
+    ]);
+    window.deployFixture.target("core.unit:eastern-collective/metamorphic-apc");
+  }, setup);
+  try {
+    await page.locator("[data-load]").click();
+    await expect(page.locator("canvas")).toHaveAttribute("data-command-mode", "unit.load");
+    await page.locator("canvas").click();
+    await expect(page.locator("[data-result]")).toHaveText(
+      "Command accepted. Work and clearance may still be waiting.",
+    );
+    await page.evaluate(() => window.deployFixture.step(300));
+    const cargo = await page.evaluate(
+      () =>
+        window.deployFixture
+          .state()!
+          .snapshot.entities.find((entity) => entity.force === 0 && entity.cargo)?.cargo,
+    );
+    expect(cargo?.passengers).toHaveLength(5);
+    expect(cargo?.boarding).toBe(0);
+    await page.evaluate((apc) => window.deployFixture.select([apc]), apc);
+    await expect(page.locator("[data-details]")).toContainText("Cargo 5/5");
+    await expect(page.locator("[data-unload]")).toBeEnabled();
+    await page.locator("canvas").focus();
+    await page.keyboard.press("u");
+    await expect(page.locator("[data-unload]")).toBeDisabled();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            window.deployFixture
+              .state()!
+              .snapshot.entities.find((entity) => entity.force === 0 && entity.cargo)?.cargo
+              ?.passengers.length,
+        ),
+      )
+      .toBe(0);
+    expect(
+      await page.evaluate(() =>
+        window.deployFixture
+          .state()!
+          .snapshot.entities.filter(
+            (entity) =>
+              entity.force === 0 &&
+              [
+                "core.unit:eastern-collective/collective-soldier",
+                "core.unit:eastern-collective/field-technician",
+              ].includes(entity.definition),
+          ),
+      ),
+    ).toHaveLength(5);
+    expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(() => window.deployFixture.dispose());
+  }
+});
