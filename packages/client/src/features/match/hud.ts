@@ -107,7 +107,7 @@ export function createMatchHud(
     return element;
   }
   section.dataset.panel = "commands";
-  const tabs = ["selection", "commands", "build"] as const;
+  const tabs = ["selection", "commands", "build", "map"] as const;
   const panelButtons = tabs.map((panel) =>
     button(
       text(
@@ -115,7 +115,9 @@ export function createMatchHud(
           ? "ui.hud.selection"
           : panel === "commands"
             ? "ui.hud.commands"
-            : "ui.hud.build",
+            : panel === "map"
+              ? "ui.minimap.title"
+              : "ui.hud.build",
       ),
       () => {
         section.dataset.panel = panel;
@@ -1008,6 +1010,29 @@ export function createMatchHud(
     targeting: () => mode !== undefined,
     cancel,
     frame: preview,
+    armAttackMove: () => activate(4),
+    /** Minimap points share normal selection filtering, busy state, payment/grant authority and refusals. */
+    orderPoint(point: Point, attackMove = false) {
+      if (busy) return;
+      if (options.paused()) {
+        feedback("ui.hud.resume-first");
+        return;
+      }
+      if (mode && mode.type !== "unit.move" && mode.type !== "unit.attackMove") {
+        cancel();
+        return;
+      }
+      const type = attackMove || mode?.type === "unit.attackMove" ? "unit.attackMove" : "unit.move";
+      const handles = units()
+        .filter((entity) => (definitions.get(entity.definition)?.gameplay.speed ?? 0) > 0)
+        .map((entity) => entity.handle);
+      cancel();
+      if (!handles.length) {
+        feedback("ui.match.select-first");
+        return;
+      }
+      void issue(type, { entities: handles, x: point.x * 1024 + 512, y: point.y * 1024 + 512 });
+    },
   };
 }
 

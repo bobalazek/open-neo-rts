@@ -2,6 +2,7 @@ import { builtins } from "virtual:debug-builtins";
 import { content } from "virtual:normal-catalog";
 import {
   CELL_SIZE,
+  cameraGroundView,
   createMapPresentation,
   createPlacementOverlay,
   createRenderer,
@@ -20,6 +21,7 @@ import { createMatchPresentation } from ".";
 import { createMatchHud } from "./hud";
 import type { HudDefinition } from "./hud-model";
 import { bindSelectionInput } from "./input";
+import { createMinimap } from "./minimap";
 
 /** A screen owns this session immediately, including resources that finish loading after cancellation. */
 export function createNormalSession(
@@ -41,6 +43,7 @@ export function createNormalSession(
   let latest: OfflineState | undefined;
   let hud: ReturnType<typeof createMatchHud> | undefined;
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
+  let minimap: ReturnType<typeof createMinimap> | undefined;
   const clock = createPresentationClock();
   const release = () => {
     if (disposed) return;
@@ -111,6 +114,7 @@ export function createNormalSession(
     );
     label("[data-pause]", text(state.paused ? "ui.match.resume" : "ui.match.pause"));
     hud?.update(state);
+    minimap?.update(state.snapshot);
     void presentation?.accept(state.snapshot, clock.now(performance.now())).catch(failed);
   };
   async function initialize() {
@@ -182,6 +186,7 @@ export function createNormalSession(
       renderer.scene.onBeforeRenderObservable.add(() => {
         activePresentation.render(clock.now(performance.now()));
         hud?.frame();
+        minimap?.frame(performance.now());
       });
       progress(3);
       match = createOfflineMatch(update, failed);
@@ -247,6 +252,60 @@ export function createNormalSession(
         },
         signal.signal,
       );
+      minimap = createMinimap(
+        root,
+        canvas,
+        {
+          terrain: loaded.grid,
+          definitions: content.catalog.definitions,
+          force: 0,
+          colors: new Map([
+            [0, "#d8443a"],
+            [1, "#3c93d9"],
+          ]),
+          selection: activePresentation.selection,
+          pan: (point) => {
+            const x = Math.max(0, Math.min(loaded.grid.width - 1, point.x));
+            const y = Math.max(0, Math.min(loaded.grid.height - 1, point.y));
+            activeRenderer.camera.panTo(
+              x * CELL_SIZE,
+              y * CELL_SIZE,
+              (loaded.grid.level[Math.floor(y) * loaded.grid.width + Math.floor(x)] ?? 0) *
+                LEVEL_HEIGHT,
+            );
+          },
+          zoom: activeRenderer.camera.zoomBy,
+          view: () =>
+            cameraGroundView(activeRenderer.camera).map((point) => ({
+              x: point.x / CELL_SIZE,
+              y: point.z / CELL_SIZE,
+            })),
+          camera: () => ({
+            x: activeRenderer.camera.target.x / CELL_SIZE,
+            y: activeRenderer.camera.target.z / CELL_SIZE,
+          }),
+          order: hud.orderPoint,
+          armAttackMove: hud.armAttackMove,
+        },
+        signal.signal,
+      );
+      const topBar = root.querySelector<HTMLElement>(".match-top");
+      const bottomHud = root.querySelector<HTMLElement>(".match-hud");
+      if (topBar && bottomHud) {
+        const layout = () => {
+          if (!disposed)
+            activeRenderer.setViewInsets(
+              topBar.getBoundingClientRect().height,
+              bottomHud.getBoundingClientRect().height,
+            );
+        };
+        const sizes = new ResizeObserver(layout);
+        sizes.observe(topBar);
+        sizes.observe(bottomHud);
+        sizes.observe(canvas);
+        layout();
+        signal.signal.addEventListener("abort", () => sizes.disconnect(), { once: true });
+      }
       bindSelectionInput(
         canvas,
         {

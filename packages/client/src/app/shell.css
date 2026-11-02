@@ -255,7 +255,7 @@
   inset: auto 0 0;
   display: flex;
   flex-direction: column;
-  max-height: 52dvh;
+  max-height: 56dvh;
   pointer-events: none;
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
@@ -270,7 +270,7 @@
 }
 .hud-panels {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem minmax(0, 1.3fr);
+  grid-template-columns: 15rem minmax(0, 1fr) 20rem minmax(0, 1.3fr);
   min-height: 0;
 }
 .hud-panel-tabs {
@@ -284,6 +284,32 @@
 }
 .hud-panels > section + section {
   border-left: 1px solid #62707d;
+}
+.hud-panels > .hud-minimap {
+  max-height: none;
+  padding: 0.5rem;
+}
+.hud-minimap canvas {
+  width: 13.75rem;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  image-rendering: pixelated;
+  touch-action: none;
+  cursor: crosshair;
+}
+.minimap-controls {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+.game-shell .minimap-controls button {
+  padding: 0.3rem;
+  flex: 1;
+  font-size: 0.75rem;
+}
+.hud-minimap [role="status"] {
+  font-size: 0.75rem;
 }
 .match-hud h2 {
   font-size: 1rem;
@@ -408,7 +434,7 @@ canvas[data-command-mode] {
 }
 @media (max-width: 1050px) {
   .hud-panels {
-    grid-template-columns: minmax(0, 1fr) 18rem minmax(0, 1fr);
+    grid-template-columns: 12rem minmax(0, 1fr) 18rem minmax(0, 1fr);
   }
   .hud-catalog {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -424,12 +450,33 @@ canvas[data-command-mode] {
     gap: 0.35rem;
     padding: 0.35rem 0.75rem;
   }
+  .game-shell .hud-panel-tabs button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0.3rem;
+    font-size: 0.8rem;
+  }
   .hud-panels {
     display: block;
     overflow: auto;
   }
   .hud-panels > section {
     max-height: 26dvh;
+  }
+  .hud-panels > .hud-minimap {
+    max-height: 30dvh;
+    overflow: auto;
+  }
+  .hud-minimap canvas {
+    width: min(13.75rem, 22dvh);
+  }
+  .match-hud[data-panel="selection"] .hud-minimap,
+  .match-hud[data-panel="commands"] .hud-minimap,
+  .match-hud[data-panel="build"] .hud-minimap,
+  .match-hud[data-panel="map"] .hud-selection,
+  .match-hud[data-panel="map"] .hud-command-panel,
+  .match-hud[data-panel="map"] .hud-build-panel {
+    display: none;
   }
   .match-hud[data-panel="selection"] .hud-command-panel,
   .match-hud[data-panel="selection"] .hud-build-panel,

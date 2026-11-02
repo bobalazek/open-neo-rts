@@ -65,3 +65,10 @@ batch (normal start/cancel/retry plus HUD) passed in 15.1 seconds, including a r
 900-credit Reactor site/refund and 450-credit Field Technician queue/refund.
 Desktop and 390px screenshots are inspected. Publication/CI follows; minimap and
 full UI-scale qualification remain separate.
+
+Task 2-30a adds a permitted-data minimap with legal shared HUD orders, bounded
+pan/zoom/Home and a visible camera frame. Camera insets keep the actual base above
+the HUD, including narrow screens. Independent review closed A-release arming,
+height-only resize and asymmetric-viewport box-selection defects; focused checks
+and real HUD/minimap Chromium journeys pass. Root inspected desktop/mobile images.
+Alerts/Space/pings remain separate; no SIM or hidden-data source was introduced.
