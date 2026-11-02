@@ -84,7 +84,7 @@ const setup = createNormalMatchSetup({
   grants: [0, 1].map((force) => ({
     seat: force + 1,
     force,
-    scopes: ["unit.orders"],
+    scopes: ["unit.orders", "economy.build"],
     grantedAtTick: 0,
   })),
 });
@@ -162,6 +162,12 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
   expect(actual.initial?.snapshot.entities).toHaveLength(7);
   expect(actual.initial?.snapshot.entities.every((entity) => entity.force === 0)).toBe(true);
   expect(actual.initial?.hash).toBeUndefined();
+  expect(actual.initial?.snapshot.banks).toEqual([
+    {
+      force: 0,
+      resources: { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 },
+    },
+  ]);
   expect(actual.gated).toBe("debug_only");
   expect(actual.result).toBe("accepted");
   expect(actual.tick).toBe(1);
