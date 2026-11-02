@@ -24,7 +24,7 @@ PR #192 merged deterministic bot seats, private handle/decision/stream/queue con
 - The normal local-flow candidate supplies Home → Skirmish → Loading → real controlled worker match, shared Quick start, validated saved setup, pause/leave and cancellation/error/retry cleanup. Its second Force is explicitly uncontrolled. Full original core bytes determine identity at build; missing assets preserve Home/debug and refuse Start. The real HUD is separate task 2-29.
 - Active isolated work: projectile flight/contact/damage, the first actual economy/scouting/army bot, and the real match HUD/build/production/control groups. Continue with minimap, combat event playback, defeat/victory/statistics and the remaining phase-2 tasks.
 
-Default routes are Home at `/`, setup at `/skirmish`, active session at `/match`, developer tools at `/debug`, and terrain inspection at `/debug?terrain=1`. Legacy `/?map=...` terrain links remain supported. Browser CI pulls all original core LFS assets for real catalog identity; the code job keeps its small renderer fixture set.
+Default routes are Home at `/`, setup at `/skirmish`, active session at `/match`, developer tools at `/debug`, and terrain inspection at `/debug?terrain=1`. Legacy `/?map=...` terrain links remain supported. Code and browser CI pull original core LFS assets for real catalog identity and authored normal setup; identity tests cannot use pointer files or synthetic replacement bytes.
 
 ## Verification and limits
 
