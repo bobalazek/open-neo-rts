@@ -8,6 +8,8 @@ File names: `YYYY-MM-DD-short-slug.md`. Add one line to the index for each.
 
 Newest first.
 
+- [2026-11-02 — Budget sequential terrain readiness explicitly](./2026-11-02-terrain-picker-readiness.md) — Bound all six software-WebGL map loads without changing assertions or FPS acceptance.
+
 - [2026-11-02 — Reuse normal identity fixture baselines](./2026-11-02-normal-identity-fixture-work.md) — Remove repeated cold initialization while retaining every correctness assertion and the existing timeout.
 
 - [2026-11-02 — Foreground renderer capture](./2026-11-02-foreground-renderer-capture.md) — Calibrated unlocked/awake probes; qualified original 200-unit Medium run measures 50.373 fps and fails the 60 fps gate.
