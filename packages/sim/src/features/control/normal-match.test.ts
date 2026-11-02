@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { parseTerrain } from "@open-neo-rts/content";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchMap, SIM_VERSION, toMatchResources } from "../../match";
-import { resourceNodeOrigin } from "../../match-map";
+import { compileOreCells, resourceNodeOrigin } from "../../match-map";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { StructurePower } from "../economy";
 import {
@@ -163,7 +163,7 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"591ee483e603a15d"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"540efd00592032f2"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -234,7 +234,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "e42e33c5cd6e2094",
+        "hash": "8520c8ea79fb7845",
         "tick": 2,
       },
     ]
@@ -333,4 +333,32 @@ test("blocked headquarters, disconnected spawns and missing reachable ore refuse
   expect(() => createMatch(createNormalMatchSetup({ ...base, map: disconnected }))).toThrow(
     "disconnected",
   );
+});
+
+test("startup requires reachable stock rather than reachable zero-cap ore geometry", () => {
+  const base = options();
+  const water = [...base.map.terrain.water];
+  for (let y = 6; y <= 8; y++)
+    for (let x = 19; x <= 21; x++) water[y * base.map.terrain.width + x] = 1;
+  water[7 * base.map.terrain.width + 20] = 2;
+  const map: MatchMap = {
+    ...base.map,
+    terrain: { ...base.map.terrain, water },
+    resources: toMatchResources([{ kind: "ore", position: [20, 8], radius: 1, amount: 1 }]),
+  };
+  expect(compileOreCells(map).filter(({ cap }) => cap > 0)).toEqual([
+    { cell: 7 * map.terrain.width + 20, cap: 1 },
+  ]);
+  expect(() => createMatch(createNormalMatchSetup({ ...base, map }))).toThrow("cannot reach ore");
+  expect(() =>
+    createMatch(
+      createNormalMatchSetup({
+        ...base,
+        map: {
+          ...map,
+          resources: toMatchResources([{ kind: "ore", position: [20, 8], radius: 1, amount: 5 }]),
+        },
+      }),
+    ),
+  ).not.toThrow();
 });

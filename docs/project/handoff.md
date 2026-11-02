@@ -23,6 +23,7 @@ The owner approved the [existing Eastern Collective tier-1 roster and numbers pr
 - [PR #177](https://github.com/bobalazek/open-neo-rts/pull/177) merged SIM15 persistent node extraction; [PR #178](https://github.com/bobalazek/open-neo-rts/pull/178) merged the approved SIM16 actual recipe/rates at `425b9d2`. Repository/content/worker/three-engine CI passed. The old terrain-picker timeout passed unchanged on one failed-job retry.
 - [PR #179](https://github.com/bobalazek/open-neo-rts/pull/179) merged SIM17 production queues, payments/refunds, slots, gifts, exits and rallies at `c2cee3b`. Independent review, repository/content gates, all three worker journeys and all six CI jobs pass.
 - Task 2-11b activates actual tier-1 exits and two Barracks slots under SIM18, preserving existing stats/costs/time/art. Independent review and full repository/content checks pass; publication/CI follows.
+- Task 2-06 implements SIM19 ore-cell stock and neighbour-seeded regrowth. Independent review caught and closed startup accepting reachable zero-cap cells; focused conversion/mining/restore/startup checks pass. Final repository batch/publication follows. Hauling is implemented separately against this API and awaits integration.
 
 The normal initializer currently supports faction-start maps, one placed headquarters and ground starters, with no authored map objects. It does not supply missing paid headquarters recovery recipes. Normal stock/power features keep outcome state in ECS and reject debug commands.
 

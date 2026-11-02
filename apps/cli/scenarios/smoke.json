@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 18,
+  "simVersion": 19,
   "setup": {
     "map": {
       "id": "map:fixture-smoke",

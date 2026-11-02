@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 18, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 19, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -111,6 +111,13 @@ check exits, slots, produced units and the valid zero-population included truck.
 The War Factory scenario metadata follows conversion; debug state hashes remain
 unchanged. The synthetic 2×2 extractor fixture explicitly omits inherited 3×3
 headquarters exits instead of weakening semantic validation.
+
+SIM19 adds canonical ore-cell stock, caps and eligible regrowth time. Normal-start
+goldens become `540efd00592032f2` initially and `8520c8ea79fb7845` at tick two.
+Tests cover exact budgets/remainders, clipping/overlaps/overflow, mining bounds,
+neighbour-seeded regrowth, match isolation and restored-cell continuation.
+Startup rejects reachable zero-cap cells when all actual stock is inaccessible.
+Debug state hashes are unchanged; no global ore snapshot or hauling is claimed.
 
 `setup` contains:
 

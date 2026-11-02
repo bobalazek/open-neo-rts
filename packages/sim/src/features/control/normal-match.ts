@@ -15,7 +15,7 @@ import {
 import { type Grant, hasGrant } from "../../commands";
 import type { Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
-import { resourceOccupies } from "../../match-map";
+import { compileOreCells } from "../../match-map";
 import { strictObject } from "../../snapshots/schema";
 import { type Definition, type GameplayCatalog, spawnEntity } from "../entities";
 import { checkSpawnPlacement } from "../entities/placement";
@@ -401,6 +401,7 @@ export function initializeNormalMatch(kernel: Kernel, setup: MatchSetup): void {
   const normal = setup.normal;
   const map = kernel.map;
   if (!normal || !map) return;
+  const ore = compileOreCells(map);
   const staticObjects: NavigationObject[] = [];
   const placed: { x: number; y: number; radius: number }[] = [];
   const bases = new Map<number, { x: number; y: number; width: number; depth: number }>();
@@ -484,19 +485,7 @@ export function initializeNormalMatch(kernel: Kernel, setup: MatchSetup): void {
       profile.component = component;
       if (
         unit.role === "harvester" &&
-        !(map.resources ?? []).some(
-          (resource) =>
-            resource.kind === "ore" &&
-            labels.some(
-              (label, cell) =>
-                label === component &&
-                resourceOccupies(
-                  resource,
-                  cell % map.terrain.width,
-                  Math.floor(cell / map.terrain.width),
-                ),
-            ),
-        )
+        !ore.some(({ cell, cap }) => cap > 0 && labels[cell] === component)
       )
         refuse(`starting harvester at ${spawn.id} cannot reach ore`);
       for (let count = 0; count < unit.count; count++) {
