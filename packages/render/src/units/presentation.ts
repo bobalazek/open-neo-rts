@@ -5,6 +5,7 @@ import {
   Matrix,
   Mesh,
   MeshBuilder,
+  PBRMaterial,
   type Scene,
   StandardMaterial,
   TransformNode,
@@ -61,6 +62,7 @@ export function createEntityPresentation(
     radiusSubcells?: number;
     foundation?: boolean;
   }>,
+  options: { ghost?: boolean } = {},
 ) {
   const entities = new Map<string, Entity>();
   const templates = new Map<string, Template>();
@@ -111,7 +113,23 @@ export function createEntityPresentation(
           }
           try {
             const color = colors.get(force);
-            if (color) setTeamColor(model.materials, color);
+            if (color && !options.ghost) setTeamColor(model.materials, color);
+            if (options.ghost) {
+              // Original brick GLBs use flat PBR colours; this template owns its materials.
+              for (const material of model.materials)
+                if (material instanceof PBRMaterial) {
+                  const gray = Math.max(
+                    0.45,
+                    material.albedoColor.r * 0.2126 +
+                      material.albedoColor.g * 0.7152 +
+                      material.albedoColor.b * 0.0722,
+                  );
+                  material.albedoColor.set(gray, gray, gray);
+                  material.emissiveColor.set(0, 0, 0);
+                  material.metallic = 0;
+                  material.roughness = 1;
+                }
+            }
             model.addAllToScene();
             // Capture before hiding parents: glTF visibility may be inherited by children.
             for (const mesh of model.meshes) template.visibility.set(mesh.name, mesh.isVisible);
@@ -154,7 +172,7 @@ export function createEntityPresentation(
         const [width, depth] = template.footprint;
         const turned = (((b.facing >>> 14) + 3) & 1) !== 0;
         const pose = `${b.x},${b.y},${turned}`;
-        if (template.foundation && entity.foundationPose !== pose) {
+        if (template.foundation && !options.ghost && entity.foundationPose !== pose) {
           entity.foundation?.dispose();
           entity.foundation = createFoundation(
             scene,
@@ -180,7 +198,7 @@ export function createEntityPresentation(
           Vector3.DistanceSquared(camera.globalPosition, entity.root.position) >=
             lodDistance * lodDistance,
       );
-      if (selected.has(handle)) {
+      if (!options.ghost && selected.has(handle)) {
         if (!ringModel) {
           ringModel = MeshBuilder.CreateTorus(
             "selection ring template",
@@ -209,8 +227,9 @@ export function createEntityPresentation(
       }
       // Sim 0 faces +x; authored glTF fronts face +Z, with +y on the map becoming +z.
       entity.root.rotation.y = Math.PI / 2 - ((a.facing + turn * alpha) * Math.PI * 2) / 65536;
-      const clip =
-        entity.moving && entity.playback.clips.includes("move")
+      const clip = options.ghost
+        ? ""
+        : entity.moving && entity.playback.clips.includes("move")
           ? "move"
           : entity.playback.clips.includes("idle")
             ? "idle"
@@ -219,7 +238,7 @@ export function createEntityPresentation(
         entity.playback.play(clip);
         entity.clip = clip;
       }
-      entity.playback.setRate(playbackRate);
+      entity.playback.setRate(options.ghost ? 0 : playbackRate);
     }
   }
 
@@ -283,10 +302,11 @@ export function createEntityPresentation(
               const meshes = current.root.getChildMeshes();
               for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
-                meshHandles.set(mesh, handle);
+                if (options.ghost) mesh.isPickable = false;
+                else meshHandles.set(mesh, handle);
               }
               current.lod = createModelLod(nodes, meshes);
-              registerModelShadows(current.root);
+              if (!options.ghost) registerModelShadows(current.root);
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,
@@ -340,6 +360,7 @@ export function createEntityPresentation(
     },
     /** Screen-space centres from the same rendered poses used for rings and picking. */
     inRectangle(left: number, top: number, right: number, bottom: number): string[] {
+      if (options.ghost) return [];
       const camera = scene.activeCamera;
       const canvas = scene.getEngine().getRenderingCanvas();
       if (!camera || !canvas) return [];
@@ -384,6 +405,7 @@ export function createEntityPresentation(
     },
     setForceColor(force: number, hex: string) {
       setTeamColor([], hex);
+      if (options.ghost) return;
       colors.set(force, hex);
       for (const template of templates.values()) {
         if (template.force === force && template.model) setTeamColor(template.model.materials, hex);

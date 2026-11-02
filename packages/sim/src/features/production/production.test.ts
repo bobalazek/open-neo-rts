@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { parseTerrain } from "@open-neo-rts/content";
-import { checkpointHash, step } from "../../kernel";
+import { checkpointHash, registerController, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { ConstructionSite } from "../construction";
@@ -413,6 +413,28 @@ test("included trucks become ready only on completion, wait for exits, stay outs
   ticks(kernel, 5);
   expect(units(kernel, 4)).toHaveLength(1);
   expect(kernel.economy?.balance(0)?.credits).toBe(4800);
+});
+
+test("normal controller observations copy private queues and resolve cancellation handles", () => {
+  const { kernel, building } = fixture({ duration: 100 });
+  step(kernel, [enqueue(kernel, building)]);
+  const queue = kernel.observe?.(1).entities.find((entity) => entity.production)?.production?.queue;
+  expect(queue).toHaveLength(1);
+  if (!queue?.[0]) throw new Error("Missing observed production item");
+  queue[0].completedTicks = 99;
+  expect(
+    kernel.observe?.(1).entities.find((entity) => entity.production)?.production?.queue[0]
+      ?.completedTicks,
+  ).toBe(1);
+  registerController(kernel, 1, ({ tick, observation }) => {
+    const item = observation.entities.find((entity) => entity.production)?.production?.queue[0];
+    return tick === 1 && item
+      ? [{ type: "production.cancel", payload: { item: item.handle } }]
+      : [];
+  });
+  ticks(kernel, 2);
+  expect(itemIds(kernel)).toEqual([]);
+  expect(kernel.economy?.balance(0)?.credits).toBe(5000);
 });
 
 test("rally is copied at actual spawn through normal paths; producer queues and handles remain private copied data", () => {

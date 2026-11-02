@@ -25,11 +25,13 @@ import {
   type NavigationObject,
 } from "../movement/navigation";
 import { labelReachability } from "../movement/reachability";
+import { FOG_MODES, type FogMode } from "../vision";
 
 export interface NormalMatchSettings {
   readonly startingCredits: number;
   readonly popCap: number;
   readonly structureCap: number;
+  readonly fog?: FogMode;
 }
 
 export interface NormalMatchSetup {
@@ -75,9 +77,10 @@ export interface NormalMatchOptions {
 
 const required = <T>(value: T | undefined): T =>
   value === undefined ? refuse("incomplete normal-match setup") : value;
-const setting = (id: keyof NormalMatchSettings) =>
+const setting = (id: "startingCredits" | "popCap" | "structureCap") =>
   required(MATCH_SETTINGS.find((entry) => entry.id === id));
-const settingSchema = (id: keyof NormalMatchSettings) => int(setting(id).min, setting(id).max);
+const settingSchema = (id: "startingCredits" | "popCap" | "structureCap") =>
+  int(setting(id).min, setting(id).max);
 const index = () => int(0, 0x7fffffff);
 const scopes = [
   "unit.orders",
@@ -118,6 +121,7 @@ export const normalMatchSchema = strictObject({
     startingCredits: settingSchema("startingCredits"),
     popCap: settingSchema("popCap"),
     structureCap: settingSchema("structureCap"),
+    fog: opt(oneOf(FOG_MODES)),
   }),
   forces: arr(
     strictObject({
@@ -155,21 +159,25 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
   const { catalog } = options;
   if (
     Object.keys(options.settings ?? {}).some(
-      (id) => !["startingCredits", "popCap", "structureCap"].includes(id),
+      (id) => !["startingCredits", "popCap", "structureCap", "fog"].includes(id),
     )
   )
     refuse("unsupported starting setting");
-  const settings = Object.fromEntries(
-    (["startingCredits", "popCap", "structureCap"] as const).map((id) => [
-      id,
-      options.settings?.[id] === undefined ? setting(id).default : options.settings[id],
-    ]),
-  ) as unknown as NormalMatchSettings;
+  const settings = {
+    ...Object.fromEntries(
+      (["startingCredits", "popCap", "structureCap"] as const).map((id) => [
+        id,
+        options.settings?.[id] === undefined ? setting(id).default : options.settings[id],
+      ]),
+    ),
+    fog: options.settings?.fog ?? "standard",
+  } as unknown as NormalMatchSettings;
   const definitions: Definition[] = catalog.definitions.map((def) => ({
     id: def.id,
     health: def.health,
     speed: def.speed,
     turnRate: def.turnRate,
+    ...(def.visionSubcells !== undefined && { visionSubcells: def.visionSubcells }),
     ...(def.power !== undefined && { power: def.power }),
     ...(def.role !== undefined && { role: def.role }),
     ...(def.construction && { construction: def.construction }),
@@ -337,6 +345,7 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         startingCredits: normal.settings.startingCredits,
         popCap: normal.settings.popCap,
         structureCap: normal.settings.structureCap,
+        fog: normal.settings.fog ?? "standard",
       }),
       forces: Object.freeze(
         [...normal.forces]

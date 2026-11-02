@@ -100,7 +100,6 @@ export interface GameplayDefinition extends Definition {
   readonly tags: readonly string[];
   readonly armor?: ArmorClass;
   readonly resistPerMille?: Readonly<Record<string, number>>;
-  readonly visionSubcells?: number;
   readonly power?: number;
   readonly pop?: number;
   /** null means no authored paid construction recipe, never free construction. */
@@ -328,7 +327,6 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       tags: strings(raw.tags),
       ...(raw.armor !== undefined && { armor: raw.armor as ArmorClass }),
       ...(raw.resist !== undefined && { resistPerMille: numbers(raw.resist, 10) }),
-      ...optionalNumber(raw, "vision", "visionSubcells", 1024),
       ...optionalNumber(raw, "power", "power"),
       ...optionalNumber(raw, "pop", "pop"),
       construction:

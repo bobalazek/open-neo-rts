@@ -280,6 +280,14 @@ Never send hidden enemy state to a client just to simplify the renderer. That al
 
 ## 9. Performance and deployment
 
+Normal matches own a `TerrainVision` service with per-team integer exploration
+arrays included in canonical hashing/serialization. Visibility counts and source
+stamps are derived caches; moving/removing sources and changing opaque blockers
+invalidate them. Vision initializes after normal entities and refreshes last in
+the existing destruction phase, before victory/snapshots; no new scheduler phase
+is introduced. Feature-state load checks its layout, while the future full-save
+envelope validates match identity. Default debug matches do not initialize vision.
+
 Performance targets on a mid-range desktop browser at the medium preset: **60 fps with 300 mobile units on screen**, and **30+ fps with 1,000 mobile units in the match** (e.g. 8 Forces at the 150 population cap that applies with 5 or more Forces, [match-rules.md](../design/match-rules.md#settings)). Lobby settings that can exceed this (higher caps, more Forces) show a performance warning in Advanced rules. The sim must hold 20 Hz at 1,000 units on the server and in the Web Worker. The renderer instances repeated meshes, batches animations and effects, culls by frustum and occlusion, and offers graphics-quality presets. Offline, the simulation runs in a Web Worker; online, on the server. AI planning and pathfinding have per-tick budgets counted in work units (never milliseconds, which would break determinism); wall-clock time is only measured for profiling. Asset import validates dimensions, texture sizes, LODs, animation counts and material counts.
 
 The desktop app is a **Tauri 2** shell (`apps/desktop`) around the same web build. It uses the system WebView: WebView2 on Windows, WKWebView on macOS and WebKitGTK on Linux. The renderer capability-detects WebGPU and falls back to WebGL 2 wherever the WebView lacks it. The desktop shell adds native file access for saves, replays, settings and mods, and can host a local match server for LAN games. Desktop releases come after web play works.

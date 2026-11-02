@@ -149,10 +149,14 @@ port.onmessage = ({ data }) => {
           const fields = payload as Record<string, unknown>;
           if (type === "unit.move" || type === "unit.attackMove" || type === "unit.stop") {
             if (Array.isArray(fields.entities))
-              fields.entities = fields.entities.map((handle) => projection.resolve(handle) ?? -1);
+              fields.entities = fields.entities.map(
+                (handle) => projection.resolve(handle, "unit.orders") ?? -1,
+              );
           } else if (type === "economy.build" || type === "economy.assistConstruction") {
             if (Array.isArray(fields.builders))
-              fields.builders = fields.builders.map((handle) => projection.resolve(handle) ?? -1);
+              fields.builders = fields.builders.map(
+                (handle) => projection.resolve(handle, "economy.build") ?? -1,
+              );
             if (type === "economy.assistConstruction")
               fields.entity = projection.resolve(fields.entity) ?? -1;
           } else if (

@@ -233,6 +233,94 @@ function isEntityPower(value: unknown): boolean {
   );
 }
 
+const bounded = (value: unknown, max = 0x7fffffff) =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= max;
+const exact = (value: Record<string, unknown>, keys: readonly string[]) =>
+  Object.getPrototypeOf(value) === Object.prototype &&
+  Reflect.ownKeys(value).length === keys.length &&
+  keys.every((key) => Object.hasOwn(value, key));
+
+function isFog(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length > 8) return false;
+  let previous = -1,
+    width = 0,
+    height = 0;
+  for (const grid of value) {
+    if (
+      !isRecord(grid) ||
+      !exact(grid, ["group", "width", "height", "cells"]) ||
+      !bounded(grid.group) ||
+      Number(grid.group) <= previous ||
+      !bounded(grid.width, 512) ||
+      !grid.width ||
+      !bounded(grid.height, 512) ||
+      !grid.height ||
+      !(grid.cells instanceof Uint8Array) ||
+      Object.getPrototypeOf(grid.cells) !== Uint8Array.prototype ||
+      grid.cells.length !== Number(grid.width) * Number(grid.height) ||
+      Reflect.ownKeys(grid.cells).length !== grid.cells.length ||
+      !grid.cells.every((cell) => cell <= 2) ||
+      (width !== 0 && (grid.width !== width || grid.height !== height))
+    )
+      return false;
+    previous = Number(grid.group);
+    width = Number(grid.width);
+    height = Number(grid.height);
+  }
+  return true;
+}
+
+function isGhosts(value: unknown, fog: unknown, tick: number, entities: unknown[]): boolean {
+  if (!Array.isArray(value) || !Array.isArray(fog)) return false;
+  const handles = new Set(entities.filter(isRecord).map((entity) => entity.handle));
+  for (const ghost of value) {
+    if (
+      !isRecord(ghost) ||
+      !exact(ghost, [
+        "handle",
+        "group",
+        "definition",
+        "force",
+        "x",
+        "y",
+        "facing",
+        "health",
+        "maxHealth",
+        "seen",
+        ...(ghost.constructionSite === undefined ? [] : ["constructionSite"]),
+      ]) ||
+      typeof ghost.handle !== "string" ||
+      !/^g[1-9][0-9]*$/.test(ghost.handle) ||
+      handles.has(ghost.handle) ||
+      typeof ghost.definition !== "string" ||
+      !/^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(ghost.definition) ||
+      !bounded(ghost.force) ||
+      !bounded(ghost.group) ||
+      !bounded(ghost.facing, 0xffff) ||
+      !bounded(ghost.health, 0xffffffff) ||
+      !ghost.health ||
+      !bounded(ghost.maxHealth, 0x7fffffff) ||
+      !ghost.maxHealth ||
+      !bounded(ghost.seen, tick) ||
+      !point(ghost) ||
+      Number(ghost.x) % 1024 !== 0 ||
+      Number(ghost.y) % 1024 !== 0 ||
+      Number(ghost.facing) % 0x4000 !== 0 ||
+      (ghost.constructionSite !== undefined && ghost.constructionSite !== true)
+    )
+      return false;
+    const grid = fog.find((entry) => isRecord(entry) && entry.group === ghost.group);
+    if (
+      !isRecord(grid) ||
+      Number(ghost.x) >= Number(grid.width) * 1024 ||
+      Number(ghost.y) >= Number(grid.height) * 1024
+    )
+      return false;
+    handles.add(ghost.handle);
+  }
+  return true;
+}
+
 export function isOverlayData(value: unknown): value is DebugOverlayData {
   if (!isRecord(value) || !Number.isSafeInteger(value.tick) || Number(value.tick) < 0) return false;
   for (const [key, layers] of [
@@ -337,6 +425,15 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     (state.overlays.tick !== snapshot.tick || snapshot.mode !== "debug-no-fog")
   )
     return false;
+  if (state.hash !== undefined && snapshot.mode !== "debug-no-fog") return false;
+  if (snapshot.fog !== undefined || snapshot.ghosts !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !isFog(snapshot.fog) ||
+      !isGhosts(snapshot.ghosts, snapshot.fog, Number(snapshot.tick), snapshot.entities)
+    )
+      return false;
+  }
   if (snapshot.banks !== undefined) {
     if (
       snapshot.mode !== "controlled" ||
@@ -396,11 +493,43 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       previous = Number(power.force);
     }
   }
-  return snapshot.entities.every((entity: unknown) => {
+  const entityHandles = new Set();
+  return [...snapshot.entities].every((entity: unknown) => {
     if (
       !isRecord(entity) ||
       typeof entity.handle !== "string" ||
       typeof entity.definition !== "string"
+    )
+      return false;
+    if (entityHandles.has(entity.handle)) return false;
+    entityHandles.add(entity.handle);
+    if (
+      Reflect.ownKeys(entity).some(
+        (key) =>
+          typeof key !== "string" ||
+          ![
+            "handle",
+            "definition",
+            "force",
+            "x",
+            "y",
+            "facing",
+            "health",
+            "maxHealth",
+            "order",
+            "power",
+            "extraction",
+            "constructionSite",
+            "construction",
+            "constructionOrder",
+            "production",
+          ].includes(key),
+      ) ||
+      !bounded(entity.force) ||
+      !point(entity) ||
+      !bounded(entity.facing, 0xffff) ||
+      !bounded(entity.health, 0xffffffff) ||
+      !bounded(entity.maxHealth)
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
