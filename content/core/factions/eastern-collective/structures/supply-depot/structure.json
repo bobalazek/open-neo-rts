@@ -11,6 +11,7 @@
   "health": 1800,
   "armor": "structure",
   "footprint": [3, 3],
+  "exits": [{ "side": "south", "cell": [1, 2] }],
   "power": -20,
   "vision": 6,
   "dock": true,

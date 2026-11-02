@@ -10,13 +10,12 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-- [ ] [2-11b · Activate Eastern Collective production metadata](./phases/2.md#2-11--unit-queues-exits-and-rally-points). PR type: faction. Apply accepted two-slot Barracks and explicit tier-1 gameplay exits after the engine/schema PR.
 - [ ] [2-06 · Ore state, depletion and regrowth](./phases/2.md#2-06--ore-state-depletion-and-regrowth). PR type: engine. Accepted field-total stock and provisional regrowth; candidate is under review.
 - [ ] [2-07 · Harvester mining, hauling and docking](./phases/2.md#2-07--harvester-mining-hauling-and-docking). PR type: engine after 2-06, with accepted mining/unloading values.
 - [ ] [2-18 · Vision grids and terrain line of sight](./phases/2.md#2-18--vision-grids-and-terrain-line-of-sight). PR type: engine. Terrain/opaque-props-first scope accepted; candidate awaits integration.
 - [ ] [2-19 · Filter snapshots, events and bot observations](./phases/2.md#2-19--filter-snapshots-events-and-bot-observations). PR type: engine after 2-18.
 
-Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction-site placement (2-09), builder work/completion (2-10) and node extraction (2-08a/b) are implemented. CLI validation compiles all 137 authored definitions. SIM16 activates the shared extractor's approved 800-credit/20-second recipe and provisional output rates for existing builders. Paid production is implemented in the next engine candidate; authored activation follows separately. Ore operating rates and initial vision scope are approved.
+Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction sites/builders (2-09/2-10), node extraction (2-08a/b) and production (2-11a/b) are implemented. SIM18 activates Eastern Collective tier-1 exits and two Barracks slots using the real queue engine; existing costs/times and included Supply Truck remain intact. CLI validation compiles all 137 authored definitions. Ore hauling and permitted enemy observations are next.
 
 ## Deferred phase-1b acceptance
 

@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 17,
+  "simVersion": 18,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -20,6 +20,7 @@
         "speed": 0,
         "turnRate": 65536,
         "footprint": [3, 3],
+        "exits": [{ "side": "south", "cell": [1, 2] }],
         "power": -40
       },
       {
