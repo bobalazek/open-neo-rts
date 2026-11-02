@@ -75,3 +75,18 @@ with the same setup and Home disposes it. A real authored normal browser journey
 proves surrender, frozen result, repeated end, two-worker rematch and Home cleanup
 in11.1s, with desktop/mobile captures. Statistics and replay actions remain later
 tasks; no invented totals or unsupported controls are displayed.
+Task 2-24b activates the actual opposing bot in the shared Home/Skirmish setup.
+Both normal controllers have explicit surrender permission. A real authored
+Training Grounds trial exposed a retreating first survivor monopolizing scouting;
+selection now uses the same retreat hysteresis as orders. Independent review
+accepted the activation and fix. SIM31 versions the policy outcome change.
+
+Source84e46b0 was exercised before the SIM31 bump: seed1 capped at18,000 ticks
+without result (a8ebd6748087cdf4); seed2 naturally ended at26,331, winner team1,
+Force0 annihilated, final checkpoint10627ead88484203 (~21m57s). Both used actual
+compiled137 definitions/core identity and Training Grounds r8 with no injected
+commands/income/spawns/surrender. These are SIM30 trial hashes, not new SIM31
+goldens or human/replay/20-game acceptance. One truck's no_ore recovery remains a
+known logistics limitation; the successful run still maintained actual income
+and six surviving Dragon Tanks. Raw local artifacts are retained under
+/tmp/neo-skirmish-opponent-seed{1-18000,2-30000}.json.
