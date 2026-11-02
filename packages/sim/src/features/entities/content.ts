@@ -318,6 +318,7 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
     const repair = raw.repair === undefined ? undefined : data(raw.repair);
     const targets = repair && data(repair.targets);
     const harvest = raw.harvest === undefined ? undefined : data(raw.harvest);
+    const transport = raw.transport === undefined ? undefined : data(raw.transport);
     const abilities = list(raw.abilities).map((a) => ({
       id: a.id as string,
       ...(a.name !== undefined && { name: a.name as string }),
@@ -329,6 +330,13 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       effects: list(a.effects).map((e) => effect(pack, e)),
     }));
     const deployment = kind === "unit" ? deployMode(abilities) : undefined;
+    if (
+      transport?.fireWhileDeployed === true &&
+      (!deployment || !["wheeled", "tracked"].includes(data(raw.movement).domain as string))
+    )
+      throw new Error(
+        `${id}: deployed passenger fire requires a ground transport with a deploy mode`,
+      );
     definitions.push({
       ...toDefinition({ ...raw, id }),
       kind,
@@ -368,7 +376,10 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       ...(harvest?.resource !== undefined && { harvestResource: harvest.resource as ResourceId }),
       ...(harvest?.amount !== undefined && { harvestAmount: quantity(harvest.amount) }),
       ...(raw.destructible !== undefined && optionalValue(data(raw.destructible), "crushable")),
-      ...(raw.transport !== undefined && { transportSlots: quantity(data(raw.transport).slots) }),
+      ...(transport && { transportSlots: quantity(transport.slots) }),
+      ...(transport?.fireWhileDeployed !== undefined && {
+        transportFireWhileDeployed: transport.fireWhileDeployed as boolean,
+      }),
       ...optionalNumber(raw, "ammo", "ammo"),
       ...optionalValue(raw, "dock"),
       ...optionalNumber(raw, "pads", "pads"),

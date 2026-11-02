@@ -233,6 +233,9 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.weapons.length && { weapons: def.weapons }),
     ...(def.deployMode && { deployMode: def.deployMode }),
     ...(def.transportSlots !== undefined && { transportSlots: def.transportSlots }),
+    ...(def.transportFireWhileDeployed !== undefined && {
+      transportFireWhileDeployed: def.transportFireWhileDeployed,
+    }),
     ...(def.turretTurnAnglePerTick !== undefined && {
       turretTurnAnglePerTick: def.turretTurnAnglePerTick,
     }),

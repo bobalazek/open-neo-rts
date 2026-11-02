@@ -1042,6 +1042,7 @@ export function createMatchHud(
           capacity: entity.cargo.capacity,
           boarding: entity.cargo.boarding,
         }) +
+          (entity.cargo.firing ? ` · ${text("ui.hud.passenger-fire")}` : "") +
           entity.cargo.passengers
             .map(
               (passenger) =>

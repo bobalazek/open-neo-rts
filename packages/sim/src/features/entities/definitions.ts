@@ -68,6 +68,7 @@ export interface Definition {
   weapons?: readonly GameplayWeapon[];
   deployMode?: DeployModeDefinition;
   transportSlots?: number;
+  transportFireWhileDeployed?: boolean;
   turretTurnAnglePerTick?: number;
   /** Missing/null means unavailable, never an implicit free construction recipe. */
   construction?: {
@@ -137,6 +138,7 @@ export const definitionSchema = strictObject({
   ),
   turretTurnAnglePerTick: opt(int(0, 0x10000)),
   transportSlots: opt(int(1, 50)),
+  transportFireWhileDeployed: opt(bool()),
   tags: opt(arr(str(/^[a-z0-9-]+$/), 0, 1000)),
   repair: opt(
     strictObject({
@@ -203,6 +205,17 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     ids.add(definition.id);
     if (definition.deployMode && kind !== "unit")
       issues.push({ path: `${path}.deployMode`, message: "only units deploy in this phase" });
+    if (
+      definition.transportFireWhileDeployed &&
+      (kind !== "unit" ||
+        !definition.deployMode ||
+        !definition.transportSlots ||
+        !["wheeled", "tracked"].includes(definition.domain ?? ""))
+    )
+      issues.push({
+        path: `${path}.transportFireWhileDeployed`,
+        message: "deployed passenger fire requires a ground transport with a deploy mode",
+      });
     if (definition.weapons?.length && (kind === "prop" || !definition.armor))
       issues.push({ path: `${path}.weapons`, message: "armed units/structures require armour" });
     const weaponIds = new Set<string>();
