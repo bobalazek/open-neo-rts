@@ -34,7 +34,7 @@ export default {
           throw new Error(
             `${relative}: ${issues.map((i) => `${i.path}: ${i.message}`).join("; ")}`,
           );
-        const content = raw as { presentation: { model: string } };
+        const content = raw as { presentation: { model: string; icon?: string } };
         const model = resolve(dirname(path), content.presentation.model);
         let url = "undefined";
         if (await Bun.file(model).exists()) {
@@ -45,7 +45,15 @@ export default {
             imports.push(`import ${url} from ${JSON.stringify(model)};`);
           }
         }
-        entries.push(`{raw:${JSON.stringify(raw)}, model:${url}}`);
+        let icon = "undefined";
+        if (content.presentation.icon) {
+          const iconPath = resolve(dirname(path), content.presentation.icon);
+          if ((await Bun.file(iconPath).slice(1, 4).text()) === "PNG") {
+            icon = `icon${index}`;
+            imports.push(`import ${icon} from ${JSON.stringify(iconPath)};`);
+          }
+        }
+        entries.push(`{raw:${JSON.stringify(raw)}, model:${url}, icon:${icon}}`);
       }
       return {
         contents: `${imports.join("\n")}\nexport const builtins = [${entries.join(",\n")}];`,
