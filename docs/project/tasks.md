@@ -12,6 +12,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
 - [ ] [2-22b · Canonical match statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual lifecycle/income/spend/death attribution and frozen final counters.
+- [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.
 - [ ] [2-30 · Minimap, alerts and camera commands](./phases/2.md#2-30--minimap-alerts-and-camera-commands). PR type: engine; only permitted terrain/fog/markers and legal owned orders.
 - [ ] [2-31 · In-game pause/menu and settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine; existing pause/surrender/results are not a complete menu.
 - [ ] [2-32b · Statistics and replay actions on results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after canonical statistics and replay export/viewer; no fabricated counters.

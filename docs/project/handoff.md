@@ -90,3 +90,10 @@ goldens or human/replay/20-game acceptance. One truck's no_ore recovery remains 
 known logistics limitation; the successful run still maintained actual income
 and six surviving Dragon Tanks. Raw local artifacts are retained under
 /tmp/neo-skirmish-opponent-seed{1-18000,2-30000}.json.
+Task 2-21a connects actual permitted combat events to authored attack/recoil/death
+clips and bounded original cube effects, damage labels and real health/work bars.
+Fog revokes effects and retained dying actors; interpolation checks every touched
+fog cell. Independent review closed the corner-crossing trail disclosure. Full
+repository/content checks and the real sim-to-projection-to-original-GLB Chromium
+proof pass. Root inspected launch/contact/death images. Door lifecycle, assembly
+and canonical wrecks/salvage remain separate; no SIM or authored balance changes.
