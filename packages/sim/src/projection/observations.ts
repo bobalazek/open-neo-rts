@@ -8,6 +8,13 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
   const { combatEvents: _combatEvents, ...gameplay } = snapshot;
   return {
     ...gameplay,
+    ...(snapshot.victory && {
+      victory: {
+        ...snapshot.victory,
+        forces: snapshot.victory.forces.map((force) => ({ ...force })),
+        result: snapshot.victory.result && { ...snapshot.victory.result },
+      },
+    }),
     entities: snapshot.entities.map((entity) => ({
       ...entity,
       order: entity.order && { ...entity.order },

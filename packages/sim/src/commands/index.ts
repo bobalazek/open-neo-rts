@@ -53,6 +53,7 @@ export interface ConstructionBuild extends DebugSpawn {
 }
 
 export interface Payloads {
+  "match.surrender": { force: number };
   "economy.sell": { entity: number };
   "economy.repair": { entity: number; builders: number[] };
   "economy.cancelRepair": { entity: number };
@@ -92,6 +93,7 @@ export type Command = {
 
 /** Every way a command is refused, with its reason. Clients get the code in their ack. */
 export const REJECTIONS = {
+  match_ended: "The match has ended; gameplay commands are no longer accepted.",
   queue_full: "This producer already has five player items, including active items.",
   insufficient_funds: "The Force cannot afford the full authored cost.",
   structure_cap: "The new site would exceed this Force's structure cap.",
@@ -120,6 +122,7 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "match.surrender": { force: ID },
   "economy.sell": { entity: ID },
   "economy.repair": { entity: ID, builders: IDS },
   "economy.cancelRepair": { entity: ID },

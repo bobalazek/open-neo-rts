@@ -276,6 +276,50 @@ const exact = (value: Record<string, unknown>, keys: readonly string[]) =>
   Reflect.ownKeys(value).length === keys.length &&
   keys.every((key) => Object.hasOwn(value, key));
 
+function isVictory(value: unknown, tick: number): boolean {
+  if (
+    !isRecord(value) ||
+    !exact(value, ["rule", "forces", "result"]) ||
+    !["annihilation", "baseDestruction", "headquarters"].some((rule) => rule === value.rule) ||
+    !Array.isArray(value.forces) ||
+    value.forces.length < 1 ||
+    value.forces.length > 8
+  )
+    return false;
+  let previous = -1;
+  const activeTeams = new Set<number>();
+  for (const row of value.forces) {
+    if (
+      !isRecord(row) ||
+      !exact(row, ["force", "team", "reason", "tick"]) ||
+      !bounded(row.force) ||
+      Number(row.force) <= previous ||
+      !bounded(row.team) ||
+      !["active", "eliminated", "surrendered"].some((reason) => reason === row.reason)
+    )
+      return false;
+    previous = Number(row.force);
+    if (row.reason === "active") {
+      if (row.tick !== null) return false;
+      activeTeams.add(Number(row.team));
+    } else if (!bounded(row.tick, tick) || Number(row.tick) < 1) return false;
+  }
+  if (value.result === null) return true;
+  const result = value.result;
+  return (
+    isRecord(result) &&
+    exact(result, ["tick", "winner", "reason"]) &&
+    result.tick === tick &&
+    tick > 0 &&
+    (result.reason === "draw"
+      ? result.winner === null && activeTeams.size === 0
+      : result.reason === "lastManStanding" &&
+        bounded(result.winner) &&
+        activeTeams.size === 1 &&
+        activeTeams.has(Number(result.winner)))
+  );
+}
+
 function isFog(value: unknown): boolean {
   if (!Array.isArray(value) || value.length > 8) return false;
   let previous = -1,
@@ -462,6 +506,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
   )
     return false;
   if (state.hash !== undefined && snapshot.mode !== "debug-no-fog") return false;
+  if (
+    snapshot.victory !== undefined &&
+    (snapshot.mode !== "controlled" || !isVictory(snapshot.victory, Number(snapshot.tick)))
+  )
+    return false;
   if (snapshot.fog !== undefined || snapshot.ghosts !== undefined) {
     if (
       snapshot.mode !== "controlled" ||
