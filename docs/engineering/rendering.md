@@ -1,5 +1,16 @@
 # Rendering
 
+Normal-match fog presentation consumes permitted snapshot grids and ghosts only.
+The fog owner copies and unions allowed grids into a texture shared by disposable
+material hooks. A hard explored-cell mask keeps shroud dark; visible edges soften
+within explored terrain, which provisionally renders at 35% brightness. Remembered
+structures use frozen gray, shadowless, non-pickable original models. The client
+prunes absent live handles from geometry and selection before loading replacements.
+Group changes, reloads and disposal invalidate late model requests and release
+owned textures/ghosts/hooks. The explicit `/debug?fog=1` fixture demonstrates this
+without claiming the normal skirmish screen is already wired. Separate WebGPU
+hardware qualification and full-match UI acceptance remain later checks.
+
 `packages/render`, on Babylon.js. The renderer reads presentation snapshots from the sim and never writes to it. Art direction and graphics presets are in [art-and-audio.md](../design/art-and-audio.md).
 
 ## Terrain inspection

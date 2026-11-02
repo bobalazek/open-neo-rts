@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       # Renderer tests need five GLBs; the original movement regression also reads two terrain layers.
       - name: Pull renderer test fixtures
-        run: git lfs pull --include="content/core/factions/eastern-collective/units/collective-soldier/collective-soldier.glb,content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb,content/core/factions/eastern-collective/units/gunboat/gunboat.glb,content/core/factions/eastern-collective/structures/radar-tower/radar-tower.glb,content/core/resources/ore-cell/ore-cell.glb,content/core/maps/training-grounds/height.r8,content/core/maps/training-grounds/ramps.r8" --exclude=""
+        run: git lfs pull --include="content/core/factions/eastern-collective/units/collective-soldier/collective-soldier.glb,content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb,content/core/factions/eastern-collective/units/gunboat/gunboat.glb,content/core/factions/eastern-collective/structures/radar-tower/radar-tower.glb,content/core/factions/eastern-collective/structures/industrial-reactor/industrial-reactor.glb,content/core/resources/ore-cell/ore-cell.glb,content/core/maps/training-grounds/height.r8,content/core/maps/training-grounds/ramps.r8" --exclude=""
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Pull model-check fixtures
-        run: git lfs pull --include="content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb,content/core/factions/eastern-collective/units/infiltrator/infiltrator.glb,content/core/factions/eastern-collective/units/flame-tank/flame-tank.glb,content/core/factions/alliance-of-free-nations/units/tactical-operator/tactical-operator.glb,content/core/factions/phoenix-initiative/units/insurgent/insurgent.glb,content/core/factions/eastern-collective/structures/radar-tower/radar-tower.glb,content/core/props/urban/bench/bench.glb,content/core/maps/**/*.r8,content/core/resources/ore-cell/ore-cell.glb,content/core/resources/material-node/material-node.glb,content/core/resources/oil-well/oil-well.glb,content/core/neutral/structures/resource-extractor/resource-extractor.glb"
+        run: git lfs pull --include="content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb,content/core/factions/eastern-collective/units/collective-soldier/collective-soldier.glb,content/core/factions/eastern-collective/units/infiltrator/infiltrator.glb,content/core/factions/eastern-collective/units/flame-tank/flame-tank.glb,content/core/factions/alliance-of-free-nations/units/tactical-operator/tactical-operator.glb,content/core/factions/phoenix-initiative/units/insurgent/insurgent.glb,content/core/factions/eastern-collective/structures/radar-tower/radar-tower.glb,content/core/factions/eastern-collective/structures/industrial-reactor/industrial-reactor.glb,content/core/props/urban/bench/bench.glb,content/core/maps/**/*.r8,content/core/resources/ore-cell/ore-cell.glb,content/core/resources/material-node/material-node.glb,content/core/resources/oil-well/oil-well.glb,content/core/neutral/structures/resource-extractor/resource-extractor.glb"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
