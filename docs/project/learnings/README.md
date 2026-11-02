@@ -8,6 +8,8 @@ File names: `YYYY-MM-DD-short-slug.md`. Add one line to the index for each.
 
 Newest first.
 
+- [2026-11-02 — Owned model world matrices](./2026-11-02-model-world-matrix-cache.md) — Rejected stale/eager variants; guarded public-base invalidation improves one matched headless pair, pending foreground qualification.
+
 - [2026-11-02 — Foreground renderer capture](./2026-11-02-foreground-renderer-capture.md) — Calibrated unlocked/awake probes; qualified original 200-unit Medium run measures 50.373 fps and fails the 60 fps gate.
 
 - [2026-11-01 — Navigation work is separate from full-match cost](./2026-11-01-navigation-benchmark.md) — 300 request slots on 256×256 terrain, fixed node quota, cold compilation and warm scheduler timings reported separately.
