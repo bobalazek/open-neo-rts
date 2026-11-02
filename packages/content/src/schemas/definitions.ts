@@ -53,7 +53,9 @@ const cost = rec(int(0), new RegExp(`^(${RESOURCES.map((r) => r.id).join("|")})$
 const resourceShape = obj({
   kind: oneOf(["ore", ...NODE_KINDS]),
   position: arr(num(0, 512, "cells"), 2, 2),
-  amount: opt(int(1, undefined, "required for ore/materials; oil depletion is undecided")),
+  amount: opt(
+    int(1, undefined, "finite stock; required for ore/materials; omitted oil is unlimited"),
+  ),
   radius: opt(num(0, 20, "cells")),
 });
 const mapResource: Schema = {
@@ -336,6 +338,12 @@ export const SCHEMAS = {
     footprint: arr(int(1, 8), 2, 2),
     cells: opt(arr(str(/^[lsw]+$/), 1, 8)),
     nodeKinds: opt(arr(oneOf(NODE_KINDS), 1, NODE_KINDS.length)),
+    extraction: opt(
+      rec(
+        obj({ resource: oneOf(["credits", "materials"]), amountPerSecond: int(1, 0x7fffffff) }),
+        /^(materials|oil)$/,
+      ),
+    ),
     power: int(-500, 500, "+ produced, - used"),
     vision: num(0, 40, "cells"),
     pop: opt(int(0)),

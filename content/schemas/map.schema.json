@@ -163,7 +163,7 @@
           "amount": {
             "type": "integer",
             "minimum": 1,
-            "description": "required for ore/materials; oil depletion is undecided"
+            "description": "finite stock; required for ore/materials; omitted oil is unlimited"
           },
           "radius": {
             "type": "number",

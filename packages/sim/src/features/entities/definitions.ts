@@ -40,6 +40,18 @@ export interface Definition {
   footprint?: readonly [number, number];
   cells?: readonly string[];
   nodeKinds?: readonly NodeKind[];
+  /** Whole stock units per second; accumulated before integer payout. */
+  extraction?: Readonly<
+    Partial<
+      Record<
+        NodeKind,
+        {
+          readonly resource: "credits" | "materials";
+          readonly amountPerSecond: number;
+        }
+      >
+    >
+  >;
   blocks?: "nothing" | "movement" | "movement-and-vision";
 }
 
@@ -69,6 +81,15 @@ export const definitionSchema = strictObject({
   footprint: opt(arr(int(1, 8), 2, 2)),
   cells: opt(arr(str(/^[lswn]+$/), 1, 8)),
   nodeKinds: opt(arr(oneOf(NODE_KINDS), 1, NODE_KINDS.length)),
+  extraction: opt(
+    rec(
+      strictObject({
+        resource: oneOf(["credits", "materials"]),
+        amountPerSecond: int(1, INT32_MAX),
+      }),
+      /^(materials|oil)$/,
+    ),
+  ),
   blocks: opt(oneOf(["nothing", "movement", "movement-and-vision"])),
 });
 
@@ -109,6 +130,19 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     if (kind !== "unit" && definition.speed !== 0)
       issues.push({ path: `${path}.speed`, message: "static objects cannot move" });
     if (
+      definition.extraction &&
+      (kind !== "structure" ||
+        definition.role !== "extractor" ||
+        definition.power === undefined ||
+        !definition.nodeKinds?.length ||
+        Object.keys(definition.extraction).length !== definition.nodeKinds.length ||
+        definition.nodeKinds.some((node) => !Object.hasOwn(definition.extraction as object, node)))
+    )
+      issues.push({
+        path: `${path}.extraction`,
+        message: "powered extractor requires one output for each bound node kind",
+      });
+    if (
       kind !== "unit" &&
       (definition.domain !== undefined || definition.radiusSubcells !== undefined)
     )
@@ -128,6 +162,7 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
 /** Convert owner-authored content once. Missing health on a prop means no damageable health. */
 export function toDefinition(content: {
   id: string;
+  role?: string;
   health?: number;
   destructible?: { health: number };
   movement?: { speed: number; turnRate?: number; domain?: string };
@@ -136,6 +171,7 @@ export function toDefinition(content: {
   footprint?: readonly number[];
   cells?: readonly string[];
   nodeKinds?: readonly NodeKind[];
+  extraction?: Definition["extraction"];
   blocks?: string;
   power?: number;
 }): Definition {
@@ -144,6 +180,7 @@ export function toDefinition(content: {
     throw new RangeError("Invalid content movement");
   const definition = {
     id: content.id,
+    ...(content.role !== undefined && { role: content.role }),
     health: content.health ?? content.destructible?.health ?? 0,
     speed: Math.round((speed * 1024) / 20),
     turnRate: Math.round((turnRate * 0x10000) / 7200),
@@ -154,6 +191,11 @@ export function toDefinition(content: {
     ...(content.footprint && { footprint: [...content.footprint] }),
     ...(content.cells && { cells: [...content.cells] }),
     ...(content.nodeKinds && { nodeKinds: [...content.nodeKinds] }),
+    ...(content.extraction && {
+      extraction: Object.fromEntries(
+        Object.entries(content.extraction).map(([kind, output]) => [kind, { ...output }]),
+      ),
+    }),
     ...(content.blocks !== undefined && { blocks: content.blocks }),
   } as Definition;
   const issues: Issue[] = [];
