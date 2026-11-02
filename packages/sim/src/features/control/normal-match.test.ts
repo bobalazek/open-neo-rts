@@ -120,6 +120,45 @@ function state() {
   return createNormalMatchSetup(options());
 }
 
+test("normal setup retains complete compiled weapon, armour, resistance and turret data", () => {
+  const input = options();
+  const weapon = {
+    id: "fixture",
+    targets: ["ground"],
+    rangeSubcells: [0, 4096] as const,
+    reloadTicks: 20,
+    aim: "turret",
+    projectile: { kind: "bullet", speedSubcellsPerTick: 1024, blockedBy: ["structures"] },
+    warheads: [
+      { type: "damage", amount: 10, versusPerMille: { structure: 500 }, tags: ["explosive"] },
+    ],
+  };
+  const definitions = catalog.definitions.map((definition) =>
+    definition.kind === "structure"
+      ? {
+          ...definition,
+          armor: "structure" as const,
+          resistPerMille: { fire: 500 },
+          turretTurnAnglePerTick: 100,
+          weapons: [weapon],
+        }
+      : definition,
+  );
+  const setup = createNormalMatchSetup({ ...input, catalog: { ...catalog, definitions } });
+  expect(
+    setup.definitions.find(
+      (definition) =>
+        definition.id === definitions.find((definition) => definition.kind === "structure")?.id,
+    ),
+  ).toMatchObject({
+    armor: "structure",
+    resistPerMille: { fire: 500 },
+    turretTurnAnglePerTick: 100,
+    weapons: [weapon],
+  });
+  expect(() => createMatch(setup)).not.toThrow();
+});
+
 test("normal setup preserves authored vision and validates fog modes", () => {
   const input = options();
   const setup = createNormalMatchSetup({ ...input, settings: { fog: "explored" } });
@@ -189,7 +228,7 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"8e54e5c2af9b33ed"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"6e7492d37fc30b0f"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -260,7 +299,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "4a6845966fc4bccd",
+        "hash": "1321c83b00ceb85c",
         "tick": 2,
       },
     ]

@@ -2,6 +2,7 @@ import { type ConstructionBuild, hasGrant } from "../../commands";
 import { defineComponent } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
+import { clearAttackOrder } from "../combat";
 import type { StockResourceId } from "../economy";
 import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
@@ -63,6 +64,7 @@ export function clearConstructionOrder(kernel: Kernel, builder: number): void {
 }
 
 export function assignBuilderConstruction(kernel: Kernel, builder: number, target: number): void {
+  clearAttackOrder(kernel, builder);
   clearConstructionOrder(kernel, builder);
   kernel.world.add(builder, BuilderConstruction, { target });
 }
@@ -395,6 +397,7 @@ export function constructionFeature(
           maxY = Math.max(...ys);
         for (const id of ids) {
           suspendHarvesting(kernel, id);
+          clearAttackOrder(kernel, id);
           if (
             world.has(id, BuilderConstruction) &&
             world.get(id, BuilderConstruction, "target") !== request

@@ -2,6 +2,7 @@ import { hasGrant } from "../../commands";
 import { defineComponent } from "../../ecs";
 import { type Feature, type Kernel, register } from "../../kernel";
 import type { MatchSetup } from "../../match";
+import { clearAttackOrder } from "../combat";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import { perimeterPoint } from "../entities/perimeter";
@@ -267,6 +268,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
           if (!definition) continue;
           attach(kernel, id, definition);
           if (!world.has(id, Harvester)) continue;
+          clearAttackOrder(kernel, id);
           stopRoute(kernel, id);
           world.set(id, Harvester, "enabled", 1);
           world.set(id, Harvester, "dock", 0);
