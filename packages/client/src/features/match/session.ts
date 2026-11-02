@@ -14,6 +14,7 @@ import { catalogEntry, resolveEntityModel } from "../debug/catalog";
 import { createPresentationClock } from "../debug/clock";
 import { mapDecorations, resolveMapModel } from "../debug/map-visuals";
 import { loadMap } from "../debug/maps";
+import { postMatchScreen } from "../post-match";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
@@ -29,6 +30,8 @@ export function createNormalSession(
   progress: (stage: number) => void,
   fail: (error: unknown) => void,
   leave: () => void,
+  rematch: () => void,
+  home: () => void,
 ) {
   const signal = new AbortController();
   let disposed = false,
@@ -41,11 +44,13 @@ export function createNormalSession(
   let latest: OfflineState | undefined;
   let hud: ReturnType<typeof createMatchHud> | undefined;
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
+  let resultScreen: HTMLDialogElement | undefined;
   const clock = createPresentationClock();
   const release = () => {
     if (disposed) return;
     disposed = true;
     signal.abort();
+    resultScreen?.remove();
     match?.dispose();
     presentation?.dispose();
     footprint?.dispose();
@@ -112,6 +117,11 @@ export function createNormalSession(
     label("[data-pause]", text(state.paused ? "ui.match.resume" : "ui.match.pause"));
     hud?.update(state);
     void presentation?.accept(state.snapshot, clock.now(performance.now())).catch(failed);
+    if (state.snapshot.victory?.result && !resultScreen) {
+      hud?.cancel();
+      footprint?.accept(null);
+      resultScreen = postMatchScreen(root, state.snapshot.victory, 0, rematch, home);
+    }
   };
   async function initialize() {
     try {
@@ -196,7 +206,7 @@ export function createNormalSession(
       const activeMatch = match,
         activeRenderer = renderer;
       const toggle = async () => {
-        if (!latest || busy || disposed) return;
+        if (!latest || busy || disposed || latest.snapshot.victory?.result) return;
         busy = true;
         try {
           await activeMatch.pause(!latest.paused);
@@ -227,7 +237,7 @@ export function createNormalSession(
           pick: activePresentation.pick,
           pickCell: activeRenderer.pickCell,
           command: activeMatch.command,
-          paused: () => !!latest?.paused || busy,
+          paused: () => !!latest?.paused || busy || !!latest?.snapshot.victory?.result,
           preview: (cells) =>
             footprint?.accept(
               cells
@@ -250,7 +260,7 @@ export function createNormalSession(
       bindSelectionInput(
         canvas,
         {
-          enabled: () => ready && !disposed && !busy && !hud?.targeting(),
+          enabled: () => ready && !disposed && !busy && !latest?.snapshot.victory?.result && !hud?.targeting(),
           selected: activePresentation.selection,
           select: activePresentation.select,
           pick: activePresentation.pick,
@@ -261,7 +271,7 @@ export function createNormalSession(
       window.addEventListener(
         "keydown",
         (event) => {
-          if (event.code === "Escape" && !event.defaultPrevented && ready) {
+          if (event.code === "Escape" && !event.defaultPrevented && ready && !latest?.snapshot.victory?.result) {
             event.preventDefault();
             if (hud?.cancel()) return;
             if (activePresentation.selection().length) {
