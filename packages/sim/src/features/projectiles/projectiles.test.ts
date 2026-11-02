@@ -321,6 +321,22 @@ test("zero, immunity and final-floor damage remain exact even for large products
   expect(f.kernel.world.isAlive(f.target)).toBe(false);
 });
 
+test("splash includes exact body tangency and excludes the next squared-distance fringe", () => {
+  const f = fixture({
+    weapon: {
+      ...gun,
+      projectile: { kind: "instant" },
+      warheads: [{ type: "damage", amount: 100, radiusSubcells: 1024, tags: [] }],
+    },
+  });
+  const tangent = f.spawn(3, 1, 25, 20),
+    outside = f.spawn(3, 1, 25, 20);
+  f.kernel.world.set(outside, Transform, "y", 20 * 1024 + 513);
+  f.fire();
+  expect(f.hp(tangent)).toBe(900);
+  expect(f.hp(outside)).toBe(1000);
+});
+
 test("delayed multi-warhead damage and fuses persist and never repeat after target removal", () => {
   const f = fixture({
     weapon: {

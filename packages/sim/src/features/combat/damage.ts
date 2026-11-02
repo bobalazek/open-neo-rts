@@ -23,20 +23,22 @@ function distance(
   definitions: readonly Definition[],
   target: number,
   point: { x: number; y: number },
-): number {
+  radius: number,
+): number | undefined {
   const bounds = entityBounds(kernel, definitions, target);
   if (bounds) {
     const x = point.x - Math.max(bounds[0], Math.min(bounds[2], point.x));
     const y = point.y - Math.max(bounds[1], Math.min(bounds[3], point.y));
-    return isqrt(x * x + y * y);
+    const squared = x * x + y * y;
+    return squared <= radius * radius ? isqrt(squared) : undefined;
   }
   const centre = combatPoint(kernel, definitions, target),
     definition = definitions[kernel.world.get(target, Template, "definition")];
-  return Math.max(
-    0,
-    isqrt((point.x - centre.x) ** 2 + (point.y - centre.y) ** 2) -
-      (definition?.radiusSubcells ?? 0),
-  );
+  const squared = (point.x - centre.x) ** 2 + (point.y - centre.y) ** 2;
+  const bodyRadius = definition?.radiusSubcells ?? 0;
+  return squared <= (radius + bodyRadius) ** 2
+    ? Math.max(0, isqrt(squared) - bodyRadius)
+    : undefined;
 }
 
 /** One exact product, one final floor. Explicit zero factors remain zero rather than minimum damage. */
@@ -105,8 +107,8 @@ export function applyDamageWarhead(
       force === impact.force ||
       kernel.vision?.groupForForce(force) === kernel.vision?.groupForForce(impact.force);
     if (allied && (radius === 0 || !(warhead.friendlyFire ?? friendlyFire))) continue;
-    const range = radius > 0 ? distance(kernel, definitions, target, impact) : 0;
-    if (range > radius) continue;
+    const range = radius > 0 ? distance(kernel, definitions, target, impact, radius) : 0;
+    if (range === undefined) continue;
     const rings = warhead.falloffPerMille ?? [1000];
     const falloff =
       radius > 0
