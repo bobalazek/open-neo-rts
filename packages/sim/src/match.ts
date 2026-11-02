@@ -6,6 +6,7 @@ import {
   constructionWorkFeature,
   structureRepairFeature,
 } from "./features/construction";
+import { initializeBotSeats } from "./features/control/bots";
 import {
   checkNormalMatchSetup,
   copyNormalMatchSetup,
@@ -43,7 +44,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 26;
+export const SIM_VERSION = 27;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -158,5 +159,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
   if (setup.normal) register(kernel, combatFeature({ ...setup, definitions }));
   initializeObservations(kernel, { ...setup, definitions });
+  initializeBotSeats(kernel, { ...setup, definitions });
   return kernel;
 }

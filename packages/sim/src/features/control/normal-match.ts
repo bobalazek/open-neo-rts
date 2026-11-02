@@ -42,6 +42,8 @@ export interface NormalMatchSetup {
     readonly players: { readonly min: number; readonly max: number };
   };
   readonly settings: NormalMatchSettings;
+  /** Explicit passive hosts until gameplay policies are implemented. */
+  readonly bots?: readonly { readonly seat: number; readonly kind: "idle" }[];
   readonly forces: readonly {
     readonly index: number;
     readonly team: number;
@@ -74,6 +76,7 @@ export interface NormalMatchOptions {
   readonly seats: readonly number[];
   readonly grants: readonly Grant[];
   readonly settings?: Partial<NormalMatchSettings>;
+  readonly bots?: NormalMatchSetup["bots"];
 }
 
 const required = <T>(value: T | undefined): T =>
@@ -124,6 +127,7 @@ export const normalMatchSchema = strictObject({
     structureCap: settingSchema("structureCap"),
     fog: opt(oneOf(FOG_MODES)),
   }),
+  bots: opt(arr(strictObject({ seat: int(1, 0x7fffffff), kind: oneOf(["idle"]) }), 0, 16)),
   forces: arr(
     strictObject({
       index: index(),
@@ -247,6 +251,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
       gameplayHash: catalog.gameplayHash,
       mapSupport: options.mapSupport,
       settings,
+      ...(options.bots?.length && { bots: options.bots }),
       forces,
     },
   };
@@ -271,6 +276,23 @@ export function checkNormalMatchSetup(setup: MatchSetup): void {
     refuse("Force count is outside the map's supported player range");
   const forceIds = new Set(setup.forces.map((force) => force.index));
   const seats = new Set(setup.seats);
+  const botSeats = new Set<number>();
+  for (const bot of normal.bots ?? []) {
+    if (
+      !seats.has(bot.seat) ||
+      botSeats.has(bot.seat) ||
+      !setup.grants.some(
+        (grant) =>
+          grant.seat === bot.seat &&
+          grant.scopes.length > 0 &&
+          grant.grantedAtTick === 0 &&
+          (grant.expiresAtTick === undefined || grant.expiresAtTick > 0) &&
+          (grant.revokedAtTick === undefined || grant.revokedAtTick > 0),
+      )
+    )
+      refuse("bot seats must be unique declared seats with an active initial grant");
+    botSeats.add(bot.seat);
+  }
   if (forceIds.size !== setup.forces.length || seats.size !== setup.seats.length)
     refuse("Force and seat IDs must be unique");
   const slots = new Set(normal.forces.map((force) => force.index));
@@ -360,6 +382,13 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         popCap: normal.settings.popCap,
         structureCap: normal.settings.structureCap,
         fog: normal.settings.fog ?? "standard",
+      }),
+      ...(normal.bots?.length && {
+        bots: Object.freeze(
+          [...normal.bots]
+            .sort((a, b) => a.seat - b.seat)
+            .map((bot) => Object.freeze({ seat: bot.seat, kind: bot.kind })),
+        ),
       }),
       forces: Object.freeze(
         [...normal.forces]

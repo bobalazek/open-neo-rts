@@ -19,11 +19,12 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
+import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
 import type { TerrainVision, VisibilityMemory } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
-import type { SeatSnapshot } from "../projection";
+import type { SeatProjection, SeatSnapshot } from "../projection";
 
 const MAP_SERIALIZATION = Symbol("mapSerialization");
 const SETUP_IDENTITY = Symbol("setupIdentity");
@@ -120,6 +121,8 @@ export interface Kernel {
   /** Capture completed state after advancing the tick, so scheduled grants match human snapshots. */
   captureObservations?: () => void;
   controllerPayload?: (seat: number, command: ControllerCommand) => unknown;
+  observationProjections?: ReadonlyMap<number, SeatProjection>;
+  bots?: BotSeats;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
@@ -259,6 +262,7 @@ export function checkpointHash(kernel: Kernel): string {
   kernel.movement?.hashInto(h);
   kernel.vision?.hashInto(h);
   kernel.visibility?.hashInto(h);
+  kernel.bots?.hashInto(h);
   return digest(h).hex;
 }
 
@@ -287,7 +291,12 @@ function dispatch(
   for (const command of commands) {
     const handler = kernel.handlers.get(command.type);
     // ponytail: reuses unknown_type for a type no registered feature handles; add a code if acks need to tell them apart.
-    const code = handler ? handler(kernel, command) : "unknown_type";
+    const code =
+      source === "input" && kernel.bots?.hasSeat(command.seat)
+        ? "no_grant"
+        : handler
+          ? handler(kernel, command)
+          : "unknown_type";
     if (code !== undefined) (accepted.get(command) as LogEntry).result = code;
   }
   return entries;

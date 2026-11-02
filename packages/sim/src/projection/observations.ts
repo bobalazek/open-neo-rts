@@ -61,6 +61,7 @@ export function initializeObservations(kernel: Kernel, setup: MatchSetup): void 
   const projections = new Map(
     setup.seats.map((seat) => [seat, createProjection(setup, seat, "controlled")]),
   );
+  kernel.observationProjections = projections;
   const snapshots = new Map<number, SeatSnapshot>();
   const capture = () => {
     for (const [seat, projection] of projections) snapshots.set(seat, projection.snapshot(kernel));
