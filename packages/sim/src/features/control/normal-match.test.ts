@@ -203,6 +203,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
 test("Force/seat/grant/key order is canonical, while settings, teams and content identity affect hashes", () => {
   const first = options();
   const initial = createNormalMatchSetup(first);
+  const initialHash = checkpointHash(createMatch(initial));
   const reordered = createNormalMatchSetup({
     ...first,
     forces: [...first.forces].reverse(),
@@ -214,16 +215,14 @@ test("Force/seat/grant/key order is canonical, while settings, teams and content
       seat: grant.seat,
     })),
   });
-  expect(checkpointHash(createMatch(reordered))).toBe(checkpointHash(createMatch(initial)));
+  expect(checkpointHash(createMatch(reordered))).toBe(initialHash);
   for (const next of [
     { ...first, seed: 43 },
     { ...first, settings: { startingCredits: 1234 } },
     { ...first, catalog: { ...catalog, gameplayHash: "abcdef1234567890" } },
     { ...first, forces: first.forces.map((force) => ({ ...force, team: 9 })) },
   ])
-    expect(checkpointHash(createMatch(createNormalMatchSetup(next)))).not.toBe(
-      checkpointHash(createMatch(initial)),
-    );
+    expect(checkpointHash(createMatch(createNormalMatchSetup(next)))).not.toBe(initialHash);
 });
 
 test("normal setup owns permission and starting-kit metadata after creation", () => {
