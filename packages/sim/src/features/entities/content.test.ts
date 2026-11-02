@@ -222,7 +222,11 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
       {
         id: "siege-mode",
         cooldownTicks: 60,
-        effects: [{ type: "modifyStat", stat: "range", perMille: 1500 }],
+        effects: [
+          { type: "modifyStat", stat: "range", amount: { value: 3072, unit: "subcells" } },
+          { type: "modifyStat", stat: "damage", perMille: 1250 },
+          { type: "modifyStat", stat: "mobile", perMille: 0 },
+        ],
       },
     ],
   });
@@ -293,6 +297,17 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
     interceptable: true,
   });
   expect(definitions.get(unitId("metamorphic-apc"))?.transportSlots).toBe(5);
+  expect(dragon?.deployMode).toMatchObject({
+    id: "siege-mode",
+    cooldownTicks: 60,
+    rangeBonusSubcells: 3072,
+    damagePerMille: 1250,
+  });
+  expect(definitions.get(unitId("metamorphic-apc"))?.deployMode).toMatchObject({
+    id: "bunker-mode",
+    cooldownTicks: 60,
+    armorPerMille: 1500,
+  });
   expect(definitions.get(unitId("supply-truck"))?.harvestCapacity).toBe(500);
   // Compilation does not settle whether a ground-only weapon may attack structures.
   expect(definitions.get(unitId("collective-soldier"))?.weapons[0]?.targets).toEqual(["ground"]);

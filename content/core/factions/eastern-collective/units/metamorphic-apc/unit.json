@@ -57,6 +57,11 @@
           "type": "modifyStat",
           "stat": "armor",
           "percent": 150
+        },
+        {
+          "type": "modifyStat",
+          "stat": "mobile",
+          "percent": 0
         }
       ]
     }

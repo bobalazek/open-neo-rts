@@ -71,7 +71,17 @@
         {
           "type": "modifyStat",
           "stat": "range",
-          "percent": 150
+          "amount": 3
+        },
+        {
+          "type": "modifyStat",
+          "stat": "damage",
+          "percent": 125
+        },
+        {
+          "type": "modifyStat",
+          "stat": "mobile",
+          "percent": 0
         }
       ]
     }
