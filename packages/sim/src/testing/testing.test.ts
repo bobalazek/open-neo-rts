@@ -29,6 +29,7 @@ describe("Eastern Collective tier-1 definitions", () => {
     expect(definitions).toEqual([
       {
         id: "unit:eastern-collective/collective-soldier",
+        role: "combat",
         health: 100,
         speed: 77,
         turnRate: 65536,
@@ -37,6 +38,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/dragon-tank",
+        role: "combat",
         health: 900,
         speed: 92,
         turnRate: 65536,
@@ -45,6 +47,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/drone-hunter",
+        role: "combat",
         health: 100,
         speed: 72,
         turnRate: 65536,
@@ -53,6 +56,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/field-technician",
+        role: "builder",
         health: 100,
         speed: 77,
         turnRate: 65536,
@@ -61,6 +65,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/metamorphic-apc",
+        role: "transport",
         health: 600,
         speed: 133,
         turnRate: 65536,
@@ -69,6 +74,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/rocket-trooper",
+        role: "combat",
         health: 100,
         speed: 67,
         turnRate: 65536,
@@ -77,6 +83,7 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/supply-truck",
+        role: "harvester",
         health: 900,
         speed: 82,
         turnRate: 65536,

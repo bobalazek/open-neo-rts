@@ -8,7 +8,12 @@ import {
   ConstructionRequest,
   ConstructionSite,
 } from "../features/construction";
-import { type BankSnapshot, type PowerSnapshot, StructurePower } from "../features/economy";
+import {
+  type BankSnapshot,
+  type ExtractionSnapshot,
+  type PowerSnapshot,
+  StructurePower,
+} from "../features/economy";
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { MoveIntent } from "../features/movement";
 import type { Kernel } from "../kernel";
@@ -28,6 +33,7 @@ export interface PresentedEntity {
   maxHealth: number;
   order: { type: "move" | "attackMove"; x: number; y: number } | null;
   power?: { amount: number; enabled: boolean; powered: boolean };
+  extraction?: ExtractionSnapshot;
   constructionSite?: true;
   construction?: {
     completedTicks: number;
@@ -134,6 +140,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 ] as (typeof CONSTRUCTION_WORK_STATES)[number],
               },
             }),
+          ...(inspectPower &&
+            kernel.extraction?.snapshot(id) && { extraction: kernel.extraction.snapshot(id) }),
           order: world.has(id, MoveIntent)
             ? {
                 type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",

@@ -63,6 +63,37 @@ const entity = {
   power: { amount: -25, enabled: true, powered: false },
 };
 
+test("worker replies validate extraction status and bounded finite or unlimited remaining deposits", () => {
+  const extraction = { kind: "materials", remaining: 4, status: "active" };
+  const packet = (value: unknown, mode = "controlled") =>
+    powerReply(undefined, [{ ...entity, power: undefined, extraction: value }], mode);
+  for (const valid of [
+    extraction,
+    { kind: "oil", remaining: null, status: "brownout" },
+    { kind: "materials", remaining: 0, status: "depleted" },
+    { kind: null, remaining: null, status: "invalid_node" },
+  ])
+    expect(isWorkerReply(packet(valid))).toBe(true);
+  for (const invalid of [
+    null,
+    {},
+    { ...extraction, remaining: -1 },
+    { ...extraction, remaining: 0.5 },
+    { ...extraction, remaining: 0x80000000 },
+    { ...extraction, remaining: Number.NaN },
+    { ...extraction, remaining: null },
+    { ...extraction, status: "unknown" },
+    { ...extraction, status: "depleted" },
+    { ...extraction, kind: "ore" },
+    { ...extraction, extra: 1 },
+    Object.assign(Object.create(extraction), extraction),
+    { ...extraction, ...JSON.parse('{"__proto__":1}') },
+    { kind: "oil", remaining: null, status: "depleted" },
+  ])
+    expect(isWorkerReply(packet(invalid))).toBe(false);
+  expect(isWorkerReply(packet(extraction, "debug-no-fog"))).toBe(false);
+});
+
 test("worker replies accept bounded power capacities and per-instance toggles", () => {
   expect(isWorkerReply(powerReply([power], [entity]))).toBe(true);
   expect(isWorkerReply(powerReply([]))).toBe(true);

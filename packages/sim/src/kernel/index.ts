@@ -19,7 +19,7 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
-import type { ForceBanks, ForcePower } from "../features/economy";
+import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
 import { copyMatchMap, type MatchMap } from "../match-map";
 
@@ -98,6 +98,7 @@ export interface Kernel {
   economy?: ForceBanks;
   /** Completed-structure power capacity and brownout; values live in World. */
   power?: ForcePower;
+  extraction?: ForceExtraction;
   /** Map movement owns its routes and incremental search state. */
   movement?: TerrainMovement;
   readonly world: World;

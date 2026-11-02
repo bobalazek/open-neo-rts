@@ -125,6 +125,36 @@
       "minItems": 1,
       "maxItems": 2
     },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "$schema": {
+            "type": "string"
+          },
+          "resource": {
+            "enum": [
+              "credits",
+              "materials"
+            ]
+          },
+          "amountPerSecond": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "resource",
+          "amountPerSecond"
+        ],
+        "additionalProperties": false
+      },
+      "propertyNames": {
+        "pattern": "^(materials|oil)$"
+      }
+    },
     "power": {
       "type": "integer",
       "minimum": -500,

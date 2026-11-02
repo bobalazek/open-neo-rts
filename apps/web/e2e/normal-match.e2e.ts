@@ -19,6 +19,9 @@ import builder from "../../../content/core/factions/eastern-collective/units/fie
 import truck from "../../../content/core/factions/eastern-collective/units/supply-truck/unit.json" with {
   type: "json",
 };
+import extractorBase from "../../../content/core/neutral/structures/resource-extractor/structure.json" with {
+  type: "json",
+};
 import type { OfflineState } from "../../../packages/client/src/worker";
 import {
   createMatch,
@@ -32,17 +35,33 @@ import {
 import { flatMap } from "../../../packages/sim/src/testing/maps";
 
 // Minimal authored startup/build catalog; full gameplay compilation is validated separately.
-const definitions = [headquarters, soldier, builder, truck, reactor].map((raw) => ({
+// Accepted fixture balance keeps engine coverage independent of content activation.
+const extractor = {
+  ...extractorBase,
+  nodeKinds: ["materials", "oil"] as const,
+  cost: { credits: 800 },
+  buildTime: 20,
+  extraction: {
+    materials: { resource: "materials" as const, amountPerSecond: 1 },
+    oil: { resource: "credits" as const, amountPerSecond: 2 },
+  },
+};
+const definitions = [headquarters, soldier, builder, truck, reactor, extractor].map((raw) => ({
   ...toDefinition({ ...raw, id: `core.${raw.id}` }),
   kind: raw.id.startsWith("unit:") ? "unit" : "structure",
   role: raw.role,
   pop: "pop" in raw ? raw.pop : 0,
   tags: [],
-  construction: raw === reactor ? { cost: reactor.cost, buildTicks: reactor.buildTime * 20 } : null,
+  construction:
+    raw === reactor
+      ? { cost: reactor.cost, buildTicks: reactor.buildTime * 20 }
+      : raw === extractor
+        ? { cost: extractor.cost, buildTicks: extractor.buildTime * 20 }
+        : null,
   requires: [],
   producedBy: [],
   produces: [],
-  builds: raw === builder ? [`core.${reactor.id}`] : [],
+  builds: raw === builder ? [`core.${reactor.id}`, `core.${extractor.id}`] : [],
   spawnsWith: [],
   weapons: [],
   abilities: [],
@@ -57,6 +76,7 @@ const map = {
   ],
   resources: [
     { kind: "ore" as const, position: [16 * 1024, 16 * 1024] as const, amount: 1000, radius: 1024 },
+    { kind: "materials" as const, position: [20 * 1024, 8 * 1024] as const, amount: 3 },
   ],
 };
 const setup = createNormalMatchSetup({
@@ -300,4 +320,110 @@ test("normal worker starts the kit, constructs with builders and keeps debug gat
     createProjection(setup, 1, "controlled").snapshot(kernel),
   );
   expect(kernel.world.query(Template, OwnerForce)).toHaveLength(14);
+});
+
+test("normal worker builds an extractor and applies power and finite depletion", async ({
+  page,
+}) => {
+  await page.route("http://normal-match.test/**", (route) =>
+    route.fulfill({
+      contentType: route.request().url().endsWith("sim-worker.js")
+        ? "text/javascript"
+        : "text/html",
+      body: route.request().url().endsWith("sim-worker.js")
+        ? worker
+        : "<!doctype html><title>Extraction fixture</title>",
+    }),
+  );
+  await page.goto("http://normal-match.test/");
+  const actual = await page.evaluate(
+    async ({ client, setup }) => {
+      const url = URL.createObjectURL(new Blob([client], { type: "text/javascript" }));
+      const { createOfflineMatch } = (await import(
+        url
+      )) as typeof import("../../../packages/client/src/worker");
+      URL.revokeObjectURL(url);
+      let state: OfflineState | undefined;
+      const match = createOfflineMatch((next) => {
+        state = next;
+      });
+      const current = () =>
+        state?.snapshot.entities.find(
+          (entity) => entity.definition === "core.structure:neutral/resource-extractor",
+        );
+      const materials = () => state?.snapshot.banks?.[0]?.resources.materials;
+      try {
+        await match.init({ setup, seat: 1, mode: "controlled" });
+        const headquarters = state?.snapshot.entities.find((entity) => entity.power)?.handle;
+        const builders =
+          state?.snapshot.entities
+            .filter(
+              (entity) => entity.definition === "core.unit:eastern-collective/field-technician",
+            )
+            .map((entity) => entity.handle) ?? [];
+        const building = match.command("economy.build", {
+          force: 0,
+          definition: "core.structure:neutral/resource-extractor",
+          builders,
+          x: 19 * 1024,
+          y: 7 * 1024,
+          facing: 16384,
+        });
+        await match.step();
+        const placed = await building;
+        const constructing = current()?.extraction;
+        for (let ticks = 0; ticks < 800 && current()?.constructionSite; ticks++) await match.step();
+        const completed = current();
+        for (let ticks = 0; ticks < 20; ticks++) await match.step();
+        const fullRate = materials();
+        const off = match.command("economy.power", { entity: completed?.handle, enabled: 0 });
+        await match.step();
+        await off;
+        for (let ticks = 0; ticks < 20; ticks++) await match.step();
+        const disabled = { materials: materials(), extraction: current()?.extraction };
+        const shutdown = match.command("economy.power", { entity: headquarters, enabled: 0 });
+        await match.step();
+        await shutdown;
+        const on = match.command("economy.power", { entity: completed?.handle, enabled: 1 });
+        await match.step();
+        await on;
+        for (let ticks = 1; ticks < 40; ticks++) await match.step();
+        const brownout = { materials: materials(), extraction: current()?.extraction };
+        const restore = match.command("economy.power", { entity: headquarters, enabled: 1 });
+        await match.step();
+        await restore;
+        for (let ticks = 1; ticks < 20; ticks++) await match.step();
+        for (let ticks = 0; ticks < 40; ticks++) await match.step();
+        return {
+          placed,
+          constructing,
+          completed: !!completed && !completed.constructionSite,
+          fullRate,
+          disabled,
+          brownout,
+          finalMaterials: materials(),
+          finalExtraction: current()?.extraction,
+          finalCredits: state?.snapshot.banks?.[0]?.resources.credits,
+        };
+      } finally {
+        match.dispose();
+      }
+    },
+    { client, setup },
+  );
+  expect(actual.placed).toBe("accepted");
+  expect(actual.constructing).toEqual({ kind: "materials", remaining: 3, status: "constructing" });
+  expect(actual.completed).toBe(true);
+  expect(actual.fullRate).toBe(1);
+  expect(actual.disabled).toEqual({
+    materials: 1,
+    extraction: { kind: "materials", remaining: 2, status: "disabled" },
+  });
+  expect(actual.brownout).toEqual({
+    materials: 2,
+    extraction: { kind: "materials", remaining: 1, status: "brownout" },
+  });
+  expect(actual.finalMaterials).toBe(3);
+  expect(actual.finalExtraction).toEqual({ kind: "materials", remaining: 0, status: "depleted" });
+  expect(actual.finalCredits).toBe(4200);
 });

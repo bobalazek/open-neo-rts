@@ -181,6 +181,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.footprint && { footprint: def.footprint }),
     ...(def.cells && { cells: def.cells }),
     ...(def.nodeKinds && { nodeKinds: def.nodeKinds }),
+    ...(def.extraction && { extraction: def.extraction }),
     ...(def.blocks !== undefined && { blocks: def.blocks }),
   }));
   const forces = options.forces.map((force) => {

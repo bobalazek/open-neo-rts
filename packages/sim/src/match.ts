@@ -8,7 +8,11 @@ import {
   type NormalMatchSetup,
   normalMatchIdentity,
 } from "./features/control/normal-match";
-import { initializeForceBanks, initializeForcePower } from "./features/economy";
+import {
+  initializeExtraction,
+  initializeForceBanks,
+  initializeForcePower,
+} from "./features/economy";
 import {
   checkDefinitions,
   type Definition,
@@ -28,7 +32,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 14;
+export const SIM_VERSION = 16;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -67,6 +71,16 @@ export function createMatch(setup: MatchSetup): Kernel {
       }),
       ...(definition.cells && { cells: Object.freeze([...definition.cells]) }),
       ...(definition.nodeKinds && { nodeKinds: Object.freeze([...definition.nodeKinds]) }),
+      ...(definition.extraction && {
+        extraction: Object.freeze(
+          Object.fromEntries(
+            Object.entries(definition.extraction).map(([kind, output]) => [
+              kind,
+              Object.freeze({ ...output }),
+            ]),
+          ),
+        ),
+      }),
       ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
       ...(definition.requires && { requires: Object.freeze([...definition.requires]) }),
       ...(definition.builds && { builds: Object.freeze([...definition.builds]) }),
@@ -94,6 +108,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
+  if (setup.normal) initializeExtraction(kernel, definitions);
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
   return kernel;
