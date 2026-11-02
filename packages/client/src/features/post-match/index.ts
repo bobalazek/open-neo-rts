@@ -79,6 +79,7 @@ export function postMatchScreen(
   rematch: () => void,
   home: () => void,
   statistics?: ForceStatisticsSnapshot[],
+  saveReplay?: () => Promise<void>,
 ) {
   const result = matchResult(victory, force, statistics);
   if (!result) throw new Error("Cannot present an unfinished match");
@@ -133,6 +134,33 @@ export function postMatchScreen(
   dialog.addEventListener("cancel", (event) => event.preventDefault());
   dialog.querySelector("[data-rematch]")!.addEventListener("click", rematch);
   dialog.querySelector("[data-home]")!.addEventListener("click", home);
+  if (saveReplay) {
+    const button = document.createElement("button"),
+      status = document.createElement("p");
+    button.type = "button";
+    button.textContent = text("ui.result.save-replay");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    dialog.querySelector(".setup-actions")?.prepend(button);
+    dialog.append(status);
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      status.setAttribute("role", "status");
+      status.textContent = text("ui.result.preparing-replay");
+      try {
+        await saveReplay();
+        if (dialog.isConnected) status.textContent = text("ui.result.replay-download");
+      } catch {
+        if (dialog.isConnected) {
+          status.setAttribute("role", "alert");
+          status.textContent = text("ui.result.replay-failed");
+        }
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
   root.append(dialog);
   dialog.showModal();
   return dialog;

@@ -29,6 +29,15 @@ Every file carries a header: format version, sim version, pack IDs, versions and
 
 ## Replays
 
+- **Current first slice:** a normal match's result screen can download a versioned
+  input record: `{ format: 1, scenario, tick, hash }`. The complete format-2 scenario
+  carries the current simulation version, gameplay identity, compiled setup/map
+  and accepted external commands. Hosted bots regenerate; their commands are not
+  recorded a second time. `parseMatchRecord` rejects malformed/incompatible data
+  and `verifyMatchRecord` requires the exact canonical terminal tick and hash.
+  Export is refused while a normal match is running. This headless record is not
+  a full save or the final replay file: installed-pack/cosmetic metadata, creation
+  metadata, snapshot keyframes, seeking and the interactive viewer remain work.
 - Playback re-runs the sim from the command log; keyframes allow seeking.
 - Viewers can see everything or follow one player's vision.
 - Playing a replay requires the same sim version and content hashes. Old replays stay playable by loading the matching game version, which is why releases keep versioned web builds hosted ([deployment-and-operations.md](deployment-and-operations.md)).

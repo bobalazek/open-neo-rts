@@ -3,6 +3,7 @@ import {
   type Command,
   checkpointHash,
   createMatch,
+  createMatchRecord,
   createProjection,
   type DebugSpawn,
   debugSpawnPlacement,
@@ -252,6 +253,9 @@ port.onmessage = ({ data }) => {
         );
         return;
       }
+      case "export-match-record":
+        publish(id, createMatchRecord(kernel, setup));
+        return;
       default:
         throw new Error("Unknown worker request");
     }

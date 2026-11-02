@@ -3,6 +3,7 @@ import type {
   DebugOverlayData,
   DebugOverlayOptions,
   DebugSpawn,
+  MatchRecord,
   MatchSetup,
   ProjectionMode,
   Scenario,
@@ -16,6 +17,7 @@ import {
   HARVEST_STATUSES,
   MAX_COMBAT_EVENTS,
   PRODUCTION_STATUSES,
+  SIM_VERSION,
   STAT_COUNTERS,
 } from "@open-neo-rts/sim";
 
@@ -119,6 +121,20 @@ export function isDebugSessionExport(value: unknown): value is DebugSessionExpor
     Array.isArray(value.scenario.commands)
   );
 }
+/** Full scenario validation stays in the host/export parser, not in the rendering thread. */
+export function isMatchRecord(value: unknown): value is MatchRecord {
+  return (
+    isRecord(value) &&
+    value.format === 1 &&
+    Object.keys(value).length === 4 &&
+    isDebugSessionExport(value) &&
+    value.tick > 0 &&
+    value.tick <= 0x80000000 &&
+    isRecord(value.scenario.setup.normal) &&
+    value.scenario.setup.debug === false &&
+    value.scenario.simVersion === SIM_VERSION
+  );
+}
 export type WorkerRequest =
   | { type: "init"; options: OfflineSetup }
   | { type: "command"; command: { type: string; payload: unknown } }
@@ -126,7 +142,7 @@ export type WorkerRequest =
   | { type: "speed"; speed: number }
   | { type: "placement"; spawn: DebugSpawn }
   | { type: "overlays"; options: DebugOverlayOptions }
-  | { type: "step" | "export" | "export-session" };
+  | { type: "step" | "export" | "export-session" | "export-match-record" };
 
 export interface WorkerReply {
   id: number;
