@@ -135,6 +135,7 @@ function decisionState(value: unknown): State {
           y: coordinate(),
           until: int(0, 0xffffffff),
           handle: nullable(target()),
+          health: opt(int(1, 0xffffffff)),
         }),
       ),
       avoid: nullable(strictObject({ handle: target(), until: int(0, 0xffffffff) })),

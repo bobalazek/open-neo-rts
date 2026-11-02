@@ -17,7 +17,7 @@ import {
   type SkirmishMemory,
   type SkirmishPolicy,
 } from "../economy";
-import { scout } from "../scouting";
+import { goalDeadline, scout } from "../scouting";
 
 function produce(view: PlanningView, producer: PolicyEntity): PolicyCommand | undefined {
   if (
@@ -152,10 +152,20 @@ export function basicSkirmishProgram(
       if (enemy && !policy.allies.includes(enemy.force)) {
         if (!work.take()) return { state: { ...state, cursor, memory }, commands };
         const base = baseOf(view);
+        const previous = memory.goal?.handle === enemy.handle ? memory.goal : null;
+        const point = {
+          x: enemy.x + (definitions.get(enemy.definition)?.footprint ? 512 : 0),
+          y: enemy.y + (definitions.get(enemy.definition)?.footprint ? 512 : 0),
+        };
+        const until = previous
+          ? enemy.health < (previous.health ?? enemy.health)
+            ? Math.max(previous.until, observation.tick + 400)
+            : previous.until
+          : goalDeadline(view, point);
         // A known unreachable distant objective gets a bounded pause before another attempt.
         if (
-          memory.goal?.handle === enemy.handle &&
-          memory.goal.until <= observation.tick &&
+          previous &&
+          until <= observation.tick &&
           base &&
           distance(base, enemy) > (12 * 1024) ** 2
         ) {
@@ -164,11 +174,10 @@ export function basicSkirmishProgram(
           memory.goal = null;
         } else
           memory.goal = {
-            x: enemy.x + (definitions.get(enemy.definition)?.footprint ? 512 : 0),
-            y: enemy.y + (definitions.get(enemy.definition)?.footprint ? 512 : 0),
-            until:
-              memory.goal?.handle === enemy.handle ? memory.goal.until : observation.tick + 400,
+            ...point,
+            until,
             handle: enemy.handle,
+            health: enemy.health,
           };
       } else memory.enemy = null;
       if (!memory.enemy && !scout(view, work, random))

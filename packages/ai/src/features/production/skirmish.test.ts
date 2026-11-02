@@ -294,3 +294,132 @@ test("failed placements advance finite candidate history and unknown terrain is 
   const shrouded = { ...view, fog: [{ width: 16, height: 16, cells: new Uint8Array(256) }] };
   expect(runDecision(decide, shrouded, state(), createStream(1, "ai:1"), 64).commands).toEqual([]);
 });
+
+test("a distant remembered base stays the goal while a slow army is still travelling", () => {
+  const decide = basicSkirmishProgram({
+    ...policy,
+    definitions: policy.definitions.map((definition) =>
+      definition.id === "soldier" ? { ...definition, speed: 77 } : definition,
+    ),
+  });
+  const own = [
+    entity("e1", "hq"),
+    ...Array.from({ length: 6 }, (_, index) => entity(`e${index + 2}`, "soldier")),
+  ];
+  const view = {
+    ...observation(own),
+    fog: [{ width: 128, height: 128, cells: new Uint8Array(128 * 128).fill(1) }],
+    ghosts: [{ handle: "g1", force: 3, x: 110 * 1024, y: 110 * 1024 }],
+  };
+  const first = runDecision(decide, view, state(), createStream(1, "ai:1"), 64);
+  expect(first.state.memory?.goal?.until).toBeGreaterThan(2000);
+  const goal = structuredClone(first.state.memory!.goal!);
+  const next = runDecision(
+    decide,
+    {
+      ...view,
+      tick: 800,
+      entities: own.map((actor) =>
+        actor.definition === "soldier"
+          ? {
+              ...actor,
+              x: 30 * 1024,
+              y: 30 * 1024,
+              order: { type: "attackMove", x: goal.x, y: goal.y },
+            }
+          : actor,
+      ),
+    },
+    first.state,
+    first.random,
+    64,
+  );
+  expect(next.state.memory?.goal).toEqual(goal);
+  expect(next.commands.some((command) => command.type === "unit.attackMove")).toBe(false);
+});
+
+test("observed damage keeps a distant assault active, but a non-progressing target still expires", () => {
+  const decide = basicSkirmishProgram({
+    ...policy,
+    definitions: [
+      ...policy.definitions.map((definition) =>
+        definition.id === "soldier" ? { ...definition, speed: 77 } : definition,
+      ),
+      { id: "enemy-base", role: "headquarters", footprint: [1, 1] },
+    ],
+  });
+  const own = [
+    entity("e1", "hq"),
+    ...Array.from({ length: 6 }, (_, index) => ({
+      ...entity(`e${index + 2}`, "soldier", 1, 100 * 1024),
+      y: 100 * 1024,
+    })),
+  ];
+  const target = {
+    ...entity("e20", "enemy-base", 3, 103 * 1024),
+    y: 100 * 1024,
+    health: 4500,
+    maxHealth: 4500,
+  };
+  const view = {
+    ...observation([...own, target]),
+    fog: [{ width: 128, height: 128, cells: new Uint8Array(128 * 128).fill(2) }],
+  };
+  const first = runDecision(decide, view, state(), createStream(2, "ai:1"), 64);
+  const damaged = { ...view, tick: 600, entities: [...own, { ...target, health: 4400 }] };
+  const next = runDecision(decide, damaged, first.state, first.random, 64);
+  expect(next.state.memory?.goal).toMatchObject({ handle: target.handle, health: 4400 });
+  expect(next.state.memory?.goal?.until).toBeGreaterThan(600);
+  expect(next.state.memory?.avoid?.handle).not.toBe(target.handle);
+  const expired = runDecision(decide, { ...damaged, tick: 2000 }, next.state, next.random, 64);
+  expect(expired.state.memory?.avoid?.handle).toBe(target.handle);
+});
+
+test("scouting spends its bounded sample on new shroud before revisiting explored fog", () => {
+  const decide = basicSkirmishProgram(policy);
+  const own = [
+    entity("e1", "hq"),
+    ...Array.from({ length: 6 }, (_, index) => entity(`e${index + 2}`, "soldier")),
+  ];
+  const cells = new Uint8Array(32 * 32).fill(1);
+  cells[483] = 0; // The second candidate after the fixed cursor; the first is explored cell756.
+  const memory = initialSkirmishMemory();
+  memory.scout = 5;
+  const result = runDecision(
+    decide,
+    { ...observation(own), fog: [{ width: 32, height: 32, cells }] },
+    { ...state(), memory },
+    createStream(3, "ai:1"),
+    64,
+  );
+  expect(result.state.memory?.goal).toMatchObject({
+    x: 3 * 1024 + 512,
+    y: 15 * 1024 + 512,
+    handle: null,
+  });
+  const fallback = initialSkirmishMemory();
+  fallback.scout = 5;
+  let saved: DecisionState<PolicyCommand, SkirmishMemory> = { ...state(), memory: fallback },
+    random = createStream(3, "ai:1");
+  for (let tick = 0; tick < 100 && !saved.memory?.goal; tick++) {
+    const next = runDecision(
+      decide,
+      {
+        ...observation(own),
+        tick,
+        fog: [{ width: 32, height: 32, cells: new Uint8Array(32 * 32).fill(1) }],
+      },
+      saved,
+      random,
+      1,
+    );
+    expect(next.used).toBeLessThanOrEqual(1);
+    saved = next.state;
+    random = next.random;
+  }
+  expect(saved.memory?.goal).toMatchObject({
+    x: 29 * 1024 + 512,
+    y: 27 * 1024 + 512,
+    handle: null,
+  });
+});

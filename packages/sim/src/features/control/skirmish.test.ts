@@ -222,6 +222,7 @@ test("the normal basic policy attacks a currently observed hostile through opaqu
   kernel.vision?.update();
   kernel.visibility?.update();
   kernel.captureObservations?.();
+  const observedHealth = kernel.world.get(enemy, Health, "current");
   step(kernel, []);
   step(kernel, []);
   expect(
@@ -237,6 +238,21 @@ test("the normal basic policy attacks a currently observed hostile through opaqu
       .query(AttackOrder)
       .some((id) => kernel.world.get(id, AttackOrder, "target") === enemy),
   ).toBe(true);
+  const saved = kernel.bots?.serialize();
+  if (!saved || !kernel.bots) throw new Error("Missing bot state");
+  expect(saved.bots[0]?.state.memory?.goal?.health).toBe(observedHealth);
+  const before = checkpointHash(kernel);
+  for (const health of [0, 100.5, 0x100000000]) {
+    const malformed = structuredClone(saved),
+      goal = malformed.bots[0]?.state.memory?.goal;
+    if (!goal) throw new Error("Missing observed assault goal");
+    goal.health = health;
+    expect(() => kernel.bots?.load(malformed)).toThrow("memory");
+    expect(checkpointHash(kernel)).toBe(before);
+  }
+  kernel.queued = [];
+  kernel.bots.load(saved);
+  expect(checkpointHash(kernel)).toBe(before);
 });
 
 test("lost builders are replaced by the real headquarters queue and manually disabled power is restored", () => {
