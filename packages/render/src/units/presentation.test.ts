@@ -4,6 +4,7 @@ import {
   ArcRotateCamera,
   Color3,
   InstancedMesh,
+  Matrix,
   Mesh,
   NullEngine,
   type PBRMaterial,
@@ -99,6 +100,31 @@ test("box selection projects rendered centres into the top-origin canvas under a
     layer.dispose();
     scene.dispose();
     engine.dispose();
+  }
+});
+
+test("a newly loaded model is pickable at its posed location before another scene frame", async () => {
+  const f = fixture();
+  const camera = new ArcRotateCamera("pick", Math.PI / 2, 0.7, 20, new Vector3(6, 0, 6), f.scene);
+  f.scene.activeCamera = camera;
+  f.scene.updateTransformMatrix(true);
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes(),
+    movementDomain: "foot",
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("new", { x: 3 * 1024, y: 3 * 1024 })]), 0);
+    const point = root(f.scene, "new").position.add(new Vector3(0, 0.8, 0));
+    const screen = Vector3.Project(
+      point,
+      Matrix.IdentityReadOnly,
+      f.scene.getTransformMatrix(),
+      new Viewport(0, 0, f.engine.getRenderWidth(), f.engine.getRenderHeight()),
+    );
+    expect(layer.pick(screen.x, screen.y)).toBe("new");
+  } finally {
+    layer.dispose();
+    f.dispose();
   }
 });
 

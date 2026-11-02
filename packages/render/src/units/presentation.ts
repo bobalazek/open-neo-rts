@@ -487,6 +487,9 @@ export function createEntityPresentation(
     },
     /** Picking is confined to currently projected, rendered entity geometry. */
     pick(x: number, y: number): string | null {
+      // Asset readiness can precede the next scene frame; picking needs the latest posed hierarchy.
+      for (const mesh of meshHandles.keys())
+        if (mesh.isVisible && mesh.isEnabled()) mesh.computeWorldMatrix(true);
       const hits =
         scene.multiPick(
           x,
