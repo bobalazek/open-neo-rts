@@ -36,7 +36,7 @@ test("a terminal result arriving before a stale surrender resume rejection stays
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
-  await expect(page.locator("canvas")).toHaveAttribute("data-session", "ready", {
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
   await page.getByRole("button", { name: "Pause", exact: true }).click();
@@ -61,7 +61,7 @@ test("real surrender ends a paused normal match once, rematch creates a new work
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
-  const canvas = page.locator("canvas");
+  const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page).toHaveURL(/\/match$/);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
