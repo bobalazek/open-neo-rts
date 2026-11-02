@@ -20,6 +20,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 ## Index
 
+- [2026-11-02 — First defeat resolution](./2026-11-02-provisional-defeat-resolution.md) — Existing elimination predicates, unanimous scoped surrender and bounded terminal replay.
+
 - [2026-11-02 — Provisional basic bot](./2026-11-02-provisional-basic-bot.md) — Existing Eastern Collective roster, paid build order, permitted scouting and bounded recovery.
 
 - [2026-11-02 — Provisional projectile resolution](./2026-11-02-provisional-projectile-resolution.md) — Physical uphill misses, authored damage and contact-time geometry under delegated defaults.

@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 29, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 30, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -274,3 +274,14 @@ closed a structure-origin range mismatch with rotated footprint boundary cases.
 The no-bot normal initializer goldens remain `2a670245f8e608c0` and
 `fcb5865d3da9dc4a`; debug hashes remain unchanged. Full Training Grounds play and
 20 complete AI matches are not supplied by these focused cases.
+
+
+SIM30 adds canonical Force/team outcomes, surrender votes and final result.
+Normal goldens are `3cc53b5815a5da84` initially and `9683cd200f672d9a` at tick two;
+debug hashes stay unchanged. Focused checks cover excluded walls, headquarters/base
+loss, surviving allies, simultaneous draw, scoped shared surrender, copied public
+outcomes and terminal hash stability. Independent review caught and closed the
+shared replay loop hanging after terminal ticks: long requested runs now stop at
+finish, traces remain valid, and later scheduled commands are rejected explicitly.
+The combined victory/scenario/trace/worker-wire batch passes76 tests/288 assertions.
+Raw outcome rows are canonical ECS state; full save-file restoration is still2-33.

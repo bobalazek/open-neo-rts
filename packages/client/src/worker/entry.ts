@@ -60,6 +60,10 @@ function tick() {
   const inputs = commands.map(({ command }) => command);
   const start = performance.now();
   const entries = step(kernel, inputs);
+  if (kernel.victory?.ended) {
+    paused = true;
+    clearTimeout(timer);
+  }
   tickMs = performance.now() - start;
   commands.forEach(({ id }, i) => {
     port.postMessage({ id, result: entries[i]?.result });
@@ -144,6 +148,10 @@ port.onmessage = ({ data }) => {
           throw new Error("This seat is controlled by a bot");
         if (!isRecord(data.command) || Object.keys(data.command).length !== 2)
           throw new Error("Invalid command request");
+        if (kernel.victory?.ended) {
+          publish(id, "match_ended");
+          return;
+        }
         const { type } = data.command;
         let payload = data.command.payload;
         if (isRecord(payload)) {
@@ -206,6 +214,7 @@ port.onmessage = ({ data }) => {
       }
       case "pause":
         if (typeof data.paused !== "boolean") throw new Error("Invalid pause value");
+        if (!data.paused && kernel.victory?.ended) throw new Error("The match has ended");
         paused = data.paused;
         schedule();
         break;

@@ -27,6 +27,7 @@ import {
   type NavigationObject,
 } from "../movement/navigation";
 import { labelReachability } from "../movement/reachability";
+import { ELIMINATION_RULES, type EliminationRule } from "../victory";
 import { FOG_MODES, type FogMode } from "../vision";
 import { skirmishPolicy } from "./skirmish";
 
@@ -37,6 +38,7 @@ export interface NormalMatchSettings {
   readonly fog?: FogMode;
   readonly friendlyFire?: boolean;
   readonly highGroundMissPerMille?: number;
+  readonly elimination?: EliminationRule;
 }
 
 export interface NormalMatchSetup {
@@ -136,6 +138,7 @@ export const normalMatchSchema = strictObject({
     fog: opt(oneOf(FOG_MODES)),
     friendlyFire: opt(bool()),
     highGroundMissPerMille: opt(int(0, 1000)),
+    elimination: opt(oneOf(ELIMINATION_RULES)),
   }),
   bots: opt(
     arr(
@@ -192,6 +195,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
           "fog",
           "friendlyFire",
           "highGroundMissPerMille",
+          "elimination",
         ].includes(id),
     )
   )
@@ -207,6 +211,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     friendlyFire: options.settings?.friendlyFire ?? setting("friendlyFire").default,
     highGroundMissPerMille:
       options.settings?.highGroundMissPerMille ?? setting("highGroundMissPerMille").default,
+    elimination: options.settings?.elimination ?? "annihilation",
   } as unknown as NormalMatchSettings;
   const definitions: Definition[] = catalog.definitions.map((def) => ({
     id: def.id,
@@ -430,6 +435,7 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         highGroundMissPerMille:
           normal.settings.highGroundMissPerMille ??
           (setting("highGroundMissPerMille").default as number),
+        elimination: normal.settings.elimination ?? "annihilation",
       }),
       ...(normal.bots?.length && {
         bots: Object.freeze(
