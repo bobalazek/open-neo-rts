@@ -20,7 +20,7 @@ test("bench runs moving units and prints tick statistics and both ECS stores", (
   expect(result.out).toContain("operation | ECS ms | sparse-set ms");
   for (const operation of ["create", "add", "query", "iterate"])
     expect(result.out).toMatch(new RegExp(`\\n${operation} \\| \\d+\\.\\d+ \\| \\d+\\.\\d+`));
-});
+}, 15_000);
 
 // Cold CLI startup and benchmark warmup need room on shared CI runners.
 for (const units of [1, 8001])
