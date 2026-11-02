@@ -145,7 +145,8 @@
           "kind": {
             "enum": [
               "ore",
-              "materials"
+              "materials",
+              "oil"
             ]
           },
           "position": {
@@ -161,7 +162,8 @@
           },
           "amount": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "description": "required for ore/materials; oil depletion is undecided"
           },
           "radius": {
             "type": "number",
@@ -172,10 +174,41 @@
         },
         "required": [
           "kind",
-          "position",
-          "amount"
+          "position"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "oil"
+                }
+              }
+            },
+            "else": {
+              "required": [
+                "amount"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "ore"
+                }
+              }
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "radius"
+                ]
+              }
+            }
+          }
+        ]
       }
     },
     "objects": {

@@ -214,6 +214,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
     };
     try {
       const { definition, grid } = await loadMap(mapId);
+      const resources = toMatchResources(definition.resources);
       if (!current()) return;
       const nextRenderer = await createRenderer(canvas, { terrain: grid, quality: "medium" });
       if (!current()) {
@@ -265,6 +266,15 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
         inspector.update(state);
         overlayControls.update(state);
         if (state.snapshot.tick <= modelTick) return;
+        art?.setOccupiedNodes(
+          state.snapshot.entities
+            .filter(
+              (entity) =>
+                catalog.find((entry) => entry.definition.id === entity.definition)?.definition
+                  .nodeKinds,
+            )
+            .map((entity) => ({ x: Math.floor(entity.x / 1024), y: Math.floor(entity.y / 1024) })),
+        );
         modelTick = state.snapshot.tick;
         const presentedTick = modelTick;
         if (!modelFailed && state.snapshot.entities.length)
@@ -308,7 +318,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
               ],
               facing: Math.round(((90 - spawn.facing) * 65536) / 360) & 0xffff,
             })),
-            resources: toMatchResources(definition.resources),
+            resources,
             objects: [],
           },
           seed: selectedSeed,
@@ -425,6 +435,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
           viewKey: () =>
             `${activeRenderer.camera.getViewMatrix().updateFlag}:${activeRenderer.camera.getProjectionMatrix().updateFlag}`,
           query: activeMatch.placement,
+          resources,
         },
         clicks.signal,
       );
@@ -457,6 +468,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
             cell.x,
             cell.y,
             selection.rotation,
+            resources,
           );
           palette.result.textContent = `Submitting ${selection.entry.name} at ${cell.x}, ${cell.y}…`;
           try {

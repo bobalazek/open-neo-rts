@@ -1,4 +1,5 @@
 import type { DebugSpawn } from "@open-neo-rts/sim";
+import { type MatchResource, resourceNodeOrigin, resourceOccupies } from "@open-neo-rts/sim/maps";
 import type { CatalogEntry } from "./catalog";
 import type { DebugForce } from "./configuration";
 
@@ -9,7 +10,17 @@ export function spawnAtCell(
   x: number,
   y: number,
   rotation: number,
+  resources: readonly MatchResource[] = [],
 ): DebugSpawn {
+  const node =
+    entry.definition.nodeKinds &&
+    resources.find(
+      (r) =>
+        r.kind !== "ore" &&
+        entry.definition.nodeKinds?.includes(r.kind) &&
+        resourceOccupies(r, x, y),
+    );
+  if (node) ({ x, y } = resourceNodeOrigin(node));
   const offset = entry.kind === "unit" ? 512 : 0;
   return {
     definition: entry.definition.id,

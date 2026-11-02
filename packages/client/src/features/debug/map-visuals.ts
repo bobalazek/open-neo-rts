@@ -44,6 +44,7 @@ import urbanStreetlight from "../../../../../content/core/props/urban/streetligh
 import urbanStreetlightModel from "../../../../../content/core/props/urban/streetlight/streetlight.glb";
 import urbanWreckedCar from "../../../../../content/core/props/urban/wrecked-car/prop.json";
 import materialnode from "../../../../../content/core/resources/material-node/material-node.glb";
+import oilwell from "../../../../../content/core/resources/oil-well/oil-well.glb";
 import orecell from "../../../../../content/core/resources/ore-cell/ore-cell.glb";
 
 // shortcut: built-in original assets only, until phase-2 pack loading.
@@ -95,6 +96,7 @@ const models: Record<string, string> = {
   [`core.${urbanStreetlight.id}`]: urbanStreetlightModel,
   "ore-cell": orecell,
   "material-node": materialnode,
+  "oil-well": oilwell,
 };
 
 /** Keep original map-object references; gameplay props arrive through authoritative projection later. */

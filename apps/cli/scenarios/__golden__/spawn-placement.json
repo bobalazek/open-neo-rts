@@ -2,10 +2,10 @@
   "hashes": [
     {
       "tick": 100,
-      "hash": "5c39306da78a6881"
+      "hash": "1c1f7f923f4327c8"
     }
   ],
-  "hash": "5c39306da78a6881",
+  "hash": "1c1f7f923f4327c8",
   "results": [
     "accepted",
     "placement_failed",
@@ -22,6 +22,10 @@
     "accepted",
     "placement_failed",
     "accepted",
+    "placement_failed",
+    "accepted",
+    "accepted",
+    "placement_failed",
     "placement_failed",
     "placement_failed"
   ],
@@ -104,6 +108,28 @@
         "facing": 0,
         "health": 1000,
         "maxHealth": 1000,
+        "order": null
+      },
+      {
+        "handle": "e8",
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 23552,
+        "y": 23552,
+        "facing": 16384,
+        "health": 100,
+        "maxHealth": 100,
+        "order": null
+      },
+      {
+        "handle": "e9",
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 23552,
+        "y": 7168,
+        "facing": 32768,
+        "health": 100,
+        "maxHealth": 100,
         "order": null
       }
     ]

@@ -1,4 +1,4 @@
-import { type DOMAINS, SCHEMAS, validate } from "@open-neo-rts/content";
+import { type DOMAINS, type NodeKind, SCHEMAS, validate } from "@open-neo-rts/content";
 import { toDefinition } from "@open-neo-rts/sim/definitions";
 
 interface RawDefinition {
@@ -9,6 +9,7 @@ interface RawDefinition {
   movement?: { speed: number; turnRate?: number; domain: (typeof DOMAINS)[number] };
   footprint?: readonly number[];
   cells?: readonly string[];
+  nodeKinds?: readonly NodeKind[];
   blocks?: string;
 }
 

@@ -295,7 +295,7 @@ test("ore discs and centred material nodes block static placement while units dr
     toMatchResources([{ kind: "ore", position: [1.25, 2.5], amount: 1 }])[0]?.position,
   ).toEqual([1280, 2560]);
   for (const resource of [
-    { kind: "oil", position: [1, 1], amount: 1 },
+    { kind: "unknown", position: [1, 1], amount: 1 },
     { kind: "ore", position: [Number.NaN, 1], amount: 1 },
     { kind: "ore", position: [1, 1], amount: 0 },
     { kind: "ore", position: [1, 1], amount: 1, radius: -1 },
@@ -325,7 +325,7 @@ test("resource wire inputs and static object extents are validated at both setup
     { kind: "ore", position: [8192, 8192], amount: 1, radius: 1.5 },
     { kind: "ore", position: [32768, 8192], amount: 1 },
     { kind: "materials", position: [8192, 8192], amount: 0 },
-    { kind: "oil", position: [8192, 8192], amount: 1 },
+    { kind: "unknown", position: [8192, 8192], amount: 1 },
   ]) {
     const bad = { ...input, map: { ...input.map, resources: [resource] } } as unknown as MatchSetup;
     expect(() => createMatch(bad)).toThrow("$.setup.map.resources");

@@ -12,6 +12,7 @@ export interface MapDecoration {
 }
 export interface StaticMapInstance extends MapDecoration {
   footprint: readonly number[];
+  nodeAnchor?: { x: number; y: number };
 }
 export interface MapResource {
   kind: string;
@@ -40,8 +41,13 @@ export function resourceInstances(
       cy >= terrain.height
     )
       throw new Error("Invalid resource position");
-    if (field.kind === "materials") {
-      result.push({ definition: "material-node", position: [cx, cy], footprint: [2, 2] });
+    if (field.kind === "materials" || field.kind === "oil") {
+      result.push({
+        definition: field.kind === "materials" ? "material-node" : "oil-well",
+        position: [cx, cy],
+        footprint: field.kind === "materials" ? [2, 2] : [1, 1],
+        nodeAnchor: { x: Math.floor(cx) - 1, y: Math.floor(cy) - 1 },
+      });
       continue;
     }
     if (field.kind !== "ore") throw new Error(`Unknown resource kind: ${field.kind}`);
@@ -84,6 +90,7 @@ export function createMapPresentation(
   const models: AssetContainer[] = [];
   const instances: ReturnType<AssetContainer["instantiateModelsToScene"]>[] = [];
   const roots: TransformNode[] = [];
+  const nodes: { root: TransformNode; x: number; y: number }[] = [];
   let disposed = false;
   function dispose() {
     if (disposed) return;
@@ -142,6 +149,7 @@ export function createMapPresentation(
             instances.push(instance);
             const root = new TransformNode(`map object ${roots.length}: ${definition}`, scene);
             roots.push(root);
+            if (placement.nodeAnchor) nodes.push({ root, ...placement.nodeAnchor });
             for (const node of instance.rootNodes) node.parent = root;
             for (const node of root.getDescendants()) {
               if (node.name.startsWith("stage_") && node.name !== "stage_full")
@@ -168,5 +176,12 @@ export function createMapPresentation(
       throw error;
     }
   })();
-  return { ready, dispose };
+  return {
+    ready,
+    dispose,
+    setOccupiedNodes(positions: readonly { x: number; y: number }[]) {
+      const occupied = new Set(positions.map(({ x, y }) => `${x},${y}`));
+      for (const node of nodes) node.root.setEnabled(!occupied.has(`${node.x},${node.y}`));
+    },
+  };
 }

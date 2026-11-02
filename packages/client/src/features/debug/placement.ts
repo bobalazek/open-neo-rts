@@ -1,5 +1,6 @@
 import type { createPlacementOverlay } from "@open-neo-rts/render";
 import type { DebugSpawn } from "@open-neo-rts/sim";
+import type { MatchResource } from "@open-neo-rts/sim/maps";
 import type { PlacementDiagnostic } from "../../worker";
 import { type createSpawnPalette, spawnAtCell } from "./palette";
 
@@ -77,6 +78,7 @@ export function bindPlacementPreview(
     pickCell: (x: number, y: number) => { x: number; y: number } | null;
     viewKey: () => string;
     query: (spawn: DebugSpawn) => Promise<PlacementDiagnostic>;
+    resources?: readonly MatchResource[];
   },
   signal: AbortSignal,
 ) {
@@ -157,7 +159,14 @@ export function bindPlacementPreview(
           options.enabled() && pointer && selection ? options.pickCell(pointer.x, pointer.y) : null;
         payload =
           cell && selection
-            ? spawnAtCell(selection.entry, selection.force, cell.x, cell.y, selection.rotation)
+            ? spawnAtCell(
+                selection.entry,
+                selection.force,
+                cell.x,
+                cell.y,
+                selection.rotation,
+                options.resources,
+              )
             : null;
       }
       void queries.update(payload, tick);
