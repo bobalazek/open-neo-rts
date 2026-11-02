@@ -125,21 +125,64 @@ export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
     return effect;
   }
   function continuous(a: Vector3, b: Vector3): boolean {
-    if (!snapshot) return false;
-    const steps = Math.ceil(Vector3.Distance(a, b) / (CELL_SIZE / 2));
-    for (let i = 0; i <= steps; i++) {
-      const t = steps ? i / steps : 0;
-      if (
-        !eventVisible(
-          snapshot,
-          ((a.x + (b.x - a.x) * t) * 1024) / CELL_SIZE,
-          ((a.z + (b.z - a.z) * t) * 1024) / CELL_SIZE,
-        )
-      )
-        return false;
+    const current = snapshot;
+    if (!current) return false;
+    if (current.mode === "debug-no-fog" || !current.fog?.length) return true;
+    // Event positions convert by powers of two; these are the original integer subcells.
+    const ax = (a.x * 1024) / CELL_SIZE,
+      ay = (a.z * 1024) / CELL_SIZE;
+    const bx = (b.x * 1024) / CELL_SIZE,
+      by = (b.z * 1024) / CELL_SIZE;
+    const visible = (x: number, y: number) => eventVisible(current, x * 1024 + 512, y * 1024 + 512);
+    const endpoint = (x: number, y: number) => {
+      const cx = Math.floor(x / 1024),
+        cy = Math.floor(y / 1024);
+      return (
+        visible(cx, cy) &&
+        (x % 1024 !== 0 || visible(cx - 1, cy)) &&
+        (y % 1024 !== 0 || visible(cx, cy - 1)) &&
+        (x % 1024 !== 0 || y % 1024 !== 0 || visible(cx - 1, cy - 1))
+      );
+    };
+    if (!endpoint(ax, ay) || !endpoint(bx, by)) return false;
+    let x = Math.floor(ax / 1024),
+      y = Math.floor(ay / 1024);
+    const endX = Math.floor(bx / 1024),
+      endY = Math.floor(by / 1024);
+    const dx = bx - ax,
+      dy = by - ay,
+      width = Math.abs(dx),
+      height = Math.abs(dy);
+    const sx = Math.sign(dx),
+      sy = Math.sign(dy);
+    let nextX = sx > 0 ? (x + 1) * 1024 - ax : ax - x * 1024;
+    let nextY = sy > 0 ? (y + 1) * 1024 - ay : ay - y * 1024;
+    // Closed-cell supercover: exact corners and segments on grid edges touch both sides.
+    const touched = (cx: number, cy: number) =>
+      visible(cx, cy) &&
+      (dx !== 0 || ax % 1024 !== 0 || visible(cx - 1, cy)) &&
+      (dy !== 0 || ay % 1024 !== 0 || visible(cx, cy - 1));
+    for (let crossing = 0; crossing <= terrain.width + terrain.height; crossing++) {
+      if (!touched(x, y)) return false;
+      if (x === endX && y === endY) return true;
+      const comparison = width === 0 ? 1 : height === 0 ? -1 : nextX * height - nextY * width;
+      if (comparison === 0) {
+        if (!touched(x + sx, y) || !touched(x, y + sy)) return false;
+        x += sx;
+        y += sy;
+        nextX += 1024;
+        nextY += 1024;
+      } else if (comparison < 0) {
+        x += sx;
+        nextX += 1024;
+      } else {
+        y += sy;
+        nextY += 1024;
+      }
     }
-    return true;
+    return false;
   }
+
   function render(nowMs: number) {
     if (disposed) return;
     const delta = rate ? Math.max(0, nowMs - frameAt) : 0;

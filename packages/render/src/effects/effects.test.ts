@@ -92,3 +92,52 @@ test("fog revocation removes effects, hidden gaps snap without fabricated paths,
     engine.dispose();
   }
 });
+
+test("flight interpolation checks every near-corner, exact-corner and grid-edge cell, while genuinely clear segments interpolate", () => {
+  const engine = new NullEngine(),
+    scene = new Scene(engine);
+  const layer = createCombatEffects(scene, parseTerrain(8, 8, {}));
+  const projected = (tick: number, x: number, y: number, cells: Uint8Array): SeatSnapshot => ({
+    ...snapshot(tick, [{ type: "flight", handle: "p1", projectile: "bullet", x, y }]),
+    fog: [{ group: 0, width: 8, height: 8, cells }],
+  });
+  try {
+    let tick = 0;
+    for (const [a, b] of [
+      [
+        [920, 870],
+        [1126, 1126],
+      ],
+      [
+        [1126, 1126],
+        [920, 870],
+      ],
+      [
+        [900, 900],
+        [1100, 1100],
+      ],
+      [
+        [900, 1024],
+        [1200, 1024],
+      ],
+    ] as const) {
+      const hidden = new Uint8Array(64).fill(2);
+      hidden[1] = 0;
+      layer.accept(projected(tick++, a[0], a[1], hidden), tick * 50);
+      layer.accept(projected(tick++, b[0], b[1], hidden), tick * 50);
+      layer.render(tick * 50 + 25);
+      expect(scene.getMeshByName("combat round")?.position.x).toBe(b[0] / 512);
+      expect(scene.getMeshByName("combat round")?.position.z).toBe(b[1] / 512);
+      const clear = new Uint8Array(64).fill(2);
+      layer.accept(projected(tick++, a[0], a[1], clear), tick * 50);
+      layer.accept(projected(tick++, b[0], b[1], clear), tick * 50);
+      layer.render(tick * 50 + 25);
+      expect(scene.getMeshByName("combat round")?.position.x).toBe((a[0] + b[0]) / 1024);
+      expect(scene.getMeshByName("combat round")?.position.z).toBe((a[1] + b[1]) / 1024);
+    }
+  } finally {
+    layer.dispose();
+    scene.dispose();
+    engine.dispose();
+  }
+});
