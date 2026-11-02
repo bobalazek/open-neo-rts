@@ -14,6 +14,7 @@ import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
 
 export const MAX_SHOT_INTENTS = 4096;
+export { Disabled } from "./disable";
 export const AttackOrder = defineComponent("AttackOrder", { target: "u32" });
 export const WeaponState = defineComponent("WeaponState", {
   shooter: "u32",
@@ -266,7 +267,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
           for (const state of states) {
             const shooter = world.get(state, WeaponState, "shooter");
             const platform = platformOf(kernel, shooter);
-            if (platform === undefined) {
+            if (platform === undefined || kernel.disabled?.(platform)) {
               world.set(state, WeaponState, "remaining", 0);
               world.set(state, WeaponState, "target", 0);
               continue;

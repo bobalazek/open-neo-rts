@@ -149,6 +149,15 @@ const entity = {
   power: { amount: -25, enabled: true, powered: false },
 };
 
+test("EMP status is a strict public flag with no private deadline", () => {
+  expect(isWorkerReply(powerReply(undefined, [{ ...entity, disabled: true }]))).toBe(true);
+  for (const disabled of [false, 0, 1, "true", { until: 10 }, null])
+    expect(isWorkerReply(powerReply(undefined, [{ ...entity, disabled }]))).toBe(false);
+  expect(isWorkerReply(powerReply(undefined, [{ ...entity, disabled: true, until: 10 }]))).toBe(
+    false,
+  );
+});
+
 test("worker replies strictly validate private harvester cargo, status and unload work", () => {
   const harvesting = { cargo: 10, capacity: 500, status: "mining", unloadTicks: 0 };
   const packet = (value: unknown, mode = "controlled") =>

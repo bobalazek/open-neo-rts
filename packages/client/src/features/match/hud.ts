@@ -1034,6 +1034,7 @@ export function createMatchHud(
       }),
     ];
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
+    if (entity.disabled) lines.push(text("ui.hud.emp-disabled"));
     const definition = definitions.get(entity.definition)?.gameplay;
     if (entity.cargo)
       lines.push(

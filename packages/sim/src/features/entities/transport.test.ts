@@ -4,7 +4,8 @@ import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { createMatchRecord, verifyMatchRecord } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
-import { WeaponState } from "../combat";
+import { AttackOrder, WeaponState } from "../combat";
+import { Disabled } from "../combat/disable";
 import { MoveIntent, MovementFailure } from "../movement";
 import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from ".";
@@ -337,7 +338,12 @@ test("a carrier dying during approach cancels its reservation and stale numeric 
   expect(command("unit.unload", { entity: apc })).toBe("bad_payload");
 });
 
-function bunkerFixture(fog: "off" | "standard" = "off", bullet = false, arrange = true) {
+function bunkerFixture(
+  fog: "off" | "standard" = "off",
+  bullet = false,
+  arrange = true,
+  emp = false,
+) {
   const f = fixture((definitions) => {
     definitions[1]!.armor = "infantry";
     definitions[1]!.visionSubcells = 20 * 1024;
@@ -350,7 +356,10 @@ function bunkerFixture(fog: "off" | "standard" = "off", bullet = false, arrange 
         projectile: bullet
           ? { kind: "bullet", speedSubcellsPerTick: 256, blockedBy: ["units", "structures"] }
           : { kind: "instant", blockedBy: ["units", "structures"] },
-        warheads: [{ type: "damage", amount: 10, tags: [] }],
+        warheads: [
+          { type: "damage", amount: 10, tags: [] },
+          ...(emp ? [{ type: "disable", durationTicks: 20, tags: ["emp"] }] : []),
+        ],
       },
     ];
     definitions[2]!.deployMode = {
@@ -424,6 +433,38 @@ test("deployed cargo uses its own range/damage and keeps reload across pack and 
   expect(world.get(enemy, Health, "current")).toBe(590);
   step(kernel, []);
   expect(world.get(enemy, Health, "current")).toBe(580);
+});
+
+test("EMP pauses mounted weapons and mode/cargo actions, retaining cargo and elapsed reload", () => {
+  const { kernel, world, apc, infantry, enemy, command, position } = bunkerFixture(
+    "off",
+    false,
+    true,
+    true,
+  );
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  position(enemy, 14 * 1024, 12 * 1024 + 512);
+  expect(command("unit.attack", { entities: [apc], entity: enemy })).toBe("accepted");
+  const state = world
+    .query(WeaponState)
+    .find((id) => world.get(id, WeaponState, "shooter") === infantry)!;
+  const reloadAt = world.get(state, WeaponState, "reloadAt");
+  world.add(apc, Disabled, { until: kernel.tick + 120 });
+  expect(command("unit.deploy", { entities: [apc] })).toBe("immobile");
+  expect(command("unit.unload", { entity: apc })).toBe("immobile");
+  expect(kernel.transport?.snapshot(apc)?.firing).toBe(false);
+  const health = world.get(enemy, Health, "current");
+  expect(world.get(apc, AttackOrder, "target")).toBe(enemy);
+  for (let i = 0; i < 118; i++) step(kernel, []);
+  expect(world.has(infantry, Cargo)).toBe(true);
+  expect(world.has(infantry, Transform)).toBe(false);
+  expect(world.get(state, WeaponState, "reloadAt")).toBe(reloadAt);
+  expect(world.get(enemy, Health, "current")).toBe(health);
+  expect(world.get(apc, AttackOrder, "target")).toBe(enemy);
+  step(kernel, []);
+  expect(kernel.unitModes?.snapshot(apc)?.active).toBe(true);
+  expect(world.get(enemy, Health, "current")).toBe(health - 10);
 });
 
 test("cargo never contributes sight and firing effects identify only the carrier", () => {

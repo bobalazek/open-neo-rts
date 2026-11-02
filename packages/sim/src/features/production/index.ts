@@ -187,6 +187,10 @@ export function productionFeature(
     });
   }
   function output(kernel: Kernel, id: number, producer: number, unit: Definition) {
+    if (kernel.disabled?.(producer)) {
+      status(kernel, id, "disabled");
+      return;
+    }
     const world = kernel.world,
       force = world.get(id, ProductionItem, "force");
     if (!populationFits(kernel, force, unit)) {

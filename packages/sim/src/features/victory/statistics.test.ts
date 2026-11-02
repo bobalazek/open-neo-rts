@@ -4,7 +4,7 @@ import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { flatMap } from "../../testing";
-import { applyDamageWarhead } from "../combat/damage";
+import { applyWarhead } from "../combat/damage";
 import { OwnerForce, Template, Transform } from "../entities";
 import { ForceStatistics, STAT_COUNTERS } from "./statistics";
 
@@ -117,7 +117,7 @@ test("damage records actual clamped loss once and awards kills only against anot
     const entity = target(force),
       x = kernel.world.get(entity, Transform, "x"),
       y = kernel.world.get(entity, Transform, "y");
-    applyDamageWarhead(
+    applyWarhead(
       kernel,
       setup.definitions,
       {

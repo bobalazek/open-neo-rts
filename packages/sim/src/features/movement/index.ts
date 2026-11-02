@@ -101,6 +101,7 @@ export function movementFeature(match: {
 function movementSystem(kernel: Kernel, definitions: readonly Definition[]): void {
   const world = kernel.world;
   for (const id of world.query(MoveIntent, Transform, Template)) {
+    if (kernel.disabled?.(id)) continue;
     if (kernel.unitModes?.active(id)) {
       world.remove(id, MoveIntent);
       continue;

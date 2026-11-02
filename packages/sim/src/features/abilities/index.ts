@@ -95,6 +95,7 @@ export function initializeUnitModes(
           return [{ entity, definition, activate: !state?.active }];
         });
         if (!changes.length) return "bad_payload";
+        if (changes.some(({ entity }) => kernel.disabled?.(entity))) return "immobile";
         if (
           changes.some(
             ({ entity }) =>

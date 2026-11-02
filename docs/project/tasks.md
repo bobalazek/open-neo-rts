@@ -10,8 +10,8 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-- [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
-- [ ] [2-43c · Mode transformation playback and disable integration](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle/effects; deploy commands and combat modifiers alone do not complete the signature.
+- [ ] [2-15b2 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP; burn, slow and required reveal/spawn semantics remain.
+- [ ] [2-43c · Mode transformation playback](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle; EMP integration is implemented, but authored transformation clips remain.
 - [ ] [2-45 · Tier-1 industrial capacity and production bonuses](./phases/2.md#2-45--tier-1-industrial-capacity-and-production-bonuses). PR type: engine; actual data-defined gains, spending, Mass Production Surge and reactor adjacency with recorded provisional defaults.
 - [ ] [2-46 · Veterancy progression and effective stats](./phases/2.md#2-46--veterancy-progression-and-effective-stats). PR type: engine; canonical XP/ranks, bounded bonuses, top-rank repair and settings/projection/replay behavior.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
