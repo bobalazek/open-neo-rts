@@ -31,3 +31,12 @@ Default routes are Home at `/`, setup at `/skirmish`, active session at `/match`
 The normal-flow candidate passes fix/typecheck/test/build/content validation and six exact Chromium journeys against integrated SIM27: builder construction, extractor power/depletion, paid production, partial-cargo hauling/depot deposit, saved setup/canceled loading/real start, and worker failure/retry. Screenshots show actual original models, team color, fog and the narrow setup layout. Independent source review accepted; final CI is tracked in its PR. No WebGPU hardware or FPS qualification is implied.
 
 There is no completed human-vs-bot skirmish, phase-2 exit or phases 3–5 delivery claim. Build the real earn → build → produce → fight → win/lose loop, then validate its full acceptance and proceed through the roadmap. Raw feature restore is not a full version/content/map-validated save-file implementation.
+
+
+Task 2-14/initial 2-15 is integrated as SIM28: real instant/bullet/missile shots,
+authored damage/delays and deaths, visible actor/projectile events, and same-tick
+producer refunds. Three independent review findings were reproduced and fixed;
+focused and full repository/content checks pass. Five exact worker journeys now
+include rifle damage/death and opaque event actors. Cosmetic events remain human
+presentation output and are excluded from canonical bot observations. Non-damage
+warheads/statuses, wrecks/salvage and full phase acceptance remain open.

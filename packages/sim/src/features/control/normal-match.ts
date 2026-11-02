@@ -1,5 +1,6 @@
 import {
   arr,
+  bool,
   type GroundDomain,
   idOf,
   int,
@@ -33,6 +34,8 @@ export interface NormalMatchSettings {
   readonly popCap: number;
   readonly structureCap: number;
   readonly fog?: FogMode;
+  readonly friendlyFire?: boolean;
+  readonly highGroundMissPerMille?: number;
 }
 
 export interface NormalMatchSetup {
@@ -81,8 +84,9 @@ export interface NormalMatchOptions {
 
 const required = <T>(value: T | undefined): T =>
   value === undefined ? refuse("incomplete normal-match setup") : value;
-const setting = (id: "startingCredits" | "popCap" | "structureCap") =>
-  required(MATCH_SETTINGS.find((entry) => entry.id === id));
+const setting = (
+  id: "startingCredits" | "popCap" | "structureCap" | "friendlyFire" | "highGroundMissPerMille",
+) => required(MATCH_SETTINGS.find((entry) => entry.id === id));
 const settingSchema = (id: "startingCredits" | "popCap" | "structureCap") =>
   int(setting(id).min, setting(id).max);
 const index = () => int(0, 0x7fffffff);
@@ -126,6 +130,8 @@ export const normalMatchSchema = strictObject({
     popCap: settingSchema("popCap"),
     structureCap: settingSchema("structureCap"),
     fog: opt(oneOf(FOG_MODES)),
+    friendlyFire: opt(bool()),
+    highGroundMissPerMille: opt(int(0, 1000)),
   }),
   bots: opt(arr(strictObject({ seat: int(1, 0x7fffffff), kind: oneOf(["idle"]) }), 0, 16)),
   forces: arr(
@@ -164,7 +170,15 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
   const { catalog } = options;
   if (
     Object.keys(options.settings ?? {}).some(
-      (id) => !["startingCredits", "popCap", "structureCap", "fog"].includes(id),
+      (id) =>
+        ![
+          "startingCredits",
+          "popCap",
+          "structureCap",
+          "fog",
+          "friendlyFire",
+          "highGroundMissPerMille",
+        ].includes(id),
     )
   )
     refuse("unsupported starting setting");
@@ -176,6 +190,9 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
       ]),
     ),
     fog: options.settings?.fog ?? "standard",
+    friendlyFire: options.settings?.friendlyFire ?? setting("friendlyFire").default,
+    highGroundMissPerMille:
+      options.settings?.highGroundMissPerMille ?? setting("highGroundMissPerMille").default,
   } as unknown as NormalMatchSettings;
   const definitions: Definition[] = catalog.definitions.map((def) => ({
     id: def.id,
@@ -382,6 +399,10 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
         popCap: normal.settings.popCap,
         structureCap: normal.settings.structureCap,
         fog: normal.settings.fog ?? "standard",
+        friendlyFire: normal.settings.friendlyFire ?? (setting("friendlyFire").default as boolean),
+        highGroundMissPerMille:
+          normal.settings.highGroundMissPerMille ??
+          (setting("highGroundMissPerMille").default as number),
       }),
       ...(normal.bots?.length && {
         bots: Object.freeze(

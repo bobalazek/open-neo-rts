@@ -98,6 +98,37 @@ test("worker replies accept only opaque attack target handles", () => {
     ).toBe(false);
 });
 
+test("worker replies bound combat events and reject authoritative round IDs, force IDs and invalid locations", () => {
+  const packet = (combatEvents: unknown, mode = "controlled") => ({
+    id: 1,
+    state: { paused: true, speed: 1, snapshot: { tick: 1, mode, entities: [], combatEvents } },
+  });
+  const event = { type: "flight", x: 1024, y: 2048, projectile: "missile", handle: "p1" };
+  expect(isWorkerReply(packet([event]))).toBe(true);
+  expect(isWorkerReply(packet([{ ...event, entity: "e2" }]))).toBe(true);
+  expect(isWorkerReply(packet([{ type: "death", x: 1024, y: 2048 }]))).toBe(true);
+  for (const bad of [
+    null,
+    {},
+    [null],
+    [{ ...event, round: 5 }],
+    [{ ...event, force: 1 }],
+    [{ ...event, entity: 5 }],
+    [{ ...event, entity: "g1" }],
+    [{ ...event, entity: "p1" }],
+    [{ ...event, x: -1 }],
+    [{ ...event, y: 0.5 }],
+    [{ ...event, x: 512 * 1024 }],
+    [{ ...event, type: "unknown" }],
+    [{ ...event, handle: 1 }],
+    [{ ...event, handle: "e1" }],
+    [{ ...event, amount: 0x80000000 }],
+    Array(8193).fill(event),
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet([event], "debug-no-fog"))).toBe(false);
+});
+
 test("worker replies validate extraction status and bounded finite or unlimited remaining deposits", () => {
   const extraction = { kind: "materials", remaining: 4, status: "active" };
   const packet = (value: unknown, mode = "controlled") =>

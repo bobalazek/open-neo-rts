@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 27, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 28, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -251,3 +251,15 @@ cleanup against the integrated worker. Root's six exact Chromium journeys passed
 in 13.2 seconds on an isolated SwiftShader server, including the four existing
 construction/extraction/production/hauling worker cases. No foreground FPS or
 WebGPU hardware acceptance is implied.
+
+
+SIM28 adds canonical instant/bullet/missile flight, swept contacts, pending
+impacts, authored direct/splash/delayed damage and death cleanup. Normal goldens
+are `2a670245f8e608c0` initially and `fcb5865d3da9dc4a` at tick two; debug hashes
+stay unchanged. Independent review caught and closed contact-time splash, newborn
+motion capture and cosmetic events entering bot observations. Real producer death
+refunds once in the same completed tick. The added browser worker journey uses an
+explicit compiled authored rifle fixture, orders a currently visible in-range
+soldier attack, and verifies actual damage/death plus scoped eN/pN publication.
+All five normal worker journeys pass. A preexisting repair regression now expects
+a zero-health actor to be removed, preserving its no-revival assertion.

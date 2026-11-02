@@ -6,7 +6,7 @@ import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
-import { AttackOrder, ShotIntent } from "../combat";
+import { AttackOrder } from "../combat";
 import { OwnerForce, Template } from "../entities";
 import { ProductionItem } from "../production";
 import { BOT_WORK_BUDGET, type BotSeatState, registerBotSeat, type SeatBotProgram } from "./bots";
@@ -428,13 +428,7 @@ test("a bot can order an opaque visible enemy target without control grants on t
   expect(step(kernel, [])[0]?.result).toBe("accepted");
   expect(kernel.world.get(actor, AttackOrder, "target")).toBe(enemy);
   expect(
-    kernel.world
-      .query(ShotIntent)
-      .some(
-        (id) =>
-          kernel.world.get(id, ShotIntent, "shooter") === actor &&
-          kernel.world.get(id, ShotIntent, "target") === enemy,
-      ),
+    kernel.combatEvents?.some((event) => event.type === "launch" && event.entity === actor),
   ).toBe(true);
 });
 
@@ -529,4 +523,48 @@ test("restored canonical bot references still cannot control another Force at di
   ];
   host.load(saved);
   expect(step(kernel, [])[0]?.result).toBe("no_grant");
+});
+
+test("bot host restore excludes cosmetic combat events from policy observations while human snapshots retain them", () => {
+  const setup = botSetup(true);
+  setup.definitions = setup.definitions.map((definition) =>
+    definition.role === "builder"
+      ? {
+          ...definition,
+          armor: "infantry",
+          visionSubcells: 32 * 1024,
+          weapons: [
+            {
+              id: "fixture-gun",
+              targets: ["ground"],
+              rangeSubcells: [0, 32 * 1024],
+              reloadTicks: 1,
+              projectile: { kind: "instant" },
+              warheads: [{ type: "damage", amount: 1, tags: [] }],
+            },
+          ],
+        }
+      : definition,
+  );
+  const source = createMatch(setup),
+    restored = createMatch(setup);
+  step(source, []);
+  step(restored, []);
+  expect(source.combatEvents?.length).toBeGreaterThan(0);
+  const saved = source.bots?.serialize();
+  // Restoring canonical bot state does not restore transient presentation events or pN allocators.
+  restored.combatEvents = undefined;
+  restored.bots?.load(saved);
+  expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  expect(Object.hasOwn(source.observe?.(1) ?? {}, "combatEvents")).toBe(false);
+  expect(restored.observe?.(1)).toEqual(source.observe?.(1));
+  expect(
+    createProjection(setup, 1, "controlled").snapshot(source).combatEvents?.length,
+  ).toBeGreaterThan(0);
+  for (let tick = 0; tick < 3; tick++) {
+    step(source, []);
+    step(restored, []);
+    expect(restored.observe?.(1)).toEqual(source.observe?.(1));
+    expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  }
 });

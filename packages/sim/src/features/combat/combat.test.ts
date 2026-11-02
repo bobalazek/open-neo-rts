@@ -156,6 +156,8 @@ function fixture(
     },
   };
   const kernel = createMatch(setup);
+  // These unit tests inspect targeting's unconsumed handoff; projectile integration is tested separately.
+  kernel.systems.combat.splice(1);
   const spawn = (index: number, force: number, x: number, y: number, facing = 0) => {
     const definition = definitions[index] as Definition;
     return spawnEntity(kernel, index, definition, {

@@ -29,6 +29,7 @@ import {
 } from "../entities";
 import { MoveIntent, MovementFailure } from "../movement";
 import { ProductionGifts, ProductionItem, ProductionRally } from "../production";
+import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
 import { ForceBank } from "./bank";
 import { Extraction, ResourceNode } from "./extraction";
 import { Harvester } from "./harvesting";
@@ -309,6 +310,9 @@ test("canonical snapshots include fractional progress and deposit state, with id
     AttackOrder,
     WeaponState,
     ShotIntent,
+    CombatMotion,
+    PendingImpact,
+    Projectile,
   ])
     restored.register(component);
   restored.load(f.kernel.world.serialize());
