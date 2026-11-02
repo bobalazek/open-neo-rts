@@ -40,6 +40,7 @@ export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
 
 export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
+  deploy?: { id: string; active: boolean; readyAt?: number };
   handle: string;
   definition: string;
   force: number;
@@ -217,7 +218,15 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           setup.normal && controlled && world.has(id, AttackOrder)
             ? world.get(id, AttackOrder, "target")
             : 0;
+        const deployment = kernel.unitModes?.snapshot(id);
         entities.push({
+          ...(deployment && {
+            deploy: {
+              id: deployment.id,
+              active: deployment.active,
+              ...(permits(force, "unit.abilities") && { readyAt: deployment.readyAt }),
+            },
+          }),
           handle,
           definition: definition.id,
           force,

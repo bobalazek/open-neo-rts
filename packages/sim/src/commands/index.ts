@@ -71,6 +71,7 @@ export interface Payloads {
   "unit.move": UnitMove;
   "unit.attackMove": UnitMove;
   "unit.stop": UnitStop;
+  "unit.deploy": UnitStop;
   "economy.power": { entity: number; enabled: number };
 }
 
@@ -93,6 +94,8 @@ export type Command = {
 
 /** Every way a command is refused, with its reason. Clients get the code in their ack. */
 export const REJECTIONS = {
+  cooldown: "This ability is still cooling down.",
+  immobile: "Pack up this deployed unit before moving it.",
   match_ended: "The match has ended; gameplay commands are no longer accepted.",
   queue_full: "This producer already has five player items, including active items.",
   insufficient_funds: "The Force cannot afford the full authored cost.",
@@ -156,6 +159,7 @@ const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } 
   "unit.move": { entities: IDS, x: POSITION, y: POSITION },
   "unit.attackMove": { entities: IDS, x: POSITION, y: POSITION },
   "unit.stop": { entities: IDS },
+  "unit.deploy": { entities: IDS },
   "economy.power": { entity: ID, enabled: [0, 1] },
 };
 

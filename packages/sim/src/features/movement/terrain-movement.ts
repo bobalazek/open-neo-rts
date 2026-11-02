@@ -200,6 +200,7 @@ export class TerrainMovement {
   }
 
   order(id: number, target: Point): void {
+    if (this.kernel.unitModes?.active(id)) return;
     this.plan(id, target, "order", 0);
   }
 
@@ -317,6 +318,12 @@ export class TerrainMovement {
 
   tick(): void {
     const world = this.kernel.world;
+    if (this.kernel.unitModes)
+      for (const id of world.query(MoveIntent)) {
+        if (!this.kernel.unitModes.active(id)) continue;
+        this.cancel(id);
+        world.remove(id, MoveIntent);
+      }
     for (const id of [...this.routes.keys()].sort((a, b) => a - b))
       if (!world.isAlive(id) || !world.has(id, MoveIntent)) this.cancel(id);
     this.refreshOccupancy();

@@ -749,6 +749,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "attackTarget",
             "repair",
             "repairOrder",
+            "deploy",
           ].includes(key),
       ) ||
       !bounded(entity.force) ||
@@ -759,6 +760,22 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.deploy !== undefined) {
+      const deploy = entity.deploy;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(deploy) ||
+        !exact(
+          deploy,
+          deploy.readyAt === undefined ? ["id", "active"] : ["id", "active", "readyAt"],
+        ) ||
+        typeof deploy.id !== "string" ||
+        !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(deploy.id) ||
+        typeof deploy.active !== "boolean" ||
+        (deploy.readyAt !== undefined && !bounded(deploy.readyAt, 0xffffffff))
+      )
+        return false;
+    }
     if (
       entity.harvesting !== undefined &&
       (snapshot.mode !== "controlled" || !isHarvestSnapshot(entity.harvesting))
