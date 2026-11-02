@@ -16,7 +16,7 @@ import {
   validateCommands,
 } from "@open-neo-rts/sim";
 import { createDebugDiagnostics, isOverlayOptions } from "./diagnostics";
-import { isRecord, type WorkerReply } from "./protocol";
+import { DEBUG_GAME_SPEEDS, isRecord, NORMAL_GAME_SPEEDS, type WorkerReply } from "./protocol";
 
 const port = globalThis as unknown as {
   onmessage: (event: MessageEvent<unknown>) => void;
@@ -223,7 +223,12 @@ port.onmessage = ({ data }) => {
         tick();
         break;
       case "speed":
-        if (typeof data.speed !== "number" || ![0.25, 0.5, 1, 2, 4, 8].includes(data.speed))
+        if (
+          typeof data.speed !== "number" ||
+          !(setup.normal ? NORMAL_GAME_SPEEDS : DEBUG_GAME_SPEEDS).some(
+            (speed) => speed === data.speed,
+          )
+        )
           throw new Error("Invalid speed");
         speed = data.speed;
         schedule();

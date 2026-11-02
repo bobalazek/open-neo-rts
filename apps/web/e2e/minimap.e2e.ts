@@ -96,6 +96,7 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
       .evaluate((element) => element.scrollWidth <= element.clientWidth),
   ).toBe(true);
   await page.screenshot({ path: info.outputPath("minimap-mobile.png") });
+  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match", exact: true }).click();
   await expect(world).toBeHidden();
   await expect(minimap).toHaveCount(0);

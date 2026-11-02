@@ -2,12 +2,15 @@
 import { SIM_VERSION } from "@open-neo-rts/sim";
 import { homeScreen } from "../features/main-menu";
 import { createNormalSession } from "../features/match/session";
+import { applyInterfaceScale, readDeviceSettings, settingsScreen } from "../features/settings";
 import { skirmishScreen } from "../features/skirmish";
 import { defaultSkirmish, type SkirmishSetup } from "../features/skirmish/setup";
 import { text } from "../shared";
 
 /** URL navigation and ownership only: gameplay stays in one disposable normal worker. */
 export function startApp(canvas: HTMLCanvasElement) {
+  const previousScale = document.documentElement.style.fontSize;
+  applyInterfaceScale(readDeviceSettings());
   const root = document.createElement("main");
   root.className = "game-shell";
   document.body.append(root);
@@ -18,7 +21,10 @@ export function startApp(canvas: HTMLCanvasElement) {
     config = defaultSkirmish();
   let session: ReturnType<typeof createNormalSession> | undefined;
   let timeout: ReturnType<typeof setTimeout> | undefined;
+  let disposeScreen: (() => void) | undefined;
   function stop() {
+    disposeScreen?.();
+    disposeScreen = undefined;
     loading = false;
     generation++;
     clearTimeout(timeout);
@@ -92,7 +98,10 @@ export function startApp(canvas: HTMLCanvasElement) {
       .catch(failure);
   }
   function show(notice = "") {
-    if (location.pathname === "/skirmish")
+    if (location.pathname === "/settings") {
+      const settings = settingsScreen(root, applyInterfaceScale, () => navigate("/"));
+      disposeScreen = settings.cancel;
+    } else if (location.pathname === "/skirmish")
       skirmishScreen(root, config, start, () => navigate("/"), notice);
     else if (location.pathname === "/match") {
       history.replaceState(null, "", "/skirmish");
@@ -131,6 +140,7 @@ export function startApp(canvas: HTMLCanvasElement) {
       stop();
       signal.abort();
       root.remove();
+      document.documentElement.style.fontSize = previousScale;
       canvas.hidden = false;
     },
   };

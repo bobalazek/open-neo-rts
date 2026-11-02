@@ -10,12 +10,14 @@ import {
   resourceInstances,
 } from "@open-neo-rts/render";
 import { text } from "../../shared";
-import { createOfflineMatch, type OfflineState } from "../../worker";
+import { createOfflineMatch, NORMAL_GAME_SPEEDS, type OfflineState } from "../../worker";
 import { catalogEntry, resolveEntityModel } from "../debug/catalog";
 import { createPresentationClock } from "../debug/clock";
 import { mapDecorations, resolveMapModel } from "../debug/map-visuals";
 import { loadMap } from "../debug/maps";
+import { createInGameMenu } from "../in-game-menu";
 import { postMatchScreen } from "../post-match";
+import { applyInterfaceScale, type DeviceSettings, readDeviceSettings } from "../settings";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
@@ -48,6 +50,19 @@ export function createNormalSession(
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
   let resultScreen: HTMLDialogElement | undefined;
   let minimap: ReturnType<typeof createMinimap> | undefined;
+  let menu: ReturnType<typeof createInGameMenu> | undefined;
+  let preferences = readDeviceSettings();
+  const applyPreferences = (next: DeviceSettings) => {
+    if (disposed) return;
+    if (next.quality !== preferences.quality) renderer?.setQuality(next.quality);
+    renderer?.camera.setControls({
+      panSpeed: next.cameraSpeed / 100,
+      edgeScroll: next.edgeScroll,
+      reducedMotion: next.reducedMotion,
+    });
+    preferences = next;
+    applyInterfaceScale(next);
+  };
   const clock = createPresentationClock();
   const release = () => {
     if (disposed) return;
@@ -118,6 +133,8 @@ export function createNormalSession(
       }),
     );
     label("[data-pause]", text(state.paused ? "ui.match.resume" : "ui.match.pause"));
+    label("[data-speed]", text("ui.menu.current-speed", { speed: state.speed }));
+    menu?.update();
     hud?.update(state);
     minimap?.update(state.snapshot);
     void presentation?.accept(state.snapshot, clock.now(performance.now())).catch(failed);
@@ -147,13 +164,14 @@ export function createNormalSession(
       canvas.hidden = false;
       const nextRenderer = await createRenderer(canvas, {
         terrain: loaded.grid,
-        quality: "medium",
+        quality: preferences.quality,
       });
       if (disposed) {
         nextRenderer.dispose();
         return;
       }
       renderer = nextRenderer;
+      applyPreferences(preferences);
       const spawn = map.spawns.find((spawn) => spawn.id === config.yourSpawn);
       if (!spawn) throw new Error(text("ui.skirmish.spawn-error"));
       const x = spawn.position[0] as number,
@@ -214,7 +232,7 @@ export function createNormalSession(
       await presentation.accept(latest.snapshot, clock.now(performance.now()));
       if (disposed) return;
       root.classList.add("match-shell");
-      root.innerHTML = `<section class="match-top" aria-label="${text("ui.match.title")}"><strong>${map.name}</strong><span data-credits></span><span data-materials></span><span data-industrial></span><span data-salvage></span><span data-power></span><span data-population></span><span data-time></span><button type="button" data-pause>${text("ui.match.pause")}</button><button type="button" data-leave>${text("ui.match.leave")}</button></section>`;
+      root.innerHTML = `<section class="match-top" aria-label="${text("ui.match.title")}"><strong>${map.name}</strong><span data-credits></span><span data-materials></span><span data-industrial></span><span data-salvage></span><span data-power></span><span data-population></span><span data-time></span><span data-speed></span><button type="button" data-pause>${text("ui.match.pause")}</button><button type="button" data-menu>${text("ui.menu.title")}</button><button type="button" data-leave>${text("ui.match.leave")}</button></section>`;
       const activeMatch = match,
         activeRenderer = renderer;
       const toggle = async () => {
@@ -223,7 +241,7 @@ export function createNormalSession(
         try {
           await activeMatch.pause(!latest.paused);
         } catch (error) {
-          failed(error);
+          if (!latest?.snapshot.victory?.result) failed(error);
         } finally {
           busy = false;
         }
@@ -231,43 +249,45 @@ export function createNormalSession(
       root
         .querySelector("[data-pause]")
         ?.addEventListener("click", () => void toggle(), { signal: signal.signal });
+      const leaveMatch = () => {
+        if (window.confirm(text("ui.menu.leave-confirm"))) leave();
+      };
       root
         .querySelector("[data-leave]")
-        ?.addEventListener("click", leave, { signal: signal.signal });
+        ?.addEventListener("click", leaveMatch, { signal: signal.signal });
       const surrender = document.createElement("button");
       surrender.type = "button";
       surrender.textContent = text("ui.result.surrender");
       root.querySelector(".match-top")?.append(surrender);
-      surrender.addEventListener(
-        "click",
-        async () => {
-          if (
-            busy ||
-            disposed ||
-            latest?.snapshot.victory?.result ||
-            !window.confirm(text("ui.result.confirm-surrender"))
-          )
-            return;
-          busy = true;
-          surrender.disabled = true;
-          try {
-            hud?.cancel();
-            if (latest?.paused) await activeMatch.pause(false);
-            if (disposed) return;
-            const result = await activeMatch.command("match.surrender", { force: 0 });
-            if (disposed) return;
-            if (result !== "accepted" && !latest?.snapshot.victory?.result) {
-              surrender.textContent = text("ui.result.surrender-refused");
-              surrender.disabled = false;
-            }
-          } catch (error) {
-            if (!latest?.snapshot.victory?.result) failed(error);
-          } finally {
-            busy = false;
+      const surrenderMatch = async (): Promise<boolean> => {
+        if (
+          busy ||
+          disposed ||
+          latest?.snapshot.victory?.result ||
+          !window.confirm(text("ui.result.confirm-surrender"))
+        )
+          return false;
+        busy = true;
+        surrender.disabled = true;
+        try {
+          hud?.cancel();
+          if (latest?.paused) await activeMatch.pause(false);
+          if (disposed) return false;
+          const result = await activeMatch.command("match.surrender", { force: 0 });
+          if (disposed) return false;
+          if (result !== "accepted" && !latest?.snapshot.victory?.result) {
+            surrender.textContent = text("ui.result.surrender-refused");
+            surrender.disabled = false;
           }
-        },
-        { signal: signal.signal },
-      );
+          return result === "accepted" || !!latest?.snapshot.victory?.result;
+        } catch (error) {
+          if (!latest?.snapshot.victory?.result) failed(error);
+          return !!latest?.snapshot.victory?.result;
+        } finally {
+          busy = false;
+        }
+      };
+      surrender.addEventListener("click", () => void surrenderMatch(), { signal: signal.signal });
       footprint = createPlacementOverlay(renderer.scene, loaded.grid, "#81d4ed");
       hud = createMatchHud(
         canvas,
@@ -283,7 +303,8 @@ export function createNormalSession(
           pick: activePresentation.pick,
           pickCell: activeRenderer.pickCell,
           command: activeMatch.command,
-          paused: () => !!latest?.paused || busy || !!latest?.snapshot.victory?.result,
+          paused: () =>
+            !!latest?.paused || busy || !!menu?.isOpen() || !!latest?.snapshot.victory?.result,
           preview: (cells) =>
             footprint?.accept(
               cells
@@ -357,11 +378,45 @@ export function createNormalSession(
         layout();
         signal.signal.addEventListener("abort", () => sizes.disconnect(), { once: true });
       }
+      menu = createInGameMenu(
+        root,
+        {
+          state: () =>
+            latest && {
+              paused: latest.paused,
+              speed: latest.speed,
+              ended: !!latest.snapshot.victory?.result,
+            },
+          available: () => ready && !disposed && !busy,
+          pause: activeMatch.pause,
+          speed: activeMatch.speed,
+          controls: activeRenderer.camera.setInputEnabled,
+          applySettings: applyPreferences,
+          restart: rematch,
+          leave: leaveMatch,
+          surrender: surrenderMatch,
+          focus: () => canvas.focus({ preventScroll: true }),
+        },
+        signal.signal,
+      );
+      root.querySelector("[data-menu]")?.addEventListener(
+        "click",
+        () => {
+          hud?.cancel();
+          void menu?.open();
+        },
+        { signal: signal.signal },
+      );
       bindSelectionInput(
         canvas,
         {
           enabled: () =>
-            ready && !disposed && !busy && !latest?.snapshot.victory?.result && !hud?.targeting(),
+            ready &&
+            !disposed &&
+            !busy &&
+            !menu?.isOpen() &&
+            !latest?.snapshot.victory?.result &&
+            !hud?.targeting(),
           selected: activePresentation.selection,
           select: activePresentation.select,
           pick: activePresentation.pick,
@@ -372,6 +427,46 @@ export function createNormalSession(
       window.addEventListener(
         "keydown",
         (event) => {
+          if (
+            !ready ||
+            disposed ||
+            busy ||
+            menu?.isOpen() ||
+            latest?.snapshot.victory?.result ||
+            event.defaultPrevented ||
+            event.repeat ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.altKey
+          )
+            return;
+          if (
+            event.target instanceof Element &&
+            (event.target.closest("input,select,textarea,[contenteditable]") ||
+              (event.code !== "Escape" && event.target.closest("button,a")))
+          )
+            return;
+          if (event.code === "Pause") {
+            event.preventDefault();
+            void toggle();
+            return;
+          }
+          if (["Equal", "NumpadAdd", "Minus", "NumpadSubtract"].includes(event.code) && latest) {
+            event.preventDefault();
+            const index = NORMAL_GAME_SPEEDS.findIndex((speed) => speed === latest?.speed);
+            const next =
+              NORMAL_GAME_SPEEDS[
+                Math.max(
+                  0,
+                  Math.min(
+                    NORMAL_GAME_SPEEDS.length - 1,
+                    index + (["Equal", "NumpadAdd"].includes(event.code) ? 1 : -1),
+                  ),
+                )
+              ];
+            if (next !== undefined) void activeMatch.speed(next).catch(failed);
+            return;
+          }
           if (
             event.code === "Escape" &&
             !event.defaultPrevented &&
@@ -384,7 +479,7 @@ export function createNormalSession(
               activePresentation.select([]);
               return;
             }
-            void toggle();
+            void menu?.open();
           }
         },
         { signal: signal.signal },

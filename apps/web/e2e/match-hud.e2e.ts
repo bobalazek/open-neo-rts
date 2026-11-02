@@ -42,7 +42,11 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   const top = await page.locator(".match-top").boundingBox();
   const bottom = await page.locator(".match-hud").boundingBox();
   if (!top || !bottom) throw new Error("Playable area missing");
-  const placement = { x: 685, y: (top.y + top.height + bottom.y) / 2 };
+  // Preserve the ground offset when HUD rows change the playable view height.
+  const placement = {
+    x: 640 + (bottom.y - top.y - top.height) * 0.15,
+    y: (top.y + top.height + bottom.y) / 2,
+  };
   await page.mouse.move(placement.x, placement.y);
   await page.mouse.click(placement.x, placement.y);
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4100");
@@ -118,6 +122,7 @@ test("normal HUD uses real production receipts, selection groups and cancellable
       .evaluate((element) => element.scrollWidth <= element.clientWidth),
   ).toBe(true);
   await page.screenshot({ path: info.outputPath("hud-mobile.png") });
+  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match" }).click();
   await expect(canvas).toBeHidden();
   expect(errors).toEqual([]);

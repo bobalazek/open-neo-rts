@@ -98,7 +98,8 @@
   color: var(--surface);
   background: var(--accent);
 }
-.match-result {
+.match-result,
+.match-menu {
   width: min(42rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   overflow: auto;
@@ -109,7 +110,8 @@
   background: var(--panel);
   pointer-events: auto;
 }
-.match-result::backdrop {
+.match-result::backdrop,
+.match-menu::backdrop {
   background: #071018bb;
 }
 .match-result.has-totals {
@@ -127,6 +129,46 @@
   text-align: left;
   color: var(--muted);
   max-width: none;
+}
+.match-menu {
+  width: min(32rem, calc(100vw - 2rem));
+}
+.match-menu nav,
+.settings-screen form {
+  display: grid;
+  gap: 0.75rem;
+}
+.match-menu nav button {
+  text-align: left;
+}
+.settings-screen {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+.settings-screen header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.settings-screen header h1 {
+  margin: 0;
+}
+.settings-screen small {
+  color: var(--muted);
+}
+.game-shell .settings-check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+.settings-check small {
+  grid-column: 2;
+}
+.game-shell .settings-check input {
+  min-height: 1.5rem;
+  width: 1.5rem;
+  padding: 0;
 }
 .match-result table {
   width: 100%;
