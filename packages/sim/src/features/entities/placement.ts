@@ -47,6 +47,7 @@ export function checkSpawnPlacement(
   kernel: Kernel,
   definitions: readonly Definition[],
   spawn: DebugSpawn,
+  options: { ignoreUnits?: boolean } = {},
 ): SpawnPlacement {
   const map = kernel.map;
   if (!map) throw new Error("Spawn placement requires a map");
@@ -99,7 +100,7 @@ export function checkSpawnPlacement(
     (map.resources ?? []).some(
       (resource) => resource !== boundNode && resourceOccupies(resource, cx, cy),
     ) ||
-    units.some((position) => position.x === cx && position.y === cy);
+    (!options.ignoreUnits && units.some((position) => position.x === cx && position.y === cy));
   if (unit)
     return staticBlocked(cell(x), cell(y)) ? { ok: false, failure: "blocked" } : { ok: true };
   const r = rotation(facing);
