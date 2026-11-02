@@ -221,6 +221,8 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.visionSubcells !== undefined && { visionSubcells: def.visionSubcells }),
     ...(def.power !== undefined && { power: def.power }),
     ...(def.powerAdjacency && { powerAdjacency: def.powerAdjacency }),
+    ...(def.productionReward && { productionReward: def.productionReward }),
+    ...(def.productionSurge && { productionSurge: def.productionSurge }),
     ...(def.role !== undefined && { role: def.role }),
     ...(def.tags.length && { tags: def.tags }),
     ...(def.repair && { repair: def.repair }),

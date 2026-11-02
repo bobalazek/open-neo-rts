@@ -86,6 +86,67 @@ function pack(
 const unitId = (name: string) => `core.unit:eastern-collective/${name}`;
 const structureId = (name: string) => `core.structure:eastern-collective/${name}`;
 
+test("Force production Surge requires explicit scope and a single bounded supported effect", () => {
+  const ability = headquarters.abilities[0]!;
+  const compile = (value: Data) =>
+    compileGameplayCatalog(
+      resolvePacks(
+        [
+          pack(
+            "core",
+            roster.map((definition) =>
+              definition === headquarters
+                ? {
+                    ...headquarters,
+                    abilities: [value],
+                    productionReward: { resource: "industrial-capacity", amount: 1, cap: 100 },
+                  }
+                : definition,
+            ),
+          ),
+        ],
+        "0.1.0",
+      ),
+    ).definitions.find((definition) => definition.id === structureId("command-center"));
+  expect(compile(ability)?.productionSurge).toBeUndefined();
+  const effect = { ...ability.effects[0], scope: "force" };
+  const supported = { ...ability, effects: [effect] };
+  expect(compile(supported)).toMatchObject({
+    productionSurge: {
+      id: "production-surge",
+      perMille: 1500,
+      durationTicks: 400,
+      cooldownTicks: 2400,
+      cost: { "industrial-capacity": 20 },
+    },
+    productionReward: { resource: "industrial-capacity", amount: 1, cap: 100 },
+  });
+  for (const invalid of [
+    { ...supported, target: "point" },
+    { ...supported, effects: [effect, effect] },
+    { ...supported, effects: [{ ...effect, percent: 201 }] },
+    { ...supported, effects: [{ ...effect, duration: 0 }] },
+    { ...supported, effects: [{ ...effect, amount: 1 }] },
+    { ...supported, autoCast: true },
+  ])
+    expect(() => compile(invalid)).toThrow();
+  const issues: { path: string; message: string }[] = [];
+  definitionSchema.check(
+    {
+      id: "structure:fixture/producer",
+      health: 100,
+      speed: 0,
+      turnRate: 0,
+      footprint: [1, 1],
+      power: 20,
+      productionReward: { resource: "power", amount: 1, cap: 100 },
+    },
+    "$",
+    issues,
+  );
+  expect(issues.length).toBeGreaterThan(0);
+});
+
 test("authored deployed passenger fire compiles as a bounded transport capability", () => {
   const edited = roster.map((definition) =>
     definition === apc

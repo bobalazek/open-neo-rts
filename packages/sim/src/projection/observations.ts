@@ -30,6 +30,7 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
         },
       }),
       ...(entity.deploy && { deploy: { ...entity.deploy } }),
+      ...(entity.productionSurge && { productionSurge: { ...entity.productionSurge } }),
       order: entity.order && { ...entity.order },
       ...(entity.power && {
         power: {
@@ -90,7 +91,11 @@ function controllerPayload(
     payload.entity =
       projection.resolve(
         payload.entity,
-        command.type === "unit.load" || command.type === "unit.unload" ? "unit.orders" : undefined,
+        command.type === "commander.activate"
+          ? "commander.abilities"
+          : command.type === "unit.load" || command.type === "unit.unload"
+            ? "unit.orders"
+            : undefined,
       ) ?? -1;
   if ("item" in payload) payload.item = projection.resolve(payload.item, "production.queue") ?? -1;
   return payload;

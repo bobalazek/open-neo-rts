@@ -20,6 +20,7 @@ import {
   WARHEAD_TAGS,
 } from "@open-neo-rts/content";
 import { strictObject } from "../../snapshots/schema";
+import type { StockResourceId } from "../economy/bank";
 import { type GameplayWeapon, weaponSchema } from "./weapons";
 
 export interface RepairDefinition {
@@ -52,6 +53,14 @@ export interface PowerAdjacency {
   readonly maxSources: number;
 }
 
+export interface ProductionSurgeDefinition {
+  readonly id: string;
+  readonly perMille: number;
+  readonly durationTicks: number;
+  readonly cooldownTicks: number;
+  readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
+}
+
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
 export interface Definition {
   id: string;
@@ -65,6 +74,12 @@ export interface Definition {
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
   powerAdjacency?: readonly PowerAdjacency[];
+  productionReward?: {
+    readonly resource: StockResourceId;
+    readonly amount: number;
+    readonly cap: number;
+  };
+  productionSurge?: ProductionSurgeDefinition;
   role?: string;
   tags?: readonly string[];
   repair?: RepairDefinition;
@@ -119,6 +134,13 @@ const recipeSchema = strictObject({
   cost: rec(int(0, INT32_MAX), /^(credits|materials|industrial-capacity|salvage-points)$/),
   buildTicks: int(0, INT32_MAX),
 });
+export const productionSurgeSchema = strictObject({
+  id: str(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+  perMille: int(1000, 2000),
+  durationTicks: int(1, 2400),
+  cooldownTicks: int(0, 72000),
+  cost: rec(int(0, INT32_MAX), /^(credits|materials|industrial-capacity|salvage-points)$/),
+});
 export const definitionSchema = strictObject({
   id: str(/^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/),
   health: int(0, INT32_MAX),
@@ -126,6 +148,14 @@ export const definitionSchema = strictObject({
   turnRate: int(0, 0x10000),
   visionSubcells: opt(int(0, 40 * 1024)),
   power: opt(int(-500, 500)),
+  productionReward: opt(
+    strictObject({
+      resource: oneOf(["credits", "materials", "industrial-capacity", "salvage-points"]),
+      amount: int(1, INT32_MAX),
+      cap: int(1, INT32_MAX),
+    }),
+  ),
+  productionSurge: opt(productionSurgeSchema),
   powerAdjacency: opt(
     arr(
       strictObject({
@@ -260,6 +290,19 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       });
     if (kind !== "structure" && definition.power !== undefined)
       issues.push({ path: `${path}.power`, message: "only structures declare power" });
+    if (definition.productionReward && kind !== "structure")
+      issues.push({
+        path: `${path}.productionReward`,
+        message: "only production structures declare output rewards",
+      });
+    if (
+      definition.productionSurge &&
+      (kind !== "structure" || !definition.footprint || definition.power === undefined)
+    )
+      issues.push({
+        path: `${path}.productionSurge`,
+        message: "production surge requires a powered structure with a footprint",
+      });
     if (
       definition.powerAdjacency &&
       (kind !== "structure" || !definition.footprint || (definition.power ?? 0) <= 0)
@@ -403,6 +446,7 @@ export function toDefinition(content: {
   extraction?: Definition["extraction"];
   blocks?: string;
   power?: number;
+  productionReward?: Definition["productionReward"];
   tags?: readonly string[];
   adjacency?: readonly {
     tags: readonly string[];
@@ -433,6 +477,7 @@ export function toDefinition(content: {
     turnRate: Math.round((turnRate * 0x10000) / 7200),
     ...(content.vision !== undefined && { visionSubcells: Math.round(content.vision * 1024) }),
     ...(content.power !== undefined && { power: content.power }),
+    ...(content.productionReward && { productionReward: { ...content.productionReward } }),
     ...(content.tags && { tags: [...content.tags] }),
     ...(content.adjacency?.some((rule) => rule.stat === "power") && {
       powerAdjacency: content.adjacency

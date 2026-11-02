@@ -224,6 +224,20 @@ export function createMatchHud(
     get(".hud-command-panel"),
   );
   deployButton.dataset.deploy = "";
+  const surgeButton = button(
+    text("ui.hud.surge"),
+    () => {
+      const provider = own().find((entity) => entity.productionSurge);
+      if (!provider?.productionSurge) return;
+      cancel();
+      void issue("commander.activate", {
+        entity: provider.handle,
+        ability: provider.productionSurge.id,
+      });
+    },
+    get(".hud-command-panel"),
+  );
+  surgeButton.dataset.surge = "";
   const loadButton = button(
     text("ui.hud.load"),
     () =>
@@ -675,6 +689,39 @@ export function createMatchHud(
     const lines = selected.slice(0, 8).map((entity) => describe(entity));
     details.textContent = lines.join("\n") || text("ui.hud.select-help");
     const disabled = busy || options.paused();
+    const surgeProvider = owned.find((entity) => entity.productionSurge);
+    const surge = surgeProvider?.productionSurge;
+    const surgeDefinition =
+      surgeProvider && definitions.get(surgeProvider.definition)?.gameplay.productionSurge;
+    const surgeName =
+      surgeProvider &&
+      definitions
+        .get(surgeProvider.definition)
+        ?.gameplay.abilities.find((ability) => ability.id === surge?.id)?.name;
+    surgeButton.textContent = surgeName ?? text("ui.hud.surge");
+    const surgeBank = snapshot.banks?.find((bank) => bank.force === options.force)?.resources;
+    const funded =
+      !surgeBank ||
+      Object.entries(surgeDefinition?.cost ?? {}).every(
+        ([resource, amount]) =>
+          (surgeBank[resource as keyof typeof surgeBank] ?? 0) >= (amount ?? 0),
+      );
+    const surgeWait = surge
+      ? Math.max(0, surge.until - snapshot.tick, surge.readyAt - snapshot.tick)
+      : 0;
+    surgeButton.hidden = !surge;
+    surgeButton.disabled =
+      disabled ||
+      !surge ||
+      surgeWait > 0 ||
+      !funded ||
+      !!surgeProvider?.constructionSite ||
+      !!surgeProvider?.disabled ||
+      surgeProvider?.power?.powered === false;
+    surgeButton.setAttribute("aria-pressed", String(!!surge && surge.until > snapshot.tick));
+    surgeButton.title = surgeWait
+      ? text("ui.hud.deploy-cooldown", { seconds: Math.ceil(surgeWait / 20) })
+      : `${surgeName ?? text("ui.hud.surge")} · ${costText(surgeDefinition?.cost ?? {})}`;
     const deployments = selectedUnits.filter(
       (entity) => definitions.get(entity.definition)?.gameplay.deployMode,
     );
@@ -1036,6 +1083,13 @@ export function createMatchHud(
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
     if (entity.disabled) lines.push(text("ui.hud.emp-disabled"));
     if (entity.burning) lines.push(text("ui.hud.burning"));
+    if (entity.productionSurge && entity.productionSurge.until > (snapshot?.tick ?? 0))
+      lines.push(
+        text("ui.hud.surge-active", {
+          seconds: Math.ceil((entity.productionSurge.until - (snapshot?.tick ?? 0)) / 20),
+          percent: Math.floor((entity.productionSurge.perMille - 1000) / 10),
+        }),
+      );
     const definition = definitions.get(entity.definition)?.gameplay;
     if (entity.cargo)
       lines.push(
@@ -1143,7 +1197,11 @@ export function createMatchHud(
     if (entity.order)
       lines.push(text(entity.order.type === "move" ? "ui.hud.moving" : "ui.hud.attacking"));
     if (entity.attackTarget) lines.push(text("ui.hud.attacking"));
-    const unsupported = definition?.abilities.length || definition?.research.length;
+    const unsupported =
+      definition?.abilities.some(
+        (ability) =>
+          ability.id !== definition.deployMode?.id && ability.id !== definition.productionSurge?.id,
+      ) || definition?.research.length;
     if (unsupported) lines.push(text("ui.hud.abilities-unavailable"));
     return lines.join(" · ");
   }
@@ -1192,19 +1250,25 @@ export function createMatchHud(
 
 function recipeText(definition: GameplayDefinition) {
   if (!definition.construction) return text("ui.hud.unpriced");
+  return text("ui.hud.recipe", {
+    cost: costText(definition.construction.cost),
+    seconds: definition.construction.buildTicks / 20,
+  });
+}
+
+function costText(amounts: Readonly<Partial<Record<string, number>>>) {
   const resources = {
     credits: "ui.hud.credits",
     materials: "ui.hud.materials",
     "industrial-capacity": "ui.hud.industrial",
     "salvage-points": "ui.hud.salvage",
   } as const;
-  const cost = Object.entries(definition.construction.cost)
+  return Object.entries(amounts)
     .map(
       ([key, amount]) =>
         `${amount} ${key in resources ? text(resources[key as keyof typeof resources]) : key}`,
     )
     .join(", ");
-  return text("ui.hud.recipe", { cost, seconds: definition.construction.buildTicks / 20 });
 }
 
 function refusal(value: unknown) {
