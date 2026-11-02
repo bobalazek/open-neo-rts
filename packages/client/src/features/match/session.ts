@@ -46,8 +46,8 @@ export function createNormalSession(
   let latest: OfflineState | undefined;
   let hud: ReturnType<typeof createMatchHud> | undefined;
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
-  let minimap: ReturnType<typeof createMinimap> | undefined;
   let resultScreen: HTMLDialogElement | undefined;
+  let minimap: ReturnType<typeof createMinimap> | undefined;
   const clock = createPresentationClock();
   const release = () => {
     if (disposed) return;
