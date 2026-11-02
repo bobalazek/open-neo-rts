@@ -1,6 +1,6 @@
 // Babylon renderer: scene, RTS camera and terrain. Reads sim presentation, never writes sim state.
 
-import { DirectionalLight } from "@babylonjs/core";
+import { DirectionalLight, Viewport } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
 import { createRtsCamera } from "./camera";
 import { createEngine, createScene } from "./scene";
@@ -8,12 +8,13 @@ import { createQuality, type GraphicsQuality } from "./scene/quality";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
+export { cameraGroundView } from "./camera";
 export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createPlacementOverlay } from "./overlays/placement";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
-export { CELL_SIZE, LEVEL_HEIGHT } from "./terrain";
+export { CELL_SIZE, LEVEL_HEIGHT, PALETTES } from "./terrain";
 export {
   createMapPresentation,
   type MapDecoration,
@@ -60,6 +61,18 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     camera,
     terrain,
     setQuality,
+    /** Keep the camera's target in the playable area rather than behind fixed HUD panels. */
+    setViewInsets(top: number, bottom: number) {
+      const height = Math.max(1, canvas.clientHeight);
+      const insetTop = Math.max(0, Math.min(height - 1, top));
+      const insetBottom = Math.max(0, Math.min(height - insetTop - 1, bottom));
+      camera.viewport = new Viewport(
+        0,
+        insetBottom / height,
+        1,
+        (height - insetTop - insetBottom) / height,
+      );
+    },
     /** Pick only authored ground/water, never a model that covers the intended cell. */
     pickCell(clientX: number, clientY: number) {
       const bounds = canvas.getBoundingClientRect();

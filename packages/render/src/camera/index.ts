@@ -1,6 +1,6 @@
 // RTS camera: arrows/right-drag/edge pan, wheel zoom, middle-drag rotate; target stays inside the map.
 
-import { ArcRotateCamera, type Scene, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Matrix, Ray, type Scene, Vector3 } from "@babylonjs/core";
 
 /** World-space rectangle the camera target stays in. */
 export interface CameraBounds {
@@ -114,7 +114,9 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
         return;
       }
       // Grab the ground: metres per pixel at the target, stretched along the view by the pitch.
-      const m = (2 * camera.radius * Math.tan(camera.fov / 2)) / canvas.clientHeight;
+      const m =
+        (2 * camera.radius * Math.tan(camera.fov / 2)) /
+        (canvas.clientHeight * camera.viewport.height);
       pan(-dx * m, (dy * m) / Math.cos(camera.beta));
     },
     { signal },
@@ -161,5 +163,41 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     const t = (camera.radius - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
     camera.beta = PITCH_NEAR + (PITCH_FAR - PITCH_NEAR) * t;
   });
-  return camera;
+  return Object.assign(camera, {
+    panTo(x: number, z: number, height = target.y) {
+      target.set(clamp(x, bounds.minX, bounds.maxX), height, clamp(z, bounds.minZ, bounds.maxZ));
+      keys.clear();
+      pointer = null;
+    },
+    zoomBy(delta: number) {
+      goal = clamp(goal * Math.exp(delta * ZOOM_STEP), MIN_DISTANCE, MAX_DISTANCE);
+    },
+  });
+}
+
+/** Camera-only ground-plane footprint; never queries world occupancy or hidden entities. */
+export function cameraGroundView(camera: ArcRotateCamera): { x: number; z: number }[] {
+  const engine = camera.getScene().getEngine();
+  const width = engine.getRenderWidth(),
+    height = engine.getRenderHeight();
+  camera.getViewMatrix(true);
+  const view = camera.getViewMatrix(),
+    projection = camera.getProjectionMatrix(true);
+  return [
+    [0, 0],
+    [width, 0],
+    [width, height],
+    [0, height],
+  ].flatMap(([x = 0, y = 0]) => {
+    const ray = Ray.CreateNew(x, y, width, height, Matrix.Identity(), view, projection);
+    if (ray.direction.y >= -0.000001) return [];
+    const distance = (camera.target.y - ray.origin.y) / ray.direction.y;
+    if (distance < 0) return [];
+    return [
+      {
+        x: ray.origin.x + ray.direction.x * distance,
+        z: ray.origin.z + ray.direction.z * distance,
+      },
+    ];
+  });
 }
