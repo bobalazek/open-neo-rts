@@ -28,7 +28,7 @@ interface MapEntry {
     biome: string;
     size: { width: number; height: number };
     objects: readonly MapDecoration[];
-    resources: readonly (MapResource & { amount: number })[];
+    resources: readonly (MapResource & { amount?: number })[];
     spawns: readonly { id: string; position: readonly number[]; facing: number }[];
   };
   layers: Partial<Record<keyof TerrainLayers, string>>;

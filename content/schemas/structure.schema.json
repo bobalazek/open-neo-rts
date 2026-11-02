@@ -26,6 +26,7 @@
         "headquarters",
         "power",
         "dropoff",
+        "extractor",
         "production",
         "research",
         "support",
@@ -112,6 +113,17 @@
       },
       "minItems": 1,
       "maxItems": 8
+    },
+    "nodeKinds": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "materials",
+          "oil"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 2
     },
     "power": {
       "type": "integer",
@@ -760,6 +772,7 @@
                   "headquarters",
                   "power",
                   "dropoff",
+                  "extractor",
                   "production",
                   "research",
                   "support",

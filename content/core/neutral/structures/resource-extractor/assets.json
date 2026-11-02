@@ -1,0 +1,16 @@
+{
+  "files": {
+    "resource-extractor.glb": {
+      "author": "Codex (OpenAI)",
+      "source": "source/resource-extractor.bricks.json"
+    },
+    "resource-extractor.icon.png": {
+      "author": "Codex (OpenAI)",
+      "source": "source/resource-extractor.bricks.json"
+    },
+    "resource-extractor.rubble.glb": {
+      "author": "Codex (OpenAI)",
+      "source": "source/resource-extractor.bricks.json"
+    }
+  }
+}

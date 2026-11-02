@@ -19,7 +19,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 8;
+export const SIM_VERSION = 9;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -53,6 +53,7 @@ export function createMatch(setup: MatchSetup): Kernel {
         footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
       }),
       ...(definition.cells && { cells: Object.freeze([...definition.cells]) }),
+      ...(definition.nodeKinds && { nodeKinds: Object.freeze([...definition.nodeKinds]) }),
       ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
     }),
   );

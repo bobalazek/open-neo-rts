@@ -48,9 +48,10 @@ export interface MatchMap {
 }
 
 export interface MatchResource {
-  readonly kind: "ore" | "materials";
+  readonly kind: "ore" | "materials" | "oil";
   readonly position: readonly [number, number];
-  readonly amount: number;
+  /** Oil may omit an amount: its depletion policy is not decided. */
+  readonly amount?: number;
   readonly radius?: number;
 }
 
@@ -58,9 +59,9 @@ const position = () => arr(int(0, 512 * 1024 - 1), 2, 2);
 const spawnId = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const definitionId = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 const resourceSchema = strictObject({
-  kind: oneOf(["ore", "materials"]),
+  kind: oneOf(["ore", "materials", "oil"]),
   position: position(),
-  amount: int(1, 0x7fffffff),
+  amount: opt(int(1, 0x7fffffff)),
   radius: opt(int(0, 20 * 1024)),
 });
 
@@ -69,7 +70,7 @@ export function toMatchResources(
   resources: readonly {
     kind: string;
     position: readonly number[];
-    amount: number;
+    amount?: number;
     radius?: number;
   }[],
 ): MatchResource[] {
@@ -77,10 +78,14 @@ export function toMatchResources(
     const result = {
       kind: resource.kind,
       position: resource.position.map((coordinate) => Math.round(coordinate * 1024)),
-      amount: resource.amount,
+      ...(resource.amount !== undefined && { amount: resource.amount }),
       ...(resource.radius !== undefined && { radius: Math.round(resource.radius * 1024) }),
     };
     const issues = validate(resourceSchema, result);
+    if (resource.kind !== "oil" && resource.amount === undefined)
+      issues.push({ path: "$.amount", message: "ore/materials require an amount" });
+    if (resource.kind !== "ore" && resource.radius !== undefined)
+      issues.push({ path: "$.radius", message: "only ore fields have a radius" });
     if (issues.length)
       throw new Error(
         `Invalid resource: ${issues.map((i) => `${i.path}: ${i.message}`).join("; ")}`,
@@ -92,6 +97,7 @@ export function toMatchResources(
 /** Ore uses the accepted inclusive integer-cell disc; material nodes are centred 2×2 footprints. */
 export function resourceOccupies(resource: MatchResource, x: number, y: number): boolean {
   const [px, py] = resource.position;
+  if (resource.kind === "oil") return x === Math.floor(px / 1024) && y === Math.floor(py / 1024);
   if (resource.kind === "materials")
     return (
       x >= Math.floor(px / 1024) - 1 &&
@@ -103,6 +109,14 @@ export function resourceOccupies(resource: MatchResource, x: number, y: number):
   const dy = y * 1024 - py;
   const radius = resource.radius ?? 1024;
   return dx * dx + dy * dy <= radius * radius;
+}
+
+/** Stable grid anchor, independent of a marker's 1×1 or 2×2 visual centre parity. */
+export function resourceNodeOrigin(resource: MatchResource): { x: number; y: number } {
+  return {
+    x: Math.floor(resource.position[0] / 1024) - 1,
+    y: Math.floor(resource.position[1] / 1024) - 1,
+  };
 }
 
 export const matchMapSchema = strictObject({
@@ -176,6 +190,10 @@ export function checkMatchMap(
   for (const [i, resource] of (map.resources ?? []).entries()) {
     const at = `${path}.resources[${i}]`;
     bounds(resource.position, at);
+    if (resource.kind !== "oil" && resource.amount === undefined)
+      issues.push({ path: `${at}.amount`, message: "ore/materials require an amount" });
+    if (resource.kind !== "ore" && resource.radius !== undefined)
+      issues.push({ path: `${at}.radius`, message: "only ore fields have a radius" });
   }
   const spawnIds = new Set<string>();
   for (const [i, spawn] of spawns.entries()) {
@@ -244,7 +262,7 @@ export function copyMatchMap(map: MatchMap): MatchMap {
           Object.freeze({
             kind: resource.kind,
             position: position(resource.position),
-            amount: resource.amount,
+            ...(resource.amount !== undefined && { amount: resource.amount }),
             ...(resource.radius !== undefined && { radius: resource.radius }),
           }),
         ),

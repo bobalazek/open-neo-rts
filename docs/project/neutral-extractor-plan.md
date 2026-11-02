@@ -1,6 +1,6 @@
 # Neutral extractor: fit with the existing economy
 
-Status: design proposal, 2026-11-01. The owner approved one neutral extractor built by any faction on either raw-material or oil nodes, then requested a planning pass in the context of the other structures. That shared-type direction is decided; the operating details below are recommendations, not approved stats or implementation instructions.
+Status: placement/presentation contract approved 2026-11-02; economy recommendations remain proposals. The [decision](./decisions/2026-11-01-neutral-extractor.md) accepts the shared 2×2 fixed-anchor, Force-owned/team-colored extractor, existing builders and remote placement without base-radius extension. Approved provisional debug values are 800 health, four-cell vision and −10 power. Cost, construction time, rates and depletion are unset.
 
 The [normal construction proposal](./construction-policy-proposal.md) makes the related footprint, expansion, payment and clearance recommendations concrete for owner review. It does not activate those rules or settle extraction rates and balance.
 
@@ -35,11 +35,11 @@ The smallest fit is a separate producer, not a combined drop-off/refinery/power 
 
 **Opening/map readiness:** current spawn validation guarantees nearby ore, not reachable materials. Before a skirmish map claims to support material-dependent units, check a legal material site and route using each participating faction's actual builder domain and the chosen expansion policy. The Phoenix Initiative's tracked Nanite Constructor cannot cross shallow water under the accepted movement table. Missing, inaccessible and contested material sites must be deliberate map scenarios, with an approved alternative where required. Do not silently grant nearby nodes or starting materials, or change builders' movement to make a map pass. Debug sandboxes may still omit resources and show a truthful placement refusal.
 
-Recommend a compact fixed footprint, with 2×2 as a candidate to compare visually against the 3×3 drop-offs. Do not lock it yet: material markers are 2×2, oil markers are 1×1, and their current centers do not share the same grid parity. Exact center matching would fail on one of them.
+The approved footprint is 2×2, smaller than the existing 3×3 drop-offs. Material markers are 2×2 and oil markers 1×1; their visual centres do not share grid parity. Use the fixed top-left anchor `floor(node position / 1024) - 1` per axis in simulation subcells for both, rather than requiring coincident visual centres.
 
 Use one explicit node anchor and a fixed structure footprint. Snap the extractor to the chosen node; let model pivots remain presentation details. A node-binding requirement must be separate from ordinary terrain checks: the existing `node` cell check currently bypasses land/ramp/surface restrictions. Preserve bounds, the four-cell edge margin, height, allowed terrain, rotated footprint and unrelated occupancy. Only the exact bound node may be exempt from resource blocking. Another node or an existing extractor still blocks placement.
 
-**Proposed expansion rule requiring approval:** a builder may establish an extractor on a distant eligible node without an existing base nearby, but the extractor does not extend normal base-build radius. Otherwise distant nodes may require chains of unrelated structures, or one cheap extractor may become a remote base anchor. The debug-mode radius exception does not decide this normal-match rule.
+**Approved expansion rule:** a builder may establish an extractor on a distant eligible node without an existing base nearby, but the extractor does not extend normal base-build radius. The general radius and clearance rules remain undecided. Phase 1b debug spawning already ignores radius; normal builder construction is phase 2.
 
 That proposal concerns radius-based rules only. Territory rulesets replace radius with ownership; whether extraction may expand into unowned territory is a separate policy, not an implied exception.
 

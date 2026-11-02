@@ -9,7 +9,7 @@ import {
   WARHEAD_TAGS,
   WARHEAD_TYPES,
 } from "../rules/combat";
-import { RESOURCES } from "../rules/resources";
+import { NODE_KINDS, RESOURCES } from "../rules/resources";
 import { STRUCTURE_ROLES, UNIT_ROLES } from "../rules/roles";
 import { arr, bool, int, num, obj, oneOf, opt, rec, type Schema, str, unknown } from "./dsl";
 
@@ -50,6 +50,29 @@ export const EFFECTS = [
 ] as const;
 
 const cost = rec(int(0), new RegExp(`^(${RESOURCES.map((r) => r.id).join("|")})$`));
+const resourceShape = obj({
+  kind: oneOf(["ore", ...NODE_KINDS]),
+  position: arr(num(0, 512, "cells"), 2, 2),
+  amount: opt(int(1, undefined, "required for ore/materials; oil depletion is undecided")),
+  radius: opt(num(0, 20, "cells")),
+});
+const mapResource: Schema = {
+  json: {
+    ...resourceShape.json,
+    allOf: [
+      { if: { properties: { kind: { const: "oil" } } }, else: { required: ["amount"] } },
+      { if: { properties: { kind: { const: "ore" } } }, else: { not: { required: ["radius"] } } },
+    ],
+  },
+  check(value, path, issues) {
+    resourceShape.check(value, path, issues);
+    if (typeof value !== "object" || value === null || !("kind" in value)) return;
+    if (value.kind !== "oil" && !("amount" in value))
+      issues.push({ path: `${path}.amount`, message: "is required for ore/materials" });
+    if (value.kind !== "ore" && "radius" in value)
+      issues.push({ path: `${path}.radius`, message: "only ore fields have a radius" });
+  },
+};
 const effect = obj(
   {
     type: oneOf(EFFECTS),
@@ -312,6 +335,7 @@ export const SCHEMAS = {
     ),
     footprint: arr(int(1, 8), 2, 2),
     cells: opt(arr(str(/^[lsw]+$/), 1, 8)),
+    nodeKinds: opt(arr(oneOf(NODE_KINDS), 1, NODE_KINDS.length)),
     power: int(-500, 500, "+ produced, - used"),
     vision: num(0, 40, "cells"),
     pop: opt(int(0)),
@@ -369,14 +393,7 @@ export const SCHEMAS = {
       ["faction", "empty"],
       "faction: each spawn gets its faction's start kit; empty: only pre-placed objects",
     ),
-    resources: arr(
-      obj({
-        kind: oneOf(["ore", "materials"]),
-        position: arr(num(0, 512, "cells"), 2, 2),
-        amount: int(1),
-        radius: opt(num(0, 20, "cells")),
-      }),
-    ),
+    resources: arr(mapResource),
     objects: arr(
       obj({
         definition: anyId,

@@ -24,6 +24,10 @@ content/
 - **What isn't content:** resources, armour classes, projectile and warhead kinds, unit and structure **roles**, and match settings are engine code in `packages/content/src/rules/` ([decision](../project/decisions/2026-11-01-content-model.md)).
 - **Mods** are more packs next to `core` (`content/<mod>/`), with the same layout ([modding.md](../engineering/modding.md)).
 
+## Node placement
+
+Node-bound structures declare `nodeKinds`, a nonempty list of `materials` and/or `oil`, separately from their ordinary footprint `cells` terrain rules. `extractor` is the shared producer role. Its debug placement must match a specific node anchor and may ignore only that exact node's resource occupancy. Node markers in maps use `kind: materials` with a required `amount`, or `kind: oil` with an optional amount until depletion is decided. Only ore fields may declare a radius. Phase-1b extractor content intentionally omits cost, build time and yield; a later normal-match compiler must require an approved economy contract rather than treating omissions as free/instant production.
+
 ## Manifest
 
 The loader never scans folders: `manifest.json` lists every definition file, and `bun neo validate` fails on a listed file that's missing and on a JSON file that isn't listed.

@@ -9,3 +9,7 @@ export const RESOURCES = [
   { id: "salvage-points", kind: "stock" }, // Phoenix Initiative: earned from wrecks, spent at the Black Market Hub
 ] as const;
 export type ResourceId = (typeof RESOURCES)[number]["id"];
+
+/** Deposit kinds, separate from spendable resources. */
+export const NODE_KINDS = ["materials", "oil"] as const;
+export type NodeKind = (typeof NODE_KINDS)[number];

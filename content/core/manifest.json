@@ -113,7 +113,8 @@
       "factions/phoenix-initiative/structures/salvage-center/structure.json",
       "factions/phoenix-initiative/structures/stealth-generator/structure.json",
       "factions/phoenix-initiative/structures/underground-barracks/structure.json",
-      "neutral/structures/quantum-nexus/structure.json"
+      "neutral/structures/quantum-nexus/structure.json",
+      "neutral/structures/resource-extractor/structure.json"
     ],
     "props": [
       "props/arctic/frozen-log/prop.json",

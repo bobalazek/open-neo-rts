@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/map.schema.json",
   "id": "map:sandbox-resources",
   "name": "Sandbox: Resources",
-  "description": "Ore fields of three sizes and raw-material nodes, the smallest of each nearly empty so depletion shows quickly.",
+  "description": "Ore fields, raw-material nodes and an oil marker for shared-extractor placement. Extraction and depletion simulation arrive with the economy.",
   "size": {
     "width": 64,
     "height": 64
@@ -53,6 +53,10 @@
       "kind": "materials",
       "position": [32, 44],
       "amount": 250
+    },
+    {
+      "kind": "oil",
+      "position": [44.5, 32.5]
     }
   ],
   "objects": []

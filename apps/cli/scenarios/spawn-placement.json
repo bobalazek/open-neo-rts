@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 8,
+  "simVersion": 9,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -51,6 +51,14 @@
         "turnRate": 65536,
         "footprint": [2, 1],
         "blocks": "movement"
+      },
+      {
+        "id": "structure:fixture/node",
+        "health": 100,
+        "speed": 0,
+        "turnRate": 65536,
+        "footprint": [2, 2],
+        "nodeKinds": ["materials", "oil"]
       }
     ],
     "map": {
@@ -256,6 +264,10 @@
           "kind": "materials",
           "position": [24576, 24576],
           "amount": 100
+        },
+        {
+          "kind": "oil",
+          "position": [25088, 8704]
         }
       ],
       "objects": [
@@ -483,6 +495,58 @@
         "force": 1,
         "x": 24576,
         "y": 24576,
+        "facing": 16384
+      }
+    },
+    {
+      "tick": 10,
+      "seat": 1,
+      "sequence": 0,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 23552,
+        "y": 23552,
+        "facing": 16384
+      }
+    },
+    {
+      "tick": 10,
+      "seat": 1,
+      "sequence": 1,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 23552,
+        "y": 7168,
+        "facing": 32768
+      }
+    },
+    {
+      "tick": 10,
+      "seat": 1,
+      "sequence": 2,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 23552,
+        "y": 23552,
+        "facing": 16384
+      }
+    },
+    {
+      "tick": 10,
+      "seat": 1,
+      "sequence": 3,
+      "type": "debug.spawn",
+      "payload": {
+        "definition": "structure:fixture/node",
+        "force": 1,
+        "x": 16384,
+        "y": 16384,
         "facing": 16384
       }
     }

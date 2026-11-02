@@ -1,0 +1,8 @@
+{
+  "files": {
+    "preview.png": {
+      "author": "Codex (OpenAI)",
+      "source": "apps/cli/src/commands/generate-sandbox-maps.ts"
+    }
+  }
+}

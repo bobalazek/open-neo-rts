@@ -178,6 +178,8 @@ export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: M
       }
       const [w, d] = Array.isArray(def.footprint) ? (def.footprint as number[]) : [];
       const rows = list(def.cells);
+      if (Array.isArray(def.nodeKinds) && new Set(def.nodeKinds).size !== def.nodeKinds.length)
+        add("error", pack.id, file, "nodeKinds must be distinct");
       if (rows.length > 0 && (rows.length !== d || rows.some((r) => r.length !== w)))
         add("error", pack.id, file, `cells must be ${d} rows of ${w} letters, matching footprint`);
       if (id.startsWith("map:"))

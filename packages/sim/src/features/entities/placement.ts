@@ -1,7 +1,7 @@
 import { EDGE_MARGIN } from "@open-neo-rts/content";
 import { type DebugSpawn, validateCommands } from "../../commands";
 import type { Kernel } from "../../kernel";
-import { resourceOccupies } from "../../match-map";
+import { resourceNodeOrigin, resourceOccupies } from "../../match-map";
 import { type CellRule, checkPlacement, type PlacementFailure } from "../construction";
 import { Template, Transform } from ".";
 import type { Definition } from "./definitions";
@@ -87,9 +87,18 @@ export function checkSpawnPlacement(
       occupied.push(rectangle(found, px, py, rotation(world.get(id, Transform, "facing"))));
   }
   const staticBlocked = (cx: number, cy: number) => occupied.some((r) => contains(r, cx, cy));
+  const boundNode =
+    definition.nodeKinds &&
+    (map.resources ?? []).find((resource) => {
+      if (resource.kind === "ore" || !definition.nodeKinds?.includes(resource.kind)) return false;
+      const origin = resourceNodeOrigin(resource);
+      return origin.x === cell(x) && origin.y === cell(y);
+    });
   const isBlocked = (cx: number, cy: number) =>
     staticBlocked(cx, cy) ||
-    (map.resources ?? []).some((resource) => resourceOccupies(resource, cx, cy)) ||
+    (map.resources ?? []).some(
+      (resource) => resource !== boundNode && resourceOccupies(resource, cx, cy),
+    ) ||
     units.some((position) => position.x === cx && position.y === cy);
   if (unit)
     return staticBlocked(cell(x), cell(y)) ? { ok: false, failure: "blocked" } : { ok: true };
@@ -107,6 +116,12 @@ export function checkSpawnPlacement(
       r,
       { isBlocked },
     );
+    if (definition.nodeKinds && !boundNode) {
+      result = {
+        ok: false,
+        cells: result.cells?.map((c) => ({ ...c, failure: c.failure ?? "not_node" })),
+      };
+    }
   } else {
     // Props have no terrain cell rules in content; only their bounds and occupancy are enforced.
     const area = rectangle(definition, x, y, r);

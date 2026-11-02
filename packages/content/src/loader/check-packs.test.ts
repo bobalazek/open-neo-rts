@@ -103,6 +103,25 @@ function factionPack(hqRole = "headquarters", builderAt = HQ_ID): PackInput {
 
 const MAP = "maps/test-map/map.json";
 
+test("oil markers need no invented depletion amount while ore/material amounts stay required", () => {
+  const resources = [
+    { kind: "ore", position: [16, 8], amount: 1000, radius: 4 },
+    { kind: "oil", position: [16.5, 16.5] },
+  ];
+  expect(errors(mapPack({ resources }))).toEqual([]);
+  for (const kind of ["ore", "materials"])
+    expect(
+      errors(mapPack({ resources: [{ kind, position: [16, 8] }] })).some((e) =>
+        e.includes("amount"),
+      ),
+    ).toBe(true);
+  expect(
+    errors(mapPack({ resources: [{ kind: "oil", position: [16.5, 16.5], radius: 1 }] })).some((e) =>
+      e.includes("radius"),
+    ),
+  ).toBe(true);
+});
+
 function mapPack(extra: Record<string, unknown> = {}, layers = new Map<string, Uint8Array>()) {
   const p = pack({
     "manifest.json": { ...manifest, files: { ...manifest.files, maps: [MAP] } },
