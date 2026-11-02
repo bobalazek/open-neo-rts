@@ -76,7 +76,7 @@
     "materials": {},
     "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
-    "animations": ["idle", "move", "attack"],
+    "animations": ["idle", "move", "attack", "deploy"],
     "wreck": "metamorphic-apc.wreck.glb"
   }
 }
