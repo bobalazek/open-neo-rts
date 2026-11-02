@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun ./dev.ts",
     "build": "bun ./build.ts",
+    "capture:renderer": "bun ./e2e/renderer-capture.ts",
     "typecheck": "tsc && tsc -p tsconfig.test.json && tsc -p e2e/tsconfig.json && tsc -p tsconfig.tools.json",
     "test": "bun test --pass-with-no-tests"
   },
