@@ -57,6 +57,7 @@ export interface Payloads {
   "production.enqueue": { entity: number; definition: string };
   "production.cancel": { item: number };
   "production.rally": { entity: number; x: number; y: number };
+  "unit.attack": { entities: number[]; entity: number };
   "economy.assistConstruction": { entity: number; builders: number[] };
   "economy.build": ConstructionBuild;
   "economy.cancelConstruction": { entity: number };
@@ -123,6 +124,7 @@ const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } 
   },
   "production.cancel": { item: ID },
   "production.rally": { entity: ID, x: POSITION, y: POSITION },
+  "unit.attack": { entities: IDS, entity: ID },
   "economy.assistConstruction": { entity: ID, builders: IDS },
   "economy.build": {
     definition: /^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/,

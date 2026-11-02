@@ -1,5 +1,6 @@
 // Seat-permitted copied state. Canonical fog and structure memory live in the vision feature.
 import { hasGrant, type Scope } from "../commands";
+import { AttackOrder } from "../features/combat";
 import {
   CONSTRUCTION_REFUSALS,
   CONSTRUCTION_WORK_STATES,
@@ -62,6 +63,7 @@ export interface PresentedEntity {
     }[];
     rally: { x: number; y: number } | null;
   };
+  attackTarget?: string;
 }
 export interface PresentedConstructionRequest {
   handle: string;
@@ -169,6 +171,10 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           inspectBuilder && world.has(id, ConstructionApproach)
             ? world.get(id, ConstructionApproach, "site")
             : 0;
+        const attackTarget =
+          setup.normal && controlled && world.has(id, AttackOrder)
+            ? world.get(id, AttackOrder, "target")
+            : 0;
         entities.push({
           handle,
           definition: definition.id,
@@ -179,6 +185,11 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
           ...(inspectHarvester && { harvesting: harvestSnapshot(kernel, id, definition) }),
+          ...(attackTarget &&
+            world.isAlive(attackTarget) &&
+            kernel.visibility?.canSeeEntity(seat, attackTarget) && {
+              attackTarget: handleOf(attackTarget),
+            }),
           ...(site && { constructionSite: true }),
           ...(inspectProduction && {
             production: {

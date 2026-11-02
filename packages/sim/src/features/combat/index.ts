@@ -1,2 +1,335 @@
-// Targeting, damage, armour, veterancy. Phase 2.
-export {};
+// Weapon targeting and canonical launch intents. Projectile contact/damage are separate features.
+import { atan2, cos, isqrt, mulDiv, nextInt, sin } from "@open-neo-rts/deterministic";
+import { hasGrant } from "../../commands";
+import { defineComponent } from "../../ecs";
+import { type Feature, type Kernel, stream } from "../../kernel";
+import type { MatchSetup } from "../../match";
+import { clearFireLine, combatPoint } from "../../physics/fire-line";
+import { BuilderConstruction, ConstructionSite, clearConstructionOrder } from "../construction";
+import { suspendHarvesting } from "../economy/harvesting";
+import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
+import type { GameplayWeapon } from "../entities/weapons";
+import { MoveIntent } from "../movement";
+
+export const MAX_SHOT_INTENTS = 4096;
+export const AttackOrder = defineComponent("AttackOrder", { target: "u32" });
+export const WeaponState = defineComponent("WeaponState", {
+  shooter: "u32",
+  weapon: "u8",
+  target: "u32",
+  facing: "u16",
+  reloadAt: "u32",
+  nextShot: "u32",
+  remaining: "u8",
+});
+/** Internal one-tick handoff. Never project these authoritative IDs or hidden firing origins. */
+export const ShotIntent = defineComponent("ShotIntent", {
+  tick: "u32",
+  shooter: "u32",
+  force: "u32",
+  definition: "u32",
+  weapon: "u8",
+  target: "u32",
+  originX: "i32",
+  originY: "i32",
+  targetX: "i32",
+  targetY: "i32",
+  scatterX: "i32",
+  scatterY: "i32",
+});
+const kind = (definition: Definition | undefined) =>
+  definition?.id.split(":")[0]?.split(".").at(-1);
+const live = (kernel: Kernel, id: number) =>
+  kernel.world.isAlive(id) &&
+  kernel.world.has(id, Template) &&
+  kernel.world.has(id, OwnerForce) &&
+  kernel.world.has(id, Transform) &&
+  kernel.world.has(id, Health) &&
+  kernel.world.get(id, Health, "current") > 0;
+const angleDelta = (from: number, to: number) => ((to - from + 0x8000) & 0xffff) - 0x8000;
+
+export function clearAttackOrder(kernel: Kernel, actor: number): void {
+  const world = kernel.world;
+  if (world.has(actor, AttackOrder)) world.remove(actor, AttackOrder);
+  for (const state of world.query(WeaponState))
+    if (world.get(state, WeaponState, "shooter") === actor) {
+      world.set(state, WeaponState, "remaining", 0);
+      world.set(state, WeaponState, "target", 0);
+    }
+}
+
+/** Domain eligibility is shared by player orders, automatic acquisition and retaliation priority. */
+export function weaponTargets(weapon: GameplayWeapon, target: Definition): boolean {
+  if (kind(target) === "structure")
+    return weapon.targets.includes("structure") || weapon.targets.includes("ground");
+  if (kind(target) !== "unit") return false;
+  return weapon.targets.includes(
+    target.domain === "air" ? "air" : target.domain === "naval" ? "naval" : "ground",
+  );
+}
+function versus(weapon: GameplayWeapon, target: Definition): number {
+  return Math.max(
+    0,
+    ...weapon.warheads.map((warhead) =>
+      warhead.type === "damage"
+        ? ((target.armor && warhead.versusPerMille?.[target.armor]) ??
+          warhead.versusPerMille?.default ??
+          1000)
+        : 1000,
+    ),
+  );
+}
+function scatter(kernel: Kernel, radius: number): { x: number; y: number } {
+  if (!radius) return { x: 0, y: 0 };
+  const random = stream(kernel, "combat");
+  const angle = nextInt(random, 0x10000),
+    length = isqrt(nextInt(random, radius * radius + 1));
+  let x = mulDiv(cos(angle), length, 0x4000),
+    y = mulDiv(sin(angle), length, 0x4000);
+  if (x * x + y * y > radius * radius) {
+    const bound = isqrt(x * x + y * y) + 1;
+    x = mulDiv(x, radius, bound);
+    y = mulDiv(y, radius, bound);
+  }
+  return { x, y };
+}
+
+export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">): Feature {
+  const { definitions, grants } = setup;
+  const definitionOf = (kernel: Kernel, id: number) =>
+    definitions[kernel.world.get(id, Template, "definition")];
+  const eligible = (kernel: Kernel, shooter: number, target: number, weapon: GameplayWeapon) => {
+    if (!live(kernel, shooter) || !live(kernel, target) || shooter === target) return false;
+    const world = kernel.world;
+    const force = world.get(shooter, OwnerForce, "force"),
+      other = world.get(target, OwnerForce, "force");
+    const ownGroup = kernel.vision?.groupForForce(force),
+      otherGroup = kernel.vision?.groupForForce(other);
+    const definition = definitionOf(kernel, target);
+    return (
+      ownGroup !== undefined &&
+      otherGroup !== undefined &&
+      ownGroup !== otherGroup &&
+      !!definition &&
+      weaponTargets(weapon, definition) &&
+      kernel.vision?.canSeeEntity(force, target) === true
+    );
+  };
+  const inRange = (kernel: Kernel, shooter: number, target: number, weapon: GameplayWeapon) => {
+    const a = combatPoint(kernel, definitions, shooter),
+      b = combatPoint(kernel, definitions, target);
+    const squared = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+    return squared >= weapon.rangeSubcells[0] ** 2 && squared <= weapon.rangeSubcells[1] ** 2;
+  };
+  const choose = (kernel: Kernel, shooter: number, weapon: GameplayWeapon) => {
+    const world = kernel.world;
+    if (world.has(shooter, AttackOrder)) {
+      const explicit = world.get(shooter, AttackOrder, "target");
+      return eligible(kernel, shooter, explicit, weapon) &&
+        inRange(kernel, shooter, explicit, weapon) &&
+        clearFireLine(kernel, definitions, shooter, explicit, weapon)
+        ? explicit
+        : undefined;
+    }
+    const actor = definitionOf(kernel, shooter) as Definition;
+    const origin = combatPoint(kernel, definitions, shooter);
+    const rank = (target: number) => {
+      const definition = definitionOf(kernel, target) as Definition;
+      const point = combatPoint(kernel, definitions, target);
+      const threat = definition.weapons?.some(
+        (other) => weaponTargets(other, actor) && versus(other, actor) > 0,
+      );
+      return {
+        tier: threat ? 0 : kind(definition) === "unit" ? 1 : 2,
+        versus: versus(weapon, definition),
+        distance: (point.x - origin.x) ** 2 + (point.y - origin.y) ** 2,
+      };
+    };
+    return world
+      .query(Template, Transform, OwnerForce, Health)
+      .filter(
+        (target) =>
+          eligible(kernel, shooter, target, weapon) &&
+          inRange(kernel, shooter, target, weapon) &&
+          clearFireLine(kernel, definitions, shooter, target, weapon),
+      )
+      .sort((a, b) => {
+        const x = rank(a),
+          y = rank(b);
+        return x.tier - y.tier || y.versus - x.versus || x.distance - y.distance || a - b;
+      })[0];
+  };
+  return {
+    components: [AttackOrder, WeaponState, ShotIntent],
+    handlers: {
+      "unit.attack": (kernel, { seat, payload: { entities, entity } }) => {
+        const world = kernel.world;
+        const actors = [...new Set(entities.filter((id) => live(kernel, id)))].sort(
+          (a, b) => a - b,
+        );
+        if (!actors.length || !live(kernel, entity)) return "bad_payload";
+        if (
+          !actors.every((id) =>
+            hasGrant(grants, seat, world.get(id, OwnerForce, "force"), "unit.orders", kernel.tick),
+          )
+        )
+          return "no_grant";
+        const armed = actors.filter((id) =>
+          definitionOf(kernel, id)?.weapons?.some((weapon) => eligible(kernel, id, entity, weapon)),
+        );
+        if (!armed.length) return "bad_payload";
+        for (const actor of armed) {
+          suspendHarvesting(kernel, actor);
+          clearAttackOrder(kernel, actor);
+          if (world.has(actor, BuilderConstruction)) clearConstructionOrder(kernel, actor);
+          kernel.movement?.cancel(actor);
+          if (world.has(actor, MoveIntent)) world.remove(actor, MoveIntent);
+          world.add(actor, AttackOrder, { target: entity });
+        }
+      },
+    },
+    systems: {
+      combat: [
+        (kernel) => {
+          const world = kernel.world;
+          for (const shot of world.query(ShotIntent)) world.destroy(shot);
+          // Movement has completed. Fire against current Force sight, not the bot's previous observation.
+          kernel.vision?.update();
+          for (const actor of world.query(AttackOrder))
+            if (
+              !live(kernel, actor) ||
+              !definitionOf(kernel, actor)?.weapons?.some((weapon) =>
+                eligible(kernel, actor, world.get(actor, AttackOrder, "target"), weapon),
+              )
+            )
+              clearAttackOrder(kernel, actor);
+          for (const state of world.query(WeaponState))
+            if (!live(kernel, world.get(state, WeaponState, "shooter"))) world.destroy(state);
+          for (const shooter of world.query(Template, Transform, OwnerForce, Health)) {
+            const definition = definitionOf(kernel, shooter);
+            if (!live(kernel, shooter) || !definition?.weapons?.length) continue;
+            for (const [weapon] of definition.weapons.entries())
+              if (
+                !world
+                  .query(WeaponState)
+                  .some(
+                    (state) =>
+                      world.get(state, WeaponState, "shooter") === shooter &&
+                      world.get(state, WeaponState, "weapon") === weapon,
+                  )
+              ) {
+                const state = world.create();
+                world.add(state, WeaponState, {
+                  shooter,
+                  weapon,
+                  facing: world.get(shooter, Transform, "facing"),
+                });
+              }
+          }
+          let emitted = 0;
+          const states = world
+            .query(WeaponState)
+            .sort(
+              (a, b) =>
+                world.get(a, WeaponState, "shooter") - world.get(b, WeaponState, "shooter") ||
+                world.get(a, WeaponState, "weapon") - world.get(b, WeaponState, "weapon"),
+            );
+          for (const state of states) {
+            const shooter = world.get(state, WeaponState, "shooter");
+            const definition = definitionOf(kernel, shooter);
+            const weapon = definition?.weapons?.[world.get(state, WeaponState, "weapon")];
+            if (
+              !definition ||
+              !weapon ||
+              world.has(shooter, ConstructionSite) ||
+              (kind(definition) === "structure" &&
+                definition.power !== undefined &&
+                !kernel.power?.powered(shooter))
+            )
+              continue;
+            let remaining = world.get(state, WeaponState, "remaining");
+            const previous = world.get(state, WeaponState, "target");
+            if (
+              remaining &&
+              (!eligible(kernel, shooter, previous, weapon) ||
+                !inRange(kernel, shooter, previous, weapon) ||
+                !clearFireLine(kernel, definitions, shooter, previous, weapon))
+            ) {
+              remaining = 0;
+              world.set(state, WeaponState, "remaining", 0);
+            }
+            const target = remaining ? previous : choose(kernel, shooter, weapon);
+            world.set(state, WeaponState, "target", target ?? 0);
+            if (target === undefined) continue;
+            const origin = combatPoint(kernel, definitions, shooter),
+              aim = combatPoint(kernel, definitions, target);
+            const desired = atan2(aim.y - origin.y, aim.x - origin.x);
+            if (weapon.aim === "turret") {
+              const facing = world.get(state, WeaponState, "facing"),
+                difference = angleDelta(facing, desired),
+                rate = definition.turretTurnAnglePerTick ?? 0;
+              const next = (facing + Math.max(0 - rate, Math.min(rate, difference))) & 0xffff;
+              world.set(state, WeaponState, "facing", next);
+              if (next !== desired) continue;
+            } else if (weapon.aim === "forward") {
+              let facing = world.get(shooter, Transform, "facing");
+              if (!world.has(shooter, MoveIntent) && kind(definition) === "unit") {
+                const difference = angleDelta(facing, desired),
+                  rate = definition.turnRate;
+                facing = (facing + Math.max(0 - rate, Math.min(rate, difference))) & 0xffff;
+                world.set(shooter, Transform, "facing", facing);
+              }
+              if (Math.abs(angleDelta(facing, desired)) > (weapon.arcAngle ?? 0)) continue;
+            }
+            const due = remaining
+              ? world.get(state, WeaponState, "nextShot")
+              : world.get(state, WeaponState, "reloadAt");
+            if (kernel.tick < due || emitted >= MAX_SHOT_INTENTS) continue;
+            let shots = remaining || weapon.burst?.count || 1;
+            while (shots > 0 && emitted < MAX_SHOT_INTENTS) {
+              const radius = weapon.rangeSubcells[1]
+                ? mulDiv(
+                    weapon.scatterSubcells ?? 0,
+                    isqrt((aim.x - origin.x) ** 2 + (aim.y - origin.y) ** 2),
+                    weapon.rangeSubcells[1],
+                  )
+                : 0;
+              const offset = scatter(kernel, radius);
+              const shot = world.create();
+              world.add(shot, ShotIntent, {
+                tick: kernel.tick,
+                shooter,
+                force: world.get(shooter, OwnerForce, "force"),
+                definition: world.get(shooter, Template, "definition"),
+                weapon: world.get(state, WeaponState, "weapon"),
+                target,
+                originX: origin.x,
+                originY: origin.y,
+                targetX: aim.x,
+                targetY: aim.y,
+                scatterX: offset.x,
+                scatterY: offset.y,
+              });
+              emitted++;
+              shots--;
+              world.set(state, WeaponState, "remaining", shots);
+              world.set(
+                state,
+                WeaponState,
+                "reloadAt",
+                kernel.tick + Math.max(1, weapon.reloadTicks),
+              );
+              world.set(
+                state,
+                WeaponState,
+                "nextShot",
+                kernel.tick + (weapon.burst?.delayTicks ?? 0),
+              );
+              if (weapon.burst?.delayTicks) break;
+            }
+          }
+        },
+      ],
+    },
+  };
+}

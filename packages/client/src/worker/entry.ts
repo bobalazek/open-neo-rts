@@ -151,12 +151,14 @@ port.onmessage = ({ data }) => {
             type === "unit.move" ||
             type === "unit.attackMove" ||
             type === "unit.stop" ||
-            type === "unit.harvest"
+            type === "unit.harvest" ||
+            type === "unit.attack"
           ) {
             if (Array.isArray(fields.entities))
               fields.entities = fields.entities.map(
                 (handle) => projection.resolve(handle, "unit.orders") ?? -1,
               );
+            if (type === "unit.attack") fields.entity = projection.resolve(fields.entity) ?? -1;
           } else if (type === "economy.build" || type === "economy.assistConstruction") {
             if (Array.isArray(fields.builders))
               fields.builders = fields.builders.map(
