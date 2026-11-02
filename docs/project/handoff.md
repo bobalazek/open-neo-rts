@@ -97,3 +97,9 @@ fog cell. Independent review closed the corner-crossing trail disclosure. Full
 repository/content checks and the real sim-to-projection-to-original-GLB Chromium
 proof pass. Root inspected launch/contact/death images. Door lifecycle, assembly
 and canonical wrecks/salvage remain separate; no SIM or authored balance changes.
+Task 2-30a adds a permitted-data minimap with legal shared HUD orders, bounded
+pan/zoom/Home and a visible camera frame. Camera insets keep the actual base above
+the HUD, including narrow screens. Independent review closed A-release arming,
+height-only resize and asymmetric-viewport box-selection defects; focused checks
+and real HUD/minimap Chromium journeys pass. Root inspected desktop/mobile images.
+Alerts/Space/pings remain separate; no SIM or hidden-data source was introduced.
