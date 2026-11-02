@@ -2,7 +2,7 @@ import { hasGrant, type Rejection } from "../../commands";
 import { defineComponent } from "../../ecs";
 import { type Kernel, register } from "../../kernel";
 import type { MatchSetup } from "../../match";
-import { clearAttackOrder } from "../combat";
+import { clearAttackOrder, WeaponState } from "../combat";
 import { BuilderConstruction, clearConstructionOrder } from "../construction";
 import { suspendRepair } from "../construction/repair";
 import { suspendHarvesting } from "../economy/harvesting";
@@ -54,12 +54,35 @@ export class UnitTransports {
     const world = this.kernel.world;
     return world.query(Cargo).filter((unit) => world.get(unit, Cargo, "transport") === id);
   }
+  private firingEnabled(id: number) {
+    return (
+      this.capacity(id) > 0 &&
+      this.definition(id)?.transportFireWhileDeployed === true &&
+      !!this.kernel.unitModes?.active(id)
+    );
+  }
+  firingPlatform(id: number): number | undefined {
+    const { world } = this.kernel;
+    if (!this.live(id, false) || !world.has(id, Cargo)) return;
+    const carrier = world.get(id, Cargo, "transport");
+    if (
+      this.firingEnabled(carrier) &&
+      world.get(id, OwnerForce, "force") === world.get(carrier, OwnerForce, "force")
+    )
+      return carrier;
+  }
+  firingPassengers(id: number) {
+    return this.firingEnabled(id)
+      ? this.passengers(id).filter((unit) => this.firingPlatform(unit) === id)
+      : [];
+  }
   snapshot(id: number) {
     const capacity = this.capacity(id);
     if (!capacity) return;
     const { world } = this.kernel;
     return {
       capacity,
+      firing: this.firingEnabled(id),
       boarding: world
         .query(Boarding)
         .filter((unit) => world.get(unit, Boarding, "transport") === id).length,
@@ -177,6 +200,7 @@ export class UnitTransports {
   }
   private release(id: number, point: Point, damaged: boolean) {
     const { world } = this.kernel;
+    clearAttackOrder(this.kernel, id);
     const facing = world.get(id, Cargo, "facing");
     world.remove(id, Cargo);
     world.add(id, Transform, { ...point, facing });
@@ -310,6 +334,8 @@ export class UnitTransports {
         );
         this.kernel.statistics?.record(world.get(id, OwnerForce, "force"), "unitsLost");
         // Cargo with no exit never becomes a spatial actor or a public death marker.
+        for (const state of world.query(WeaponState))
+          if (world.get(state, WeaponState, "shooter") === id) world.destroy(state);
         world.destroy(id);
       }
     }

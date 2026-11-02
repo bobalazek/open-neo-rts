@@ -172,6 +172,14 @@ Every unit has a **`role`** the engine understands (`builder`, `harvester`, `com
 
 Weapons follow launcher → projectile → warheads, with `versus` per armour class on each damage warhead ([combat-and-balance.md](../design/combat-and-balance.md)). Builders construct, repair and capture through their role; what they may repair is set by `repair` (below).
 
+Ground unit transports use `transport.slots`. The optional boolean
+`transport.fireWhileDeployed` enables their loaded infantry's own weapons while
+the carrier's self-deploy mode is active. It requires a ground transport with a
+deploy mode; it grants no independent passenger vision or carrier stat bonuses.
+Passenger weapons retain their authored range/reload/target rules and reload
+timers through packing and unloading. Cargo manifests remain private to transport
+order control. Fire-port geometry currently uses the carrier centre.
+
 ## Structure
 
 Structures have a **`role`** too (`headquarters`, `power`, `dropoff`, `production`, `research`, `support`, `defense`, `wall`, `superweapon`, `wonder`). Any builder of the faction constructs them, so they have no `producedBy`.

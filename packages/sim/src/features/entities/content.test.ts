@@ -86,6 +86,49 @@ function pack(
 const unitId = (name: string) => `core.unit:eastern-collective/${name}`;
 const structureId = (name: string) => `core.structure:eastern-collective/${name}`;
 
+test("authored deployed passenger fire compiles as a bounded transport capability", () => {
+  const edited = roster.map((definition) =>
+    definition === apc
+      ? { ...apc, transport: { ...apc.transport, fireWhileDeployed: true } }
+      : definition,
+  );
+  const resolved = resolvePacks([pack("core", edited)], "0.1.0");
+  const before = JSON.stringify([...resolved.definitions]);
+  const unit = compileGameplayCatalog(resolved).definitions.find(
+    (definition) => definition.id === unitId("metamorphic-apc"),
+  );
+  expect(unit).toMatchObject({
+    transportSlots: 5,
+    transportFireWhileDeployed: true,
+    deployMode: { id: "bunker-mode", armorPerMille: 1500 },
+  });
+  expect(JSON.stringify([...resolved.definitions])).toBe(before);
+  expect(
+    compileGameplayCatalog(resolvePacks([pack()], "0.1.0")).definitions.find(
+      (definition) => definition.id === unitId("metamorphic-apc"),
+    )?.transportFireWhileDeployed,
+  ).toBeUndefined();
+  expect(() =>
+    compileGameplayCatalog(
+      resolvePacks(
+        [pack("core", [factory, { ...apc, transport: { slots: 5, fireWhileDeployed: "yes" } }])],
+        "0.1.0",
+      ),
+    ),
+  ).toThrow();
+  for (const raw of [
+    { ...apc, abilities: [], transport: { slots: 5, fireWhileDeployed: true } },
+    {
+      ...apc,
+      movement: { ...apc.movement, domain: "naval" },
+      transport: { slots: 5, fireWhileDeployed: true },
+    },
+  ])
+    expect(() =>
+      compileGameplayCatalog(resolvePacks([pack("core", [factory, raw])], "0.1.0")),
+    ).toThrow("deployed passenger fire requires a ground transport with a deploy mode");
+});
+
 test("self-deploy effects compile without changing the authored ability or base weapon", () => {
   const ability = {
     ...tank.abilities[0],

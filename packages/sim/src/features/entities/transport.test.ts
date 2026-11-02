@@ -4,12 +4,13 @@ import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { createMatchRecord, verifyMatchRecord } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
-import { MovementFailure } from "../movement";
-import { CombatMotion, PendingImpact } from "../projectiles";
+import { WeaponState } from "../combat";
+import { MoveIntent, MovementFailure } from "../movement";
+import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from ".";
 import { Boarding, Cargo } from "./transport";
 
-function fixture(configure?: (definitions: Definition[]) => void) {
+function fixture(configure?: (definitions: Definition[]) => void, fog: "off" | "standard" = "off") {
   const definitions: Definition[] = [
     {
       id: "structure:transport/headquarters",
@@ -59,7 +60,7 @@ function fixture(configure?: (definitions: Definition[]) => void) {
     grants: [0, 1].map((force) => ({
       seat: force + 1,
       force,
-      scopes: ["unit.orders", "economy.build", "surrender"],
+      scopes: ["unit.orders", "unit.abilities", "economy.build", "surrender"],
       grantedAtTick: 0,
     })),
     normal: {
@@ -69,7 +70,7 @@ function fixture(configure?: (definitions: Definition[]) => void) {
         startingCredits: 1000,
         popCap: 200,
         structureCap: 150,
-        fog: "off",
+        fog,
         highGroundMissPerMille: 0,
       },
       forces: [0, 1].map((index) => ({
@@ -334,4 +335,241 @@ test("a carrier dying during approach cancels its reservation and stale numeric 
   expect(world.has(infantry, Transform)).toBe(true);
   expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("bad_payload");
   expect(command("unit.unload", { entity: apc })).toBe("bad_payload");
+});
+
+function bunkerFixture(fog: "off" | "standard" = "off", bullet = false, arrange = true) {
+  const f = fixture((definitions) => {
+    definitions[1]!.armor = "infantry";
+    definitions[1]!.visionSubcells = 20 * 1024;
+    definitions[1]!.weapons = [
+      {
+        id: "rifle",
+        targets: ["ground"],
+        rangeSubcells: [0, (bullet ? 3 : 2) * 1024],
+        reloadTicks: 100,
+        projectile: bullet
+          ? { kind: "bullet", speedSubcellsPerTick: 256, blockedBy: ["units", "structures"] }
+          : { kind: "instant", blockedBy: ["units", "structures"] },
+        warheads: [{ type: "damage", amount: 10, tags: [] }],
+      },
+    ];
+    definitions[2]!.deployMode = {
+      id: "bunker",
+      cooldownTicks: 3,
+      damagePerMille: 2000,
+      armorPerMille: 1500,
+      rangePerMille: 1000,
+      rangeBonusSubcells: 3072,
+      cost: {},
+    };
+    definitions[2]!.transportFireWhileDeployed = true;
+    definitions.push({
+      id: "unit:transport/spotter",
+      role: "support",
+      health: 100,
+      speed: 100,
+      turnRate: 65536,
+      domain: "foot",
+      radiusSubcells: 256,
+      visionSubcells: 10 * 1024,
+    });
+  }, fog);
+  const enemy = f.world
+    .query(Template, OwnerForce)
+    .find(
+      (id) =>
+        f.world.get(id, Template, "definition") === 2 && f.world.get(id, OwnerForce, "force") === 1,
+    )!;
+  const position = (id: number, x: number, y: number) => {
+    f.world.set(id, Transform, "x", x);
+    f.world.set(id, Transform, "y", y);
+  };
+  if (arrange) {
+    position(f.apc, 12 * 1024 + 512, 12 * 1024 + 512);
+    position(f.infantry, 13 * 1024 + 512, 12 * 1024 + 512);
+    position(enemy, 15 * 1024 + 512, 12 * 1024 + 512);
+  }
+  return { ...f, enemy, position };
+}
+
+test("deployed cargo uses its own range/damage and keeps reload across pack and unload", () => {
+  const { kernel, world, apc, infantry, enemy, command, position } = bunkerFixture();
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  for (let ticks = 0; ticks < 4; ticks++) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  expect(kernel.transport?.snapshot(apc)?.firing).toBe(true);
+  position(enemy, 14 * 1024, 12 * 1024 + 512);
+  expect(command("unit.attack", { entities: [apc], entity: enemy })).toBe("accepted");
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  expect(world.get(apc, Health, "current")).toBe(600);
+  const state = world
+    .query(WeaponState)
+    .find((id) => world.get(id, WeaponState, "shooter") === infantry)!;
+  const reloadAt = world.get(state, WeaponState, "reloadAt");
+  for (let ticks = 0; ticks < 3; ticks++) step(kernel, []);
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  expect(kernel.transport?.snapshot(apc)?.firing).toBe(false);
+  for (let ticks = 0; ticks < 3; ticks++) step(kernel, []);
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  expect(command("unit.unload", { entity: apc })).toBe("accepted");
+  expect(world.get(state, WeaponState, "reloadAt")).toBe(reloadAt);
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  for (let ticks = 0; ticks < 40 && !world.has(infantry, Cargo); ticks++) step(kernel, []);
+  expect(world.has(infantry, Cargo)).toBe(true);
+  expect(world.get(state, WeaponState, "reloadAt")).toBe(reloadAt);
+  while (kernel.tick < reloadAt) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(580);
+});
+
+test("cargo never contributes sight and firing effects identify only the carrier", () => {
+  const { setup, kernel, world, apc, infantry, enemy, command } = bunkerFixture("standard");
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  for (let ticks = 0; ticks < 4; ticks++) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  expect(kernel.vision?.canSeeEntity(0, enemy)).toBe(false);
+  spawnEntity(kernel, 3, setup.definitions[3]!, {
+    definition: setup.definitions[3]!.id,
+    force: 0,
+    x: 12 * 1024 + 512,
+    y: 14 * 1024 + 512,
+    facing: 0,
+  });
+  // Target is visible now but still beyond the passenger's two-cell weapon range.
+  step(kernel, []);
+  expect(kernel.vision?.canSeeEntity(0, enemy)).toBe(true);
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  world.set(enemy, Transform, "x", 14 * 1024);
+  step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  const projection = createProjection(setup, 1, "controlled").snapshot(kernel);
+  const carrier = projection.entities.find(
+    (entity) => entity.force === 0 && entity.definition === "unit:transport/apc",
+  )!;
+  expect(carrier.cargo?.firing).toBe(true);
+  expect(
+    projection.combatEvents
+      ?.filter((event) => event.type === "launch")
+      .map((event) => event.entity),
+  ).toEqual([carrier.handle]);
+  expect(
+    projection.entities.some(
+      (entity) => entity.force === 0 && entity.definition === "unit:transport/builder",
+    ),
+  ).toBe(false);
+  const foreign = createProjection(setup, 2, "controlled").snapshot(kernel);
+  expect(
+    foreign.entities.find(
+      (entity) => entity.force === 0 && entity.definition === carrier.definition,
+    )?.cargo,
+  ).toBeUndefined();
+});
+
+test("already-launched passenger rounds survive packing and carrier destruction", () => {
+  const { kernel, world, apc, infantry, enemy, command, position } = bunkerFixture("off", true);
+  position(enemy, 15 * 1024, 12 * 1024 + 512);
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  const shot = world.query(Projectile).find((id) => world.get(id, Projectile, "force") === 0)!;
+  expect(world.get(shot, Projectile, "life")).toBe(24);
+  expect(world.get(shot, Projectile, "shooter")).toBe(apc);
+  expect(world.get(shot, Projectile, "definition")).toBe(1);
+  for (let ticks = 0; ticks < 3; ticks++) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  world.set(apc, Health, "current", 0);
+  step(kernel, []);
+  expect(world.isAlive(apc)).toBe(false);
+  for (let ticks = 0; ticks < 12; ticks++) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  expect(world.get(infantry, Health, "current")).toBe(50);
+});
+
+test("forward passenger weapons turn privately and carrier stop interrupts their burst", () => {
+  const base = bunkerFixture();
+  const weapon = base.setup.definitions[1]?.weapons?.[0];
+  if (!weapon) throw new Error("Missing fixture rifle");
+  const setup = {
+    ...base.setup,
+    definitions: base.setup.definitions.map((definition, index) =>
+      index === 1
+        ? {
+            ...definition,
+            weapons: [{ ...weapon, aim: "forward" as const, burst: { count: 3, delayTicks: 2 } }],
+          }
+        : definition,
+    ),
+  };
+  const kernel = createMatch(setup),
+    world = kernel.world;
+  const own = (definition: number, force: number) =>
+    world
+      .query(Template, OwnerForce)
+      .find(
+        (id) =>
+          world.get(id, Template, "definition") === definition &&
+          world.get(id, OwnerForce, "force") === force,
+      )!;
+  const apc = own(2, 0),
+    infantry = own(1, 0),
+    enemy = own(2, 1);
+  for (const [id, x, y, facing] of [
+    [apc, 12 * 1024 + 512, 12 * 1024 + 512, 16384],
+    [infantry, 13 * 1024 + 512, 12 * 1024 + 512, 32768],
+    [enemy, 14 * 1024, 12 * 1024 + 512, 0],
+  ]) {
+    world.set(id!, Transform, "x", x!);
+    world.set(id!, Transform, "y", y!);
+    world.set(id!, Transform, "facing", facing!);
+  }
+  const command = (type: string, payload: unknown) =>
+    step(kernel, [{ type, payload, seat: 1, tick: kernel.tick, sequence: 0 }])[0]!.result;
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  expect(world.get(enemy, Health, "current")).toBe(590);
+  expect(world.get(apc, Transform, "facing")).toBe(16384);
+  expect(world.has(infantry, Transform)).toBe(false);
+  const state = world
+    .query(WeaponState)
+    .find((id) => world.get(id, WeaponState, "shooter") === infantry)!;
+  expect(world.get(state, WeaponState, "remaining")).toBe(2);
+  expect(command("unit.stop", { entities: [apc] })).toBe("accepted");
+  expect(world.get(state, WeaponState, "remaining")).toBe(0);
+  for (let ticks = 0; ticks < 6; ticks++) step(kernel, []);
+  expect(world.get(enemy, Health, "current")).toBe(590);
+});
+
+test("a terminal record reproduces real boarding, travel and mounted combat from its starting kit", () => {
+  const { setup, kernel, world, apc, infantry, enemy, command } = bunkerFixture("off", true, false);
+  expect(command("unit.load", { entity: apc, entities: [infantry] })).toBe("accepted");
+  for (let ticks = 0; ticks < 240 && !world.has(infantry, Cargo); ticks++) step(kernel, []);
+  expect(world.has(infantry, Cargo)).toBe(true);
+  expect(
+    command("unit.move", {
+      entities: [apc],
+      x: world.get(enemy, Transform, "x") - 2 * 1024,
+      y: world.get(enemy, Transform, "y"),
+    }),
+  ).toBe("accepted");
+  for (let ticks = 0; ticks < 400 && world.has(apc, MoveIntent); ticks++) step(kernel, []);
+  expect(command("unit.deploy", { entities: [apc] })).toBe("accepted");
+  const victim = world
+    .query(Template, OwnerForce)
+    .find(
+      (id) =>
+        world.get(id, Template, "definition") === 1 && world.get(id, OwnerForce, "force") === 1,
+    )!;
+  for (let ticks = 0; ticks < 30 && world.get(victim, Health, "current") === 100; ticks++)
+    step(kernel, []);
+  expect(world.get(victim, Health, "current")).toBe(90);
+  expect(world.get(enemy, Health, "current")).toBe(600);
+  expect(world.has(infantry, Transform)).toBe(false);
+  expect(command("match.surrender", { force: 0 })).toBe("accepted");
+  const record = createMatchRecord(kernel, setup);
+  expect(verifyMatchRecord(record)).toMatchObject({ tick: record.tick, hash: record.hash });
 });
