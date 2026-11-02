@@ -94,3 +94,11 @@ fog cell. Independent review closed the corner-crossing trail disclosure. Full
 repository/content checks and the real sim-to-projection-to-original-GLB Chromium
 proof pass. Root inspected launch/contact/death images. Door lifecycle, assembly
 and canonical wrecks/salvage remain separate; no SIM or authored balance changes.
+Task 2-32a displays the actual canonical winner/draw, Force defeat/surrender and
+terminal duration over the retained final scene. The modal contains focus and
+ignores Escape; match input cannot resume a terminal simulation. Surrender uses
+the real granted worker command even from pause. Rematch creates a fresh worker
+with the same setup and Home disposes it. A real authored normal browser journey
+proves surrender, frozen result, repeated end, two-worker rematch and Home cleanup
+in11.1s, with desktop/mobile captures. Statistics and replay actions remain later
+tasks; no invented totals or unsupported controls are displayed.
