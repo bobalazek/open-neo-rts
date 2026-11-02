@@ -180,6 +180,11 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.visionSubcells !== undefined && { visionSubcells: def.visionSubcells }),
     ...(def.power !== undefined && { power: def.power }),
     ...(def.role !== undefined && { role: def.role }),
+    ...(def.harvestCapacity !== undefined && { harvestCapacity: def.harvestCapacity }),
+    ...(def.harvestAmountPerSecond !== undefined && {
+      harvestAmountPerSecond: def.harvestAmountPerSecond,
+    }),
+    ...(def.dock !== undefined && { dock: def.dock }),
     ...(def.construction && { construction: def.construction }),
     ...(def.requires.length && { requires: def.requires }),
     ...(def.role === "builder" && { builds: def.builds }),

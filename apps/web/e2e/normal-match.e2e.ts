@@ -13,6 +13,9 @@ import headquarters from "../../../content/core/factions/eastern-collective/stru
 import reactor from "../../../content/core/factions/eastern-collective/structures/industrial-reactor/structure.json" with {
   type: "json",
 };
+import depot from "../../../content/core/factions/eastern-collective/structures/supply-depot/structure.json" with {
+  type: "json",
+};
 import soldier from "../../../content/core/factions/eastern-collective/units/collective-soldier/unit.json" with {
   type: "json",
 };
@@ -57,30 +60,37 @@ const barracks = {
     { side: "south" as const, cell: [2, 1] as const },
   ],
 };
-const definitions = [headquarters, soldier, builder, truck, reactor, extractor, barracks].map(
-  (raw) => ({
-    ...toDefinition({ ...raw, id: `core.${raw.id}` }),
-    kind: raw.id.startsWith("unit:") ? "unit" : "structure",
-    role: raw.role,
-    pop: "pop" in raw ? raw.pop : 0,
-    tags: [],
-    construction:
-      "cost" in raw && "buildTime" in raw
-        ? { cost: raw.cost, buildTicks: raw.buildTime * 20 }
-        : null,
-    requires: [],
-    producedBy: [],
-    produces: raw === barracks ? [`core.${soldier.id}`] : [],
-    builds:
-      raw === builder ? [`core.${reactor.id}`, `core.${extractor.id}`, `core.${barracks.id}`] : [],
-    ...(raw === barracks && { productionSlots: barracks.productionSlots, exits: barracks.exits }),
-    spawnsWith: [],
-    weapons: [],
-    abilities: [],
-    research: [],
-    adjacency: [],
-  }),
-) as GameplayDefinition[];
+const definitions = [
+  headquarters,
+  soldier,
+  builder,
+  truck,
+  reactor,
+  extractor,
+  barracks,
+  depot,
+].map((raw) => ({
+  ...toDefinition({ ...raw, id: `core.${raw.id}` }),
+  kind: raw.id.startsWith("unit:") ? "unit" : "structure",
+  role: raw.role,
+  pop: "pop" in raw ? raw.pop : 0,
+  tags: [],
+  construction:
+    "cost" in raw && "buildTime" in raw ? { cost: raw.cost, buildTicks: raw.buildTime * 20 } : null,
+  requires: [],
+  producedBy: [],
+  produces: raw === barracks ? [`core.${soldier.id}`] : [],
+  builds:
+    raw === builder
+      ? [`core.${reactor.id}`, `core.${extractor.id}`, `core.${barracks.id}`, `core.${depot.id}`]
+      : [],
+  ...(raw === barracks && { productionSlots: barracks.productionSlots, exits: barracks.exits }),
+  spawnsWith: [],
+  weapons: [],
+  abilities: [],
+  research: [],
+  adjacency: [],
+})) as GameplayDefinition[];
 const map = {
   ...flatMap(32),
   spawns: [
@@ -576,4 +586,102 @@ test("normal worker pays active production slots, refunds cancellation and ralli
   expect(actual.produced?.order).toEqual({ type: "move", x: 22 * 1024, y: 10 * 1024 });
   expect(actual.finalCredits).toBe(4400);
   expect(actual.finalQueue).toBe(0);
+});
+
+test("normal worker mines partial cargo and unloads into the bank after builders finish a depot", async ({
+  page,
+}) => {
+  await page.route("http://normal-match.test/**", (route) =>
+    route.fulfill({
+      contentType: route.request().url().endsWith("sim-worker.js")
+        ? "text/javascript"
+        : "text/html",
+      body: route.request().url().endsWith("sim-worker.js")
+        ? worker
+        : "<!doctype html><title>Hauling fixture</title>",
+    }),
+  );
+  await page.goto("http://normal-match.test/");
+  const actual = await page.evaluate(
+    async ({ client, setup }) => {
+      const url = URL.createObjectURL(new Blob([client], { type: "text/javascript" }));
+      const { createOfflineMatch } = (await import(
+        url
+      )) as typeof import("../../../packages/client/src/worker");
+      URL.revokeObjectURL(url);
+      let state: OfflineState | undefined;
+      const match = createOfflineMatch((next) => {
+        state = next;
+      });
+      const cargo = () => state?.snapshot.entities.find((entity) => entity.harvesting)?.harvesting;
+      const credits = () => state?.snapshot.banks?.[0]?.resources.credits;
+      try {
+        await match.init({ setup, seat: 1, mode: "controlled" });
+        const builders =
+          state?.snapshot.entities
+            .filter(
+              (entity) => entity.definition === "core.unit:eastern-collective/field-technician",
+            )
+            .map((entity) => entity.handle) ?? [];
+        const building = match.command("economy.build", {
+          force: 0,
+          definition: "core.structure:eastern-collective/supply-depot",
+          builders,
+          x: 12 * 1024,
+          y: 6 * 1024,
+          facing: 16384,
+        });
+        await match.step();
+        const result = await building;
+        const paid = credits();
+        let loaded = 0;
+        for (let tick = 0; tick < 1600 && credits() === paid; tick++) {
+          await match.step();
+          loaded = Math.max(loaded, cargo()?.cargo ?? 0);
+        }
+        return {
+          result,
+          paid,
+          finalCredits: credits(),
+          loaded,
+          cargo: cargo(),
+          completed: state?.snapshot.entities.some(
+            (entity) =>
+              entity.definition === "core.structure:eastern-collective/supply-depot" &&
+              !entity.constructionSite,
+          ),
+        };
+      } finally {
+        match.dispose();
+      }
+    },
+    {
+      client,
+      setup: {
+        ...setup,
+        definitions: setup.definitions.map((definition) =>
+          definition.role === "harvester"
+            ? { ...definition, harvestAmountPerSecond: 5 }
+            : definition,
+        ),
+        map: {
+          ...setup.map,
+          resources: [
+            {
+              kind: "ore" as const,
+              position: [16 * 1024, 16 * 1024] as const,
+              amount: 5,
+              radius: 0,
+            },
+          ],
+        },
+      },
+    },
+  );
+  expect(actual.result).toBe("accepted");
+  expect(actual.completed, JSON.stringify(actual)).toBe(true);
+  expect(actual.loaded).toBe(5);
+  expect(actual.cargo?.capacity).toBe(500);
+  expect(actual.cargo?.cargo).toBe(0);
+  expect(actual.finalCredits).toBe((actual.paid ?? 0) + 5);
 });

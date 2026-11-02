@@ -1,5 +1,6 @@
 import {
   arr,
+  bool,
   DOMAINS,
   type Issue,
   int,
@@ -29,6 +30,9 @@ export interface Definition {
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
   role?: string;
+  harvestCapacity?: number;
+  harvestAmountPerSecond?: number;
+  dock?: boolean;
   /** Missing/null means unavailable, never an implicit free construction recipe. */
   construction?: {
     readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
@@ -77,6 +81,9 @@ export const definitionSchema = strictObject({
   turnRate: int(0, 0x10000),
   visionSubcells: opt(int(0, 40 * 1024)),
   power: opt(int(-500, 500)),
+  harvestCapacity: opt(int(1, INT32_MAX)),
+  harvestAmountPerSecond: opt(int(1, INT32_MAX)),
+  dock: opt(bool()),
   role: opt(oneOf([...UNIT_ROLES, ...STRUCTURE_ROLES])),
   construction: opt({
     json: { anyOf: [recipeSchema.json, { type: "null" }] },
@@ -132,6 +139,25 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       });
     if (kind !== "structure" && definition.power !== undefined)
       issues.push({ path: `${path}.power`, message: "only structures declare power" });
+    if (
+      (definition.harvestCapacity !== undefined ||
+        definition.harvestAmountPerSecond !== undefined) &&
+      (kind !== "unit" || definition.role !== "harvester")
+    )
+      issues.push({
+        path: `${path}.harvestCapacity`,
+        message: "only harvester units declare cargo and mining rates",
+      });
+    if (definition.harvestAmountPerSecond !== undefined && definition.harvestCapacity === undefined)
+      issues.push({
+        path: `${path}.harvestAmountPerSecond`,
+        message: "mining requires bounded cargo capacity",
+      });
+    if (definition.dock !== undefined && (kind !== "structure" || definition.role !== "dropoff"))
+      issues.push({
+        path: `${path}.dock`,
+        message: "only drop-off structures declare a cargo dock",
+      });
     const roles: readonly string[] =
       kind === "unit" ? UNIT_ROLES : kind === "structure" ? STRUCTURE_ROLES : [];
     if (definition.role && !roles.includes(definition.role))
@@ -231,6 +257,8 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
 export function toDefinition(content: {
   id: string;
   role?: string;
+  harvest?: { capacity: number; amountPerSecond?: number };
+  dock?: boolean;
   pop?: number;
   productionSlots?: number;
   exits?: readonly { side: string; cell: readonly number[] }[];
@@ -253,6 +281,11 @@ export function toDefinition(content: {
   const definition = {
     id: content.id,
     ...(content.role !== undefined && { role: content.role }),
+    ...(content.harvest && { harvestCapacity: content.harvest.capacity }),
+    ...(content.harvest?.amountPerSecond !== undefined && {
+      harvestAmountPerSecond: content.harvest.amountPerSecond,
+    }),
+    ...(content.dock !== undefined && { dock: content.dock }),
     ...(content.pop !== undefined && { pop: content.pop }),
     ...(content.productionSlots !== undefined && { productionSlots: content.productionSlots }),
     ...(content.exits && {

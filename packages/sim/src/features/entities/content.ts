@@ -114,6 +114,7 @@ export interface GameplayDefinition extends Definition {
   readonly research: readonly GameplayResearch[];
   readonly turretTurnAnglePerTick?: number;
   readonly harvestCapacity?: number;
+  readonly harvestAmountPerSecond?: number;
   readonly harvestResource?: ResourceId;
   readonly harvestAmount?: number;
   readonly crushable?: boolean;
@@ -359,6 +360,9 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
         turretTurnAnglePerTick: quantity(data(raw.turret).turnRate, 0x10000, 7200),
       }),
       ...(harvest?.capacity !== undefined && { harvestCapacity: quantity(harvest.capacity) }),
+      ...(harvest?.amountPerSecond !== undefined && {
+        harvestAmountPerSecond: quantity(harvest.amountPerSecond),
+      }),
       ...(harvest?.resource !== undefined && { harvestResource: harvest.resource as ResourceId }),
       ...(harvest?.amount !== undefined && { harvestAmount: quantity(harvest.amount) }),
       ...(raw.destructible !== undefined && optionalValue(data(raw.destructible), "crushable")),
