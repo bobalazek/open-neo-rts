@@ -15,6 +15,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
     timeout: 30_000,
   });
+  await expect(page.locator(".match-notices button")).toContainText("Unit ready");
   await page.getByRole("button", { name: "Surrender", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Defeat", exact: true });
   await expect(dialog).toBeVisible();

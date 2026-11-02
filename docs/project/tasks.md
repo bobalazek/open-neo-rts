@@ -11,7 +11,6 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
-- [ ] [2-30b · Own-force alerts, Space cycling and pings](./phases/2.md#2-30--minimap-alerts-and-camera-commands). PR type: engine; only permitted projected events and legal locations.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
 - [ ] [2-40 · Seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling; persistent runner/replay evidence and20 recorded seeds after normal opponent activation.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.
