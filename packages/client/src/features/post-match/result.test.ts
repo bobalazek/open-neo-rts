@@ -14,8 +14,14 @@ const victory: VictorySnapshot = {
 test("result uses winning team, real duration and per-Force surrender reason", () => {
   const before = JSON.stringify(victory);
   expect(matchResult(victory, 0)).toEqual({
-    title: "Victory", winner: "Team 4 wins", duration: "1:15", rule: "Last Man Standing · all units and structures",
-    rows: [{ name: "Your Force", status: "Survived" }, { name: "Force 2", status: "Surrendered" }],
+    title: "Victory",
+    winner: "Team 4 wins",
+    duration: "1:15",
+    rule: "Last Man Standing · all units and structures",
+    rows: [
+      { name: "Your Force", status: "Survived" },
+      { name: "Force 2", status: "Surrendered" },
+    ],
   });
   expect(matchResult(victory, 1)?.title).toBe("Defeat");
   expect(JSON.stringify(victory)).toBe(before);
