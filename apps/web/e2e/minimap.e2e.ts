@@ -30,14 +30,38 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   const panned = await minimap.getAttribute("data-camera-cell");
   await page.keyboard.press("Space");
   await expect(page.locator(".hud-minimap [role=status]")).toHaveText(
-    "Combat alerts are not available yet. No camera jump was made.",
+    "No recent notices. No camera jump was made.",
   );
   await expect(minimap).toHaveAttribute("data-camera-cell", panned ?? "");
+  await minimap.click({
+    position: { x: bounds.width * 0.75, y: bounds.height * 0.75 },
+    modifiers: ["Alt"],
+  });
+  await expect(page.locator(".hud-minimap [role=status]")).toHaveText(
+    "Explore this location before placing a ping.",
+  );
+  await expect(page.locator(".match-notices li")).toHaveCount(0);
   await page.keyboard.press("Home");
+  await expect(minimap).toHaveAttribute("data-camera-cell", /^(19|20),(19|20)$/);
+  await page
+    .getByLabel("Local ping type (Alt-click minimap)", { exact: true })
+    .selectOption("danger");
+  await page.getByRole("button", { name: "Ping camera location", exact: true }).click();
+  await expect(page.locator(".match-notices button")).toHaveText(/^Danger · (19|20), (19|20)$/);
+  await expect(page.locator(".hud-minimap [role=status]")).toContainText(
+    "offline match does not send",
+  );
+  await minimap.click({ position: { x: bounds.width * 0.5, y: bounds.height * 0.5 } });
+  await minimap.focus();
+  await page.keyboard.press("Space");
   await expect(minimap).toHaveAttribute("data-camera-cell", /^(19|20),(19|20)$/);
   const oldTop = await page.locator(".match-top").boundingBox();
   const oldHud = await page.locator(".match-hud").boundingBox();
   if (!oldTop || !oldHud) throw new Error("HUD bounds missing");
+  // Keep this regression's insets fixed: growing notices otherwise hit the viewport-relative cap.
+  await page.locator(".match-hud").evaluate((element, height) => {
+    element.style.maxHeight = `${height}px`;
+  }, oldHud.height);
   await page.setViewportSize({ width: 1280, height: 820 });
   const newTop = await page.locator(".match-top").boundingBox();
   const newHud = await page.locator(".match-hud").boundingBox();
