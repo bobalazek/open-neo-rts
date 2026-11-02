@@ -30,6 +30,7 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
         },
       }),
       ...(entity.deploy && { deploy: { ...entity.deploy } }),
+      ...(entity.veterancy && { veterancy: { ...entity.veterancy } }),
       ...(entity.productionSurge && { productionSurge: { ...entity.productionSurge } }),
       order: entity.order && { ...entity.order },
       ...(entity.power && {

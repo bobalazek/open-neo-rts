@@ -30,6 +30,7 @@ export const WeaponState = defineComponent("WeaponState", {
 export const ShotIntent = defineComponent("ShotIntent", {
   rangeSubcells: "u32",
   damageBonus: "i32",
+  source: "u32",
   tick: "u32",
   shooter: "u32",
   force: "u32",
@@ -353,7 +354,12 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
               const shot = world.create();
               world.add(shot, ShotIntent, {
                 rangeSubcells: maximum,
-                damageBonus: kernel.unitModes?.damageBonus(shooter) ?? 0,
+                damageBonus: Math.min(
+                  1000,
+                  (kernel.unitModes?.damageBonus(shooter) ?? 0) +
+                    (kernel.veterancy?.damageBonus(shooter) ?? 0),
+                ),
+                source: shooter,
                 tick: kernel.tick,
                 shooter: platform,
                 force: world.get(shooter, OwnerForce, "force"),

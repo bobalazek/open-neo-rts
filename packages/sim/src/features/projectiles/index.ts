@@ -14,6 +14,7 @@ import { emitCombatEvent } from "../events/combat";
 export const MAX_ACTIVE_ROUNDS = 8192;
 export const CombatMotion = defineComponent("CombatMotion", { x: "i32", y: "i32" });
 export const Projectile = defineComponent("Projectile", {
+  source: "u32",
   damageBonus: "i32",
   shooter: "u32",
   force: "u32",
@@ -43,6 +44,7 @@ export const Projectile = defineComponent("Projectile", {
 });
 /** One row per impact, with one once-only bit per authored warhead. Delays are relative to impact. */
 export const PendingImpact = defineComponent("PendingImpact", {
+  source: "u32",
   damageBonus: "i32",
   shooter: "u32",
   force: "u32",
@@ -131,6 +133,7 @@ export function initializeProjectiles(
   const impact = (
     id: number,
     data: {
+      source: number;
       damageBonus: number;
       shooter: number;
       force: number;
@@ -195,6 +198,7 @@ export function initializeProjectiles(
     impact(
       id,
       {
+        source: world.get(id, Projectile, "source"),
         shooter: world.get(id, Projectile, "shooter"),
         damageBonus: world.get(id, Projectile, "damageBonus"),
         force: world.get(id, Projectile, "force"),
@@ -224,6 +228,7 @@ export function initializeProjectiles(
               index = world.get(shot, ShotIntent, "weapon"),
               weapon = weaponOf(definition, index);
             const shooter = world.get(shot, ShotIntent, "shooter"),
+              source = world.get(shot, ShotIntent, "source"),
               force = world.get(shot, ShotIntent, "force"),
               damageBonus = world.get(shot, ShotIntent, "damageBonus");
             if (!supported(weapon)) {
@@ -303,6 +308,7 @@ export function initializeProjectiles(
               impact(
                 shot,
                 {
+                  source,
                   shooter,
                   damageBonus,
                   force,
@@ -322,6 +328,7 @@ export function initializeProjectiles(
               const facing = atan2(destination.y - origin.y, destination.x - origin.x),
                 v = velocity(facing, speed);
               world.add(shot, Projectile, {
+                source,
                 damageBonus,
                 shooter,
                 force,
@@ -373,6 +380,7 @@ export function initializeProjectiles(
             if (world.get(id, Projectile, "phase") === 1) {
               if (kernel.tick >= world.get(id, Projectile, "fuseDue"))
                 impact(id, {
+                  source: world.get(id, Projectile, "source"),
                   damageBonus: world.get(id, Projectile, "damageBonus"),
                   shooter: world.get(id, Projectile, "shooter"),
                   force: world.get(id, Projectile, "force"),
@@ -531,6 +539,7 @@ export function initializeProjectiles(
                 weapon,
                 warhead,
                 {
+                  source: world.get(id, PendingImpact, "source"),
                   force: world.get(id, PendingImpact, "force"),
                   damageBonus: world.get(id, PendingImpact, "damageBonus"),
                   direct: world.get(id, PendingImpact, "direct"),

@@ -89,7 +89,9 @@ export class UnitTransports {
       passengers: this.passengers(id).map((unit) => ({
         definition: this.definition(unit)!.id,
         health: world.get(unit, Health, "current"),
-        maxHealth: this.definition(unit)!.health,
+        maxHealth:
+          this.kernel.veterancy?.maxHealth(unit, this.definition(unit)!.health) ??
+          this.definition(unit)!.health,
       })),
     };
   }
@@ -207,6 +209,7 @@ export class UnitTransports {
     world.add(id, Transform, { ...point, facing });
     world.add(id, CombatMotion, point);
     if (damaged) {
+      this.kernel.veterancy?.damaged(id);
       const previous = world.get(id, Health, "current");
       const remaining = Math.max(1, Math.floor(previous / 2));
       world.set(id, Health, "current", remaining);
