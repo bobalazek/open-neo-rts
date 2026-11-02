@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 16,
+  "simVersion": 17,
   "setup": {
     "seed": 42,
     "debug": true,
@@ -40,6 +40,7 @@
       },
       {
         "id": "unit:eastern-collective/collective-soldier",
+        "pop": 1,
         "role": "combat",
         "health": 100,
         "speed": 77,

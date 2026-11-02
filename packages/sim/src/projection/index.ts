@@ -16,6 +16,7 @@ import {
 } from "../features/economy";
 import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { MoveIntent } from "../features/movement";
+import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
 import type { Kernel } from "../kernel";
 import type { MatchSetup } from "../match";
 
@@ -42,6 +43,20 @@ export interface PresentedEntity {
     buildersWorking: number;
   };
   constructionOrder?: { site: string; state: (typeof CONSTRUCTION_WORK_STATES)[number] };
+  production?: {
+    slots: number;
+    queue: {
+      handle: string;
+      definition: string;
+      slot: number | null;
+      state: (typeof PRODUCTION_STATUSES)[number];
+      completedTicks: number;
+      remainder: number;
+      totalTicks: number;
+      gift: boolean;
+    }[];
+    rally: { x: number; y: number } | null;
+  };
 }
 export interface PresentedConstructionRequest {
   handle: string;
@@ -97,13 +112,18 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           !!setup.normal &&
           definition.role === "builder" &&
           hasGrant(setup.grants, seat, force, "economy.build", kernel.tick);
+        const inspectProduction =
+          !!setup.normal &&
+          !!(definition.produces?.length || definition.spawnsWith?.length) &&
+          hasGrant(setup.grants, seat, force, "production.queue", kernel.tick);
         // shortcut: no enemy vision before phase 2; expose only Forces this seat can command.
         if (
           mode !== "debug-no-fog" &&
           !hasGrant(setup.grants, seat, force, "unit.orders", kernel.tick) &&
           !inspectPower &&
           !inspectSite &&
-          !inspectBuilder
+          !inspectBuilder &&
+          !inspectProduction
         )
           continue;
         const handle = handleOf(id);
@@ -121,6 +141,41 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
           ...(site && { constructionSite: true }),
+          ...(inspectProduction && {
+            production: {
+              slots: definition.productionSlots ?? 1,
+              queue: world
+                .query(ProductionItem)
+                .filter(
+                  (item) =>
+                    world.get(item, ProductionItem, "producer") === id &&
+                    world.get(item, ProductionItem, "force") === force,
+                )
+                .map((item) => {
+                  const unit = setup.definitions[
+                    world.get(item, ProductionItem, "definition")
+                  ] as MatchSetup["definitions"][number];
+                  return {
+                    handle: handleOf(item),
+                    definition: unit.id,
+                    slot: world.get(item, ProductionItem, "slot") || null,
+                    state: PRODUCTION_STATUSES[
+                      world.get(item, ProductionItem, "status")
+                    ] as (typeof PRODUCTION_STATUSES)[number],
+                    completedTicks: world.get(item, ProductionItem, "completedTicks"),
+                    remainder: world.get(item, ProductionItem, "remainder"),
+                    totalTicks:
+                      world.get(item, ProductionItem, "gift") === 1
+                        ? 0
+                        : (unit.construction?.buildTicks as number),
+                    gift: world.get(item, ProductionItem, "gift") === 1,
+                  };
+                }),
+              rally: world.has(id, ProductionRally)
+                ? { x: world.get(id, ProductionRally, "x"), y: world.get(id, ProductionRally, "y") }
+                : null,
+            },
+          }),
           ...(site &&
             world.has(id, ConstructionProgress) && {
               construction: {

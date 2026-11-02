@@ -212,3 +212,35 @@ test("worker replies validate real construction progress and builder work state"
     ),
   ).toBe(false);
 });
+
+test("worker replies validate bounded private production queues, work and point rallies", () => {
+  const item = {
+    handle: "e2",
+    definition: "core.unit:eastern-collective/collective-soldier",
+    slot: 1,
+    state: "active",
+    completedTicks: 2,
+    remainder: 500,
+    totalTicks: 80,
+    gift: false,
+  };
+  const production = { slots: 2, queue: [item], rally: { x: 10000, y: 10000 } };
+  expect(isWorkerReply(powerReply([power], [{ ...entity, production }]))).toBe(true);
+  for (const malformed of [
+    { ...production, slots: 0 },
+    { ...production, slots: 6 },
+    { ...production, queue: [{ ...item, slot: 3 }] },
+    { ...production, queue: [{ ...item, state: ["active"] }] },
+    { ...production, queue: [{ ...item, completedTicks: 81 }] },
+    { ...production, queue: [{ ...item, remainder: 1000 }] },
+    { ...production, queue: [{ ...item, gift: 0 }] },
+    { ...production, queue: [item, item] },
+    {
+      ...production,
+      queue: Array.from({ length: 6 }, (_, i) => ({ ...item, handle: `e${i + 2}` })),
+    },
+    { ...production, queue: [{ ...item, unexpected: true }] },
+    { ...production, rally: { x: 1.5, y: 3 } },
+  ])
+    expect(isWorkerReply(powerReply([power], [{ ...entity, production: malformed }]))).toBe(false);
+});

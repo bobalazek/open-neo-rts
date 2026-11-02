@@ -22,6 +22,12 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-02 — Implement defaults without repeated questions](./2026-11-02-provisional-implementation-autonomy.md) — Owner delegates provisional gameplay decisions and wants continuous implementation.
+- [2026-11-02 — Provisional normal-field ore economy](./2026-11-02-ore-economy.md) — Field-total stock, mining/unloading and neighbour-seeded regrowth rates.
+- [2026-11-02 — Terrain and opaque props first for visibility](./2026-11-02-first-playable-vision.md) — Implement base fog before undefined building/smoke/reveal rules.
+
+- [2026-11-02 — Legal production exits and art sockets](./2026-11-02-production-exit-geometry.md) — Explicit rotated exits, radius-aware legal spawn positions and truthful blocked queues.
+
 - [2026-11-02 — Barracks Complex has two production slots](./2026-11-02-production-slots.md) — One active slot elsewhere, pay at start and retain the five-item queue limit.
 
 - [2026-11-02 — Provisional shared extractor economy](./2026-11-02-extractor-economy.md) — 800 credits, 20 seconds, accepted power/output/depletion rules.

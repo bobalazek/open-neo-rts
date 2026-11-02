@@ -118,7 +118,7 @@ The roster keeps to what RTS maps generally carry: OpenRA's Red Alert and Tiberi
 - **Ore fields** are clusters of ore cells that harvesters mine ([economy.md](economy.md#harvesting)). Units drive over them; nothing can be built on them.
 - **Nodes** are single spots (1×1 or 2×2 cells) with something only a particular structure can use: raw-material deposits and oil wells. Each node has a **kind**.
 - **Node-bound structures** can only be placed on a node of their kind, and a node accepts nothing else. The node is one of the footprint's cell rules, next to `land`, `shore` and `water` ([structures.md](structures.md#placement)). Destroying the structure leaves the node, so it can be rebuilt or taken over.
-- The [owner approved one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md) that any faction builds on either node type: a shared 2×2 footprint at a fixed node anchor, remote placement without extending base radius, and Force team colors. Economy rates, cost/build-time and depletion remain under [review](../project/neutral-extractor-plan.md).
+- The [owner approved one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md) that any faction builds on either node type: a shared 2×2 footprint at a fixed node anchor, remote placement without extending base radius, and Force team colors. Its [provisional economy](../project/decisions/2026-11-02-extractor-economy.md) is also accepted: material nodes deplete; oil uses an authored amount when present and is otherwise unlimited.
 
 ### Resource visuals
 
@@ -138,7 +138,7 @@ Resources are engine code, but their look is pack art. The models live in `conte
 - An optional short looping **`harvest`** clip plays while a harvester mines the cell (the ore cell's is a squash pulse).
 - A material node under its structure is hidden; its stage shows again when the structure is destroyed.
 - The triangle budget (props: 1k) covers all stages together.
-- The shared extractor choice is [accepted](../project/decisions/2026-11-01-neutral-extractor.md); node geometry and implementation follow the [fit proposal](../project/neutral-extractor-plan.md). Oil depletion remains undecided, so the oil-well marker has no depletion stages.
+- The shared extractor choice and [depletion rules](../project/decisions/2026-11-02-extractor-economy.md) are accepted; node geometry follows the [fit plan](../project/neutral-extractor-plan.md). The oil-well marker currently has no depletion stages, including on finite wells.
 
 ## Ground under structures
 

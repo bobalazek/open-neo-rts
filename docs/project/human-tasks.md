@@ -2,7 +2,11 @@
 
 Decisions and actions that need a person. Every item names its owner and what it unblocks. When one is resolved: remove it, record the outcome in [decisions/](./decisions/) if it isn't obvious, and add the unblocked work to [tasks.md](./tasks.md).
 
-## Pending decisions
+## Review and later tuning
+
+The owner [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md).
+Do not stop implementation to ask about each gameplay detail below. Choose a
+coherent provisional fit and record it; preserve these entries for later review.
 
 The [Eastern Collective tier-1 mirror and its existing numbers](./decisions/2026-11-02-first-playable-scope.md) are approved provisionally. Broader roster/number approvals below concern the remaining content; do not re-block that accepted first-playable subset.
 

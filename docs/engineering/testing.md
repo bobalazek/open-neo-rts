@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 16, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 17, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -93,6 +93,16 @@ Authored compiler assertions check the 800-credit/400-tick recipe, both outputs
 and existing builder availability. Normal-start fixture and debug state hashes
 remain unchanged; their inputs do not use that newly activated recipe. Scenario
 headers advance deliberately without manufacturing changed state goldens.
+
+SIM17 adds production queues, receipts, once-only gifts and rallies to canonical
+state. Normal-start goldens are `d04aa82330f93687` initially and
+`8b8eeb750dda41f4` at tick two. Focused regressions cover parallel slots, FIFO
+limits, competing starts in enqueue order, cancellation/death/refund overflow,
+power, population, grants, rotated/radius-aware blocked exits, gifts and rallies.
+The worker journey constructs a Barracks fixture, pays only active slots, cancels
+queued/paid items, pauses work on power-off and produces a rallying soldier.
+Actual authored production metadata activation is a separate faction change.
+Debug state hashes remain unchanged.
 
 `setup` contains:
 
