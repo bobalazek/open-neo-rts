@@ -65,8 +65,13 @@ hashes. Repository/content checks, focused money/privacy/freeze/wire cases and f
 real-worker journeys passed. The engine CI is 41477024705; its results and current
 integration checks are recorded in the PR. These totals exclude initial kits,
 starting stock and voluntary removals; income, spending and refunds stay separate.
-Live totals are private, final totals are public and frozen. Next show the real
-frozen totals on the result screen; do not fabricate score/APM/graphs.
+Live totals are private, final totals are public and frozen. The result screen
+shows real per-Force production, combat losses/destruction and separate resource
+income/spending/refunds. Missing totals are unavailable rather than invented zero;
+the narrow table scrolls with keyboard access. A real normal browser journey
+completes a450-credit Field Technician and verifies one unit built and450 spent
+at surrender; screenshots cover desktop/narrow layouts. Score/APM/graphs and
+replay actions remain unavailable until their actual producers exist.
 
 Continue the in-game menu/settings, alerts, non-damage effects, wreck/salvage,
 required tier-1 signatures/abilities and veterancy, full version/content/map-checked

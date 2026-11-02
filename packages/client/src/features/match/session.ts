@@ -124,7 +124,14 @@ export function createNormalSession(
     if (state.snapshot.victory?.result && !resultScreen) {
       hud?.cancel();
       footprint?.accept(null);
-      resultScreen = postMatchScreen(root, state.snapshot.victory, 0, rematch, home);
+      resultScreen = postMatchScreen(
+        root,
+        state.snapshot.victory,
+        0,
+        rematch,
+        home,
+        state.snapshot.statistics,
+      );
     }
   };
   async function initialize() {

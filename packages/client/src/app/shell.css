@@ -112,6 +112,22 @@
 .match-result::backdrop {
   background: #071018bb;
 }
+.match-result.has-totals {
+  width: min(70rem, calc(100vw - 2rem));
+}
+.result-totals {
+  overflow-x: auto;
+}
+.has-totals table {
+  min-width: 52rem;
+  font-variant-numeric: tabular-nums;
+}
+.match-result .result-totals-legend {
+  padding-block: 1rem;
+  text-align: left;
+  color: var(--muted);
+  max-width: none;
+}
 .match-result table {
   width: 100%;
   margin-block: 1.5rem;
