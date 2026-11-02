@@ -20,6 +20,15 @@ to be passable. Costs stay exact integers even at the largest grid and cell cost
 `nearestReachable` resolves blocked, disconnected or off-map target cell coordinates within the start's
 component, using octile distance then row-major cell index. A blocked start has no destination. Labels
 and fallback scans are bounded by the grid size; ordinary same-component targets use constant time.
+A physically clear off-centre position can join a swept-visible passable centre without teleporting.
+The normal passable-centre start remains the fast path. Otherwise deterministic perimeter scans choose
+the nearest visible anchor (squared distance, then row-major index), preferring the requested goal
+component. Blocked or disconnected goals retain nearest-reachable fallback. The common corner case
+finishes locally; unusual positions may scan the finite map, with no arbitrary distance cap or grid
+sort. Each cell is considered at most once for visibility, at most 262,144 centres on a 512×512 map;
+component/fallback goal scans are linear integer work. Only a closer candidate for a component needs
+a swept check. This work occurs during order/repath planning, not every movement tick.
+
 Map matches now register ground path following and bounded direct air movement. Mapless kernel tests
 retain the phase-1a flat movement helper. Map units require their original domain and integer radius
 at setup/replay validation. `toDefinition` projects owner-authored `movement.domain`, `radius` and prop
@@ -63,7 +72,7 @@ edge match the neighbouring plane, so parallel ramps join and raised ramp sides 
 **Addition — first-pass engineering route weights:** road 1, ordinary surfaces 2, rubble 3, for every
 ground domain. Wheeled shallow-water entry doubles that surface weight. These are route preferences,
 not approved final terrain balance. Physical speed is a separate 100% layer except wheeled shallow water
-at the owner's 50%; blocked cells carry 0%. No other physical speed modifier is chosen here.
+at the owner's 50%; terrain/occupancy-blocked cells carry 0%. Centre-clearance inflation changes search anchors, not physical speed in the remaining clear parts of a cell. No other physical speed modifier is chosen here.
 The use of terrain-specific locomotor costs follows [OpenRA's locomotor terrain entries](https://docs.openra.net/en/release/traits/#locomotor);
 radius-based obstruction clearance follows the approach described in [0 A.D.'s pathfinder design](https://svn.wildfiregames.com/nightly-build/trunk/docs/pathfinder.pdf).
 Those sources support the engineering separation, not these numerical balance values.
@@ -85,7 +94,7 @@ Each Force has its own path request queue, ordered canonically by (tick issued, 
 
 The standalone `PathScheduler` implements this quota over one caller-supplied `NavGrid`. Submit each tick's requests before calling `tick()`; resolve multiple commands for the same entity in canonical command order first. `submit()` replaces prior work for that entity, including after a Force transfer; `cancel()` removes it for stop/death/removal. A new player order can preempt an automatic repath while retaining that repath's search. The next Force cursor persists across ticks, including when the quota is smaller than the number of Forces. Results contain a partial/final path once per served request, and integer expansion/completion/queue counters per tick and Force. A zero quota performs no work.
 
-`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**, or the same request-to-grid resolver. Grids stay caller-owned and are not included in scheduler state. Map matches hash the scheduler's full continuation state directly. Simulation version 4 introduced map path following; version 5 adds occupancy invalidation and bounded stuck termination. Older replays fail explicitly.
+`snapshot()` emits canonical JSON-compatible state: sorted Force IDs and queues, the next Force cursor, the fixed quota, and the cost/parent/closed arrays and exact heap order of every active A* search. `restore()` resumes against the **same immutable grid**, or the same request-to-grid resolver. Grids stay caller-owned and are not included in scheduler state. Map matches hash the scheduler's full continuation state directly. Simulation version 4 introduced map path following; version 5 adds occupancy invalidation and bounded stuck termination. Version 7 separates physical speed from centre clearance and resolves continuous start anchors. Older replays fail explicitly.
 
 At each movement boundary, a canonical static-occupancy signature invalidates derived grids and labels.
 Pending searches are cancelled and resubmitted as automatic repaths against the new immutable grid;

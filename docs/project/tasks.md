@@ -10,6 +10,8 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 - [ ] [1B-39 · Browser key-capture evidence](./phases/1b.md#1b-39--check-browser-key-capture). PR type: tooling.
 
+[1B-50 · Continuous terrain movement](./phases/1b.md#1b-50--keep-continuous-terrain-movement-reachable) is implemented for issue #147; full-goal regression, independent review and owning-PR CI remain its delivery gates. Browser host cadence is separate tooling issue #148.
+
 ## In design review
 
 - [ ] [1B-41 · Shared neutral extractor and node placement](./phases/1b.md#1b-41--bind-node-placement-to-the-accepted-content-rule). Shared neutral availability is [decided](./decisions/2026-11-01-neutral-extractor.md); the owner requested the [contextual fit proposal](./neutral-extractor-plan.md) before schema, geometry and content choices. PR type: engine after the design contract is settled.

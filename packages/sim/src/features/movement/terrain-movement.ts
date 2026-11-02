@@ -13,7 +13,7 @@ import { type Definition, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent, MovementFailure } from ".";
 import { compileNavigation, type NavigationGrid, type NavigationObject } from "./navigation";
 import { PathScheduler } from "./path-scheduler";
-import { labelReachability, nearestReachable } from "./reachability";
+import { labelReachability, nearestReachable, reachableStart } from "./reachability";
 import { clearSegment, type Point, smoothPath } from "./segment";
 
 interface Route {
@@ -232,12 +232,27 @@ export class TerrainMovement {
       return;
     }
     const { grid, labels, uniform } = this.profile(definition);
-    const start = this.cell(this.position(id));
+    const position = this.position(id);
+    if (
+      bounded.x === position.x &&
+      bounded.y === position.y &&
+      clearSegment(grid, position, position)
+    )
+      return;
+    const requestedCell = {
+      x: Math.floor(target.x / 1024),
+      y: Math.floor(target.y / 1024),
+    };
+    const start = reachableStart(grid, labels, position, requestedCell);
+    if (start === undefined) {
+      this.fail(id, 1);
+      return;
+    }
     const goal = nearestReachable(grid, labels, start, {
       x: Math.floor(target.x / 1024),
       y: Math.floor(target.y / 1024),
     });
-    if (goal === undefined || !clearSegment(grid, this.position(id), this.centre(start))) {
+    if (goal === undefined) {
       this.fail(id, 1);
       return;
     }
