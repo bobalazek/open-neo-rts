@@ -1,0 +1,323 @@
+.game-shell {
+  --panel: #202b35;
+  --surface: #111b25;
+  --ink: #f1f4f6;
+  --muted: #c0ced9;
+  --accent: #81d4ed;
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 3rem max(1.5rem, 6vw);
+  color: var(--ink);
+  background: var(--surface);
+  font:
+    1rem / 1.5 Arial,
+    sans-serif;
+  color-scheme: dark;
+  scrollbar-color: #62707d var(--surface);
+}
+[hidden] {
+  display: none;
+}
+.game-shell *,
+.game-shell *::before,
+.game-shell *::after {
+  box-sizing: border-box;
+}
+.game-shell h1,
+.game-shell h2,
+.game-shell h3 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.game-shell h1 {
+  font-size: 2rem;
+  margin: 0 0 1.5rem;
+}
+.game-shell h1:focus {
+  outline: none;
+}
+.game-shell h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1.5rem;
+}
+.game-shell h3 {
+  font-size: 1.125rem;
+  margin: 0 0 1rem;
+}
+.game-shell p {
+  max-width: 70ch;
+}
+.game-shell button,
+.game-shell input,
+.game-shell select {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #81909d;
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  max-width: 100%;
+}
+.game-shell button {
+  cursor: pointer;
+}
+.game-shell button:hover:not(:disabled),
+.game-shell button[aria-expanded="true"] {
+  background: #354754;
+}
+.game-shell button:active:not(:disabled) {
+  background: #476071;
+}
+.game-shell button.primary {
+  color: #111b25;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.game-shell button.primary:hover:not(:disabled) {
+  background: #b4eaff;
+}
+.game-shell button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.game-shell :focus-visible {
+  outline: 3px solid #f5cf60;
+  outline-offset: 3px;
+}
+.game-shell a {
+  color: var(--accent);
+  text-underline-offset: 4px;
+  padding-block: 0.5rem;
+}
+.game-shell ::selection {
+  color: var(--surface);
+  background: var(--accent);
+}
+.game-shell input {
+  caret-color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.home-screen {
+  max-width: 70rem;
+  margin: 7vh auto 0;
+}
+.home-screen h1 {
+  font-size: 3.5rem;
+  max-width: 12ch;
+  margin-bottom: 1rem;
+}
+.home-screen .intro {
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+}
+.home-screen nav {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 24rem;
+}
+.home-screen nav button {
+  width: 100%;
+  text-align: left;
+}
+.home-screen [data-single-menu] {
+  padding-left: 1.25rem;
+}
+.preview-note {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.home-screen .preview-note {
+  margin: 2rem 0 3rem;
+  max-width: 57ch;
+}
+.home-screen footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  color: var(--muted);
+  align-items: center;
+  font-size: 0.875rem;
+}
+.setup-screen {
+  max-width: 80rem;
+  margin-inline: auto;
+}
+.setup-screen header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.setup-screen header h1 {
+  margin: 0;
+}
+.setup-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(15rem, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.setup-columns > section,
+.setup-columns > aside {
+  padding: 1.5rem;
+  background: var(--panel);
+  border: 1px solid #62707d;
+}
+.force-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(10rem, 1fr) minmax(10rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid #62707d;
+}
+.game-shell label {
+  display: grid;
+  gap: 0.4rem;
+}
+.setup-screen fieldset {
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px solid #62707d;
+  min-width: 0;
+}
+.setup-screen legend {
+  padding-inline: 0.5rem;
+  font-weight: 700;
+}
+.setup-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.setup-fields input {
+  width: 100%;
+}
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+.setup-actions .primary {
+  margin-left: auto;
+}
+.game-shell [role="alert"] {
+  color: #ffc4b8;
+  overflow-wrap: anywhere;
+}
+.game-shell [role="alert"]:empty,
+.game-shell [role="status"]:empty {
+  display: none;
+}
+.loading-screen {
+  max-width: 48rem;
+  margin: 10vh auto;
+}
+.loading-screen progress {
+  width: 100%;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+.game-shell.match-shell {
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  overflow: hidden;
+}
+.match-top,
+.match-controls {
+  pointer-events: auto;
+  background: #202b35f5;
+  border: 1px solid #62707d;
+}
+.match-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.match-top strong {
+  margin-right: auto;
+}
+.match-controls {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 1rem;
+  max-width: 38rem;
+  max-height: 35dvh;
+  overflow: auto;
+}
+.match-controls p {
+  margin: 0 0 0.5rem;
+}
+.match-controls fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.match-controls .model-check-controls {
+  gap: 0.5rem;
+}
+@media (max-width: 950px) {
+  .setup-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .setup-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .force-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .force-row label {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 600px) {
+  .game-shell {
+    padding: 1.5rem 1rem;
+  }
+  .home-screen {
+    margin-top: 3vh;
+  }
+  .home-screen h1 {
+    font-size: 2.5rem;
+  }
+  .setup-columns > section,
+  .setup-columns > aside,
+  .setup-screen fieldset {
+    padding: 1rem;
+  }
+  .setup-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .setup-actions > button,
+  .setup-actions .primary {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+  .match-top {
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+  .match-top strong {
+    width: 100%;
+  }
+  .match-controls {
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    max-width: none;
+    padding: 0.75rem;
+  }
+}

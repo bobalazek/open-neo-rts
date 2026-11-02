@@ -1,90 +1,33 @@
 # Handoff
 
-Snapshot on 2026-11-02. Use [tasks](./tasks.md) and the [phase-2 plan](./phases/2.md) for current work. The owner wants functional gameplay now, with validation at coherent batch boundaries.
+Snapshot on 2026-11-02. Continue the active roadmap goal; all phases are not complete.
+Use [tasks](./tasks.md) and the [phase-2 plan](./phases/2.md).
 
-## Current direction
+## Working direction
 
-The owner [explicitly deferred performance work](./decisions/2026-11-02-gameplay-before-performance.md). Do not resume FPS profiling or desktop benchmarks as an entry gate. Phase 1b remains unfinished; this is permission to proceed with gameplay, not a phase-completion claim.
+The owner [delegates missing gameplay choices](./decisions/2026-11-02-provisional-implementation-autonomy.md): choose coherent provisional defaults, record them and implement without repeated approval questions. Preserve accepted content and earlier decisions. Batch checks at coherent feature boundaries. Commit/push/merge are authorized; merge reviewed finished PRs promptly after green CI. Keep unfinished work isolated and available; never cancel agents because another task finishes.
 
-The owner [now delegates provisional gameplay choices](./decisions/2026-11-02-provisional-implementation-autonomy.md): stop asking repeated approval questions, choose sensible defaults, record them and implement. Ore rates and the first-playable terrain/opaque-prop vision scope are also explicitly accepted. Earlier pending design entries are tuning/review work, not automatic blockers.
+[Performance acceptance is deferred](./decisions/2026-11-02-gameplay-before-performance.md). Do not resume foreground FPS profiling or native-key gates before functional gameplay. Phase 1b remains explicitly unfinished.
 
-The owner approved the [existing Eastern Collective tier-1 roster and numbers provisionally](./decisions/2026-11-02-first-playable-scope.md) for the Training Grounds mirror. The [normal construction contract](./decisions/2026-11-02-normal-construction.md) is also accepted: six/three-cell provider radius, 40-tick friendly clearance, full payment at valid site creation and full unfinished cancellation refund. Do not ask for those decisions again.
+## Delivered
 
-## Delivered and in progress
+Main through PR #192 has SIM27. Phase 0/1a foundations, authored terrain/navigation, worker debug tools, selection/orders and first-pass original assets for all 54 units, 46 structures and 37 props are delivered. Team materials and authored clip validation exist; real combat event playback is separate.
 
-- Phase 0/1a foundations are complete. Debug mode has authored terrain, navigation, selection/orders, inspectors, worker hosting and copied projections. All existing 54 units, 46 structures and 37 props have first-pass assets; team-color and animation validation is integrated.
-- [PR #170](https://github.com/bobalazek/open-neo-rts/pull/170) merged shared pack resolution and gameplay/cosmetic identity, with all six CI jobs green.
-- [PR #171](https://github.com/bobalazek/open-neo-rts/pull/171) merged integer gameplay compilation, with all six CI jobs green. CLI validation compiles 137 definitions and validates 137 models/833 assets. Compilation does not make every faction playable.
-- [PR #172](https://github.com/bobalazek/open-neo-rts/pull/172) merged SIM10 normal starting kits: 14 real entities, no debug commands, canonical setup/grants/teams/settings and validated placement/reachability. All six CI jobs passed; the new worker journey passed all three engines. Its old terrain-picker timeout passed unchanged on one retry.
-- [PR #173](https://github.com/bobalazek/open-neo-rts/pull/173) merged SIM11 ECS stock banks, atomic permission-checked spending, authoritative gain/refund helpers and private bank projections. Local full gates, the focused worker journey and all six CI jobs passed. An ancestry-only rebase retained the exact tested Git tree.
-- [PR #174](https://github.com/bobalazek/open-neo-rts/pull/174) merged SIM12 power state, toggles, brownout operational helpers and private projections. Independent review, local full gates, the worker toggle journey and all six CI jobs pass; the old terrain-picker timeout passed unchanged on one retry. Actual production/research/defense/radar consumers remain later work.
-- [PR #175](https://github.com/bobalazek/open-neo-rts/pull/175) merged paid construction sites and clearance, including 1B-42/1B-43, at `fc264a7`. Independent review, repository/content/worker checks and all six CI jobs pass. The ancestry-only rebase after #174 retained identical complete Git tree.
-- [PR #176](https://github.com/bobalazek/open-neo-rts/pull/176) merged SIM14 builder work/completion with all six CI jobs green. Completed structures retain their receipt, activate power and reject unfinished cancellation.
-- [PR #177](https://github.com/bobalazek/open-neo-rts/pull/177) merged SIM15 persistent node extraction; [PR #178](https://github.com/bobalazek/open-neo-rts/pull/178) merged the approved SIM16 actual recipe/rates at `425b9d2`. Repository/content/worker/three-engine CI passed. The old terrain-picker timeout passed unchanged on one failed-job retry.
-- [PR #179](https://github.com/bobalazek/open-neo-rts/pull/179) merged SIM17 production queues, payments/refunds, slots, gifts, exits and rallies at `c2cee3b`. Independent review, repository/content gates, all three worker journeys and all six CI jobs pass.
-- Task 2-11b activates actual tier-1 exits and two Barracks slots under SIM18, preserving existing stats/costs/time/art. Independent review and full repository/content checks pass; publication/CI follows.
-- Task 2-06 implements SIM19 ore-cell stock and neighbour-seeded regrowth. Independent review caught and closed startup accepting reachable zero-cap cells; focused conversion/mining/restore/startup checks pass. Final repository batch/publication follows. Hauling is implemented separately against this API and awaits integration.
-- Task 2-18 implements SIM20 core terrain/opaque-prop vision with canonical exploration and team sharing. Independent review accepted; final integration/repository checks follow. Own-only controlled snapshots remain until the separate reviewed 2-19 observation/ghost candidate is integrated.
-- Task 2-19 implements SIM21 permitted entities/grids, canonical ghosts, private economy/work fields and copied controller observations. Source and production integration passed independent review; final repository/worker checks follow. Persistent bot handle continuity is an explicit 2-23/full-save requirement, not implicitly solved by transient human projection handles.
+Phase-2 delivery on main includes shared pack identity/compilation and normal kits (#170–172), stock/power (#173–174), paid sites/builders (#175–176), persistent extraction and actual recipe (#177–178), production and authored exits/slots (#179–180), ore stock/regrowth (#181), browser readiness correction (#183), core vision (#184), permitted observations/ghost memory (#185), fog presentation (#186), hauling (#187), actual Supply Truck five-credit/second mining (#188), targeting/private shot intents (#189), selling/paid adjacent repair (#190), and provisional Field Technician repair metadata (#191). Each merged feature passed independent review, repository checks and applicable CI. Combat damage is not supplied by targeting.
 
-The normal initializer currently supports faction-start maps, one placed headquarters and ground starters, with no authored map objects. It does not supply missing paid headquarters recovery recipes. Normal stock/power features keep outcome state in ECS and reject debug commands.
+The actual Field Technician default is manual adjacent structure repair at 10 HP/second and 25% full-repair credit price. Its [decision](./decisions/2026-11-02-provisional-builder-repair.md) labels this delegated provisional balance. Missing headquarters paid recovery recipes remain unavailable. Normal initialization supports placed headquarters/ground kits, not packed starts or authored map objects.
 
-## Next functional delivery
+PR #192 merged deterministic bot seats, private handle/decision/stream/queue continuity and validated same-match restore. Independent review found and closed enemy-target authorization and stale queued-reference restore defects. Integrated repository/content gates and all six CI jobs passed. Shipped policy is explicitly idle; this is not an opposing gameplay AI.
 
-Implement unit production with the approved two Barracks Complex slots and one elsewhere. Node extraction is implemented in an isolated candidate awaiting builder integration/final checks; its engine/schema and approved balance activation publish separately. The [extractor economy](./decisions/2026-11-02-extractor-economy.md) and [ground weapons targeting structures](./decisions/2026-11-02-ground-targets-structures.md) are approved. Continue toward the real build → earn → produce → fight → win/lose loop against a bot. Home/skirmish/HUD and gameplay animation triggers still need implementation.
+## Current candidates and next work
 
-Pending owner decisions are in [human tasks](./human-tasks.md): notably exact ore logistics/regrowth values, missing headquarters recovery values and unresolved signature/balance details. Do not silently replace missing values with free construction or invented rates.
+- The normal local-flow candidate supplies Home → Skirmish → Loading → real controlled worker match, shared Quick start, validated saved setup, pause/leave and cancellation/error/retry cleanup. Its second Force is explicitly uncontrolled. Full original core bytes determine identity at build; missing assets preserve Home/debug and refuse Start. The real HUD is separate task 2-29.
+- Active isolated work: projectile flight/contact/damage, the first actual economy/scouting/army bot, and the real match HUD/build/production/control groups. Continue with minimap, combat event playback, defeat/victory/statistics and the remaining phase-2 tasks.
 
-## Validation and deferred work
+Default routes are Home at `/`, setup at `/skirmish`, active session at `/match`, developer tools at `/debug`, and terrain inspection at `/debug?terrain=1`. Legacy `/?map=...` terrain links remain supported. Browser CI pulls all original core LFS assets for real catalog identity; the code job keeps its small renderer fixture set.
 
-Use one task/branch/PR and merge finished reviewed work promptly after CI. Run focused regressions for concrete new logic; repository/content checks at the end of each coherent batch. Advance simulation version and affected scenario headers/goldens with outcome changes. Preserve debug hashes when debug outcomes are unchanged. Keep unfinished work isolated and handed off; do not cancel agents merely because another task finished.
+## Verification and limits
 
-The 60 fps gate remains unmet. Earlier qualified baseline was 50.373 fps; an isolated matrix-cache candidate measured 41.499 fps, and a later baseline 47.601 fps. These were not a completed matched pair and establish no causal improvement/regression. The candidate is not on main. Its source and evidence remain on `codex/model-world-cache` and local capture artifacts. Native browser/OS key acceptance also remains open.
+The normal-flow candidate passes fix/typecheck/test/build/content validation and six exact Chromium journeys against integrated SIM27: builder construction, extractor power/depletion, paid production, partial-cargo hauling/depot deposit, saved setup/canceled loading/real start, and worker failure/retry. Screenshots show actual original models, team color, fog and the narrow setup layout. Independent source review accepted; final CI is tracked in its PR. No WebGPU hardware or FPS qualification is implied.
 
-No bot skirmish, completed phase-2 exit or phases 3–5 delivery is claimed. Follow the roadmap after the first local match works.
-
-
-Task 2-07a implements SIM22 harvester logistics against merged SIM21 observations.
-Canonical cargo and queue state, current-grant privacy and copied bot cargo are
-integrated; five-credit/second actual Supply Truck activation is a separate balance
-change. Full repository/content checks pass; focused worker proof and publication
-are recorded on the task PR. Keep missing-rate definitions idle until activation.
-
-
-Task 2-07b activates SIM23 Supply Truck mining at the approved five credits/second,
-with original 500-credit capacity and cost/time untouched. Authored compiler
-assertions, scenario metadata and normal goldens are updated. Independent static
-review and repository/content checks pass; publication/CI follows.
-
-
-Task 2-13 implements SIM24 legal weapon targeting/aim/bursts and canonical private
-shot intents against integrated hauling/visibility. Original targeting and root
-integration are separately reviewed; root repository/content checks pass. Next
-flight/contact/damage consumes those intents in the same combat phase. Default
-missing aim is omnidirectional, missing forward arc is exact aim; bounded overflow
-defers launches in stable shooter/weapon order. No damage is applied by this task.
-
-
-Task 2-12a implements SIM25 half-receipt completed sales and paid adjacent manual
-builder repair with atomic producer refunds, carried fractions and private copied
-repair state. It preserves harvesting/targeting replacement rules. Original logic
-passed independent review; integrated root repository/content batch passes.
-2-12b will provisionally activate Field Technician structure repair using the
-existing content-format example: 10 HP/second and 25% full-repair credit price,
-adjacent/manual only. This is a recorded implementation default for later tuning,
-not an additional owner-approved balance or a playtest result.
-
-
-Task 2-12b activates SIM26 Field Technician repair metadata: manual adjacent
-structure repair at 10 HP/second and 25% full-repair credit price. The delegated
-provisional choice is recorded in its own decision, with actual compiler coverage;
-existing price/time/health/art remain unchanged. Full repository/content checks
-pass. Normal initializer stub and debug hashes remain unchanged; headers advance.
-
-
-Task 2-23 implements SIM27 deterministic bot-seat hosting and canonical private
-handle/decision/stream/queue continuity. Independent review found and closed enemy
-attack target authorization and stale queued-reference restore defects; focused
-reproductions and the integrated repository/content batch pass. The shipped normal
-policy is explicitly idle; the real build/economy/scouting/combat policy is under
-2-24/2-25. Do not label idle hosting as an opposing skirmish AI.
+There is no completed human-vs-bot skirmish, phase-2 exit or phases 3–5 delivery claim. Build the real earn → build → produce → fight → win/lose loop, then validate its full acceptance and proceed through the roadmap. Raw feature restore is not a full version/content/map-validated save-file implementation.

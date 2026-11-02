@@ -4,7 +4,7 @@ const results = await Promise.all([
     outdir: "./dist",
     target: "browser",
     minify: true,
-    plugins: [catalogPlugin],
+    plugins: [catalogPlugin, normalCatalogPlugin],
   }),
   Bun.build({
     entrypoints: ["../../packages/client/src/worker/entry.ts"],
@@ -19,3 +19,4 @@ for (const result of results) {
 }
 
 import catalogPlugin from "./catalog-plugin";
+import normalCatalogPlugin from "./normal-catalog-plugin";

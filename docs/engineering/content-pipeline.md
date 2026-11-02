@@ -61,3 +61,9 @@ Every unit, structure, faction, map and asset (with the weapons, abilities and r
 - The browser preview registry reads unit/structure/prop paths from the validated core manifest. It still permits unavailable LFS artwork and does not claim full match identity. A real match loader must supply actual runtime bytes to `resolvePacks`; missing bytes cannot produce a trusted catalog. Shared resolution and mismatch refusal are checked in Bun and browsers.
 - **glTF conformance** uses the official Khronos validator (tooling, not a game dependency). Our own checks for parts, budgets and clips read the GLB with a small parser in `packages/content`.
 - The same validators run in the map editor, in the game when loading mods, and on the server when accepting custom content.
+
+The normal browser build adapter reads the full original core inventory, resolves
+real gameplay/cosmetic identity and emits only the compiled integer catalog.
+Raw binary bytes stay out of JavaScript. Incomplete LFS installs produce an explicit
+unavailable-content result, preserving Home/debug while normal Start refuses.
+Browser CI pulls the full original core content before building this catalog.

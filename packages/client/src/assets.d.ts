@@ -11,3 +11,10 @@ declare module "*.glb" {
 declare module "virtual:debug-builtins" {
   export const builtins: readonly { raw: unknown; model?: string }[];
 }
+
+declare module "virtual:normal-catalog" {
+  export const content: {
+    catalog: import("@open-neo-rts/sim").GameplayCatalog | null;
+    error: string | null;
+  };
+}
