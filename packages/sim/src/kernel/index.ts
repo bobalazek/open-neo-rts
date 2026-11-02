@@ -23,6 +23,7 @@ import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { CombatEvent } from "../features/events/combat";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
+import type { MatchVictory } from "../features/victory";
 import type { TerrainVision, VisibilityMemory } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
 import type { SeatProjection, SeatSnapshot } from "../projection";
@@ -128,6 +129,7 @@ export interface Kernel {
   controllerPayload?: (seat: number, command: ControllerCommand) => unknown;
   observationProjections?: ReadonlyMap<number, SeatProjection>;
   bots?: BotSeats;
+  victory?: MatchVictory;
   readonly world: World;
   /** Copied, frozen static map input. Low-level kernel tests may omit a map. */
   readonly map: MatchMap | undefined;
@@ -219,6 +221,11 @@ export function stream(kernel: Kernel, name: string): Stream {
  * caller picks commands by target tick, so that is a bug; discard the kernel.
  */
 export function step(kernel: Kernel, inputs: readonly unknown[]): LogEntry[] {
+  if (kernel.victory?.ended) {
+    const entries = dispatch(kernel, inputs, "input");
+    kernel.log.push(...entries);
+    return entries;
+  }
   const queued = kernel.queued;
   kernel.queued = [];
   const entries: LogEntry[] = [];
@@ -231,7 +238,7 @@ export function step(kernel: Kernel, inputs: readonly unknown[]): LogEntry[] {
   kernel.log.push(...entries);
   kernel.tick++;
   kernel.captureObservations?.();
-  if (kernel.tick % CHECKPOINT_INTERVAL === 0)
+  if (kernel.tick % CHECKPOINT_INTERVAL === 0 || kernel.victory?.ended)
     kernel.checkpoints.push({ tick: kernel.tick, hash: checkpointHash(kernel) });
   return entries;
 }
@@ -296,8 +303,9 @@ function dispatch(
   for (const command of commands) {
     const handler = kernel.handlers.get(command.type);
     // ponytail: reuses unknown_type for a type no registered feature handles; add a code if acks need to tell them apart.
-    const code =
-      source === "input" && kernel.bots?.hasSeat(command.seat)
+    const code = kernel.victory?.ended
+      ? "match_ended"
+      : source === "input" && kernel.bots?.hasSeat(command.seat)
         ? "no_grant"
         : handler
           ? handler(kernel, command)
