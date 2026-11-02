@@ -248,6 +248,39 @@ test("worker replies validate real construction progress and builder work state"
   ).toBe(false);
 });
 
+test("worker replies strictly validate private repair work, statuses and bounded prepayment", () => {
+  const order = { target: "e2", state: "working", workRemainder: 10_000 };
+  const repair = { creditCarry: 12, repairersWorking: 1 };
+  const packet = (repairOrder: unknown, progress: unknown = repair, mode = "controlled") =>
+    powerReply(undefined, [{ ...entity, power: undefined, repairOrder, repair: progress }], mode);
+  expect(isWorkerReply(packet(order))).toBe(true);
+  for (const bad of [
+    null,
+    {},
+    { ...order, target: 1 },
+    { ...order, state: ["working"] },
+    { ...order, state: "unknown" },
+    { ...order, workRemainder: 0.5 },
+    { ...order, workRemainder: 20_000 },
+    { ...order, extra: true },
+    Object.assign(Object.create(order), order),
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  for (const bad of [
+    null,
+    {},
+    { ...repair, creditCarry: -1 },
+    { ...repair, creditCarry: entity.maxHealth },
+    { ...repair, creditCarry: 0.5 },
+    { ...repair, repairersWorking: -1 },
+    { ...repair, repairersWorking: 0.5 },
+    { ...repair, extra: true },
+    Object.assign(Object.create(repair), repair),
+  ])
+    expect(isWorkerReply(packet(order, bad))).toBe(false);
+  expect(isWorkerReply(packet(order, repair, "debug-no-fog"))).toBe(false);
+});
+
 test("worker replies validate bounded private production queues, work and point rallies", () => {
   const item = {
     handle: "e2",

@@ -559,6 +559,8 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "constructionOrder",
             "production",
             "attackTarget",
+            "repair",
+            "repairOrder",
           ].includes(key),
       ) ||
       !bounded(entity.force) ||
@@ -668,6 +670,38 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
         typeof order.site !== "string" ||
         typeof order.state !== "string" ||
         !["approaching", "working", "blocked"].includes(order.state)
+      )
+        return false;
+    }
+    if (entity.repairOrder !== undefined) {
+      const order = entity.repairOrder;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(order) ||
+        Object.getPrototypeOf(order) !== Object.prototype ||
+        Reflect.ownKeys(order).length !== 3 ||
+        typeof order.target !== "string" ||
+        typeof order.state !== "string" ||
+        !["approaching", "working", "blocked", "funds", "grant"].includes(order.state) ||
+        !Number.isInteger(order.workRemainder) ||
+        Number(order.workRemainder) < 0 ||
+        Number(order.workRemainder) >= 20_000
+      )
+        return false;
+    }
+    if (entity.repair !== undefined) {
+      const repair = entity.repair;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(repair) ||
+        Object.getPrototypeOf(repair) !== Object.prototype ||
+        Reflect.ownKeys(repair).length !== 2 ||
+        !Number.isInteger(repair.creditCarry) ||
+        Number(repair.creditCarry) < 0 ||
+        Number(repair.creditCarry) >= Number(entity.maxHealth) ||
+        !Number.isInteger(repair.repairersWorking) ||
+        Number(repair.repairersWorking) < 0 ||
+        Number(repair.repairersWorking) > 0xffffffff
       )
         return false;
     }

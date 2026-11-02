@@ -159,18 +159,24 @@ port.onmessage = ({ data }) => {
                 (handle) => projection.resolve(handle, "unit.orders") ?? -1,
               );
             if (type === "unit.attack") fields.entity = projection.resolve(fields.entity) ?? -1;
-          } else if (type === "economy.build" || type === "economy.assistConstruction") {
+          } else if (
+            type === "economy.build" ||
+            type === "economy.assistConstruction" ||
+            type === "economy.repair"
+          ) {
             if (Array.isArray(fields.builders))
               fields.builders = fields.builders.map(
                 (handle) => projection.resolve(handle, "economy.build") ?? -1,
               );
-            if (type === "economy.assistConstruction")
+            if (type === "economy.assistConstruction" || type === "economy.repair")
               fields.entity = projection.resolve(fields.entity) ?? -1;
           } else if (
             type === "debug.remove" ||
             type === "debug.setHealth" ||
             type === "economy.power" ||
             type === "economy.cancelConstruction" ||
+            type === "economy.sell" ||
+            type === "economy.cancelRepair" ||
             type === "production.enqueue" ||
             type === "production.rally"
           )

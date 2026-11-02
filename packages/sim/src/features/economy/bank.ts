@@ -43,6 +43,8 @@ export interface ForceBanks {
   gain(force: number, amounts: unknown): BankResult;
   /** Add back a proven paid amount; the owning construction/production lifecycle prevents duplicate refunds. */
   refund(force: number, amounts: unknown): BankResult;
+  /** Preflight every original Force before an atomic producer sale refunds its receipts. */
+  refundBatch(payments: readonly BankSnapshot[]): BankResult;
   /** Copies only the banks this seat currently has economic permission to inspect. */
   snapshot(seat: number): BankSnapshot[];
 }
@@ -170,6 +172,29 @@ export function initializeForceBanks(
     },
     gain,
     refund: gain,
+    refundBatch(payments: readonly BankSnapshot[]): BankResult {
+      const totals = new Map<number, Record<StockResourceId, number>>();
+      for (const payment of payments) {
+        const requested = amounts(payment.resources);
+        const current = balance(payment.force);
+        if (!current) return { ok: false, reason: "unknown_force" };
+        if (!requested) return { ok: false, reason: "invalid_amounts" };
+        const total = totals.get(payment.force) ?? {
+          credits: 0,
+          materials: 0,
+          "industrial-capacity": 0,
+          "salvage-points": 0,
+        };
+        for (const resource of resources) {
+          total[resource] += requested[resource];
+          if (total[resource] + current[resource] > MAX_AMOUNT)
+            return { ok: false, reason: "overflow" };
+        }
+        totals.set(payment.force, total);
+      }
+      for (const [force, total] of [...totals].sort(([a], [b]) => a - b)) gain(force, total);
+      return success;
+    },
     snapshot(seat: number): BankSnapshot[] {
       return [...ids.keys()]
         .filter((force) => canInspectEconomy(permissions, seat, force, kernel.tick))

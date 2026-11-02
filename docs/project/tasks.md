@@ -10,6 +10,7 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
+- [ ] [2-12b · Activate Field Technician structure repair](./phases/2.md#2-12--sell-and-paid-repair). PR type: balance; provisional adjacent10HP/second and25% full-repair credit cost.
 - [ ] [2-14 · Integer projectile motion and collision](./phases/2.md#2-14--integer-projectile-motion-and-collision). PR type: engine after targeting; apply authored flight/blockers before damage.
 - [ ] [2-23 · Host a bot seat with deterministic budgets](./phases/2.md#2-23--host-a-bot-seat-with-deterministic-budgets). PR type: engine. Use permitted observations and serialize bot state/handle continuity before first bot behavior.
 

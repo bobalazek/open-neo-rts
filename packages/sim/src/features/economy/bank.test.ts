@@ -33,6 +33,33 @@ function bankSetup() {
   return { kernel, banks };
 }
 
+test("batch receipt refunds preflight repeated and distinct Forces before changing any balance", () => {
+  const { banks } = bankSetup();
+  const empty = { credits: 0, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
+  banks.gain(2, { credits: 0x7fffffff - 5000 });
+  expect(
+    banks.refundBatch([
+      { force: 1, resources: { ...empty, credits: 10 } },
+      { force: 2, resources: { ...empty, credits: 1 } },
+    ]),
+  ).toEqual({ ok: false, reason: "overflow" });
+  expect(banks.balance(1)?.credits).toBe(5000);
+  expect(
+    banks.refundBatch([
+      { force: 1, resources: { ...empty, credits: 0x7fffffff - 5000 } },
+      { force: 1, resources: { ...empty, credits: 1 } },
+    ]),
+  ).toEqual({ ok: false, reason: "overflow" });
+  expect(banks.balance(1)?.credits).toBe(5000);
+  expect(
+    banks.refundBatch([
+      { force: 1, resources: { ...empty, credits: 2 } },
+      { force: 1, resources: { ...empty, materials: 3 } },
+    ]),
+  ).toEqual({ ok: true });
+  expect(banks.balance(1)).toMatchObject({ credits: 5002, materials: 13 });
+});
+
 test("initial stock belongs to sorted Forces, is isolated per match, copied, serialized and hashed", () => {
   const { kernel, banks } = bankSetup();
   const other = bankSetup();

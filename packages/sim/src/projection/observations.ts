@@ -14,6 +14,8 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       ...(entity.harvesting && { harvesting: { ...entity.harvesting } }),
       ...(entity.construction && { construction: { ...entity.construction } }),
       ...(entity.constructionOrder && { constructionOrder: { ...entity.constructionOrder } }),
+      ...(entity.repair && { repair: { ...entity.repair } }),
+      ...(entity.repairOrder && { repairOrder: { ...entity.repairOrder } }),
       ...(entity.production && {
         production: {
           ...entity.production,
