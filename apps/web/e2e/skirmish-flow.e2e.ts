@@ -7,6 +7,18 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    const original = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (message: unknown) {
+      const request = message as {
+        type: string;
+        options?: { setup?: { normal?: { settings: { veterancy?: boolean } } } };
+      };
+      if (request.type === "init")
+        Reflect.set(window, "startedVeterancy", request.options?.setup?.normal?.settings.veterancy);
+      return original.call(this, message);
+    };
+  });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Open Neo RTS" })).toBeVisible();
   await page.screenshot({ path: info.outputPath("home-desktop.png") });
@@ -20,6 +32,8 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   );
   await page.getByLabel("Your spawn").selectOption("north-west");
   await page.getByLabel("Seed", { exact: true }).fill("42");
+  await expect(page.getByLabel("Unit veterancy")).toBeChecked();
+  await page.getByLabel("Unit veterancy").uncheck();
   await page.getByRole("button", { name: "Save setup" }).click();
   await expect(page.getByRole("status")).toHaveText("Setup saved in this browser.");
   await page.setViewportSize({ width: 390, height: 844 });
@@ -28,9 +42,12 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   });
   await page.screenshot({ path: info.outputPath("setup-mobile.png"), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.getByLabel("Unit veterancy").scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath("veterancy-rule-mobile.png") });
   await page.reload();
   await page.getByRole("button", { name: "Load saved setup" }).click();
   await expect(page.getByLabel("Seed", { exact: true })).toHaveValue("42");
+  await expect(page.getByLabel("Unit veterancy")).not.toBeChecked();
   await page.setViewportSize({ width: 1280, height: 720 });
   let release = () => {};
   const delayed = new Promise<void>((resolve) => {
@@ -52,6 +69,7 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   });
   await expect(page).toHaveURL(/\/match$/);
   await expect(page.locator("#game")).toHaveAttribute("data-mode", "controlled");
+  expect(await page.evaluate(() => Reflect.get(window, "startedVeterancy"))).toBe(false);
   await expect(page.locator("#game")).toHaveAttribute("data-entities", "7");
   await expect(page.getByText("Credits 5000", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Pause", exact: true }).click();

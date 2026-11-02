@@ -203,7 +203,7 @@ unfinished; continue functional gameplay and remaining roadmap delivery.
 PR #222 merged at 3909cef8be1c8dabd5a81d29d8106fb4cad54cb0 with an identical
 source tree to reviewed c3b759dd50a2dc032060915794eae0add6bc2899.
 
-## Refundable-site XP correction, SIM46 candidate
+## Refundable-site XP correction, SIM46 merged
 
 `/tmp/neo-veterancy-credit-fix`, branch `codex/veterancy-construction-credit`,
 closes a real zero-cost XP loop. The preserved independent probe
@@ -247,3 +247,45 @@ Continue mode animation, remaining effects/lifecycle/orders and complete
 persistence/replay/audio/help/content tools, then remaining roadmap phases.
 All phases remain unfinished. Keep the terminal SIM39 batch and all repair
 probes; no new historical reruns or FPS/native-key profiling.
+
+
+PR #223 merged at 7228e9ae265a012f7ee5a0696d17dcff5f1deeef with an identical
+tree to independently reviewed 20623ea65ed64838b8afcd3ad970324cefb774d2.
+
+## Veterancy controls and presentation, SIM46
+
+The single UI task commit rebased from 86f4114 to 2adfd80 onto the correction;
+`git range-diff` confirmed its patch was unchanged. `/tmp/neo-veterancy-ui`,
+branch `codex/veterancy-presentation`, now adds the final 2-46b documentation.
+No additional simulation-version change is needed for these client/render
+controls over the existing SIM46 On/Off rule.
+
+Legacy seven-field saved setups migrate with their preferences intact and
+veterancy On. New toggles are strict booleans; saved false reaches actual worker
+normal initialization. The selected HUD shows public rank and only the exact
+XP permitted by the snapshot. Scene chevrons share original code-built geometry,
+are unpickable, and revoke on rank loss/fog/death/disposal. A real-GLB NullEngine
+case covers shared instances, two visible Forces and final resource cleanup;
+there is no physical-chevron screenshot claim. The mobile checkbox screenshot
+was inspected and its save/load/launch journey passed.
+
+Independent bounded UI review accepted source and the corrected original-unit
+journey. It retains original content/prices/health/XP rules, uses actual movement
+and HUD attack, and isolates the original HQ's defensive guns with a real
+explicitly granted power-off command. On gives rank 3, XP 409600 and 130 HP;
+Off gives no rank state and 100 HP. Both completed input records reproduce
+terminal tick/hash in Bun. Test-only kits, nearby spawn, fogOff, added economic
+grant and stubbed renderer picking remain explicit; no natural active-HQ match
+or human acceptance is claimed. Final repository fix/typecheck/test/build/content checks over the correction
+passed. The assembled Chromium/WebKit batch passed 18 cases in 38.6 seconds,
+with 10 expected non-Chromium HUD skips; its eight original-catalog journeys
+include both veterancy settings and terminal Bun replay verification. Hosted CI remains
+unable to start steps, and local Firefox's profile launch remains unavailable.
+
+The next ready task is mode transformation playback; original Dragon Tank and
+Metamorphic APC assets currently declare only idle/move/attack/recoil clips,
+so split necessary original art from renderer wiring. The CLI can build one
+explicit source file with `bun neo build-models <path>`; avoid rebuilding the
+whole roster. Follow existing asset style and preserve original names/authors.
+Continue remaining phase-2 effects/lifecycle/orders, full persistence/replay,
+audio/help/content tools and acceptance, then phases 3–5. The goal is not done.

@@ -659,6 +659,53 @@ test("private work/progress and actual health drive presentation; fog revokes re
   }
 });
 
+test("visible public ranks create shared unpickable chevrons and revoke them on rank loss, fog and disposal", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes(),
+    movementDomain: "foot",
+  }));
+  const markers = () => f.scene.meshes.filter((mesh) => mesh.name === "projected rank chevron");
+  try {
+    await layer.accept(
+      {
+        ...snapshot(0, [
+          entity("e1", { health: 130, maxHealth: 130, veterancy: { rank: 3 } }),
+          entity("e2", { force: 1, health: 110, maxHealth: 110, veterancy: { rank: 1 } }),
+        ]),
+        mode: "controlled",
+      },
+      0,
+    );
+    layer.render(0);
+    expect(markers()).toHaveLength(4);
+    expect(markers().every((marker) => !marker.isPickable && marker instanceof InstancedMesh)).toBe(
+      true,
+    );
+    expect(new Set(markers().map((marker) => (marker as InstancedMesh).sourceMesh)).size).toBe(1);
+    await layer.accept(
+      {
+        ...snapshot(1, [
+          entity("e1", { health: 110, maxHealth: 110, veterancy: { rank: 1 } }),
+          entity("e2", { force: 1 }),
+        ]),
+        mode: "controlled",
+      },
+      50,
+    );
+    layer.render(50);
+    expect(markers()).toHaveLength(1);
+    await layer.accept({ ...snapshot(2, []), mode: "controlled" }, 100);
+    layer.render(100);
+    expect(markers()).toHaveLength(0);
+    layer.dispose();
+    expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
 test("late original model loads catch up an attack without replaying it, and death never resurrects an unloaded or removed actor", async () => {
   const f = fixture();
   let resolve: ((bytes: Uint8Array) => void) | undefined;
