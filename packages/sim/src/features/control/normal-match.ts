@@ -171,6 +171,10 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     speed: def.speed,
     turnRate: def.turnRate,
     ...(def.power !== undefined && { power: def.power }),
+    ...(def.role !== undefined && { role: def.role }),
+    ...(def.construction && { construction: def.construction }),
+    ...(def.requires.length && { requires: def.requires }),
+    ...(def.role === "builder" && { builds: def.builds }),
     ...(def.domain !== undefined && { domain: def.domain }),
     ...(def.radiusSubcells !== undefined && { radiusSubcells: def.radiusSubcells }),
     ...(def.domains && { domains: def.domains }),
@@ -367,13 +371,22 @@ export function copyNormalMatchSetup(setup: MatchSetup): MatchSetup {
 
 export function normalMatchIdentity(setup: MatchSetup): string | undefined {
   return setup.normal
-    ? JSON.stringify({
-        seed: setup.seed,
-        normal: setup.normal,
-        forces: setup.forces,
-        seats: setup.seats,
-        grants: setup.grants,
-      })
+    ? JSON.stringify(
+        {
+          seed: setup.seed,
+          normal: setup.normal,
+          forces: setup.forces,
+          seats: setup.seats,
+          grants: setup.grants,
+          definitions: setup.definitions,
+        },
+        (_key, value: unknown) =>
+          value !== null && typeof value === "object" && !Array.isArray(value)
+            ? Object.fromEntries(
+                Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+              )
+            : value,
+      )
     : undefined;
 }
 

@@ -108,3 +108,46 @@ test("worker replies reject malformed, duplicate, unsorted and contradictory pow
   ])
     expect(isWorkerReply(powerReply([power], [{ ...entity, power: malformed }]))).toBe(false);
 });
+
+test("worker replies validate construction markers and private clearance/refusal state", () => {
+  const request = {
+    handle: "e2",
+    definition: "core.structure:eastern-collective/industrial-reactor",
+    force: 1,
+    x: 10240,
+    y: 10240,
+    facing: 16384,
+    status: "clearing",
+  };
+  const reply = (constructionRequests: unknown) => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: { tick: 0, mode: "controlled", entities: [], constructionRequests },
+    },
+  });
+  expect(isWorkerReply(reply([request]))).toBe(true);
+  expect(
+    isWorkerReply(reply([{ ...request, status: "refused", reason: "clearance_timeout" }])),
+  ).toBe(true);
+  expect(isWorkerReply(reply([{ ...request, status: "refused", reason: "structure_cap" }]))).toBe(
+    true,
+  );
+  expect(isWorkerReply(powerReply([power], [{ ...entity, constructionSite: true }]))).toBe(true);
+  expect(isWorkerReply(powerReply([power], [{ ...entity, constructionSite: false }]))).toBe(false);
+  for (const malformed of [
+    null,
+    Array(1),
+    [{ ...request, status: "finished" }],
+    [{ ...request, status: "refused" }],
+    [{ ...request, reason: "clearance_timeout" }],
+    [{ ...request, status: "refused", reason: "unknown" }],
+    [{ ...request, force: -1 }],
+    [{ ...request, x: 1.5 }],
+    [{ ...request, facing: 65536 }],
+    [{ ...request, extra: true }],
+    [Object.assign(Object.create({ secret: 1 }), request)],
+  ])
+    expect(isWorkerReply(reply(malformed))).toBe(false);
+});

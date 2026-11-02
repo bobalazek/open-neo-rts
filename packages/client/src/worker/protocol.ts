@@ -9,6 +9,7 @@ import type {
   SeatSnapshot,
   SpawnPlacement,
 } from "@open-neo-rts/sim";
+import { CONSTRUCTION_REFUSALS } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
   /** Tick evaluated by the authoritative checker. */
@@ -327,6 +328,37 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       previous = Number(bank.force);
     }
   }
+  if (snapshot.constructionRequests !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.constructionRequests) ||
+      ![...snapshot.constructionRequests].every((request: unknown) => {
+        if (
+          !isRecord(request) ||
+          Object.getPrototypeOf(request) !== Object.prototype ||
+          typeof request.handle !== "string" ||
+          typeof request.definition !== "string" ||
+          !/^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(request.definition) ||
+          !Number.isInteger(request.force) ||
+          Number(request.force) < 0 ||
+          Number(request.force) > 0x7fffffff ||
+          !point(request) ||
+          !Number.isInteger(request.facing) ||
+          Number(request.facing) < 0 ||
+          Number(request.facing) > 0xffff
+        )
+          return false;
+        if (request.status === "clearing")
+          return Reflect.ownKeys(request).length === 7 && request.reason === undefined;
+        return (
+          request.status === "refused" &&
+          Reflect.ownKeys(request).length === 8 &&
+          CONSTRUCTION_REFUSALS.some((reason) => reason === request.reason)
+        );
+      })
+    )
+      return false;
+  }
   if (snapshot.power !== undefined) {
     if (
       snapshot.mode !== "controlled" ||
@@ -348,6 +380,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       typeof entity.definition !== "string"
     )
       return false;
+    if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
     if (
       ![entity.force, entity.x, entity.y, entity.facing, entity.health, entity.maxHealth].every(
         Number.isInteger,

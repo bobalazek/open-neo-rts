@@ -1,5 +1,6 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
+import { constructionFeature } from "./features/construction";
 import {
   checkNormalMatchSetup,
   copyNormalMatchSetup,
@@ -27,7 +28,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 12;
+export const SIM_VERSION = 13;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -67,6 +68,14 @@ export function createMatch(setup: MatchSetup): Kernel {
       ...(definition.cells && { cells: Object.freeze([...definition.cells]) }),
       ...(definition.nodeKinds && { nodeKinds: Object.freeze([...definition.nodeKinds]) }),
       ...(definition.domains && { domains: Object.freeze([...definition.domains]) }),
+      ...(definition.requires && { requires: Object.freeze([...definition.requires]) }),
+      ...(definition.builds && { builds: Object.freeze([...definition.builds]) }),
+      ...(definition.construction && {
+        construction: Object.freeze({
+          cost: Object.freeze({ ...definition.construction.cost }),
+          buildTicks: definition.construction.buildTicks,
+        }),
+      }),
     }),
   );
   register(
@@ -85,5 +94,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
+  if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
   return kernel;
 }

@@ -1,8 +1,8 @@
 # Neutral extractor: fit with the existing economy
 
-Status: placement/presentation contract approved 2026-11-02; economy recommendations remain proposals. The [decision](./decisions/2026-11-01-neutral-extractor.md) accepts the shared 2×2 fixed-anchor, Force-owned/team-colored extractor, existing builders and remote placement without base-radius extension. Approved provisional debug values are 800 health, four-cell vision and −10 power. Cost, construction time, rates and depletion are unset.
+Status: placement/presentation and [provisional economy](./decisions/2026-11-02-extractor-economy.md) approved 2026-11-02. The [placement decision](./decisions/2026-11-01-neutral-extractor.md) accepts the shared 2×2 fixed-anchor, Force-owned/team-colored extractor, existing builders and remote placement without base-radius extension. Approved values are 800 credits, 20-second construction, 800 health, four-cell vision and −10 power. Materials produce one per second; oil produces two credits per second. Brownout halves output; power-off stops it. Materials deplete, and oil is finite when the map supplies an amount, otherwise unlimited. Later recommendations remain subject to these accepted rules.
 
-The [normal construction proposal](./construction-policy-proposal.md) makes the related footprint, expansion, payment and clearance recommendations concrete for owner review. It does not activate those rules or settle extraction rates and balance.
+The [normal construction decision](./decisions/2026-11-02-normal-construction.md) settles radius, clearance, payment and refunds. Runtime extraction and balance playtests remain phase-2 work.
 
 ## Recommended role
 
@@ -24,8 +24,8 @@ The smallest fit is a separate producer, not a combined drop-off/refinery/power 
 ## Economy and progression constraints
 
 - **Bootstrap:** every current faction starts with 5,000 credits and no materials. Recommend a credits-only extractor construction cost and early builder availability. A material cost or material-gated technology could force the opening to depend on salvage before its first extractor; salvage exists, but does not guarantee a reliable opening. The existing Dragon Tank already costs 100 materials, so this matters before late-game technology.
-- **Power:** recommend a power consumer, using the existing power-off/brownout system. No new fuel stockpile, oil-to-electricity chain or generator-link network. How brownout scales extraction remains an owner decision; applying the existing production slowdown is the preferred starting rule.
-- **Income:** no harvester, second refinery or manual resource-switch button. The bound node chooses the output. Preserve finite material deposits; leave oil depletion explicitly unresolved rather than inventing an amount to satisfy the schema.
+- **Power:** use the approved −10 consumer with half output in brownout and none powered off. No new fuel stockpile, oil-to-electricity chain or generator-link network.
+- **Income:** no harvester, second refinery or manual resource-switch button. The bound node chooses the output. Preserve finite material deposits; oil uses its authored amount when present and is otherwise unlimited.
 - **Faction identity:** keep base yield shared initially. Existing power, logistics and salvage differences already distinguish the factions. Do not automatically apply factory-production or faction-resource bonuses to extraction.
 - **Oil versus ore:** recommend oil as a contested supplemental credit source, preserving a reason to invest in ore logistics. Compare oil-first and additional-oil expansions with complete ore/drop-off investments, including power, travel, node scarcity and raid exposure. Reject or revise a balance/map draft if oil routinely removes that reason, or lets the Phoenix Initiative avoid its intended reliance on fights and salvage. An intentionally oil-dominant opening would need an explicit owner decision; shared yields alone do not protect faction identity.
 - **Balance:** compare complete investments, including incremental power and builder travel. Existing drop-off prices include a harvester, so counting that vehicle again would distort the comparison. Choose cost, health, build time and yield together using a payback target; do not assign them separately as schema defaults. The current economy's credit-per-minute figures are targets, not proof of balance.
@@ -39,7 +39,7 @@ The approved footprint is 2×2, smaller than the existing 3×3 drop-offs. Materi
 
 Use one explicit node anchor and a fixed structure footprint. Snap the extractor to the chosen node; let model pivots remain presentation details. A node-binding requirement must be separate from ordinary terrain checks: the existing `node` cell check currently bypasses land/ramp/surface restrictions. Preserve bounds, the four-cell edge margin, height, allowed terrain, rotated footprint and unrelated occupancy. Only the exact bound node may be exempt from resource blocking. Another node or an existing extractor still blocks placement.
 
-**Approved expansion rule:** a builder may establish an extractor on a distant eligible node without an existing base nearby, but the extractor does not extend normal base-build radius. The general radius and clearance rules remain undecided. Phase 1b debug spawning already ignores radius; normal builder construction is phase 2.
+**Approved expansion rule:** a builder may establish an extractor on a distant eligible node without an existing base nearby, but the extractor does not extend normal base-build radius. General radius and clearance follow the accepted normal-construction decision. Phase 1b debug spawning ignores radius; normal builder construction is phase 2.
 
 That proposal concerns radius-based rules only. Territory rulesets replace radius with ownership; whether extraction may expand into unowned territory is a separate policy, not an implied exception.
 

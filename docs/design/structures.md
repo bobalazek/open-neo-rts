@@ -28,7 +28,7 @@ Structures are built **on site by builder units**: the Alliance's Combat Enginee
 1. Select builders and pick a structure from the build panel. Previewing spends nothing.
 2. Place it on the grid (see Placement). Once placement and clearance succeed, pay the full cost atomically and create the **construction site**, shown as a brick outline.
 3. The builders walk there and build. Progress shows on the site and in the selection panel; the model assembles brick by brick.
-4. **More builders build faster**, with diminishing returns (the second builder adds 75% speed, the third 50%, and so on). Builders can be pulled off and the site waits, half-built, until someone continues.
+4. **More builders build faster**, with diminishing returns: the first builder contributes 100%, the second adds 75%, the third 50%, and the fourth and every later builder each add 25% ([accepted rule](../project/decisions/2026-11-02-builder-assistance.md)). Builders can be pulled off and the site waits, half-built, until someone continues.
 5. A finished structure starts working immediately.
 
 - **Cancel** an unfinished construction site to refund 100% of its paid cost, once.

@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 12, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 13, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -58,6 +58,17 @@ are `6b57c6d06dca4510` initially and `36853bd25b4f04d0` at tick two; debug state
 goldens stay unchanged. Power regressions cover exact capacity, brownout,
 completion, producer loss, manual shutdown, ownership, permissions and copied
 private views. The worker journey verifies private HQ supply and a real toggle.
+
+SIM13 adds paid construction sites, pending clearance and builder assignments to
+the normal World schema, and hashes all validated definitions with canonical
+object-key order. Current normal-start goldens are `8f7c495caef2c4e5` initially
+and `db9d1bda0947bc67` at tick
+two. Focused checks cover rotated occupancy, the six/three-cell boundary, provider
+ownership/completion, remote node exceptions, full atomic payment, competing
+funds, once-only cancellation, destruction loss, clearance timeout and newer
+orders, structure-cap races and unit-disc overlap at footprint boundaries. The
+authored Industrial Reactor recipe is checked without changing its
+balance values. Debug state goldens remain unchanged.
 
 `setup` contains:
 

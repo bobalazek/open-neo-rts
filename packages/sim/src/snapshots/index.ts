@@ -118,7 +118,7 @@ export function parseScenario(value: unknown): Scenario {
     }
     const command = result.command;
     if (command.seat !== SYSTEM_SEAT) reference(seatIds, command.seat, `${path}.seat`, issues);
-    if (command.type === "debug.spawn") {
+    if (command.type === "debug.spawn" || command.type === "economy.build") {
       reference(forceIds, command.payload.force, `${path}.payload.force`, issues);
       reference(definitionIds, command.payload.definition, `${path}.payload.definition`, issues);
     }
