@@ -10,10 +10,10 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md). Phase 1b remains unfinished; its FPS/native-key work is deferred while functional gameplay takes priority. Pending gameplay decisions remain in [human-tasks.md](./human-tasks.md).
 
-- [ ] [2-04 · Add the Force bank and spending commands](./phases/2.md#2-04--add-the-force-bank-and-spending-commands). PR type: engine.
+- [ ] [2-05 · Power and brownout](./phases/2.md#2-05--power-and-brownout). PR type: engine.
 - [ ] [1B-42 · Enforce the accepted build-radius policy](./phases/1b.md#1b-42--enforce-the-accepted-build-radius-policy). PR type: engine; functional construction work under the accepted six/three-cell rules.
 
-Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02) and normal starting kits (2-03) are implemented. CLI validation compiles all 137 authored definitions. SIM10 starts the authored armies through the ordinary worker/replay path; bank and construction are next.
+Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03) and stock banks (2-04) are implemented. CLI validation compiles all 137 authored definitions. SIM11 starts the authored armies and private Force banks through the ordinary worker/replay path; power and construction are next.
 
 ## Deferred phase-1b acceptance
 

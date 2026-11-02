@@ -1,4 +1,4 @@
-import { WATER_PASSABLE } from "@open-neo-rts/content";
+import { RESOURCES, WATER_PASSABLE } from "@open-neo-rts/content";
 import type {
   DebugOverlayData,
   DebugOverlayOptions,
@@ -134,6 +134,39 @@ const point = (value: unknown) =>
   isRecord(value) &&
   [value.x, value.y].every((n) => Number.isInteger(n) && Number(n) >= 0 && Number(n) < 524288);
 
+const stocks: readonly string[] = RESOURCES.filter((resource) => resource.kind === "stock").map(
+  (resource) => resource.id,
+);
+function isBankSnapshot(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Reflect.ownKeys(value).length !== 2 ||
+    !Object.hasOwn(value, "force") ||
+    !Object.hasOwn(value, "resources") ||
+    !Number.isInteger(value.force) ||
+    Number(value.force) < 0 ||
+    Number(value.force) > 0x7fffffff ||
+    !isRecord(value.resources)
+  )
+    return false;
+  const resources = value.resources;
+  return (
+    (Object.getPrototypeOf(resources) === Object.prototype ||
+      Object.getPrototypeOf(resources) === null) &&
+    Reflect.ownKeys(resources).length === stocks.length &&
+    stocks.every((resource) => {
+      const amount: unknown = Object.getOwnPropertyDescriptor(resources, resource)?.value;
+      return (
+        typeof amount === "number" &&
+        Number.isInteger(amount) &&
+        amount >= 0 &&
+        amount <= 0x7fffffff
+      );
+    })
+  );
+}
+
 export function isOverlayData(value: unknown): value is DebugOverlayData {
   if (!isRecord(value) || !Number.isSafeInteger(value.tick) || Number(value.tick) < 0) return false;
   for (const [key, layers] of [
@@ -238,6 +271,20 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     (state.overlays.tick !== snapshot.tick || snapshot.mode !== "debug-no-fog")
   )
     return false;
+  if (snapshot.banks !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.banks) ||
+      snapshot.banks.length > 8 ||
+      ![...snapshot.banks].every(isBankSnapshot)
+    )
+      return false;
+    let previous = -1;
+    for (const bank of snapshot.banks) {
+      if (Number(bank.force) <= previous) return false;
+      previous = Number(bank.force);
+    }
+  }
   return snapshot.entities.every((entity: unknown) => {
     if (
       !isRecord(entity) ||

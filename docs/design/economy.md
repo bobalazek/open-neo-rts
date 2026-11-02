@@ -27,6 +27,16 @@ Power structures ──► power capacity ──► keeps everything running
 
 ## Spending
 
+Normal matches keep spendable stocks in one canonical ECS bank per Force:
+credits, materials, industrial capacity and salvage points. Controllers share
+that bank. Atomic spending checks the feature's grant at the current tick and
+preflights the full cost; insufficient funds or invalid/overflowing values change
+nothing. Power and quantum-processing capacity are not spendable bank stocks.
+Income/refund helpers are authoritative engine operations, not player commands
+that mint resources. The owning construction/production lifecycle must ensure a
+paid item is refunded only once. Seat snapshots copy only economically permitted
+banks; other Forces' balances remain private.
+
 - Costs are paid **when production or construction starts**, not reserved earlier. If two co-controllers spend in the same tick, the server order decides, and only what's affordable goes through ([multiplayer.md §8](multiplayer.md#8-adversarial-and-acceptance-tests)).
 - **Cancel** refunds 100% of what was paid. **Sell** refunds 50% of a structure's cost. Repair costs credits over time and pauses when broke.
 - **Low funds:** production pauses (not cancels) and resumes when credits arrive.
