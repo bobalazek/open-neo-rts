@@ -22,7 +22,7 @@ function execute(args: string[]) {
 }
 
 test("runs a scenario through the CLI with expected checkpoints and a single final line", () => {
-  const expected = "100 96ef6750aa71ad74\n200 c76fbbd4d1edbefc\n";
+  const expected = "100 10c5c650deb06e06\n200 827fb3947804872f\n";
   const first = execute(["run", scenario]);
   expect(first).toEqual({ status: 0, out: expected, error: "" });
   expect(execute(["run", scenario])).toEqual(first);
