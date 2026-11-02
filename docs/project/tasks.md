@@ -18,7 +18,7 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 - [ ] [2-31 · In-game pause/menu and settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine; existing pause/surrender/results are not a complete menu.
 - [ ] [2-32b · Statistics and replay actions on results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after canonical statistics and replay export/viewer; no fabricated counters.
 
-The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. Main uses SIM31; canonical summary statistics are in PR #201 under SIM32. All137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
+The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. Main uses SIM31; canonical summary statistics are in PR #201 under SIM32. All 137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
 
 ## Deferred phase-1b acceptance
 
