@@ -11,7 +11,7 @@ The owner [delegates missing gameplay choices](./decisions/2026-11-02-provisiona
 
 ## Delivered
 
-Main through PR #192 has SIM27. Phase 0/1a foundations, authored terrain/navigation, worker debug tools, selection/orders and first-pass original assets for all 54 units, 46 structures and 37 props are delivered. Team materials and authored clip validation exist; real combat event playback is separate.
+Main through PR #193 has SIM27. The real Home/Skirmish/loading/normal worker flow is now merged. Phase 0/1a foundations, authored terrain/navigation, worker debug tools, selection/orders and first-pass original assets for all 54 units, 46 structures and 37 props are delivered. Team materials and authored clip validation exist; real combat event playback is separate.
 
 Phase-2 delivery on main includes shared pack identity/compilation and normal kits (#170–172), stock/power (#173–174), paid sites/builders (#175–176), persistent extraction and actual recipe (#177–178), production and authored exits/slots (#179–180), ore stock/regrowth (#181), browser readiness correction (#183), core vision (#184), permitted observations/ghost memory (#185), fog presentation (#186), hauling (#187), actual Supply Truck five-credit/second mining (#188), targeting/private shot intents (#189), selling/paid adjacent repair (#190), and provisional Field Technician repair metadata (#191). Each merged feature passed independent review, repository checks and applicable CI. Combat damage is not supplied by targeting.
 
@@ -56,3 +56,12 @@ Independent review closed a terminal replay-loop hang; the shared replay/trace
 regression requests1000 ticks, ends at1, validates the trace and rejects later
 commands. Full integrated repository/content checks pass on projectile/basic-bot
 code. Statistics/APM, full save restoration and results UI are separate tasks.
+Task 2-29 now supplies actual match command panels: paid build/production,
+site/queue cancellation and refunds, repair/sell/power, selected unit orders,
+private work/cargo/stock and control groups. The preview remains advisory and
+never calls debug placement or a hidden occupancy oracle. Independent source
+review and full repository/content gates pass. Root's isolated three-case Chromium
+batch (normal start/cancel/retry plus HUD) passed in 15.1 seconds, including a real
+900-credit Reactor site/refund and 450-credit Field Technician queue/refund.
+Desktop and 390px screenshots are inspected. Publication/CI follows; minimap and
+full UI-scale qualification remain separate.

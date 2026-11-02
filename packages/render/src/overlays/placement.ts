@@ -3,8 +3,12 @@ import type { TerrainGrid } from "@open-neo-rts/content";
 import type { SpawnPlacement } from "@open-neo-rts/sim";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 
-/** Coordinates, rules and refusal colours come only from the copied worker result. */
-export function createPlacementOverlay(scene: Scene, terrain: TerrainGrid) {
+/** Default refusal colours follow copied worker results; an advisory footprint can supply a neutral colour. */
+export function createPlacementOverlay(
+  scene: Scene,
+  terrain: TerrainGrid,
+  footprintColor?: string,
+) {
   let mesh: Mesh | undefined;
   let disposed = false;
   function clear() {
@@ -19,7 +23,9 @@ export function createPlacementOverlay(scene: Scene, terrain: TerrainGrid) {
         colors: number[] = [],
         indices: number[] = [];
       for (const cell of result.cells) {
-        const color = Color3.FromHexString(cell.failure ? "#f05a67" : "#67d68c");
+        const color = Color3.FromHexString(
+          footprintColor ?? (cell.failure ? "#f05a67" : "#67d68c"),
+        );
         const start = positions.length / 3;
         for (const [dx, dy] of [
           [0.04, 0.04],
