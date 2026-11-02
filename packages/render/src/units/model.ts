@@ -96,9 +96,37 @@ export function createModelPlayback(
     }),
   );
   let active: AnimationGroup | undefined;
+  const deployment = groups.find((group) => group.name === "deploy");
+  if (deployment) {
+    // Brick exports hold every unused channel at rest; reserve only moving deployment channels.
+    const channels = deployment.targetedAnimations.filter(({ animation }) => {
+      const keys = animation.getKeys();
+      const first = JSON.stringify(keys[0]?.value);
+      return keys.some((key) => JSON.stringify(key.value) !== first);
+    });
+    for (const group of groups)
+      for (const channel of [...group.targetedAnimations]) {
+        const stance = channels.some(
+          ({ target, animation }) =>
+            target === channel.target &&
+            animation.targetProperty === channel.animation.targetProperty,
+        );
+        if (group === deployment ? !stance : stance)
+          group.removeTargetedAnimation(channel.animation);
+      }
+  }
   const duration = (group: AnimationGroup) =>
     ((group.to - group.from) * 1000) /
     (group.targetedAnimations[0]?.animation.framePerSecond ?? 60);
+  const sample = (group: AnimationGroup, elapsedMs: number) => {
+    group.speedRatio = 0;
+    group.pause();
+    const length = duration(group);
+    group.goToFrame(
+      group.from +
+        (group.to - group.from) * (length ? Math.max(0, Math.min(1, elapsedMs / length)) : 1),
+    );
+  };
   return {
     duration(name: string): number {
       const group = groups.find((candidate) => candidate.name === name);
@@ -107,16 +135,18 @@ export function createModelPlayback(
     /** Sample one authored clip from the presentation clock, including while the scene is paused. */
     seek(elapsedMs: number) {
       if (!active) return;
-      active.speedRatio = 0;
-      const length = duration(active);
-      active.goToFrame(
-        active.from +
-          (active.to - active.from) * (length ? Math.max(0, Math.min(1, elapsedMs / length)) : 1),
-      );
+      sample(active, elapsedMs);
+    },
+    /** A held stance on separate authored pivots, layered with idle/move/fire/death. */
+    deploy(elapsedMs: number) {
+      if (!deployment?.targetedAnimations.length) return;
+      if (!deployment.isStarted) deployment.start(false, 0);
+      sample(deployment, elapsedMs);
     },
     clips: groups.map((group) => group.name),
     setRate(rate: number) {
-      for (const group of groups) group.speedRatio = rate;
+      for (const group of groups)
+        group.speedRatio = group === deployment && active !== group ? 0 : rate;
     },
     play(name: string): void {
       const group = groups.find((g) => g.name === name);

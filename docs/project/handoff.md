@@ -282,10 +282,57 @@ with 10 expected non-Chromium HUD skips; its eight original-catalog journeys
 include both veterancy settings and terminal Bun replay verification. Hosted CI remains
 unable to start steps, and local Firefox's profile launch remains unavailable.
 
-The next ready task is mode transformation playback; original Dragon Tank and
-Metamorphic APC assets currently declare only idle/move/attack/recoil clips,
-so split necessary original art from renderer wiring. The CLI can build one
-explicit source file with `bun neo build-models <path>`; avoid rebuilding the
-whole roster. Follow existing asset style and preserve original names/authors.
-Continue remaining phase-2 effects/lifecycle/orders, full persistence/replay,
-audio/help/content tools and acceptance, then phases 3–5. The goal is not done.
+## Vehicle deployment delivery, SIM46
+
+Original Dragon Tank and Metamorphic APC three-second deployment assets merged
+in PR #225 (`111705ee32bfa1e7e37ca64bf8ceec485df58726`) and PR #226
+(`6979f3e1b1f8d109bc5004fb96b994228d85f033`). Separate fresh-context reviews
+verified source/runtime equality, all original packed geometry/anchors and old
+clips, real forward/reverse motion and red/blue previews. Only those definition
+folders were rebuilt. Existing owner authorship follows its accepted decision.
+
+The layered renderer in `/tmp/neo-deployment-playback`, branch
+`codex/deployment-playback`, consumes public deployment state, preserves base
+idle/fire, starts revealed models at their current endpoint and catches up late
+imports. Independent review found and reproduced a multiple-toggle-before-import
+phase loss, including paused canonical ticks 0/1/61. The correction retains
+inter-toggle spans until duration is known, reconstructs saturated phase and
+clears history. Both exact probes and forty independent delayed/preloaded
+comparisons across both original models passed, with ten real scene passes
+each; the targeted suite passes 24 cases/219 assertions. Sampled groups pause
+explicitly because zero speed alone can reset their frame in Babylon.
+
+The actual original-catalog worker/HUD deployment journey now renders both
+original GLBs from its copied snapshots, inspects intermediate/deployed/repacked
+poses and verifies its terminal input record in Bun. The enlarged test kit,
+stubbed HUD picking, manual presentation clock, close-up camera and flat visual
+ground are explicit fixtures; the worker retains Training Grounds and authored
+gameplay. Screenshots under `/tmp/neo-deployment-browser-results` were inspected.
+The assembled Chromium/WebKit batch passed 19 cases in 47.2 seconds with 11
+expected non-Chromium skips; after the async fix the two affected rendered mode
+and combat journeys passed again in 12.3 seconds. Repository/content checks pass.
+Gameplay identity stays `97ddd2a140545413`; cosmetic identity is
+`54a8905a7eee497b`. No SIM or balance change. Hosted CI's billing failure and
+local Firefox launch failure remain open; no FPS/human/full-phase claim.
+
+## Current bot qualification
+
+The frozen SIM46 seed-7 pilot completed naturally twice at tick 54591, hash
+`bb9af911482bf127`, winner 0. Source is clean committed
+`20623ea65ed64838b8afcd3ad970324cefb774d2` in
+`/tmp/neo-veterancy-credit-fix`; preserve it unchanged. Art/client-only deliveries
+do not make that source the same whole tree as current main. Evidence is
+`/tmp/neo-ai-qualification-sim46-seed7-20261103/summary.json`. This 45.5-minute
+mirror is neither the 10–25-minute human acceptance nor twenty qualified matches.
+
+A full twenty-seed double-trial batch runs on that same frozen source:
+exec session 12497, output `/tmp/neo-ai-qualification-sim46-60000-20261103`, log
+`/tmp/neo-ai-qualification-sim46-60000.log`, source companion
+`/tmp/neo-ai-qualification-sim46-60000-source.txt`. Observe that existing process;
+do not restart on an observation timeout or overwrite evidence. The historical
+SIM39 batch remains 13 natural outcomes/seven caps and is not current acceptance.
+
+Next: construction assembly/scaffolds (2-21b1), then actual production door
+events and canonical wreck/salvage plus presentation as separate tasks. Continue
+remaining phase-2 effects/orders, full persistence/replay, audio/help/content
+tools and acceptance, then phases 3–5. The overall goal remains unfinished.

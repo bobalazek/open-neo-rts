@@ -59,6 +59,22 @@ The terrain client draws only props with `blocks: nothing`. Blocking props and n
 
 The preview plays named animation groups and restores authored node transforms when returning to rest. Replacing or disposing an asset releases its meshes, materials and clips. Requests superseded by another file selection are disposed. This single-model inspection path does not implement the match's thin-instance renderer or mutate simulation state.
 
+Mode-capable assets author a non-looping `deploy` clip from the packed pose at zero to
+the deployed pose at its end. Use separate pivots/channels for this stance, leaving
+idle, movement, aim and recoil on their existing children. The original Dragon Tank
+and Metamorphic APC use three seconds. Playback reserves the clip's genuinely moving
+channels, discarding the brick exporter's unused rest holds, so base clips cannot
+overwrite deployment and deployment cannot reset firing. Sampled groups pause before
+seeking; zero speed alone can return them to frame zero during Babylon's animation pass.
+
+The entity layer reads only public `deploy.active`, samples forward on deployment and
+backward on packing, and holds the endpoint while idle/firing. Reversals retain the
+current phase. A newly revealed unit starts at its current endpoint; asynchronous loads
+catch up changes observed while loading. The existing simulation-millisecond presentation
+clock controls progression and pause, without multiplying speed twice. Retained death
+clips hold the last stance; fog removal/disposal still removes the instance. This adds
+no simulation state, private cooldown dependency, inferred death or wreck lifecycle.
+
 ## Phase-1b entity presentation
 
 `createEntityPresentation(scene, terrain, resolveModel)` consumes only copied `SeatSnapshot` values. The caller resolves a definition ID to `{ bytes, movementDomain }`, using the existing content domain or `null` for structures. This layer owns no pack catalog or simulation. Set Force colours with `setForceColor(force, "#RRGGBB")`; call `accept(snapshot, receivedAtMs)` on delivery and `render(nowMs)` each frame, using the same monotonic clock. Await or handle the promise from `accept` to report model-loading errors. Dispose the layer before its scene.
