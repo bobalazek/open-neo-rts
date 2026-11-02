@@ -5,6 +5,7 @@ import type { Feature, Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
+import { perimeterPoint } from "../entities/perimeter";
 
 export const PRODUCTION_QUEUE_LIMIT = 5;
 export const PRODUCTION_STATUSES = [
@@ -61,33 +62,17 @@ function exitPoint(
     building = definitions[world.get(producer, Template, "definition")] as Definition;
   const unit = definitions[unitIndex] as Definition,
     radius = unit.radiusSubcells as number;
-  const [w = 0, d = 0] = building.footprint ?? [];
-  const r = ((world.get(producer, Transform, "facing") >>> 14) + 3) & 3;
-  const ox = Math.floor(world.get(producer, Transform, "x") / 1024),
-    oy = Math.floor(world.get(producer, Transform, "y") / 1024);
-  const offset = Math.max(1, Math.floor((radius + 1535) / 1024));
-  const sides = ["north", "east", "south", "west"];
-  const directions = [
-    [0, -1],
-    [1, 0],
-    [0, 1],
-    [-1, 0],
-  ] as const;
   for (const exit of building.exits ?? []) {
-    const [x, y] = exit.cell;
-    const [cx, cy] =
-      r === 0
-        ? [x, y]
-        : r === 1
-          ? [d - 1 - y, x]
-          : r === 2
-            ? [w - 1 - x, d - 1 - y]
-            : [y, w - 1 - x];
-    const [dx, dy] = directions[(sides.indexOf(exit.side) + r) & 3] as readonly [number, number];
-    const point = {
-      x: (ox + (cx as number) + dx * offset) * 1024 + 512,
-      y: (oy + (cy as number) + dy * offset) * 1024 + 512,
-    };
+    const point = perimeterPoint(
+      building,
+      {
+        x: world.get(producer, Transform, "x"),
+        y: world.get(producer, Transform, "y"),
+        facing: world.get(producer, Transform, "facing"),
+      },
+      exit,
+      radius,
+    );
     if (!kernel.movement?.canStandDefinition(unitIndex, point)) continue;
     const blocked = world.query(Template, Transform, Health).some((id) => {
       const other = definitions[world.get(id, Template, "definition")];
@@ -97,7 +82,7 @@ function exitPoint(
       const size = radius + (other.radiusSubcells ?? 0);
       return (x === 0 && y === 0) || x * x + y * y < size * size;
     });
-    if (!blocked) return { ...point, facing: ((sides.indexOf(exit.side) + r + 3) & 3) * 0x4000 };
+    if (!blocked) return point;
   }
 }
 

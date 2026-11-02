@@ -9,7 +9,12 @@ import type {
   SeatSnapshot,
   SpawnPlacement,
 } from "@open-neo-rts/sim";
-import { CONSTRUCTION_REFUSALS, EXTRACTION_STATUSES, PRODUCTION_STATUSES } from "@open-neo-rts/sim";
+import {
+  CONSTRUCTION_REFUSALS,
+  EXTRACTION_STATUSES,
+  HARVEST_STATUSES,
+  PRODUCTION_STATUSES,
+} from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
   /** Tick evaluated by the authoritative checker. */
@@ -188,6 +193,35 @@ function isExtractionSnapshot(value: unknown): boolean {
     remaining >= 0 &&
     remaining <= 0x7fffffff &&
     (status !== "depleted" || remaining === 0)
+  );
+}
+
+function isHarvestSnapshot(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Reflect.ownKeys(value).length !== 4
+  )
+    return false;
+  const cargo: unknown = Object.getOwnPropertyDescriptor(value, "cargo")?.value;
+  const capacity: unknown = Object.getOwnPropertyDescriptor(value, "capacity")?.value;
+  const status: unknown = Object.getOwnPropertyDescriptor(value, "status")?.value;
+  const unloadTicks: unknown = Object.getOwnPropertyDescriptor(value, "unloadTicks")?.value;
+  return (
+    typeof cargo === "number" &&
+    Number.isInteger(cargo) &&
+    cargo >= 0 &&
+    typeof capacity === "number" &&
+    Number.isInteger(capacity) &&
+    capacity >= 1 &&
+    capacity <= 0x7fffffff &&
+    cargo <= capacity &&
+    HARVEST_STATUSES.some((valid) => valid === status) &&
+    typeof unloadTicks === "number" &&
+    Number.isInteger(unloadTicks) &&
+    unloadTicks >= 0 &&
+    unloadTicks <= 40 &&
+    (status !== "bank_full" || (unloadTicks === 40 && cargo > 0))
   );
 }
 
@@ -519,6 +553,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "order",
             "power",
             "extraction",
+            "harvesting",
             "constructionSite",
             "construction",
             "constructionOrder",
@@ -533,6 +568,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (
+      entity.harvesting !== undefined &&
+      (snapshot.mode !== "controlled" || !isHarvestSnapshot(entity.harvesting))
+    )
+      return false;
     if (entity.production !== undefined) {
       const production = entity.production;
       if (

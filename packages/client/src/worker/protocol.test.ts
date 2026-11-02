@@ -63,6 +63,31 @@ const entity = {
   power: { amount: -25, enabled: true, powered: false },
 };
 
+test("worker replies strictly validate private harvester cargo, status and unload work", () => {
+  const harvesting = { cargo: 10, capacity: 500, status: "mining", unloadTicks: 0 };
+  const packet = (value: unknown, mode = "controlled") =>
+    powerReply(undefined, [{ ...entity, power: undefined, harvesting: value }], mode);
+  expect(isWorkerReply(packet(harvesting))).toBe(true);
+  expect(isWorkerReply(packet({ ...harvesting, status: "bank_full", unloadTicks: 40 }))).toBe(true);
+  for (const bad of [
+    null,
+    {},
+    { ...harvesting, cargo: -1 },
+    { ...harvesting, cargo: 501 },
+    { ...harvesting, cargo: 0.5 },
+    { ...harvesting, capacity: 0 },
+    { ...harvesting, capacity: 0x80000000 },
+    { ...harvesting, unloadTicks: 41 },
+    { ...harvesting, unloadTicks: 0.5 },
+    { ...harvesting, status: "unknown" },
+    { ...harvesting, status: "bank_full" },
+    { ...harvesting, extra: 1 },
+    Object.assign(Object.create(harvesting), harvesting),
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet(harvesting, "debug-no-fog"))).toBe(false);
+});
+
 test("worker replies validate extraction status and bounded finite or unlimited remaining deposits", () => {
   const extraction = { kind: "materials", remaining: 4, status: "active" };
   const packet = (value: unknown, mode = "controlled") =>

@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 21, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 22, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -182,3 +182,14 @@ On a browser scenario golden mismatch, Playwright attaches two browser traces an
 - **Browser jobs:** Chromium, Firefox and WebKit run in separate matrix jobs with the same tests and unchanged 15-minute job limits. Linux Firefox uses headed Xvfb/Mesa for WebGL; the other engines remain headless. Keep smoke journeys bounded and use the existing initialization readiness budget for cold map loads, inside the normal test deadline.
 - **Fixtures:** `@open-neo-rts/sim/testing` exports fresh 8×8 `flatMap()` and `terrainMap()` inputs (the latter includes a plateau, ramp, water, surfaces and biomes), `easternCollectiveTier1Definitions()` (the seven original tier-1 unit JSON files converted to integers) and `createCommandLog()`. Each log has `move(tick, seat, entities, x, y)`, `stop(tick, seat, entities)`, `spawn(tick, seat, definition, force, x, y, facing = 0)` and `spawnArmy(tick, seat, count, definition, force, x, y, facing = 0)`. They return canonical commands, assigning sequences across seats and types from 0 per tick within that log; use one builder for each command log. Army spawning returns commands for N units at the same position, without changing the world. `scriptedController({ [issueTick]: commands })` returns a controller for `registerController`: it emits at the issue tick, and the kernel executes those commands on the following tick.
 - No snapshot testing of rendered images until the art direction settles.
+
+
+SIM22 adds canonical harvester cargo, fractional mining, dock queues and unloading.
+Normal-start goldens are `4d1024873c7bb600` initially and `1c59faf5b7f7dde9`
+at tick two. Focused checks cover finite stock, actual radius-aware rotated docks,
+FIFO order, interrupted work, stop/resume, blocked or destroyed docks, bank overflow,
+cargo loss on death and economic privacy. Controller observations copy cargo state;
+strict worker validation accepts only the public cargo summary. The fourth normal
+worker journey builds a real Supply Depot and unloads five credits of partial cargo
+using the accepted fixture rate and original 500-credit capacity. Actual Supply Truck
+rate activation remains a separate balance change. Debug scenario hashes are unchanged.

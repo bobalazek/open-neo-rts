@@ -147,7 +147,12 @@ port.onmessage = ({ data }) => {
         if (isRecord(payload)) {
           payload = { ...payload };
           const fields = payload as Record<string, unknown>;
-          if (type === "unit.move" || type === "unit.attackMove" || type === "unit.stop") {
+          if (
+            type === "unit.move" ||
+            type === "unit.attackMove" ||
+            type === "unit.stop" ||
+            type === "unit.harvest"
+          ) {
             if (Array.isArray(fields.entities))
               fields.entities = fields.entities.map(
                 (handle) => projection.resolve(handle, "unit.orders") ?? -1,

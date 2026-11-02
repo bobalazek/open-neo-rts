@@ -11,6 +11,9 @@ import {
 import {
   type BankSnapshot,
   type ExtractionSnapshot,
+  Harvester,
+  type HarvestSnapshot,
+  harvestSnapshot,
   type PowerSnapshot,
   StructurePower,
 } from "../features/economy";
@@ -36,6 +39,7 @@ export interface PresentedEntity {
   order: { type: "move" | "attackMove"; x: number; y: number } | null;
   power?: { amount: number; enabled: boolean; powered: boolean };
   extraction?: ExtractionSnapshot;
+  harvesting?: HarvestSnapshot;
   constructionSite?: true;
   construction?: {
     completedTicks: number;
@@ -141,6 +145,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         if (!definition) throw new Error("Entity has no definition");
         const inspectBuilder =
           !!setup.normal && definition.role === "builder" && permits(force, "economy.build");
+        const inspectHarvester =
+          !!setup.normal && world.has(id, Harvester) && inspectEconomy(force);
         const inspectProduction =
           !!setup.normal &&
           !!(definition.produces?.length || definition.spawnsWith?.length) &&
@@ -150,7 +156,12 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           mode !== "debug-no-fog" &&
           !(kernel.visibility
             ? kernel.visibility.canSeeEntity(seat, id)
-            : controlled || inspectPower || inspectSite || inspectBuilder || inspectProduction)
+            : controlled ||
+              inspectPower ||
+              inspectSite ||
+              inspectBuilder ||
+              inspectHarvester ||
+              inspectProduction)
         )
           continue;
         const handle = handleOf(id);
@@ -167,6 +178,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           facing: world.get(id, Transform, "facing"),
           health: world.get(id, Health, "current"),
           maxHealth: definition.health,
+          ...(inspectHarvester && { harvesting: harvestSnapshot(kernel, id, definition) }),
           ...(site && { constructionSite: true }),
           ...(inspectProduction && {
             production: {

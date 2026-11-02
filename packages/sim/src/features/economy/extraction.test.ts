@@ -26,6 +26,7 @@ import { MoveIntent, MovementFailure } from "../movement";
 import { ProductionGifts, ProductionItem, ProductionRally } from "../production";
 import { ForceBank } from "./bank";
 import { Extraction, ResourceNode } from "./extraction";
+import { Harvester } from "./harvesting";
 import { OreCell } from "./ore";
 import { StructurePower } from "./power";
 
@@ -291,6 +292,7 @@ test("canonical snapshots include fractional progress and deposit state, with id
     ForceBank,
     ResourceNode,
     Extraction,
+    Harvester,
     ProductionItem,
     ProductionGifts,
     ProductionRally,

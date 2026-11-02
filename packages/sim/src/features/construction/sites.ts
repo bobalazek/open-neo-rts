@@ -3,6 +3,7 @@ import { defineComponent } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import type { StockResourceId } from "../economy";
+import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import { checkSpawnPlacement, type SpawnCell } from "../entities/placement";
 import { MoveIntent, MovementFailure } from "../movement";
@@ -393,6 +394,7 @@ export function constructionFeature(
           minY = Math.min(...ys),
           maxY = Math.max(...ys);
         for (const id of ids) {
+          suspendHarvesting(kernel, id);
           if (
             world.has(id, BuilderConstruction) &&
             world.get(id, BuilderConstruction, "target") !== request

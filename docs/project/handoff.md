@@ -42,3 +42,10 @@ Use one task/branch/PR and merge finished reviewed work promptly after CI. Run f
 The 60 fps gate remains unmet. Earlier qualified baseline was 50.373 fps; an isolated matrix-cache candidate measured 41.499 fps, and a later baseline 47.601 fps. These were not a completed matched pair and establish no causal improvement/regression. The candidate is not on main. Its source and evidence remain on `codex/model-world-cache` and local capture artifacts. Native browser/OS key acceptance also remains open.
 
 No bot skirmish, completed phase-2 exit or phases 3–5 delivery is claimed. Follow the roadmap after the first local match works.
+
+
+Task 2-07a implements SIM22 harvester logistics against merged SIM21 observations.
+Canonical cargo and queue state, current-grant privacy and copied bot cargo are
+integrated; five-credit/second actual Supply Truck activation is a separate balance
+change. Full repository/content checks pass; focused worker proof and publication
+are recorded on the task PR. Keep missing-rate definitions idle until activation.
