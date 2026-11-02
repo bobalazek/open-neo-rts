@@ -183,6 +183,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
         );
         if (!armed.length) return "bad_payload";
         for (const actor of armed) {
+          kernel.transport?.cancel(actor);
           suspendHarvesting(kernel, actor);
           suspendRepair(kernel, actor);
           clearAttackOrder(kernel, actor);

@@ -168,6 +168,7 @@ export function structureRepairFeature(setup: Pick<MatchSetup, "definitions" | "
         )
           return "bad_payload";
         for (const id of [...builders].sort((a, b) => a - b)) {
+          kernel.transport?.cancel(id);
           clearAttackOrder(kernel, id);
           suspendHarvesting(kernel, id);
           suspendRepair(kernel, id);

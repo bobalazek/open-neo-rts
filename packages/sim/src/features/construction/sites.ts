@@ -65,6 +65,7 @@ export function clearConstructionOrder(kernel: Kernel, builder: number): void {
 }
 
 export function assignBuilderConstruction(kernel: Kernel, builder: number, target: number): void {
+  kernel.transport?.cancel(builder);
   clearAttackOrder(kernel, builder);
   suspendRepair(kernel, builder);
   suspendHarvesting(kernel, builder);
@@ -89,6 +90,7 @@ export function validConstructionBuilders(
         !world.has(id, Template) ||
         !world.has(id, OwnerForce) ||
         !world.has(id, Health) ||
+        !world.has(id, Transform) ||
         world.get(id, Health, "current") === 0
       )
         return false;

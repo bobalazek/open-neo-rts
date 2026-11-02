@@ -200,6 +200,7 @@ export class TerrainMovement {
   }
 
   order(id: number, target: Point): void {
+    if (!this.kernel.world.isAlive(id) || !this.kernel.world.has(id, Transform)) return;
     if (this.kernel.unitModes?.active(id)) return;
     this.plan(id, target, "order", 0);
   }
@@ -232,6 +233,16 @@ export class TerrainMovement {
       return false;
     if (this.definitions[definition]?.domain === "air") return false;
     return !!this.profile(definition).grid.cost[this.cell(point)];
+  }
+
+  /** Boarding and unloading cannot cross a cliff or static blocker between nearby legal cells. */
+  canTraverseDefinition(definition: number, from: Point, to: Point): boolean {
+    return (
+      this.canStandDefinition(definition, {
+        x: Math.floor(to.x / 1024) * 1024 + 512,
+        y: Math.floor(to.y / 1024) * 1024 + 512,
+      }) && clearSegment(this.profile(definition).grid, from, to)
+    );
   }
 
   private plan(id: number, target: Point, kind: "order" | "repath", repaths: number): void {
