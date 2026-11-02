@@ -21,8 +21,8 @@ export function installAffineShadowFit(light: DirectionalLight): () => void {
       Matrix.OrthoLHToRef(
         light.shadowFrustumSize,
         light.shadowFrustumSize,
-        light.shadowMinZ ?? (camera?.minZ || 0),
-        light.shadowMaxZ ?? (camera?.maxZ || 10000),
+        light.shadowMinZ ?? camera?.minZ ?? 0,
+        light.shadowMaxZ ?? camera?.maxZ ?? 10000,
         result,
         engine.isNDCHalfZRange,
       );

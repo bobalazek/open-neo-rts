@@ -156,6 +156,11 @@ test("an unprimed affine fit retains its own cache across empty receiver queries
     reference.setShadowProjectionMatrix(referenceReceiver, view, []);
     for (let i = 0; i < 16; i++)
       expect(receiver.m[i]).toBeCloseTo(referenceReceiver.m[i] as number, 6);
+    light.shadowFrustumSize = reference.shadowFrustumSize = 90;
+    light.setShadowProjectionMatrix(receiver, view, []);
+    reference.setShadowProjectionMatrix(referenceReceiver, view, []);
+    for (let i = 0; i < 16; i++)
+      expect(receiver.m[i]).toBeCloseTo(referenceReceiver.m[i] as number, 6);
   } finally {
     restore();
     scene.dispose();
