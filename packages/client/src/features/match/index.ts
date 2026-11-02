@@ -1,4 +1,8 @@
-import { createEntityPresentation, createFogPresentation } from "@open-neo-rts/render";
+import {
+  createCombatEffects,
+  createEntityPresentation,
+  createFogPresentation,
+} from "@open-neo-rts/render";
 import type { SeatSnapshot } from "@open-neo-rts/sim";
 
 type Presentation = ReturnType<typeof createEntityPresentation>;
@@ -14,6 +18,7 @@ export function createMatchPresentation(
   const fog = createFogPresentation(scene, terrain.width, terrain.height);
   const colors = new Map<number, string>();
   let live: Presentation, ghosts: Presentation;
+  let combat: ReturnType<typeof createCombatEffects>;
   let selected: string[] = [];
   let allowed = new Set<string>();
   let group: string | undefined;
@@ -29,6 +34,8 @@ export function createMatchPresentation(
     if (changed) onSelectionChanged([...selected]);
   };
   function owners() {
+    combat = createCombatEffects(scene, terrain);
+    combat.setPlaybackRate(rate);
     live = createEntityPresentation(scene, terrain, resolveModel);
     ghosts = createEntityPresentation(scene, terrain, resolveModel, { ghost: true });
     live.setPlaybackRate(rate);
@@ -38,6 +45,7 @@ export function createMatchPresentation(
     if (disposed) throw new Error("Match presentation is disposed");
     live.dispose();
     ghosts.dispose();
+    combat.dispose();
     fog.reset();
     allowed.clear();
     owners();
@@ -76,9 +84,11 @@ export function createMatchPresentation(
                 order: null,
               })),
       };
+      combat.accept(snapshot, nowMs);
       await Promise.all([live.accept(snapshot, nowMs), ghosts.accept(remembered, nowMs)]);
     },
     render(nowMs: number) {
+      combat.render(nowMs);
       live.render(nowMs);
       ghosts.render(nowMs);
     },
@@ -93,6 +103,7 @@ export function createMatchPresentation(
     },
     setPlaybackRate(value: number) {
       live.setPlaybackRate(value);
+      combat.setPlaybackRate(value);
       rate = value;
     },
     reset,
@@ -103,6 +114,7 @@ export function createMatchPresentation(
       select([]);
       live.dispose();
       ghosts.dispose();
+      combat.dispose();
       fog.dispose();
     },
   };

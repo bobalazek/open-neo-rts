@@ -13,11 +13,13 @@ import {
 } from "@babylonjs/core";
 import type { DOMAINS, TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
+import { eventVisible } from "../effects";
 import { registerModelShadows } from "../scene/shadows";
 import { createFoundation } from "../structures";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 import { createModelLod } from "./lod";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
+import { createStatusBars } from "./status";
 
 type Pose = Pick<PresentedEntity, "x" | "y" | "facing">;
 type Instance = ReturnType<AssetContainer["instantiateModelsToScene"]>;
@@ -27,6 +29,14 @@ interface Entity {
   previous: Pose;
   current: Pose;
   moving: boolean;
+  health: number;
+  maxHealth: number;
+  construction?: number;
+  working?: boolean;
+  workElapsed?: number;
+  attackElapsed?: number;
+  deathElapsed?: number;
+  height?: number;
   root?: TransformNode;
   instance?: Instance;
   playback?: ReturnType<typeof createModelPlayback>;
@@ -65,6 +75,9 @@ export function createEntityPresentation(
   options: { ghost?: boolean } = {},
 ) {
   const entities = new Map<string, Entity>();
+  const dying = new Map<string, Entity>();
+  const status = createStatusBars(scene);
+  let latest: SeatSnapshot | undefined;
   const templates = new Map<string, Template>();
   const colors = new Map<number, string>();
   const meshHandles = new Map<AbstractMesh, string>();
@@ -90,6 +103,19 @@ export function createEntityPresentation(
     entity.instance?.dispose();
     for (const morph of new Set(morphs)) morph.dispose();
     entity.root?.dispose();
+  }
+
+  function pruneTemplates() {
+    const used = new Set(
+      [...entities.values(), ...dying.values()].map((entity) =>
+        keyFor(entity.definition, entity.force),
+      ),
+    );
+    for (const [key, template] of templates)
+      if (!used.has(key)) {
+        template.model?.dispose();
+        templates.delete(key);
+      }
   }
 
   function templateFor(definition: string, force: number): Template {
@@ -157,7 +183,26 @@ export function createEntityPresentation(
 
   function render(nowMs: number) {
     if (disposed) return;
+    const delta = playbackRate ? Math.max(0, nowMs - frameAt) : 0;
     frameAt = nowMs;
+    for (const entity of entities.values()) {
+      if (entity.attackElapsed !== undefined) entity.attackElapsed += delta;
+      if (entity.working) entity.workElapsed = (entity.workElapsed ?? 0) + delta;
+    }
+    for (const [handle, entity] of dying) {
+      entity.deathElapsed = (entity.deathElapsed ?? 0) + delta;
+      if (
+        !entity.playback ||
+        entity.deathElapsed >= Math.min(3000, entity.playback.duration("death")) ||
+        (latest && !eventVisible(latest, entity.current.x, entity.current.y))
+      ) {
+        remove(entity);
+        dying.delete(handle);
+        continue;
+      }
+      entity.playback.seek(entity.deathElapsed);
+    }
+    pruneTemplates();
     const alpha =
       playbackRate === 0 ? 1 : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
     for (const [handle, entity] of entities) {
@@ -227,18 +272,57 @@ export function createEntityPresentation(
       }
       // Sim 0 faces +x; authored glTF fronts face +Z, with +y on the map becoming +z.
       entity.root.rotation.y = Math.PI / 2 - ((a.facing + turn * alpha) * Math.PI * 2) / 65536;
+      let action = entity.playback.clips.includes("fire_recoil") ? "fire_recoil" : "attack";
+      const attacking =
+        entity.attackElapsed !== undefined &&
+        entity.playback.clips.includes(action) &&
+        entity.attackElapsed < entity.playback.duration(action);
+      if (!attacking) entity.attackElapsed = undefined;
+      if (!attacking) action = "";
+      const work = entity.working
+        ? entity.playback.clips.includes("active")
+          ? "active"
+          : "attack"
+        : "";
       const clip = options.ghost
         ? ""
-        : entity.moving && entity.playback.clips.includes("move")
-          ? "move"
-          : entity.playback.clips.includes("idle")
-            ? "idle"
-            : "";
+        : attacking
+          ? action
+          : work && entity.playback.clips.includes(work)
+            ? work
+            : entity.moving && entity.playback.clips.includes("move")
+              ? "move"
+              : entity.playback.clips.includes("idle")
+                ? "idle"
+                : "";
       if (clip !== entity.clip) {
         entity.playback.play(clip);
         entity.clip = clip;
       }
       entity.playback.setRate(options.ghost ? 0 : playbackRate);
+      if (attacking) entity.playback.seek(entity.attackElapsed ?? 0);
+      else if (work && clip === work) {
+        // The authored builder attack is also its tool motion; loop only during private working state.
+        const length = entity.playback.duration(work);
+        entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
+      }
+      const bar =
+        !options.ghost &&
+        (selected.has(handle) ||
+          entity.health < entity.maxHealth ||
+          entity.construction !== undefined);
+      if (bar) {
+        const anchor = entity.root.position.clone();
+        anchor.y += (entity.height ?? 1.6) + 0.35;
+        status.update(handle, anchor, entity.maxHealth > 0 ? entity.health / entity.maxHealth : 0);
+        if (entity.construction !== undefined) {
+          anchor.y += 0.25;
+          status.update(`construction:${handle}`, anchor, entity.construction, true);
+        } else status.remove(`construction:${handle}`);
+      } else {
+        status.remove(handle);
+        status.remove(`construction:${handle}`);
+      }
     }
   }
 
@@ -246,23 +330,65 @@ export function createEntityPresentation(
     async accept(snapshot: SeatSnapshot, nowMs: number): Promise<void> {
       if (disposed) throw new Error("Entity presentation is disposed");
       if (tick !== undefined && snapshot.tick <= tick) return accepted;
+      render(nowMs);
+      latest = {
+        tick: snapshot.tick,
+        mode: snapshot.mode,
+        entities: [],
+        fog: snapshot.fog?.map((grid) => ({ ...grid, cells: grid.cells.slice() })),
+      };
       duration = tick === undefined ? 50 : (snapshot.tick - tick) * 50;
       tick = snapshot.tick;
       receivedAt = nowMs;
       frameAt = nowMs;
+      const deaths = new Map(
+        (snapshot.combatEvents ?? [])
+          .filter((event) => event.type === "death" && event.entity)
+          .map((event) => [event.entity, event]),
+      );
       const visible = new Set(snapshot.entities.map((entity) => entity.handle));
       for (const [handle, entity] of entities) {
         if (!visible.has(handle)) {
-          remove(entity);
+          status.remove(handle);
+          status.remove(`construction:${handle}`);
+          if (
+            !options.ghost &&
+            deaths.has(handle) &&
+            entity.root &&
+            entity.playback?.clips.includes("death") &&
+            dying.size < 128
+          ) {
+            const event = deaths.get(handle);
+            if (event) {
+              entity.current = { ...entity.current, x: event.x, y: event.y };
+              entity.root.position.set(
+                (event.x * CELL_SIZE) / 1024,
+                terrainHeight(terrain, event.x / 1024, event.y / 1024),
+                (event.y * CELL_SIZE) / 1024,
+              );
+            }
+            entity.deathElapsed = 0;
+            entity.attackElapsed = undefined;
+            entity.playback.play("death");
+            entity.playback.seek(0);
+            for (const mesh of entity.root.getChildMeshes()) {
+              meshHandles.delete(mesh);
+              mesh.isPickable = false;
+            }
+            entity.ring?.dispose();
+            entity.ring = undefined;
+            dying.set(handle, entity);
+          } else remove(entity);
           entities.delete(handle);
         }
       }
       const pending: Promise<void>[] = [];
-      const used = new Set<string>();
       for (const projected of snapshot.entities) {
         const { handle, definition, force } = projected;
         let entity = entities.get(handle);
         if (entity && (entity.definition !== definition || entity.force !== force)) {
+          status.remove(handle);
+          status.remove(`construction:${handle}`);
           remove(entity);
           entities.delete(handle);
           entity = undefined;
@@ -274,6 +400,8 @@ export function createEntityPresentation(
             previous: poseOf(projected),
             current: poseOf(projected),
             moving: false,
+            health: projected.health,
+            maxHealth: projected.maxHealth,
           };
           entities.set(handle, entity);
         } else {
@@ -282,7 +410,26 @@ export function createEntityPresentation(
           entity.moving =
             entity.previous.x !== entity.current.x || entity.previous.y !== entity.current.y;
         }
-        used.add(keyFor(definition, force));
+        entity.health = projected.health;
+        entity.maxHealth = projected.maxHealth;
+        entity.construction = projected.construction
+          ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
+            Math.max(1, projected.construction.totalTicks * 4)
+          : undefined;
+        const working =
+          projected.constructionOrder?.state === "working" ||
+          projected.repairOrder?.state === "working";
+        if (working !== entity.working) entity.workElapsed = 0;
+        entity.working = working;
+        if (
+          !options.ghost &&
+          (snapshot.combatEvents ?? []).some(
+            (event) => event.type === "launch" && event.entity === handle,
+          )
+        ) {
+          entity.attackElapsed = 0;
+          entity.clip = undefined;
+        }
         if (!entity.root && !entity.loading) {
           const current = entity;
           const template = templateFor(definition, force);
@@ -305,6 +452,7 @@ export function createEntityPresentation(
                 if (options.ghost) mesh.isPickable = false;
                 else meshHandles.set(mesh, handle);
               }
+              current.height = Math.max(0.5, current.root.getHierarchyBoundingVectors().max.y);
               current.lod = createModelLod(nodes, meshes);
               if (!options.ghost) registerModelShadows(current.root);
               current.playback = createModelPlayback(
@@ -327,12 +475,7 @@ export function createEntityPresentation(
         }
         if (entity.loading) pending.push(entity.loading);
       }
-      for (const [key, template] of templates) {
-        if (!used.has(key)) {
-          template.model?.dispose();
-          templates.delete(key);
-        }
-      }
+      pruneTemplates();
       render(nowMs);
       accepted = Promise.all(pending).then(() => undefined);
       await accepted;
@@ -417,6 +560,10 @@ export function createEntityPresentation(
       if (disposed) return;
       disposed = true;
       for (const entity of entities.values()) remove(entity);
+      for (const entity of dying.values()) remove(entity);
+      dying.clear();
+      status.dispose();
+      latest = undefined;
       entities.clear();
       meshHandles.clear();
       ringModel?.dispose();
