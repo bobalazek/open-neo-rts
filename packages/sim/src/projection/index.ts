@@ -56,7 +56,13 @@ export interface PresentedEntity {
   health: number;
   maxHealth: number;
   order: { type: "move" | "attackMove"; x: number; y: number } | null;
-  power?: { amount: number; enabled: boolean; powered: boolean };
+  power?: {
+    amount: number;
+    enabled: boolean;
+    powered: boolean;
+    baseAmount?: number;
+    sources?: readonly string[];
+  };
   extraction?: ExtractionSnapshot;
   harvesting?: HarvestSnapshot;
   constructionSite?: true;
@@ -227,6 +233,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             ? world.get(id, AttackOrder, "target")
             : 0;
         const deployment = kernel.unitModes?.snapshot(id);
+        const powerDetails = inspectPower ? kernel.power?.details(id) : undefined;
         entities.push({
           ...(controlled &&
             kernel.transport?.snapshot(id) && { cargo: kernel.transport.snapshot(id) }),
@@ -340,7 +347,11 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(kernel.power &&
             inspectPower && {
               power: {
-                amount: world.get(id, StructurePower, "amount"),
+                amount: powerDetails?.amount ?? world.get(id, StructurePower, "amount"),
+                ...(powerDetails?.sources.length && {
+                  baseAmount: powerDetails.baseAmount,
+                  sources: powerDetails.sources.map(handleOf),
+                }),
                 enabled: world.get(id, StructurePower, "enabled") === 1,
                 powered: kernel.power.powered(id),
               },

@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 40,
+  "simVersion": 41,
   "setup": {
     "map": {
       "id": "map:fixture-terrain",
@@ -79,6 +79,7 @@
     "definitions": [
       {
         "id": "unit:eastern-collective/collective-soldier",
+        "tags": ["infantry"],
         "visionSubcells": 7168,
         "pop": 1,
         "role": "combat",
@@ -90,6 +91,7 @@
       },
       {
         "id": "unit:eastern-collective/dragon-tank",
+        "tags": ["vehicle"],
         "visionSubcells": 8192,
         "pop": 3,
         "role": "combat",
@@ -101,6 +103,7 @@
       },
       {
         "id": "unit:eastern-collective/drone-hunter",
+        "tags": ["infantry"],
         "visionSubcells": 8192,
         "pop": 1,
         "role": "combat",
@@ -112,6 +115,7 @@
       },
       {
         "id": "unit:eastern-collective/field-technician",
+        "tags": ["infantry", "engineer"],
         "visionSubcells": 6144,
         "pop": 1,
         "role": "builder",
@@ -123,6 +127,7 @@
       },
       {
         "id": "unit:eastern-collective/metamorphic-apc",
+        "tags": ["vehicle"],
         "visionSubcells": 7168,
         "pop": 2,
         "role": "transport",
@@ -134,6 +139,7 @@
       },
       {
         "id": "unit:eastern-collective/rocket-trooper",
+        "tags": ["infantry"],
         "visionSubcells": 7168,
         "pop": 1,
         "role": "combat",
@@ -145,6 +151,7 @@
       },
       {
         "id": "unit:eastern-collective/supply-truck",
+        "tags": ["vehicle", "harvester"],
         "harvestCapacity": 500,
         "harvestAmountPerSecond": 5,
         "visionSubcells": 6144,

@@ -31,7 +31,12 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       }),
       ...(entity.deploy && { deploy: { ...entity.deploy } }),
       order: entity.order && { ...entity.order },
-      ...(entity.power && { power: { ...entity.power } }),
+      ...(entity.power && {
+        power: {
+          ...entity.power,
+          ...(entity.power.sources && { sources: [...entity.power.sources] }),
+        },
+      }),
       ...(entity.extraction && { extraction: { ...entity.extraction } }),
       ...(entity.harvesting && { harvesting: { ...entity.harvesting } }),
       ...(entity.construction && { construction: { ...entity.construction } }),

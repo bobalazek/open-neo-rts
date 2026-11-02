@@ -3,9 +3,9 @@
 Snapshot on 2026-11-02. Continue the active roadmap goal; all phases are not complete.
 Use [tasks](./tasks.md) and the [phase-2 plan](./phases/2.md).
 
-Current main uses SIM39 through PR #216, including Siege/Bunker modes, APC
-transport/passenger fire, improved bot goals and actual EMP warheads. SIM40
-attached burn/beam delivery is the next candidate below. This is functional
+Current main uses SIM40 through PR #217, including Siege/Bunker modes, APC
+transport/passenger fire, improved bot goals, EMP and attached burn/beam weapons.
+SIM41 reactor adjacency is the next candidate below. This is functional
 phase-2 progress, not all-phases completion.
 
 ## Working direction
@@ -86,11 +86,19 @@ Focused checks pass, including mixed impacts, delay/geometry/friendly fire, resi
 
 The SIM39 20-seed double-trial batch is running from that fixed source: `/tmp/neo-ai-qualification-sim39-60000-20261102`, log `/tmp/neo-ai-qualification-sim39-60000.log`, revision companion `/tmp/neo-ai-qualification-sim39-source.txt`. Seeds 1 and 2 have completed reproducibly at ticks 41,325 and 40,614 (hashes ad10c77553032200 and e9b6b829ea3fa086). Preserve completed inputs/results and continue the existing process rather than overwrite or rerun it. These are SIM39 checks, not future SIM40 goldens or 20-game acceptance yet.
 
-## Attached burn and beam delivery, SIM40 candidate
+## Attached burn and beam delivery, SIM40 merged
 
 `/tmp/neo-burn-effects`, branch `codex/burn-warheads`, implements 2-15b2a. The original Flame Tank's 5-DPS/3-second attached burn uses integer carry, bounded strongest-source refresh and actual shared damage/loss counters. Fire persists aboard; dead cargo receives no invented spatial event and cannot be revived by simultaneous emergency ejection. [Contract](./decisions/2026-11-02-provisional-burn-warheads.md). Instantaneous beam delivery uses current target poses, not ballistic lead. Public flags/HUD and strict beam events are connected; continuous flame meshes and persistent ground patches remain presentation/effect work.
 
-Focused cases and types passed. Independent review reproduced and verified closure of a moving-target beam lead defect; `/tmp/neo-burn-beam-review.ts` now gives identical actual instant/beam contacts, damage and burn. The permanent regression covers absent/positive unused beam speed metadata. Final fix/typecheck/test/build/content checks passed, with unchanged catalog identities and no-bot goldens. All five original-catalog worker/HUD Chromium journeys passed together in 13.1 seconds, including original Flame Tank damage/burn, replacement targeting to prevent refresh, authored expiry and Bun terminal replay verification. Renderer picking remains stubbed, not visual flame proof. Bounded independent review accepted this slice. Final assembled CI/merge remain pending; no source is lost. Slow/reveal/spawn, continuous flame/ground effects and complete persistence remain distinct tasks; no full-phase acceptance is claimed.
+Focused cases and types passed. Independent review reproduced and verified closure of a moving-target beam lead defect; `/tmp/neo-burn-beam-review.ts` now gives identical actual instant/beam contacts, damage and burn. The permanent regression covers absent/positive unused beam speed metadata. Final fix/typecheck/test/build/content checks passed, with unchanged catalog identities and no-bot goldens. All five original-catalog worker/HUD Chromium journeys passed together in 13.1 seconds, including original Flame Tank damage/burn, replacement targeting to prevent refresh, authored expiry and Bun terminal replay verification. Renderer picking remains stubbed, not visual flame proof. Bounded independent review accepted this slice. All six jobs passed in [CI 41523975284](https://github.com/bobalazek/open-neo-rts/actions/runs/41523975284) at 440adacd1d3307d95ec4c12b92a8ec47f37976a6. PR #217 merged at 0436e6a33090b68440c8a73bb34d50bb7549cf9b with an identical source tree.
+
+## Reactor adjacency, SIM41 candidate
+
+`/tmp/neo-reactor-adjacency`, branch `codex/reactor-adjacency`, implements 2-45a from existing reactor data, without content/asset/balance edits. Integer runtime metadata preserves copied tags and power adjacency; the old debug scenario metadata expectations were updated by hand for retained tags. [Contract](./decisions/2026-11-02-provisional-power-adjacency.md). Same-Force living completed enabled sources contribute bounded additive bonuses over base power using rotated footprint edges, never boosted neighbours' output. Current off/EMP/death/ownership changes recompute links. Economic-only source handles and base/effective output are copied to snapshots/observations and the HUD.
+
+Independent review found and verified closure of four issues: rounded low output remains valid; sparse wire source arrays reject; cached observations cannot share mutable source arrays; unfinished construction shows zero operational power without a false brownout. Probes `/tmp/neo-adjacency-wire-review.ts` and `/tmp/neo-adjacency-observation-review.ts` are preserved. Final fix/typecheck/test/build/content and all six original-catalog worker/HUD Chromium journeys passed (16.4 seconds). The original-reactor journey builds two paid sites through real builders, checks unfinished output 0 and completed totals 160/328, toggles off/on and verifies 3200 remaining credits plus a terminal replay in Bun. Test-only starting units/fogOff and stubbed renderer picking are not physical animation proof. Assembled CI/merge remain pending. Industrial-capacity awards and the authored Force-wide surge remain 2-45b/c; later effects and complete persistence remain open.
+
+SIM39's fixed-source qualification continues: five of the first seven seeds ended naturally; seeds 6 and 7 reproducibly capped at 60,000 ticks (3b32deddbd70cb4c / 86876559065185a1). Preserve all results and keep the existing 20-seed process running. A separate exact seed-6 forensic replay is running from `/tmp/neo-ai-stall-sim39-seed6.ts` into `/tmp/neo-ai-stall-sim39-seed6` (log `/tmp/neo-ai-stall-sim39-seed6.log`). Its first assertion must match the preserved source/hash before any diagnosis; the new modifier features do not count as a bot stall fix.
 
 Continue non-damage effects, wreck/salvage/lifecycle presentation, required tier-1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Full replay files/viewer, per-type/APM/history and a real human-versus-bot completion remain open. Phase 2 and phases 3–5 are not complete.
 

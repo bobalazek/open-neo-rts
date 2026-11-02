@@ -333,6 +333,9 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
   expect(definitions.get(structureId("industrial-reactor"))?.adjacency).toEqual([
     { tags: ["power"], radiusSubcells: 1024, stat: "power", perMille: 1100, maxSources: 3 },
   ]);
+  expect(definitions.get(structureId("industrial-reactor"))?.powerAdjacency).toEqual([
+    { tags: ["power"], radiusSubcells: 1024, perMille: 1100, maxSources: 3 },
+  ]);
   expect(definitions.get(unitId("rocket-trooper"))?.weapons[0]?.projectile).toMatchObject({
     speedSubcellsPerTick: 717,
     turnAnglePerTick: 1092,
