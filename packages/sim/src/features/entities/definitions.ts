@@ -8,7 +8,11 @@ import {
   type NodeKind,
   oneOf,
   opt,
+  type ResourceId,
+  rec,
+  STRUCTURE_ROLES,
   str,
+  UNIT_ROLES,
 } from "@open-neo-rts/content";
 import { strictObject } from "../../snapshots/schema";
 
@@ -22,6 +26,14 @@ export interface Definition {
   turnRate: number;
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
+  role?: string;
+  /** Missing/null means unavailable, never an implicit free construction recipe. */
+  construction?: {
+    readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
+    readonly buildTicks: number;
+  } | null;
+  requires?: readonly string[];
+  builds?: readonly string[];
   domain?: MovementDomain;
   radiusSubcells?: number;
   domains?: readonly MovementDomain[];
@@ -32,12 +44,25 @@ export interface Definition {
 }
 
 const INT32_MAX = 0x7fffffff;
+const recipeSchema = strictObject({
+  cost: rec(int(0, INT32_MAX), /^(credits|materials|industrial-capacity|salvage-points)$/),
+  buildTicks: int(0, INT32_MAX),
+});
 export const definitionSchema = strictObject({
   id: str(/^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/),
   health: int(0, INT32_MAX),
   speed: int(0, INT32_MAX),
   turnRate: int(0, 0x10000),
   power: opt(int(-500, 500)),
+  role: opt(oneOf([...UNIT_ROLES, ...STRUCTURE_ROLES])),
+  construction: opt({
+    json: { anyOf: [recipeSchema.json, { type: "null" }] },
+    check(value, path, issues) {
+      if (value !== null) recipeSchema.check(value, path, issues);
+    },
+  }),
+  requires: opt(arr(str(/^[a-z0-9.:/-]+$/))),
+  builds: opt(arr(str(/^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/))),
   domain: opt(oneOf(DOMAINS)),
   radiusSubcells: opt(int(0, 8192)),
   domains: opt(arr(oneOf(DOMAINS), 1)),
@@ -59,6 +84,12 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       issues.push({ path: `${path}.health`, message: "must be positive for units/structures" });
     if (kind !== "structure" && definition.power !== undefined)
       issues.push({ path: `${path}.power`, message: "only structures declare power" });
+    const roles: readonly string[] =
+      kind === "unit" ? UNIT_ROLES : kind === "structure" ? STRUCTURE_ROLES : [];
+    if (definition.role && !roles.includes(definition.role))
+      issues.push({ path: `${path}.role`, message: "role must match the definition kind" });
+    if (definition.builds && (kind !== "unit" || definition.role !== "builder"))
+      issues.push({ path: `${path}.builds`, message: "only builder units declare build lists" });
     if (kind === "unit" && (definition.footprint || definition.cells || definition.blocks))
       issues.push({ path, message: "units do not have static footprints" });
     if (kind !== "prop" && definition.blocks !== undefined)

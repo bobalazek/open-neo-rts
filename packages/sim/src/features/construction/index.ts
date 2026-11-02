@@ -1,11 +1,14 @@
 // Placement on the grid: footprint cell rules against terrain. Phase 1b. Build progress, sell and repair: phase 2.
-// Radius and unit clearance remain owner-gated; this checker implements static footprint rules only.
+// Static footprint rules are shared by debug spawning and normal paid construction.
 
 import { BUILDABLE, EDGE_MARGIN, RAMP, SURFACES, WATER } from "@open-neo-rts/content";
 import { defineComponent } from "../../ecs";
 
 /** Present only while unfinished; the builder feature will own work/progress separately. */
 export const ConstructionSite = defineComponent("ConstructionSite", {});
+
+export * from "./sites";
+export * from "./work";
 
 export interface PlacementTerrain {
   width: number;

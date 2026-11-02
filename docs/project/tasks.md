@@ -10,9 +10,11 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md). Phase 1b remains unfinished; its FPS/native-key work is deferred while functional gameplay takes priority. Pending gameplay decisions remain in [human-tasks.md](./human-tasks.md).
 
-- [ ] [2-09 · Construction-site placement and payment](./phases/2.md#2-09--construction-site-placement-and-payment). PR type: engine. Includes the accepted radius and clearance rules; bank and power foundations are implemented.
+- [ ] [2-11 · Unit queues, exits and rally points](./phases/2.md#2-11--unit-queues-exits-and-rally-points). PR type: engine. Builder completion and the production-slot contract are implemented/approved; wire real paid production and legal exits next.
+- [ ] [2-08a · Node extraction engine](./phases/2.md#2-08--operate-the-shared-node-extractor). PR type: engine. Implement canonical remaining amounts and approved power/output rules; normal construction integration follows builder completion.
+- [ ] [2-08b · Activate the approved extractor balance](./phases/2.md#2-08--operate-the-shared-node-extractor). PR type: balance after 2-08a. Apply the approved recipe/rates to the shared Resource Extractor separately from engine/schema changes.
 
-Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04) and power (2-05) are implemented. CLI validation compiles all 137 authored definitions. SIM12 starts authored armies, private banks and real power state through the ordinary worker/replay path. Paid construction is next; ore/extractor operating rates still need a balance contract.
+Shared pack resolution/content identity (2-01), integer gameplay compilation (2-02), normal starting kits (2-03), stock banks (2-04), power (2-05), paid construction-site placement (2-09, including 1B-42/1B-43) and builder work/completion (2-10) are implemented. CLI validation compiles all 137 authored definitions. SIM14 builders travel to legal adjacent positions, work at the approved assistance rates, leave/resume and complete real buildings. Paid production is next. The extractor's provisional economy is approved; ore operating rates remain pending.
 
 ## Deferred phase-1b acceptance
 
@@ -20,12 +22,10 @@ Shared pack resolution/content identity (2-01), integer gameplay compilation (2-
 - [ ] [1B-58 · Close the measured renderer frame-budget miss](./phases/1b.md#1b-58--close-the-qualified-renderer-frame-budget-miss). PR type: engine after profiling; issue #167.
 
 [1B-51 · Counted start-anchor preparation](./phases/1b.md#1b-51--bound-continuous-start-anchor-fallback-work) merged in PR #157. Its CI benchmark failure exposed repeated singleton admission work, corrected by [1B-54](./phases/1b.md#1b-54--avoid-repeated-singleton-queue-admission-work) with unchanged SIM8 state, benchmark and watchdog. This correction and the [affine shadow fit](./phases/1b.md#1b-53--project-dynamic-shadow-bounds-by-affine-half-axes) passed assembled repository checks and all six jobs in [CI 41375970207](https://github.com/bobalazek/open-neo-rts/actions/runs/41375970207) at main `330584c`.
-
-
 ## Delivered foundations
 
 All existing 54 units, 46 structures (including the shared Resource Extractor) and 37 props have first-pass model references. Remaining Alliance of Free Nations artwork merged in PR #70–89 and Phoenix Initiative artwork in PR #90–112, one definition folder per art PR. Strict animation/team-color validation follows the integrated art. Final art direction remains an owner decision.
 
 The map-aware worker/debug client includes authoritative placement, terrain navigation, reachability, shared path budgets, movement and occupancy repathing; model instances, team colors and idle/move playback; inspector/time controls, selection/box selection and distinct move/stop/attack-move commands. Graphics presets, structure foundations and animated water/shore foam complete the current renderer delivery batch. Assembled main `11e7694` passed repository/content/three-browser [CI 41366189139](https://github.com/bobalazek/open-neo-rts/actions/runs/41366189139); measured performance and the remaining phase-exit clauses stay open.
 
-The [water-domain table](./decisions/2026-11-01-movement-water-table.md), [debug placement exception](./decisions/2026-11-01-debug-spawn-placement.md) and [neutral extractor policy](./decisions/2026-11-01-neutral-extractor.md) are accepted. Normal-match placement-radius/clearance policy remains [owner-blocked](./human-tasks.md). Full fog, combat and economy remain phase 2. The [phase-1b exit](./roadmap.md#exit-criteria), including measured 200-unit medium frame rate, is still open.
+The [water-domain table](./decisions/2026-11-01-movement-water-table.md), [debug placement exception](./decisions/2026-11-01-debug-spawn-placement.md), [neutral extractor policy](./decisions/2026-11-01-neutral-extractor.md), [extractor economy](./decisions/2026-11-02-extractor-economy.md), [ground targeting](./decisions/2026-11-02-ground-targets-structures.md) and [normal construction rules](./decisions/2026-11-02-normal-construction.md) are accepted. Missing paid headquarters recipes remain unavailable; the approved extractor recipe still needs implementing. Full fog, combat and economy remain phase 2. The [phase-1b exit](./roadmap.md#exit-criteria), including measured 200-unit medium frame rate, is still open.

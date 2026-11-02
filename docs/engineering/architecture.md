@@ -169,13 +169,23 @@ Boundaries are enforced by declared dependencies (Bun's isolated installs reject
 
 ## 5. Determinism contract
 
-`SIM_VERSION` is exported from `packages/sim` and is 12.
+`SIM_VERSION` is exported from `packages/sim` and is 13.
 
 Normal structures also own ECS power amounts and enable flags. Power supply/draw
 and brownout are derived from current complete structures; construction-site
 markers exclude unfinished buildings. Private snapshots carry permitted totals
 and per-structure state. Production/research and powered-defense/radar consumers
 use integer operational helpers as those systems are introduced.
+
+Normal construction carries authored role/recipe/prerequisite/build-list metadata
+through setup validation, private copying and canonical hashing. Paid sites,
+their proven investment, builder assignments and pending clearance requests live
+in ECS. Placement reuses the rotated terrain/node/occupancy checker, applies the
+accepted six/three-cell provider radius and charges the bank only at actual site
+creation. Clearance uses ordinary paths in stable entity order and expires after
+40 ticks; each seat/Force retains at most its latest refused result. Owned
+projections expose request status/reason and an explicit unfinished-site marker.
+Builder work/completion and brick assembly remain their subsequent phase-2 tasks.
 
 `MatchSetup` supplies an explicit map, the u32 seed, debug flag, declared Forces (index and faction ID), player/bot seat indices, grants and an ordered definition table in integer sim units. Seat 0 is reserved for system commands. `createMatch(setup)` validates and freezes a private copy of the map before registering entities, then movement, in that fixed order. `createNormalMatchSetup` resolves starting settings, teams, selected spawns, content identity and faction kits into optional normal-match metadata. It is copied canonically and hashed only for normal matches. `createMatch(setup)` initializes each authored kit directly after registration, never through debug commands, then appends per-Force ECS stock banks. Balances live in World; the bank service retains only static IDs and copied grants, checks spending atomically, and projects private copies. `kernel.map` remains static input; map objects are not automatically ECS entities. Spawn placement and navigation use this map and original definition metadata. Routes, incremental search continuation and the distinct integer attack-move intent participate in canonical hashes. Earlier simulation versions are rejected by the scenario parser. See [the current scenario contract](testing.md#map-aware-command-log-format-version-2).
 

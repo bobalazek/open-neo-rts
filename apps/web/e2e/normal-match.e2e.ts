@@ -7,6 +7,9 @@ import faction from "../../../content/core/factions/eastern-collective/faction.j
 import headquarters from "../../../content/core/factions/eastern-collective/structures/command-center/structure.json" with {
   type: "json",
 };
+import reactor from "../../../content/core/factions/eastern-collective/structures/industrial-reactor/structure.json" with {
+  type: "json",
+};
 import soldier from "../../../content/core/factions/eastern-collective/units/collective-soldier/unit.json" with {
   type: "json",
 };
@@ -28,18 +31,18 @@ import {
 } from "../../../packages/sim/src";
 import { flatMap } from "../../../packages/sim/src/testing/maps";
 
-// Minimal startup-only catalog; full gameplay compilation is validated separately.
-const definitions = [headquarters, soldier, builder, truck].map((raw) => ({
+// Minimal authored startup/build catalog; full gameplay compilation is validated separately.
+const definitions = [headquarters, soldier, builder, truck, reactor].map((raw) => ({
   ...toDefinition({ ...raw, id: `core.${raw.id}` }),
   kind: raw.id.startsWith("unit:") ? "unit" : "structure",
   role: raw.role,
   pop: "pop" in raw ? raw.pop : 0,
   tags: [],
-  construction: null,
+  construction: raw === reactor ? { cost: reactor.cost, buildTicks: reactor.buildTime * 20 } : null,
   requires: [],
   producedBy: [],
   produces: [],
-  builds: [],
+  builds: raw === builder ? [`core.${reactor.id}`] : [],
   spawnsWith: [],
   weapons: [],
   abilities: [],
@@ -97,7 +100,7 @@ const build = (relative: string) =>
 const worker = build("../../../packages/client/src/worker/entry.ts");
 const client = build("../../../packages/client/src/worker/index.ts");
 
-test("normal worker starts the authored kit, retries failed init and keeps debug gated", async ({
+test("normal worker starts the kit, constructs with builders and keeps debug gated", async ({
   page,
 }) => {
   await page.route("http://normal-match.test/**", (route) =>
@@ -150,6 +153,76 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
         await match.step();
         const result = await order;
         const toggled = await toggle;
+        const builders =
+          state?.snapshot.entities
+            .filter(
+              (entity) => entity.definition === "core.unit:eastern-collective/field-technician",
+            )
+            .map((entity) => entity.handle) ?? [];
+        const placing = match.command("economy.build", {
+          force: 0,
+          definition: "core.structure:eastern-collective/industrial-reactor",
+          builders,
+          x: 12 * 1024,
+          y: 6 * 1024,
+          facing: 16384,
+        });
+        await match.step();
+        const placed = await placing;
+        const site = state?.snapshot.entities.find((entity) => entity.constructionSite);
+        const paid = state?.snapshot.banks?.[0]?.resources.credits;
+        const siteSupply = state?.snapshot.power?.[0]?.produced;
+        const canceling = match.command("economy.cancelConstruction", { entity: site?.handle });
+        await match.step();
+        const canceled = await canceling;
+        const refunded = state?.snapshot.banks?.[0]?.resources.credits;
+        const siteGone = !state?.snapshot.entities.some((entity) => entity.constructionSite);
+        const rebuilding = match.command("economy.build", {
+          force: 0,
+          definition: "core.structure:eastern-collective/industrial-reactor",
+          builders,
+          x: 12 * 1024,
+          y: 6 * 1024,
+          facing: 16384,
+        });
+        await match.step();
+        const rebuilt = await rebuilding;
+        let unfinished = state?.snapshot.entities.find((entity) => entity.constructionSite);
+        for (let ticks = 0; ticks < 240 && !unfinished?.construction?.completedTicks; ticks++) {
+          await match.step();
+          unfinished = state?.snapshot.entities.find((entity) => entity.constructionSite);
+        }
+        const progressBeforeStop = unfinished?.construction?.completedTicks ?? 0;
+        const stopping = match.command("unit.stop", { entities: builders });
+        await match.step();
+        const stopped = await stopping;
+        const progressWhenStopped = state?.snapshot.entities.find(
+          (entity) => entity.constructionSite,
+        )?.construction;
+        for (let ticks = 0; ticks < 10; ticks++) await match.step();
+        const pausedProgress = state?.snapshot.entities.find(
+          (entity) => entity.constructionSite,
+        )?.construction;
+        const resuming = match.command("economy.assistConstruction", {
+          entity: unfinished?.handle,
+          builders,
+        });
+        await match.step();
+        const resumed = await resuming;
+        for (
+          let ticks = 0;
+          ticks < 480 && state?.snapshot.entities.some((entity) => entity.constructionSite);
+          ticks++
+        )
+          await match.step();
+        const completed = state?.snapshot.entities.find(
+          (entity) => entity.definition === "core.structure:eastern-collective/industrial-reactor",
+        );
+        const lateCancel = match.command("economy.cancelConstruction", {
+          entity: completed?.handle,
+        });
+        await match.step();
+        const completedCancel = await lateCancel;
         const exportGated = await match.exportLog().then(
           () => false,
           () => true,
@@ -159,6 +232,22 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
           initial,
           gated,
           result,
+          placed,
+          site: !!site,
+          paid,
+          siteSupply,
+          canceled,
+          refunded,
+          siteGone,
+          rebuilt,
+          progressBeforeStop,
+          stopped,
+          progressWhenStopped,
+          pausedProgress,
+          resumed,
+          completed,
+          completedCancel,
+          finalCredits: state?.snapshot.banks?.[0]?.resources.credits,
           toggled,
           power: state?.snapshot.power,
           tick: state?.snapshot.tick,
@@ -185,9 +274,26 @@ test("normal worker starts the authored kit, retries failed init and keeps debug
     { force: 0, produced: 20, used: 0, brownout: false },
   ]);
   expect(actual.toggled).toBe("accepted");
-  expect(actual.power).toEqual([{ force: 0, produced: 0, used: 0, brownout: false }]);
+  expect(actual.power).toEqual([{ force: 0, produced: 140, used: 0, brownout: false }]);
   expect(actual.result).toBe("accepted");
-  expect(actual.tick).toBe(1);
+  expect(actual.placed).toBe("accepted");
+  expect(actual.site).toBe(true);
+  expect(actual.paid).toBe(4100);
+  expect(actual.siteSupply).toBe(0);
+  expect(actual.canceled).toBe("accepted");
+  expect(actual.refunded).toBe(5000);
+  expect(actual.siteGone).toBe(true);
+  expect(actual.rebuilt).toBe("accepted");
+  expect(actual.progressBeforeStop).toBeGreaterThan(0);
+  expect(actual.stopped).toBe("accepted");
+  expect(actual.pausedProgress?.completedTicks).toBe(actual.progressWhenStopped?.completedTicks);
+  expect(actual.pausedProgress?.quarter).toBe(actual.progressWhenStopped?.quarter);
+  expect(actual.resumed).toBe("accepted");
+  expect(actual.completed).toBeDefined();
+  expect(actual.completed?.constructionSite).toBeUndefined();
+  expect(actual.completedCancel).toBe("bad_payload");
+  expect(actual.finalCredits).toBe(4100);
+  expect(actual.tick).toBeGreaterThan(3);
   expect(actual.exportGated).toBe(true);
   const kernel = createMatch(setup);
   expect(actual.initial?.snapshot).toEqual(

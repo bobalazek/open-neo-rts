@@ -18,6 +18,10 @@ WEAPON          the launcher, on the unit or structure: range, reload, burst, ac
 
 Weapons are defined **inline** in the unit or structure that carries them. A weapon has exactly one projectile and one or more warheads.
 
+The owner [confirmed that `ground` targets include structures](../project/decisions/2026-11-02-ground-targets-structures.md).
+Use the existing `versus.structure` multiplier for structure armour; an explicit
+`structure` target is also valid.
+
 ## Weapon (the launcher)
 
 | Field        | Meaning                                                                                                             |

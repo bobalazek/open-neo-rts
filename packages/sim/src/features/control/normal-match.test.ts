@@ -122,7 +122,7 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"6b57c6d06dca4510"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"ae83e3fd8c458e31"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -193,7 +193,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "36853bd25b4f04d0",
+        "hash": "05e88e9b90e1c8b8",
         "tick": 2,
       },
     ]

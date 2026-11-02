@@ -47,7 +47,15 @@ export interface UnitStop {
   entities: number[];
 }
 
+/** Normal, paid site placement by the selected same-Force builders. */
+export interface ConstructionBuild extends DebugSpawn {
+  builders: number[];
+}
+
 export interface Payloads {
+  "economy.assistConstruction": { entity: number; builders: number[] };
+  "economy.build": ConstructionBuild;
+  "economy.cancelConstruction": { entity: number };
   "debug.spawn": DebugSpawn;
   "debug.setHealth": DebugSetHealth;
   "debug.remove": DebugRemove;
@@ -76,6 +84,8 @@ export type Command = {
 
 /** Every way a command is refused, with its reason. Clients get the code in their ack. */
 export const REJECTIONS = {
+  insufficient_funds: "The Force cannot afford the full authored cost.",
+  structure_cap: "The new site would exceed this Force's structure cap.",
   malformed:
     "Not { tick, seat, sequence, type, payload } with non-negative int32 tick, seat and sequence.",
   unknown_type: "No command has this type.",
@@ -101,6 +111,16 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "economy.assistConstruction": { entity: ID, builders: IDS },
+  "economy.build": {
+    definition: /^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
+    force: ID,
+    builders: IDS,
+    x: POSITION,
+    y: POSITION,
+    facing: [0, 0xffff],
+  },
+  "economy.cancelConstruction": { entity: ID },
   "debug.spawn": {
     definition: SPAWNABLE,
     force: ID,

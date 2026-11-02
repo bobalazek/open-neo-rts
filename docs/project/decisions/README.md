@@ -22,6 +22,13 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 Newest first.
 
+- [2026-11-02 — Barracks Complex has two production slots](./2026-11-02-production-slots.md) — One active slot elsewhere, pay at start and retain the five-item queue limit.
+
+- [2026-11-02 — Provisional shared extractor economy](./2026-11-02-extractor-economy.md) — 800 credits, 20 seconds, accepted power/output/depletion rules.
+- [2026-11-02 — Ground weapons include structures](./2026-11-02-ground-targets-structures.md) — Existing structure damage multipliers apply.
+
+- [2026-11-02 — Builder assistance has a 25% floor](./2026-11-02-builder-assistance.md) — Contributions are 100%, 75%, 50%, then 25% from each additional builder.
+
 - [2026-11-02 — Normal construction radius, clearance and payment](./2026-11-02-normal-construction.md) — Six/three-cell radius, 40-tick clearance, payment at site creation and full unfinished cancellation refund.
 
 - [2026-11-02 — Existing Eastern Collective tier 1 is provisional first-playable content](./2026-11-02-first-playable-scope.md) — Use existing authored numbers in the Training Grounds mirror, then balance after the loop works.

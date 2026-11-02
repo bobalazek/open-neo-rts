@@ -22,7 +22,7 @@ Power structures ──► power capacity ──► keeps everything running
 - **Ore fields** are clusters of ore cells. Each cell holds a finite amount and **regrows slowly** up to its cap; fully mined cells regrow from neighbours. Rich fields hold more and regrow faster.
 - **Harvesters** carry a fixed load (e.g. 500 credits worth), mine one cell at a time, then drive to the nearest friendly drop-off structure. When their field is empty they move to the nearest reachable field on their own.
 - **Drop-off docking:** one harvester unloads at a time; others queue in arrival order (deterministic). Unloading takes a few seconds.
-- **Material nodes** are single spots worked by a node-bound structure on top, producing raw materials at a fixed rate until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md), built by any faction on material or oil nodes. Its fit with builders, drop-offs and power is under [design review](../project/neutral-extractor-plan.md); rates and other unapproved operating details remain open.
+- **Material nodes** are single spots worked by a node-bound structure until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). The [shared extractor](../project/decisions/2026-11-02-extractor-economy.md) costs 800 credits, takes 20 seconds and consumes 10 power. Provisionally it produces one material per second, or two credits per second on oil; brownout halves output and power-off stops it. Oil uses the map's finite amount when present and is otherwise unlimited. These values await balance playtests.
 - **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's builders can clear a wreck for a small amount; the Phoenix Initiative's Salvage Crawlers and Scavenger VTOLs get the full value, plus salvage points ([phoenix-initiative.md](factions/phoenix-initiative.md)).
 
 ## Spending
@@ -43,7 +43,7 @@ banks; other Forces' balances remain private.
 
 ## Production and construction queues
 
-- **Units:** each production structure builds one unit at a time from a queue of up to 5. Several structures of the same kind build in parallel; there is no speed bonus for owning more beyond that. The cost is paid when that unit **starts** building, not when it's queued.
+- **Units:** production structures train one unit at a time, except the Barracks Complex's two active slots ([owner decision](../project/decisions/2026-11-02-production-slots.md)). The queue limit stays five items. Several structures of the same kind build independently; there is no speed bonus for owning more beyond that. Each slot pays when its unit **starts** building, not when queued.
 - **Structures:** builders construct them on site, and more builders build faster ([structures.md](structures.md#construction-and-builders)). Shift-placing queues several sites for the same builders.
 - **Cancel:** an item that hasn't started costs nothing to remove. Cancelling an item in progress refunds 100%.
 - **Destroyed mid-build:** if a production structure dies, its in-progress unit is refunded in full and the rest of the queue is dropped. A destroyed construction site loses what was spent on it ([structures.md](structures.md#construction-and-builders)).
