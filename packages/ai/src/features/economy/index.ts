@@ -108,7 +108,7 @@ export interface SkirmishMemory {
   scoutWork: number;
   owned: string[];
   enemy: string | null;
-  goal: { x: number; y: number; until: number; handle: string | null } | null;
+  goal: { x: number; y: number; until: number; handle: string | null; health?: number } | null;
   avoid: { handle: string; until: number } | null;
   site: { handle: string; work: number; until: number } | null;
   orders: { handle: string; x: number; y: number; until: number; retreat: boolean }[];
