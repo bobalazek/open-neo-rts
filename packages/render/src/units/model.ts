@@ -95,13 +95,32 @@ export function createModelPlayback(
       return { target, influence: target.influence };
     }),
   );
+  let active: AnimationGroup | undefined;
+  const duration = (group: AnimationGroup) =>
+    ((group.to - group.from) * 1000) /
+    (group.targetedAnimations[0]?.animation.framePerSecond ?? 60);
   return {
+    duration(name: string): number {
+      const group = groups.find((candidate) => candidate.name === name);
+      return group ? duration(group) : 0;
+    },
+    /** Sample one authored clip from the presentation clock, including while the scene is paused. */
+    seek(elapsedMs: number) {
+      if (!active) return;
+      active.speedRatio = 0;
+      const length = duration(active);
+      active.goToFrame(
+        active.from +
+          (active.to - active.from) * (length ? Math.max(0, Math.min(1, elapsedMs / length)) : 1),
+      );
+    },
     clips: groups.map((group) => group.name),
     setRate(rate: number) {
       for (const group of groups) group.speedRatio = rate;
     },
     play(name: string): void {
       const group = groups.find((g) => g.name === name);
+      active = group;
       if (name && !group) throw new RangeError(`No animation "${name}"`);
       for (const animation of groups) {
         animation.stop();
