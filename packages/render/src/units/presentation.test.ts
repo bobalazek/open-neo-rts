@@ -506,3 +506,172 @@ test("disposing after the actual GLB importer starts releases its late result", 
     f.dispose();
   }
 });
+
+test("permitted event actors play independent authored attack/recoil/death clips once; removal alone never invents death", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async (definition) => ({
+    bytes: await bytes(definition === "tank" ? "dragon-tank" : "collective-soldier"),
+    movementDomain: "foot",
+  }));
+  const group = (handle: string, name: string) =>
+    f.scene.animationGroups.find(
+      (clip) =>
+        clip.name === name &&
+        clip.targetedAnimations.some(({ target }) => target.isDescendantOf(root(f.scene, handle))),
+    );
+  try {
+    layer.setForceColor(0, "#dd4433");
+    layer.setForceColor(1, "#4477dd");
+    await layer.accept(
+      snapshot(0, [entity("e1"), entity("e2", { force: 1 }), entity("e3", { definition: "tank" })]),
+      0,
+    );
+    const shot = {
+      ...snapshot(1, [
+        entity("e1"),
+        entity("e2", { force: 1 }),
+        entity("e3", { definition: "tank" }),
+      ]),
+      combatEvents: [
+        { type: "launch" as const, handle: "p1", entity: "e1", x: 1024, y: 1024 },
+        { type: "launch" as const, handle: "p2", entity: "e3", x: 1024, y: 1024 },
+      ],
+    };
+    await layer.accept(shot, 50);
+    expect(group("e1", "attack")?.isStarted).toBe(true);
+    expect(group("e2", "attack")?.isStarted).toBeFalsy();
+    expect(group("e3", "fire_recoil")?.isStarted).toBe(true);
+    layer.render(150);
+    const attack = group("e1", "attack");
+    assert(attack);
+    const frame = attack.getCurrentFrame();
+    expect(frame).toBeGreaterThan(attack.from);
+    await layer.accept(shot, 150);
+    expect(attack.getCurrentFrame()).toBe(frame);
+    layer.setPlaybackRate(0);
+    layer.render(1000);
+    expect(attack.getCurrentFrame()).toBe(frame);
+    layer.setPlaybackRate(1);
+    const victim = root(f.scene, "e2");
+    await layer.accept(
+      {
+        ...snapshot(2, [entity("e1")]),
+        combatEvents: [{ type: "death", entity: "e2", x: 1024, y: 1024 }],
+      },
+      1000,
+    );
+    expect(victim.isDisposed()).toBe(false);
+    expect(victim.getChildMeshes().every((mesh) => !mesh.isPickable)).toBe(true);
+    expect(group("e2", "death")?.isStarted).toBe(true);
+    expect(f.scene.getTransformNodeByName("entity e3")).toBeNull();
+    layer.render(1200);
+    const deathFrame = group("e2", "death")?.getCurrentFrame();
+    layer.setPlaybackRate(0);
+    layer.render(5000);
+    expect(group("e2", "death")?.getCurrentFrame()).toBe(deathFrame);
+    layer.setPlaybackRate(1);
+    layer.render(9000);
+    expect(victim.isDisposed()).toBe(true);
+    await layer.accept(snapshot(3, []), 9000);
+    expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("private work/progress and actual health drive presentation; fog revokes retained death models", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("field-technician"),
+    movementDomain: "foot",
+  }));
+  try {
+    const worker = entity("e1", {
+      health: 25,
+      constructionOrder: { site: "e2", state: "working" },
+      construction: { completedTicks: 2, quarter: 0, totalTicks: 8, buildersWorking: 1 },
+    });
+    await layer.accept(snapshot(0, [worker]), 0);
+    layer.render(100);
+    const attack = f.scene.animationGroups.find(
+      (clip) =>
+        clip.name === "attack" &&
+        clip.targetedAnimations.some(({ target }) => target.isDescendantOf(root(f.scene, "e1"))),
+    );
+    assert(attack);
+    expect(attack.getCurrentFrame()).toBeGreaterThan(attack.from);
+    expect(f.scene.meshes.filter((mesh) => mesh.name === "projected status")).toHaveLength(4);
+    const fills = f.scene.meshes.filter(
+      (mesh) => mesh.name === "projected status" && mesh.scaling.y === 0.1,
+    );
+    expect(fills.map((mesh) => mesh.scaling.x)).toEqual([1.7 / 4, 1.7 / 4]);
+    const frame = attack.getCurrentFrame();
+    layer.setPlaybackRate(0);
+    layer.render(1000);
+    expect(attack.getCurrentFrame()).toBe(frame);
+    layer.setPlaybackRate(1);
+    const dead = root(f.scene, "e1");
+    await layer.accept(
+      { ...snapshot(1, []), combatEvents: [{ type: "death", entity: "e1", x: 1024, y: 1024 }] },
+      1000,
+    );
+    expect(dead.isDisposed()).toBe(false);
+    await layer.accept(
+      {
+        ...snapshot(2, []),
+        mode: "controlled",
+        fog: [{ group: 0, width: 8, height: 8, cells: new Uint8Array(64) }],
+      },
+      1050,
+    );
+    expect(dead.isDisposed()).toBe(true);
+    expect(f.scene.materials).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("late original model loads catch up an attack without replaying it, and death never resurrects an unloaded or removed actor", async () => {
+  const f = fixture();
+  let resolve: ((bytes: Uint8Array) => void) | undefined;
+  const pending = new Promise<Uint8Array>((done) => {
+    resolve = done;
+  });
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await pending,
+    movementDomain: "foot",
+  }));
+  try {
+    const loading = layer.accept(
+      {
+        ...snapshot(0, [entity("e1")]),
+        combatEvents: [{ type: "launch", entity: "e1", x: 1024, y: 1024 }],
+      },
+      0,
+    );
+    layer.render(5000);
+    resolve?.(await bytes());
+    await loading;
+    const actor = root(f.scene, "e1");
+    expect(
+      f.scene.animationGroups.some(
+        (group) =>
+          group.name === "attack" &&
+          group.isStarted &&
+          group.targetedAnimations.some(({ target }) => target.isDescendantOf(actor)),
+      ),
+    ).toBe(false);
+    await layer.accept(snapshot(1, []), 5000);
+    expect(actor.isDisposed()).toBe(true);
+    await layer.accept(
+      { ...snapshot(2, []), combatEvents: [{ type: "death", entity: "e1", x: 1024, y: 1024 }] },
+      5050,
+    );
+    expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
