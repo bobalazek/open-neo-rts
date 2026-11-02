@@ -8,6 +8,7 @@ import { emitCombatEvent } from "../events/combat";
 import { weaponTargets } from ".";
 
 export interface DamageImpact {
+  readonly damageBonus?: number;
   readonly force: number;
   readonly direct: number;
   readonly x: number;
@@ -52,6 +53,8 @@ export function warheadDamage(
   target: Definition,
   falloff: number,
   facing = 1000,
+  damageBonus = 0,
+  armorPerMille = 1000,
 ): number {
   const amount = warhead.amount ?? 0;
   const versus =
@@ -59,8 +62,13 @@ export function warheadDamage(
     warhead.versusPerMille?.default ??
     1000;
   const tags = [...new Set(warhead.tags)].sort();
-  let numerator = BigInt(amount) * BigInt(versus) * BigInt(falloff) * BigInt(facing),
-    denominator = 1000n ** 3n;
+  let numerator =
+      BigInt(amount) *
+      BigInt(versus) *
+      BigInt(falloff) *
+      BigInt(facing) *
+      BigInt(1000 + damageBonus),
+    denominator = 1000n ** 3n * BigInt(armorPerMille);
   for (const tag of tags) {
     numerator *= BigInt(target.resistPerMille?.[tag] ?? 1000);
     denominator *= 1000n;
@@ -137,7 +145,14 @@ export function applyDamageWarhead(
     }
     const amount = Math.min(
       world.get(target, Health, "current"),
-      warheadDamage(warhead, definition, falloff, facing),
+      warheadDamage(
+        warhead,
+        definition,
+        falloff,
+        facing,
+        impact.damageBonus ?? 0,
+        kernel.unitModes?.armor(target) ?? 1000,
+      ),
     );
     if (!amount) continue;
     world.set(target, Health, "current", world.get(target, Health, "current") - amount);

@@ -52,8 +52,10 @@ export function movementFeature(match: {
     const force = (id: number) => world.get(id, OwnerForce, "force");
     if (!ids.every((id) => hasGrant(grants, seat, force(id), "unit.orders", tick)))
       return "no_grant";
+    if (target && ids.length && ids.every((id) => kernel.unitModes?.active(id))) return "immobile";
     if (target) kernel.movement?.refreshOccupancy();
     for (const id of ids) {
+      if (target && kernel.unitModes?.active(id)) continue;
       if (match.normal) suspendHarvesting(kernel, id);
       if (match.normal) clearAttackOrder(kernel, id);
       if (match.normal) suspendRepair(kernel, id);
@@ -80,7 +82,7 @@ export function movementFeature(match: {
     systems: {
       movement: [
         (kernel) =>
-          kernel.movement ? kernel.movement.tick() : movementSystem(kernel.world, definitions),
+          kernel.movement ? kernel.movement.tick() : movementSystem(kernel, definitions),
       ],
     },
     handlers: {
@@ -93,8 +95,13 @@ export function movementFeature(match: {
   };
 }
 
-function movementSystem(world: World, definitions: readonly Definition[]): void {
+function movementSystem(kernel: Kernel, definitions: readonly Definition[]): void {
+  const world = kernel.world;
   for (const id of world.query(MoveIntent, Transform, Template)) {
+    if (kernel.unitModes?.active(id)) {
+      world.remove(id, MoveIntent);
+      continue;
+    }
     const { speed, turnRate } = definitions[world.get(id, Template, "definition")] as Definition;
     const x = world.get(id, Transform, "x");
     const y = world.get(id, Transform, "y");

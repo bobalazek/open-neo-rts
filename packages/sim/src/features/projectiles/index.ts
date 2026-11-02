@@ -14,6 +14,7 @@ import { emitCombatEvent } from "../events/combat";
 export const MAX_ACTIVE_ROUNDS = 8192;
 export const CombatMotion = defineComponent("CombatMotion", { x: "i32", y: "i32" });
 export const Projectile = defineComponent("Projectile", {
+  damageBonus: "i32",
   shooter: "u32",
   force: "u32",
   definition: "u32",
@@ -42,6 +43,7 @@ export const Projectile = defineComponent("Projectile", {
 });
 /** One row per impact, with one once-only bit per authored warhead. Delays are relative to impact. */
 export const PendingImpact = defineComponent("PendingImpact", {
+  damageBonus: "i32",
   shooter: "u32",
   force: "u32",
   definition: "u32",
@@ -128,6 +130,7 @@ export function initializeProjectiles(
   const impact = (
     id: number,
     data: {
+      damageBonus: number;
       shooter: number;
       force: number;
       definition: number;
@@ -192,6 +195,7 @@ export function initializeProjectiles(
       id,
       {
         shooter: world.get(id, Projectile, "shooter"),
+        damageBonus: world.get(id, Projectile, "damageBonus"),
         force: world.get(id, Projectile, "force"),
         definition: world.get(id, Projectile, "definition"),
         weapon: world.get(id, Projectile, "weapon"),
@@ -219,7 +223,8 @@ export function initializeProjectiles(
               index = world.get(shot, ShotIntent, "weapon"),
               weapon = weaponOf(definition, index);
             const shooter = world.get(shot, ShotIntent, "shooter"),
-              force = world.get(shot, ShotIntent, "force");
+              force = world.get(shot, ShotIntent, "force"),
+              damageBonus = world.get(shot, ShotIntent, "damageBonus");
             if (!supported(weapon)) {
               world.destroy(shot);
               continue;
@@ -245,13 +250,14 @@ export function initializeProjectiles(
             const level = miss ? elevation(origin) : Math.max(elevation(origin), elevation(raw)),
               ceiling = miss ? elevation(origin) : 255;
             const speed = weapon.projectile.speedSubcellsPerTick ?? 0;
+            const range =
+              kernel.unitModes?.range(shooter, weapon.rangeSubcells[1]) ?? weapon.rangeSubcells[1];
             const life =
               weapon.projectile.flightTicks ??
               Math.max(
                 1,
                 Math.floor(
-                  (2 * (weapon.rangeSubcells[1] + (weapon.scatterSubcells ?? 0)) + speed - 1) /
-                    Math.max(1, speed),
+                  (2 * (range + (weapon.scatterSubcells ?? 0)) + speed - 1) / Math.max(1, speed),
                 ),
               );
             const offset = {
@@ -299,6 +305,7 @@ export function initializeProjectiles(
                 shot,
                 {
                   shooter,
+                  damageBonus,
                   force,
                   definition,
                   weapon: index,
@@ -316,6 +323,7 @@ export function initializeProjectiles(
               const facing = atan2(destination.y - origin.y, destination.x - origin.x),
                 v = velocity(facing, speed);
               world.add(shot, Projectile, {
+                damageBonus,
                 shooter,
                 force,
                 definition,
@@ -366,6 +374,7 @@ export function initializeProjectiles(
             if (world.get(id, Projectile, "phase") === 1) {
               if (kernel.tick >= world.get(id, Projectile, "fuseDue"))
                 impact(id, {
+                  damageBonus: world.get(id, Projectile, "damageBonus"),
                   shooter: world.get(id, Projectile, "shooter"),
                   force: world.get(id, Projectile, "force"),
                   definition: world.get(id, Projectile, "definition"),
@@ -524,6 +533,7 @@ export function initializeProjectiles(
                 warhead,
                 {
                   force: world.get(id, PendingImpact, "force"),
+                  damageBonus: world.get(id, PendingImpact, "damageBonus"),
                   direct: world.get(id, PendingImpact, "direct"),
                   x: world.get(id, PendingImpact, "x"),
                   y: world.get(id, PendingImpact, "y"),

@@ -231,6 +231,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     ...(def.armor !== undefined && { armor: def.armor }),
     ...(def.resistPerMille && { resistPerMille: def.resistPerMille }),
     ...(def.weapons.length && { weapons: def.weapons }),
+    ...(def.deployMode && { deployMode: def.deployMode }),
     ...(def.turretTurnAnglePerTick !== undefined && {
       turretTurnAnglePerTick: def.turretTurnAnglePerTick,
     }),

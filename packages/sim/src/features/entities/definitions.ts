@@ -35,6 +35,16 @@ export interface RepairDefinition {
   readonly automatic?: boolean;
 }
 
+export interface DeployModeDefinition {
+  readonly id: string;
+  readonly cooldownTicks: number;
+  readonly damagePerMille: number;
+  readonly armorPerMille: number;
+  readonly rangePerMille: number;
+  readonly rangeBonusSubcells: number;
+  readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
+}
+
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
 export interface Definition {
   id: string;
@@ -56,6 +66,7 @@ export interface Definition {
   armor?: ArmorClass;
   resistPerMille?: Readonly<Record<string, number>>;
   weapons?: readonly GameplayWeapon[];
+  deployMode?: DeployModeDefinition;
   turretTurnAnglePerTick?: number;
   /** Missing/null means unavailable, never an implicit free construction recipe. */
   construction?: {
@@ -112,6 +123,17 @@ export const definitionSchema = strictObject({
   armor: opt(oneOf(ARMOR_CLASSES)),
   resistPerMille: opt(rec(int(0, 10000), new RegExp(`^(${WARHEAD_TAGS.join("|")})$`))),
   weapons: opt(arr(weaponSchema, 0, 32)),
+  deployMode: opt(
+    strictObject({
+      id: str(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+      cooldownTicks: int(0, 2400),
+      damagePerMille: int(0, 2000),
+      armorPerMille: int(1000, 2000),
+      rangePerMille: int(0, 10000),
+      rangeBonusSubcells: int(0, 60 * 1024),
+      cost: rec(int(0, INT32_MAX), /^(credits|materials|industrial-capacity|salvage-points)$/),
+    }),
+  ),
   turretTurnAnglePerTick: opt(int(0, 0x10000)),
   tags: opt(arr(str(/^[a-z0-9-]+$/), 0, 1000)),
   repair: opt(
@@ -177,6 +199,8 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     const kind = definition.id.split(":")[0]?.split(".").at(-1);
     if (ids.has(definition.id)) issues.push({ path: `${path}.id`, message: "duplicate ID" });
     ids.add(definition.id);
+    if (definition.deployMode && kind !== "unit")
+      issues.push({ path: `${path}.deployMode`, message: "only units deploy in this phase" });
     if (definition.weapons?.length && (kind === "prop" || !definition.armor))
       issues.push({ path: `${path}.weapons`, message: "armed units/structures require armour" });
     const weaponIds = new Set<string>();

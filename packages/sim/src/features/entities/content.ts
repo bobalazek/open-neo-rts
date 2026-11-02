@@ -1,5 +1,10 @@
 import type { ArmorClass, ResolvedCatalog, ResourceId } from "@open-neo-rts/content";
-import { type Definition, type RepairDefinition, toDefinition } from "./definitions";
+import {
+  type Definition,
+  type DeployModeDefinition,
+  type RepairDefinition,
+  toDefinition,
+} from "./definitions";
 import type { GameplayWeapon } from "./weapons";
 
 export type { GameplayWarhead, GameplayWeapon } from "./weapons";
@@ -26,6 +31,7 @@ export interface GameplayEffect {
 
 export interface GameplayAbility {
   readonly id: string;
+  readonly name?: string;
   readonly target: string;
   readonly cooldownTicks: number;
   readonly rangeSubcells?: number;
@@ -98,6 +104,46 @@ export interface GameplayCatalog {
   readonly gameplayHash: string;
   readonly definitions: readonly GameplayDefinition[];
   readonly factions: readonly GameplayFaction[];
+}
+
+/** Persistent self modifiers with an explicit movement lock are deploy modes, not arbitrary spells. */
+function deployMode(abilities: readonly GameplayAbility[]): DeployModeDefinition | undefined {
+  const modes = abilities.filter(
+    (ability) =>
+      ability.target === "self" &&
+      ability.effects.some(
+        (effect) =>
+          effect.type === "modifyStat" && effect.stat === "mobile" && effect.perMille === 0,
+      ),
+  );
+  if (modes.length > 1) throw new Error("Only one deploy mode per unit is supported");
+  const ability = modes[0];
+  if (!ability) return;
+  const stats = new Map<string, GameplayEffect>();
+  for (const effect of ability.effects) {
+    if (
+      effect.type !== "modifyStat" ||
+      !["mobile", "damage", "armor", "range"].includes(effect.stat ?? "") ||
+      effect.target ||
+      (effect.scope && effect.scope !== "self") ||
+      effect.durationTicks !== undefined ||
+      stats.has(effect.stat ?? "")
+    )
+      throw new Error(`Unsupported deploy mode effect: ${ability.id}/${effect.stat}`);
+    if (effect.stat !== "range" && effect.amount !== undefined)
+      throw new Error(`Deploy mode ${ability.id}: only range supports a flat bonus`);
+    stats.set(effect.stat ?? "", effect);
+  }
+  const range = stats.get("range");
+  return {
+    id: ability.id,
+    cooldownTicks: ability.cooldownTicks,
+    cost: { ...ability.cost },
+    damagePerMille: stats.get("damage")?.perMille ?? 1000,
+    armorPerMille: stats.get("armor")?.perMille ?? 1000,
+    rangePerMille: range?.perMille ?? 1000,
+    rangeBonusSubcells: range?.amount?.value ?? 0,
+  };
 }
 
 const data = (value: unknown) => value as Data;
@@ -272,6 +318,17 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
     const repair = raw.repair === undefined ? undefined : data(raw.repair);
     const targets = repair && data(repair.targets);
     const harvest = raw.harvest === undefined ? undefined : data(raw.harvest);
+    const abilities = list(raw.abilities).map((a) => ({
+      id: a.id as string,
+      ...(a.name !== undefined && { name: a.name as string }),
+      target: a.target as string,
+      cooldownTicks: quantity(a.cooldown, 20),
+      ...optionalNumber(a, "range", "rangeSubcells", 1024),
+      ...optionalValue(a, "autoCast"),
+      ...(a.cost !== undefined && { cost: numbers(a.cost) }),
+      effects: list(a.effects).map((e) => effect(pack, e)),
+    }));
+    const deployment = kind === "unit" ? deployMode(abilities) : undefined;
     definitions.push({
       ...toDefinition({ ...raw, id }),
       kind,
@@ -292,15 +349,8 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       builds: [],
       spawnsWith: refs(pack, raw.spawnsWith),
       weapons: list(raw.weapons).map((w) => weapon(pack, w)),
-      abilities: list(raw.abilities).map((a) => ({
-        id: a.id as string,
-        target: a.target as string,
-        cooldownTicks: quantity(a.cooldown, 20),
-        ...optionalNumber(a, "range", "rangeSubcells", 1024),
-        ...optionalValue(a, "autoCast"),
-        ...(a.cost !== undefined && { cost: numbers(a.cost) }),
-        effects: list(a.effects).map((e) => effect(pack, e)),
-      })),
+      abilities,
+      ...(deployment && { deployMode: deployment }),
       research: list(raw.research).map((r) => ({
         id: r.id as string,
         cost: numbers(r.cost),

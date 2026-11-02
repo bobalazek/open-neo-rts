@@ -86,6 +86,44 @@ function pack(
 const unitId = (name: string) => `core.unit:eastern-collective/${name}`;
 const structureId = (name: string) => `core.structure:eastern-collective/${name}`;
 
+test("self-deploy effects compile without changing the authored ability or base weapon", () => {
+  const ability = {
+    ...tank.abilities[0],
+    effects: [
+      { type: "modifyStat", stat: "range", amount: 3 },
+      { type: "modifyStat", stat: "damage", percent: 125 },
+      { type: "modifyStat", stat: "mobile", percent: 0 },
+    ],
+  };
+  const compile = (effects = ability.effects) =>
+    compileGameplayCatalog(
+      resolvePacks(
+        [pack("core", [factory, { ...tank, abilities: [{ ...ability, effects }] }])],
+        "0.1.0",
+      ),
+    ).definitions.find((definition) => definition.id === unitId("dragon-tank"));
+  const before = JSON.stringify(ability);
+  const definition = compile();
+  expect(definition?.deployMode).toEqual({
+    id: "siege-mode",
+    cooldownTicks: 60,
+    damagePerMille: 1250,
+    armorPerMille: 1000,
+    rangePerMille: 1000,
+    rangeBonusSubcells: 3072,
+    cost: {},
+  });
+  expect(definition?.abilities[0]?.name).toBe(ability.name);
+  expect(definition?.weapons[0]?.rangeSubcells).toEqual([0, 7168]);
+  expect(JSON.stringify(ability)).toBe(before);
+  expect(() =>
+    compile([...ability.effects, { type: "modifyStat", stat: "speed", percent: 50 }]),
+  ).toThrow();
+  expect(() =>
+    compile([...ability.effects, { type: "modifyStat", stat: "damage", percent: 150 }]),
+  ).toThrow();
+});
+
 test("authored paid builder repair compiles into bounded integer match metadata without activating roster defaults", () => {
   const repair = {
     targets: { structures: true, roles: ["power"], tags: ["power"] },

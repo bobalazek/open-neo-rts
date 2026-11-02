@@ -19,6 +19,7 @@ import {
   validateCommands,
 } from "../commands";
 import { type Component, World } from "../ecs";
+import type { UnitModes } from "../features/abilities";
 import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { CombatEvent } from "../features/events/combat";
@@ -109,6 +110,7 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  unitModes?: UnitModes;
   statistics?: MatchStatistics;
   /** Derived capacity/availability check at the canonical shot handoff. */
   canLaunch?: (definition: number, weapon: number) => boolean;
