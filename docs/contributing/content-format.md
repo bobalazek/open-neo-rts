@@ -26,6 +26,8 @@ content/
 
 ## Manifest
 
+Node-bound structures declare `nodeKinds`, a nonempty list of `materials` and/or `oil`, separately from their ordinary footprint `cells` terrain rules. `extractor` is the shared producer role. Its debug placement must match a specific node anchor and may ignore only that exact node's resource occupancy. Node markers in maps use `kind: materials` with a required `amount`, or `kind: oil` with an optional amount until depletion is decided. Only ore fields may declare a radius. Phase-1b extractor content intentionally omits cost, build time and yield; a later normal-match compiler must require an approved economy contract rather than treating omissions as free/instant production.
+
 The loader never scans folders: `manifest.json` lists every definition file, and `bun neo validate` fails on a listed file that's missing and on a JSON file that isn't listed.
 
 ```json

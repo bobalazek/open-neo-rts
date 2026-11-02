@@ -69,6 +69,7 @@ export class TerrainMovement {
         d.cells ?? null,
         d.blocks ?? null,
         d.domains ? [...d.domains].sort() : null,
+        ...(d.nodeKinds ? [[...d.nodeKinds].sort()] : []),
       ]),
     );
   }

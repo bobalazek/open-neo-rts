@@ -4,6 +4,8 @@ import {
   type Issue,
   int,
   type MovementDomain,
+  NODE_KINDS,
+  type NodeKind,
   oneOf,
   opt,
   str,
@@ -23,6 +25,7 @@ export interface Definition {
   domains?: readonly MovementDomain[];
   footprint?: readonly [number, number];
   cells?: readonly string[];
+  nodeKinds?: readonly NodeKind[];
   blocks?: "nothing" | "movement" | "movement-and-vision";
 }
 
@@ -37,6 +40,7 @@ export const definitionSchema = strictObject({
   domains: opt(arr(oneOf(DOMAINS), 1)),
   footprint: opt(arr(int(1, 8), 2, 2)),
   cells: opt(arr(str(/^[lswn]+$/), 1, 8)),
+  nodeKinds: opt(arr(oneOf(NODE_KINDS), 1, NODE_KINDS.length)),
   blocks: opt(oneOf(["nothing", "movement", "movement-and-vision"])),
 });
 
@@ -56,6 +60,16 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       issues.push({ path: `${path}.blocks`, message: "only props declare blocks" });
     if (kind === "prop" && definition.cells)
       issues.push({ path: `${path}.cells`, message: "only structures declare cell rules" });
+    if (
+      definition.nodeKinds &&
+      (kind !== "structure" ||
+        !definition.footprint ||
+        new Set(definition.nodeKinds).size !== definition.nodeKinds.length)
+    )
+      issues.push({
+        path: `${path}.nodeKinds`,
+        message: "only structures with footprints declare distinct node kinds",
+      });
     if (kind !== "unit" && definition.speed !== 0)
       issues.push({ path: `${path}.speed`, message: "static objects cannot move" });
     if (
@@ -85,6 +99,7 @@ export function toDefinition(content: {
   domains?: readonly string[];
   footprint?: readonly number[];
   cells?: readonly string[];
+  nodeKinds?: readonly NodeKind[];
   blocks?: string;
 }): Definition {
   const { speed = 0, turnRate = 7200 } = content.movement ?? {};
@@ -100,6 +115,7 @@ export function toDefinition(content: {
     ...(content.domains && { domains: [...content.domains] }),
     ...(content.footprint && { footprint: [...content.footprint] }),
     ...(content.cells && { cells: [...content.cells] }),
+    ...(content.nodeKinds && { nodeKinds: [...content.nodeKinds] }),
     ...(content.blocks !== undefined && { blocks: content.blocks }),
   } as Definition;
   const issues: Issue[] = [];

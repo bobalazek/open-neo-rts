@@ -9,6 +9,40 @@ const bytes = () =>
     new URL("../../../../content/core/resources/ore-cell/ore-cell.glb", import.meta.url),
   ).bytes();
 const grid = () => parseTerrain(16, 16, {});
+
+test("material and oil markers retain parity and hide only while their anchor is occupied", async () => {
+  const f = fixture();
+  const placements = resourceInstances(
+    {
+      id: "fixture",
+      resources: [
+        { kind: "materials", position: [8, 8] },
+        { kind: "oil", position: [12.5, 8.5] },
+      ],
+    },
+    grid(),
+  );
+  expect(placements.map((p) => ({ id: p.definition, anchor: p.nodeAnchor }))).toEqual([
+    { id: "material-node", anchor: { x: 7, y: 7 } },
+    { id: "oil-well", anchor: { x: 11, y: 7 } },
+  ]);
+  const art = createMapPresentation(f.scene, grid(), placements, bytes);
+  try {
+    await art.ready;
+    const first = f.scene.getTransformNodeByName("map object 0: material-node"),
+      second = f.scene.getTransformNodeByName("map object 1: oil-well");
+    if (!first || !second) throw new Error("Missing node marker roots");
+    art.setOccupiedNodes([{ x: 7, y: 7 }]);
+    expect([first.isEnabled(), second.isEnabled()]).toEqual([false, true]);
+    art.setOccupiedNodes([{ x: 11, y: 7 }]);
+    expect([first.isEnabled(), second.isEnabled()]).toEqual([true, false]);
+    art.setOccupiedNodes([]);
+    expect([first.isEnabled(), second.isEnabled()]).toEqual([true, true]);
+  } finally {
+    art.dispose();
+    f.dispose();
+  }
+});
 const point = (changes: Partial<StaticMapInstance> = {}): StaticMapInstance => ({
   definition: "original",
   position: [4, 6],

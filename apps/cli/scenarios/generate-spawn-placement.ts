@@ -20,7 +20,7 @@ import reeds from "../../../content/core/props/temperate/reeds/prop.json";
 import boulder from "../../../content/core/props/temperate/rock-outcrop/prop.json";
 import barrier from "../../../content/core/props/urban/concrete-barrier/prop.json";
 
-/** Actual owner definitions exercise static occupancy without movement-domain policy. */
+/** Owner definitions and a minimal node-binding fixture exercise authoritative static occupancy. */
 export function spawnPlacementScenario(): Scenario {
   const terrain = parseTerrain(32, 32, {});
   const log = createCommandLog();
@@ -33,7 +33,15 @@ export function spawnPlacementScenario(): Scenario {
       forces: [{ index: 1, faction: "faction:eastern-collective" }],
       seats: [1],
       grants: [],
-      definitions: [factory, boulder, reeds, soldier, barrier].map(toDefinition),
+      definitions: [
+        ...[factory, boulder, reeds, soldier, barrier].map(toDefinition),
+        toDefinition({
+          id: "structure:fixture/node",
+          health: 100,
+          footprint: [2, 2],
+          nodeKinds: ["materials", "oil"],
+        }),
+      ],
       map: {
         id: "map:fixture-spawn-placement",
         terrain: {
@@ -48,6 +56,7 @@ export function spawnPlacementScenario(): Scenario {
         resources: toMatchResources([
           { kind: "ore", position: [16, 16], amount: 100, radius: 2 },
           { kind: "materials", position: [24, 24], amount: 100 },
+          { kind: "oil", position: [24.5, 8.5] },
         ]),
         objects: [
           {
@@ -80,6 +89,10 @@ export function spawnPlacementScenario(): Scenario {
         ),
       ]),
       log.spawn(99, 1, reeds.id, 1, 24 * 1024, 24 * 1024, 0x4000),
+      log.spawn(10, 1, "structure:fixture/node", 1, 23 * 1024, 23 * 1024, 0x4000),
+      log.spawn(10, 1, "structure:fixture/node", 1, 23 * 1024, 7 * 1024, 0x8000),
+      log.spawn(10, 1, "structure:fixture/node", 1, 23 * 1024, 23 * 1024, 0x4000),
+      log.spawn(10, 1, "structure:fixture/node", 1, 16 * 1024, 16 * 1024, 0x4000),
     ],
   };
 }

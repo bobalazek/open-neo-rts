@@ -4,7 +4,7 @@ Map objects that belong to nobody at the start, plus shared structure designs av
 
 ## Shared node extractor (_Addition_)
 
-The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md), built by any faction on raw-material or oil nodes. It replaces the earlier separate pre-placed oil-derrick and material-mine alternatives. The existing design assigns raw materials to material nodes and credits to oil sites; footprint, power, rates, depletion and lifecycle details are under [fit review](../project/neutral-extractor-plan.md). This does not settle general capture or sell rules for other neutral structures.
+The [owner approved one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md), built by any faction on raw-material or oil nodes. Its shared 2×2 design uses Force team colors, existing builders and a fixed node anchor; remote node placement does not extend base radius. It replaces the earlier separate pre-placed oil-derrick and material-mine alternatives. Debug values of 800 health, four vision and −10 power are explicitly provisional. The existing design assigns materials to material nodes and credits to oil sites; cost/build-time, rates, depletion and remaining lifecycle rules await the [economy contract](../project/neutral-extractor-plan.md). This does not settle general capture or sell rules for other neutral structures.
 
 ## Capturable tech structures
 

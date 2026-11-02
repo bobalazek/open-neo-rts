@@ -17,6 +17,7 @@ export const STRUCTURE_ROLES = [
   "headquarters", // trains builders; counts for the headquarters elimination rule
   "power", // produces power
   "dropoff", // harvesters unload here
+  "extractor", // binds to a material or oil node; output arrives with the economy
   "production", // trains or builds units
   "research", // unlocks tiers and researches upgrades
   "support", // radar, detection, buffs, healing

@@ -118,7 +118,7 @@ The roster keeps to what RTS maps generally carry: OpenRA's Red Alert and Tiberi
 - **Ore fields** are clusters of ore cells that harvesters mine ([economy.md](economy.md#harvesting)). Units drive over them; nothing can be built on them.
 - **Nodes** are single spots (1×1 or 2×2 cells) with something only a particular structure can use: raw-material deposits and oil wells. Each node has a **kind**.
 - **Node-bound structures** can only be placed on a node of their kind, and a node accepts nothing else. The node is one of the footprint's cell rules, next to `land`, `shore` and `water` ([structures.md](structures.md#placement)). Destroying the structure leaves the node, so it can be rebuilt or taken over.
-- The [owner selected one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md) that any faction builds on either node type. Its footprint, anchor and economy fit are under [design review](../project/neutral-extractor-plan.md); the shared-type decision does not settle those details.
+- The [owner approved one neutral extractor](../project/decisions/2026-11-01-neutral-extractor.md) that any faction builds on either node type: a shared 2×2 footprint at a fixed node anchor, remote placement without extending base radius, and Force team colors. Economy rates, cost/build-time and depletion remain under [review](../project/neutral-extractor-plan.md).
 
 ### Resource visuals
 
