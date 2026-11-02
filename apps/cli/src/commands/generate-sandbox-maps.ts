@@ -18,6 +18,7 @@ type Resource = {
 };
 
 export interface SandboxMap {
+  previewAuthor?: string;
   name: string;
   description: string;
   terrain: TerrainGrid;
@@ -140,6 +141,7 @@ export const SANDBOX_MAPS: Record<string, () => SandboxMap> = {
   },
 
   "sandbox-resources": () => ({
+    previewAuthor: "Codex (OpenAI)",
     name: "Sandbox: Resources",
     description:
       "Ore fields, raw-material nodes and an oil marker for shared-extractor placement. Extraction and depletion simulation arrive with the economy.",
@@ -310,7 +312,7 @@ export async function generateSandboxMaps(args: string[] = []): Promise<number> 
         {
           files: {
             "preview.png": {
-              author: "Borut Balazek",
+              author: built.previewAuthor ?? "Borut Balazek",
               source: "apps/cli/src/commands/generate-sandbox-maps.ts",
             },
           },
