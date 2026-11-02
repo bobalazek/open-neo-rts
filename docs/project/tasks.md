@@ -11,14 +11,14 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
 - [ ] [2-15b · Required non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after damage; retain authored effect semantics.
-- [ ] [2-22b · Canonical match statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual lifecycle/income/spend/death attribution and frozen final counters.
 - [ ] [2-30b · Own-force alerts, Space cycling and pings](./phases/2.md#2-30--minimap-alerts-and-camera-commands). PR type: engine; only permitted projected events and legal locations.
+- [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
 - [ ] [2-40 · Seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling; persistent runner/replay evidence and20 recorded seeds after normal opponent activation.
 - [ ] [2-21b · Construction assembly, door lifecycle and wreck presentation](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; actual projected lifecycle metadata after combat playback.
 - [ ] [2-31 · In-game pause/menu and settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine; existing pause/surrender/results are not a complete menu.
 - [ ] [2-32b · Statistics and replay actions on results](./phases/2.md#2-32--post-match-results-replay-and-restart). PR type: engine after canonical statistics and replay export/viewer; no fabricated counters.
 
-The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. Main uses SIM31; canonical summary statistics are in PR #201 under SIM32. All 137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
+The connected normal skirmish now includes actual economy/build/production, hauling/extraction, vision/fog, combat/projectiles/death, the hosted opposing bot, HUD/minimap and canonical victory/surrender with result/rematch navigation. Main uses SIM32 with canonical production/combat/resource summary statistics. All 137 authored definitions compile. Full phase-2 acceptance, remaining roster signatures, save/replay/menu/audio and later phases remain work; a single complete AI-vs-AI trial is not the full exit.
 
 ## Deferred phase-1b acceptance
 

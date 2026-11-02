@@ -16,6 +16,7 @@ import {
   HARVEST_STATUSES,
   MAX_COMBAT_EVENTS,
   PRODUCTION_STATUSES,
+  STAT_COUNTERS,
 } from "@open-neo-rts/sim";
 
 export interface PlacementDiagnostic extends SpawnPlacement {
@@ -506,6 +507,32 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
   )
     return false;
   if (state.hash !== undefined && snapshot.mode !== "debug-no-fog") return false;
+  if (snapshot.statistics !== undefined) {
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(snapshot.statistics) ||
+      snapshot.statistics.length > 8
+    )
+      return false;
+    let previous = -1;
+    for (const entry of snapshot.statistics) {
+      if (
+        !isRecord(entry) ||
+        !exact(entry, ["force", "counters"]) ||
+        !bounded(entry.force) ||
+        Number(entry.force) <= previous ||
+        !isRecord(entry.counters)
+      )
+        return false;
+      const counters = entry.counters;
+      if (
+        !exact(counters, STAT_COUNTERS) ||
+        !STAT_COUNTERS.every((key) => bounded(counters[key], 0xffffffff))
+      )
+        return false;
+      previous = Number(entry.force);
+    }
+  }
   if (
     snapshot.victory !== undefined &&
     (snapshot.mode !== "controlled" || !isVictory(snapshot.victory, Number(snapshot.tick)))

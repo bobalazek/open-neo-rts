@@ -212,6 +212,7 @@ export function constructionWorkFeature(
                 if (world.get(builder, BuilderConstruction, "target") === site)
                   clearConstructionOrder(kernel, builder);
               world.remove(site, ConstructionSite);
+              kernel.statistics?.record(world.get(site, OwnerForce, "force"), "structuresBuilt");
               world.remove(site, ConstructionProgress);
             } else {
               world.set(

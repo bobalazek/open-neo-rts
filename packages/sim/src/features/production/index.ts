@@ -200,6 +200,7 @@ export function productionFeature(
       return;
     }
     const spawned = spawnEntity(kernel, index, unit, { definition: unit.id, force, ...point });
+    kernel.statistics?.record(force, "unitsBuilt");
     // Harvesting orders belong to logistics; a harvester never inherits a combat point rally.
     if (world.has(producer, ProductionRally) && unit.role !== "harvester")
       kernel.movement?.order(spawned, {

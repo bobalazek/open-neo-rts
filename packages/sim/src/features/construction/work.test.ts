@@ -171,6 +171,7 @@ test("builders walk, work, leave, resume and finish once, activating power and r
   expect(assist(kernel, site, [unit], 2)).toBe("no_grant");
   expect(assist(kernel, site, [unit])).toBe("accepted");
   until(kernel, () => !kernel.world.has(site, ConstructionSite));
+  expect(kernel.statistics?.snapshot(1)[0]?.counters.structuresBuilt).toBe(1);
   expect(kernel.power?.balance(0)?.produced).toBe(160);
   expect(kernel.economy?.balance(0)?.credits).toBe(4900);
   expect(kernel.world.has(site, ConstructionPayment)).toBe(true);
