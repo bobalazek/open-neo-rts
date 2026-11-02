@@ -1,6 +1,6 @@
 // Small fixed roster/build order; every policy candidate and command proposal spends counted work.
 import type { BotProgram } from "../..";
-import { army } from "../combat";
+import { army, shouldRetreat } from "../combat";
 import {
   affordable,
   baseOf,
@@ -180,10 +180,11 @@ export function basicSkirmishProgram(
       const armyEntities = own.filter(
         (entity) => definitions.get(entity.definition)?.role === "combat",
       );
+      const scoutHandle = armyEntities.find((entity) => !shouldRetreat(view, entity))?.handle;
       while (cursor < armyEntities.length) {
         if (!work.take()) return { state: { ...state, cursor, memory }, commands };
         const entity = armyEntities[cursor++];
-        const command = entity && army(view, entity, armyEntities.length, armyEntities[0]?.handle);
+        const command = entity && army(view, entity, armyEntities.length, scoutHandle);
         if (command) commands.push(command);
       }
       memory.orders = memory.orders.filter((order) => entities.has(order.handle));
