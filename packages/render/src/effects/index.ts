@@ -238,7 +238,7 @@ export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
       for (const event of next.combatEvents ?? []) {
         if (!eventVisible(next, event.x, event.y)) continue;
         if (event.type === "launch" || event.type === "flight") {
-          if (event.projectile === "instant" || !event.handle) {
+          if (event.projectile === "instant" || event.projectile === "beam" || !event.handle) {
             if (event.type === "launch") add(event, "impact");
             continue;
           }

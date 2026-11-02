@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 39,
+  "simVersion": 40,
   "setup": {
     "seed": 42,
     "debug": true,

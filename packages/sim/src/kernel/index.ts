@@ -118,6 +118,7 @@ export interface Kernel {
   canLaunch?: (definition: number, weapon: number) => boolean;
   /** Canonical temporary EMP state; absent when the catalog has no disable warheads. */
   disabled?: (entity: number) => boolean;
+  burning?: (entity: number) => boolean;
   /** Presentation-only output from the completed tick; never read by gameplay systems. */
   combatEvents?: CombatEvent[];
   /** Authoritative stock balances exist only for initialized normal matches. */
