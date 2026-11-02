@@ -25,6 +25,17 @@ Integrated menu/results: six Chromium journeys passed together47.8s, followed by
 
 ## Reviewed delivery queue
 
+The current shared candidate is PR #209 at139c3000ec03a7bfb8459b6e447504a9e0fba8a5,
+running [CI41495111537](https://github.com/bobalazek/open-neo-rts/actions/runs/41495111537).
+It includes #207+#208+#209. Earlier #207/#208 runs failed only the expanded
+minimap journey: a real-worker probe confirmed a legitimate short-lived order,
+and their90-second total deadline was exhausted. The reviewed correction captures
+bounded actual own-actor order signatures and separates ping interactions; both
+90-second deadlines are unchanged and the revised pair passed19.0s locally.
+Do not blindly retry the superseded old source. Merge after the shared batch is
+green, preserving own commits on each rebase after squash. All production source
+and tests match the shared candidate; subsequent handoff edits are documentation.
+
 - PR #207: own-Force notices and local pings (task2-30b). Eight notices track observed damage, actual unit/site completion and permitted prior-owned deaths; disappearance alone is not a loss. Visible clickable feed, Space cycling and minimap rings use only copied permitted observations. Five local ping kinds use Alt-click or a keyboard-accessible camera-location button in explored legal cells. [Presentation defaults](./decisions/2026-11-02-local-force-notices.md):20 simulation seconds, five-second repeated-damage coalescing. Full repository gates, six model cases43 assertions and eight unique integrated menu/results/minimap journeys passed. Final minimap11.2s, desktop/narrow images inspected, source/layout reviews accepted. CI41489811848; merge after green. Source rebase onto main changed only CI documentation.
 - PR #208: headless real-match runner (task2-40a), based on #207. `bun neo ai-vs-ai --out <new-directory> [--seeds 1,2,...] [--ticks 30000]` uses actual core/map bytes, default normal kits/rules and two hosted bots. Each seed runs twice comparing hashes/checkpoints/outcomes/diagnostics, preserves inputs/first failures and refuses existing directories. Capped games stay incomplete/nonzero; no save/keyframe/viewer/balance claim. Repository/content gates and independent source review passed. CI41491138993; finish after #207. A bounded ordinary test covers real setup, caps, standard replay checkpoints and overwrite refusal; long qualification is a separate explicit command.
 
@@ -39,12 +50,16 @@ The batch is not finished. Preserve capped/failing evidence and investigate actu
 
 ## Continue
 
-Task2-35a adds terminal input-record export/download and strict headless replay
+PR #209/task2-35a adds terminal input-record export/download and strict headless replay
 verification. Real paid production followed by surrender downloaded a record
 whose hosted bot/setup/external inputs reproduced the exact terminal hash in Bun.
 Running-match export is refused. Wrong versions/hash/tick, malformed records and
 explicit hosted-bot commands are rejected. This is not full-save/keyframe/metadata
 or viewer completion; continue2-35b after validated snapshot restore.
+Independent review's refused-input invariant finding was fixed and independently
+reproduced as rejected. Two core cases16 assertions pass; the authentic downloaded
+record still verifies tick231/hash2111732313edace5 after the fix. Full accepted
+repository tests pass. Review accepted; no further source changes are pending.
 
 Finish/merge the reviewed queue, preserving each PR's own commits when rebasing after squash. Continue non-damage effects, wreck/salvage and lifecycle presentation, required tier1 modes/transport/industrial bonuses/veterancy and complete orders; then validated save/restore/replay, audio/help/content tools and exit evidence. Individual World/bot restore is not a complete save. Full replay files/viewer, per-type/APM/history and a real human-versus-bot completion remain open. The detailed phase plan is authoritative; phase2 and phases3–5 are not complete.
 
