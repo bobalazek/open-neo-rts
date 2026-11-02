@@ -558,6 +558,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "construction",
             "constructionOrder",
             "production",
+            "attackTarget",
           ].includes(key),
       ) ||
       !bounded(entity.force) ||
@@ -626,6 +627,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       )
         return false;
     }
+    if (
+      entity.attackTarget !== undefined &&
+      (typeof entity.attackTarget !== "string" || !/^e[1-9][0-9]*$/.test(entity.attackTarget))
+    )
+      return false;
     if (entity.construction !== undefined) {
       const progress = entity.construction;
       if (

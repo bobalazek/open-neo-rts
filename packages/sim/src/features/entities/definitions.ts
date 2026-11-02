@@ -1,4 +1,6 @@
 import {
+  ARMOR_CLASSES,
+  type ArmorClass,
   arr,
   bool,
   DOMAINS,
@@ -14,8 +16,10 @@ import {
   STRUCTURE_ROLES,
   str,
   UNIT_ROLES,
+  WARHEAD_TAGS,
 } from "@open-neo-rts/content";
 import { strictObject } from "../../snapshots/schema";
+import { type GameplayWeapon, weaponSchema } from "./weapons";
 
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
 export interface Definition {
@@ -33,6 +37,10 @@ export interface Definition {
   harvestCapacity?: number;
   harvestAmountPerSecond?: number;
   dock?: boolean;
+  armor?: ArmorClass;
+  resistPerMille?: Readonly<Record<string, number>>;
+  weapons?: readonly GameplayWeapon[];
+  turretTurnAnglePerTick?: number;
   /** Missing/null means unavailable, never an implicit free construction recipe. */
   construction?: {
     readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
@@ -85,6 +93,10 @@ export const definitionSchema = strictObject({
   harvestAmountPerSecond: opt(int(1, INT32_MAX)),
   dock: opt(bool()),
   role: opt(oneOf([...UNIT_ROLES, ...STRUCTURE_ROLES])),
+  armor: opt(oneOf(ARMOR_CLASSES)),
+  resistPerMille: opt(rec(int(0, 10000), new RegExp(`^(${WARHEAD_TAGS.join("|")})$`))),
+  weapons: opt(arr(weaponSchema, 0, 32)),
+  turretTurnAnglePerTick: opt(int(0, 0x10000)),
   construction: opt({
     json: { anyOf: [recipeSchema.json, { type: "null" }] },
     check(value, path, issues) {
@@ -130,6 +142,21 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
     const kind = definition.id.split(":")[0]?.split(".").at(-1);
     if (ids.has(definition.id)) issues.push({ path: `${path}.id`, message: "duplicate ID" });
     ids.add(definition.id);
+    if (definition.weapons?.length && (kind === "prop" || !definition.armor))
+      issues.push({ path: `${path}.weapons`, message: "armed units/structures require armour" });
+    const weaponIds = new Set<string>();
+    for (const [index, weapon] of (definition.weapons ?? []).entries()) {
+      if (weaponIds.has(weapon.id))
+        issues.push({ path: `${path}.weapons[${index}].id`, message: "duplicate local weapon ID" });
+      weaponIds.add(weapon.id);
+      if (weapon.rangeSubcells[0] > weapon.rangeSubcells[1])
+        issues.push({ path: `${path}.weapons[${index}].rangeSubcells`, message: "inverted range" });
+      if (weapon.aim === "turret" && definition.turretTurnAnglePerTick === undefined)
+        issues.push({
+          path: `${path}.weapons[${index}].aim`,
+          message: "turret aiming requires an authored turret turn rate",
+        });
+    }
     if (kind !== "prop" && definition.health === 0)
       issues.push({ path: `${path}.health`, message: "must be positive for units/structures" });
     if (kind === "prop" && definition.visionSubcells !== undefined)

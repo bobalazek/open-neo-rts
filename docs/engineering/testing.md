@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 23, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 24, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -201,3 +201,14 @@ Normal-start goldens are `8e54e5c2af9b33ed` initially and `4a6845966fc4bccd`
 at tick two. Authored compiler assertions keep that contract tied to the real unit.
 Debug scenario definition metadata now includes the rate; debug state hashes stay
 unchanged because normal harvesting is not registered in debug matches.
+
+
+SIM24 adds canonical weapon target/aim/reload/burst state and tick-scoped private
+shot intents. Normal goldens are `6e7492d37fc30b0f` initially and
+`1321c83b00ceb85c` at tick two. Targeting checks cover current sight, domains,
+inclusive ranges, priority/ties, turret/body aim, brownout, declared fire blockers,
+committed scatter RNG, bounded launch deferral, opaque handles and restored clocks.
+A normal harvester regression verifies explicit attack/harvest order replacement
+preserves cargo. Move and builder assignment also clear explicit attack orders.
+No impact, damage or public firing event is claimed by this targeting task.
+Debug state hashes remain unchanged.

@@ -88,6 +88,16 @@ test("worker replies strictly validate private harvester cargo, status and unloa
   expect(isWorkerReply(packet(harvesting, "debug-no-fog"))).toBe(false);
 });
 
+test("worker replies accept only opaque attack target handles", () => {
+  expect(
+    isWorkerReply(powerReply(undefined, [{ ...entity, power: undefined, attackTarget: "e2" }])),
+  ).toBe(true);
+  for (const attackTarget of [2, "2", "g1", "e0", null, {}])
+    expect(
+      isWorkerReply(powerReply(undefined, [{ ...entity, power: undefined, attackTarget }])),
+    ).toBe(false);
+});
+
 test("worker replies validate extraction status and bounded finite or unlimited remaining deposits", () => {
   const extraction = { kind: "materials", remaining: 4, status: "active" };
   const packet = (value: unknown, mode = "controlled") =>

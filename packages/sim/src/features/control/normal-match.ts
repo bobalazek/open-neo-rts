@@ -185,6 +185,12 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
       harvestAmountPerSecond: def.harvestAmountPerSecond,
     }),
     ...(def.dock !== undefined && { dock: def.dock }),
+    ...(def.armor !== undefined && { armor: def.armor }),
+    ...(def.resistPerMille && { resistPerMille: def.resistPerMille }),
+    ...(def.weapons.length && { weapons: def.weapons }),
+    ...(def.turretTurnAnglePerTick !== undefined && {
+      turretTurnAnglePerTick: def.turretTurnAnglePerTick,
+    }),
     ...(def.construction && { construction: def.construction }),
     ...(def.requires.length && { requires: def.requires }),
     ...(def.role === "builder" && { builds: def.builds }),

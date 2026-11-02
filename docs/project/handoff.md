@@ -55,3 +55,11 @@ Task 2-07b activates SIM23 Supply Truck mining at the approved five credits/seco
 with original 500-credit capacity and cost/time untouched. Authored compiler
 assertions, scenario metadata and normal goldens are updated. Independent static
 review and repository/content checks pass; publication/CI follows.
+
+
+Task 2-13 implements SIM24 legal weapon targeting/aim/bursts and canonical private
+shot intents against integrated hauling/visibility. Original targeting and root
+integration are separately reviewed; root repository/content checks pass. Next
+flight/contact/damage consumes those intents in the same combat phase. Default
+missing aim is omnidirectional, missing forward arc is exact aim; bounded overflow
+defers launches in stable shooter/weapon order. No damage is applied by this task.

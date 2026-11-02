@@ -1,5 +1,6 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
+import { combatFeature } from "./features/combat";
 import { constructionFeature, constructionWorkFeature } from "./features/construction";
 import {
   checkNormalMatchSetup,
@@ -21,6 +22,7 @@ import {
   definitionSchema,
   entitiesFeature,
 } from "./features/entities";
+import { copyWeapons } from "./features/entities/weapons";
 import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
 import { productionFeature } from "./features/production";
@@ -37,7 +39,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 23;
+export const SIM_VERSION = 24;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -71,6 +73,10 @@ export function createMatch(setup: MatchSetup): Kernel {
   const definitions = setup.definitions.map((definition) =>
     Object.freeze({
       ...definition,
+      ...(definition.weapons && { weapons: copyWeapons(definition.weapons) }),
+      ...(definition.resistPerMille && {
+        resistPerMille: Object.freeze({ ...definition.resistPerMille }),
+      }),
       ...(definition.footprint && {
         footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
       }),
@@ -133,6 +139,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeHarvesting(kernel, { definitions, grants: setup.grants });
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });
   if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
+  if (setup.normal) register(kernel, combatFeature({ ...setup, definitions }));
   initializeObservations(kernel, { ...setup, definitions });
   return kernel;
 }

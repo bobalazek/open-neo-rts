@@ -5,6 +5,7 @@ import { type Grant, hasGrant, type Rejection } from "../../commands";
 import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchMap } from "../../match-map";
+import { clearAttackOrder } from "../combat";
 import { BuilderConstruction, clearConstructionOrder } from "../construction";
 import type { NormalMatchSetup } from "../control";
 import { suspendHarvesting } from "../economy/harvesting";
@@ -53,6 +54,7 @@ export function movementFeature(match: {
     if (target) kernel.movement?.refreshOccupancy();
     for (const id of ids) {
       if (match.normal) suspendHarvesting(kernel, id);
+      if (match.normal) clearAttackOrder(kernel, id);
       if (match.normal && world.has(id, BuilderConstruction)) clearConstructionOrder(kernel, id);
       if (kernel.movement && world.has(id, MovementFailure)) world.remove(id, MovementFailure);
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);

@@ -1,5 +1,8 @@
 import type { ArmorClass, ResolvedCatalog, ResourceId } from "@open-neo-rts/content";
 import { type Definition, toDefinition } from "./definitions";
+import type { GameplayWeapon } from "./weapons";
+
+export type { GameplayWarhead, GameplayWeapon } from "./weapons";
 
 type Data = Readonly<Record<string, unknown>>;
 export type GameplayCost = Readonly<Partial<Record<ResourceId, number>>>;
@@ -37,46 +40,6 @@ export interface GameplayResearch {
   readonly researchTicks: number;
   readonly requires: readonly string[];
   readonly effects: readonly GameplayEffect[];
-}
-
-export interface GameplayWarhead {
-  readonly type: string;
-  readonly amount?: number;
-  /** Burn rates stay per second: rounding each tick would erase small rates. */
-  readonly amountPerSecond?: number;
-  readonly versusPerMille?: Readonly<Partial<Record<ArmorClass | "default", number>>>;
-  readonly radiusSubcells?: number;
-  readonly falloffPerMille?: readonly number[];
-  readonly delayTicks?: number;
-  readonly durationTicks?: number;
-  readonly perMille?: number;
-  readonly unit?: string;
-  readonly count?: number;
-  readonly friendlyFire?: boolean;
-  readonly tags: readonly string[];
-}
-
-export interface GameplayWeapon {
-  readonly id: string;
-  readonly targets: readonly string[];
-  readonly rangeSubcells: readonly [number, number];
-  readonly reloadTicks: number;
-  readonly burst?: { readonly count: number; readonly delayTicks: number };
-  readonly scatterSubcells?: number;
-  readonly aim?: string;
-  readonly arcAngle?: number;
-  readonly socket?: string;
-  readonly projectile: {
-    readonly kind: string;
-    readonly speedSubcellsPerTick?: number;
-    readonly gravityPerMille?: number;
-    readonly turnAnglePerTick?: number;
-    readonly flightTicks?: number;
-    readonly fuseTicks?: number;
-    readonly blockedBy?: readonly string[];
-    readonly interceptable?: boolean;
-  };
-  readonly warheads: readonly GameplayWarhead[];
 }
 
 export interface GameplayRepair {

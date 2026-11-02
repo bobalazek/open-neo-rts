@@ -4,6 +4,7 @@ import { World } from "../../ecs";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup, toMatchResources } from "../../match";
 import { createProjection } from "../../projection";
+import { AttackOrder, ShotIntent, WeaponState } from "../combat";
 import {
   BuilderConstruction,
   ConstructionApproach,
@@ -297,6 +298,9 @@ test("canonical snapshots include fractional progress and deposit state, with id
     ProductionGifts,
     ProductionRally,
     OreCell,
+    AttackOrder,
+    WeaponState,
+    ShotIntent,
   ])
     restored.register(component);
   restored.load(f.kernel.world.serialize());
