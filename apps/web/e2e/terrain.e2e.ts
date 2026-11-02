@@ -6,6 +6,8 @@ test("terrain picker loads each authored map and survives an unknown deep link",
   page,
 }, info) => {
   test.skip(info.project.name !== "chromium", "WebGL terrain smoke test runs in Chromium");
+  // Six sequential software-WebGL loads need readiness time, separate from FPS acceptance.
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/?map=unknown");
@@ -20,7 +22,9 @@ test("terrain picker loads each authored map and survives an unknown deep link",
     ["training-grounds", "128 × 128"],
   ]) {
     await select.selectOption(`core.map:${id}`);
-    await expect(page.locator("canvas")).toHaveAttribute("data-map", `core.map:${id}`);
+    await expect(page.locator("canvas")).toHaveAttribute("data-map", `core.map:${id}`, {
+      timeout: 15_000,
+    });
     await expect(page.getByRole("status")).toContainText(size ?? "");
     await expect(page.getByRole("alert")).toHaveCount(0);
   }
