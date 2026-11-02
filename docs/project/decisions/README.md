@@ -20,6 +20,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 ## Index
 
+- [2026-11-02 — Provisional Field Technician repair](./2026-11-02-provisional-builder-repair.md) — Manual adjacent structure repair at 10 HP/second and 25% full-repair credit price under delegated defaults.
+
 Newest first.
 
 - [2026-11-02 — Implement defaults without repeated questions](./2026-11-02-provisional-implementation-autonomy.md) — Owner delegates provisional gameplay decisions and wants continuous implementation.

@@ -138,6 +138,13 @@ test("compiles the authored tier-1 roster once without changing frozen human-uni
   const compiled = compileGameplayCatalog(resolved);
   const definitions = new Map(compiled.definitions.map((d) => [d.id, d]));
   const dragon = definitions.get(unitId("dragon-tank"));
+  expect(definitions.get(unitId("field-technician"))?.repair).toEqual({
+    targets: { families: [], roles: [], tags: [], structures: true },
+    rateMilliHealthPerSecond: 10_000,
+    costPerMille: 250,
+    rangeSubcells: 0,
+    automatic: false,
+  });
   expect(definitions.get(unitId("supply-truck"))).toMatchObject({
     harvestCapacity: 500,
     harvestAmountPerSecond: 5,
