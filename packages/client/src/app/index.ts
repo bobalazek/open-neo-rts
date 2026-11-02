@@ -77,6 +77,8 @@ export function startApp(canvas: HTMLCanvasElement) {
       },
       failure,
       () => navigate("/skirmish"),
+      () => start(config),
+      () => navigate("/"),
     );
     void session.ready
       .then(() => {
