@@ -53,6 +53,7 @@ export interface ConstructionBuild extends DebugSpawn {
 }
 
 export interface Payloads {
+  "commander.activate": { entity: number; ability: string };
   "unit.load": { entities: number[]; entity: number };
   "unit.unload": { entity: number };
   "match.surrender": { force: number };
@@ -128,6 +129,7 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "commander.activate": { entity: ID, ability: /^[a-z0-9]+(-[a-z0-9]+)*$/ },
   "unit.load": { entities: IDS, entity: ID },
   "unit.unload": { entity: ID },
   "match.surrender": { force: ID },

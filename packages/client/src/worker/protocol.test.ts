@@ -8,6 +8,47 @@ const reply = (banks: unknown, mode = "controlled") => ({
   state: { paused: true, speed: 1, snapshot: { tick: 0, mode, entities: [], banks } },
 });
 
+test("private Surge wire data is strict, integer bounded and restricted to controlled snapshots", () => {
+  const packet = (productionSurge: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1,
+        mode,
+        entities: [
+          {
+            handle: "e1",
+            definition: "core.structure:fixture/hq",
+            force: 0,
+            x: 1024,
+            y: 1024,
+            facing: 0,
+            health: 100,
+            maxHealth: 100,
+            order: null,
+            productionSurge,
+          },
+        ],
+      },
+    },
+  });
+  const valid = { id: "production-surge", until: 400, readyAt: 2400, perMille: 1500 };
+  expect(isWorkerReply(packet(valid))).toBe(true);
+  for (const invalid of [
+    { ...valid, until: -1 },
+    { ...valid, until: 0.5 },
+    { ...valid, readyAt: 0x1_0000_0000 },
+    { ...valid, perMille: 2001 },
+    { ...valid, id: "" },
+    { ...valid, force: 0 },
+    { ...valid, [Symbol("hidden")]: true },
+  ])
+    expect(isWorkerReply(packet(invalid))).toBe(false);
+  expect(isWorkerReply(packet(valid, "debug-no-fog"))).toBe(false);
+});
+
 test("deploy wire data accepts public state and optional private cooldown but rejects malformed metadata", () => {
   const packet = (deploy: unknown, mode = "controlled") => ({
     id: 1,

@@ -1,6 +1,7 @@
 import type { Issue } from "@open-neo-rts/content";
 import type { Grant } from "./commands";
 import { initializeUnitModes } from "./features/abilities";
+import { initializeProductionSurges } from "./features/abilities/production-surge";
 import { combatFeature } from "./features/combat";
 import { initializeBurn } from "./features/combat/burn";
 import { initializeDisable } from "./features/combat/disable";
@@ -50,7 +51,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 42;
+export const SIM_VERSION = 43;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -100,6 +101,15 @@ export function createMatch(setup: MatchSetup): Kernel {
             Object.freeze({ ...rule, tags: Object.freeze([...rule.tags]) }),
           ),
         ),
+      }),
+      ...(definition.productionReward && {
+        productionReward: Object.freeze({ ...definition.productionReward }),
+      }),
+      ...(definition.productionSurge && {
+        productionSurge: Object.freeze({
+          ...definition.productionSurge,
+          cost: Object.freeze({ ...definition.productionSurge.cost }),
+        }),
       }),
       ...(definition.footprint && {
         footprint: Object.freeze([...definition.footprint]) as readonly [number, number],
@@ -170,6 +180,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });
   if (setup.normal) initializeTransports(kernel, { ...setup, definitions });
   if (setup.normal) initializeForceBanks(kernel, setup.normal.forces, setup.grants);
+  if (setup.normal) initializeProductionSurges(kernel, { ...setup, definitions });
   initializeStatistics(kernel, setup);
   if (setup.normal) initializeExtraction(kernel, definitions);
   if (setup.normal) initializeOre(kernel);

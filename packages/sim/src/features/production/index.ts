@@ -204,6 +204,20 @@ export function productionFeature(
       return;
     }
     const spawned = spawnEntity(kernel, index, unit, { definition: unit.id, force, ...point });
+    const reward = definitionOf(kernel, producer)?.productionReward;
+    if (
+      reward &&
+      world.get(id, ProductionItem, "gift") === 0 &&
+      Object.values(stockFields).some((field) => world.get(id, ProductionItem, field) > 0)
+    ) {
+      const balance = kernel.economy?.balance(force)?.[reward.resource];
+      const amount =
+        balance === undefined ? 0 : Math.max(0, Math.min(reward.amount, reward.cap - balance));
+      if (amount > 0) {
+        const earned = kernel.economy?.gain(force, { [reward.resource]: amount });
+        if (!earned?.ok) throw new Error("Validated production reward could not be credited");
+      }
+    }
     kernel.statistics?.record(force, "unitsBuilt");
     // Harvesting orders belong to logistics; a harvester never inherits a combat point rally.
     if (world.has(producer, ProductionRally) && unit.role !== "harvester")
@@ -327,7 +341,8 @@ export function productionFeature(
           status(kernel, id, "population");
           continue;
         }
-        const rate = kernel.power?.productionPerMille(producer) ?? 0;
+        const baseRate = kernel.power?.productionPerMille(producer) ?? 0;
+        const rate = Math.floor((baseRate * (kernel.productionSurges?.rate(force) ?? 1000)) / 1000);
         if (rate === 0) {
           status(kernel, id, "disabled");
           continue;
@@ -350,7 +365,7 @@ export function productionFeature(
             world.set(id, ProductionItem, "remainder", (remainder + rate) % 1000);
           }
         }
-        status(kernel, id, rate === 500 ? "brownout" : "active");
+        status(kernel, id, baseRate === 500 ? "brownout" : "active");
         if (world.get(id, ProductionItem, "state") === 2) output(kernel, id, producer, unit);
       }
     }

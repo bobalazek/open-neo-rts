@@ -768,6 +768,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "attackTarget",
             "disabled",
             "burning",
+            "productionSurge",
             "repair",
             "repairOrder",
             "deploy",
@@ -784,6 +785,21 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
+    if (entity.productionSurge !== undefined) {
+      const surge = entity.productionSurge;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(surge) ||
+        !exact(surge, ["id", "until", "readyAt", "perMille"]) ||
+        typeof surge.id !== "string" ||
+        !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(surge.id) ||
+        !bounded(surge.until, 0xffffffff) ||
+        !bounded(surge.readyAt, 0xffffffff) ||
+        !bounded(surge.perMille, 2000) ||
+        Number(surge.perMille) < 1000
+      )
+        return false;
+    }
     if (entity.cargo !== undefined) {
       const cargo = entity.cargo;
       if (

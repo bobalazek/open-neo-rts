@@ -104,6 +104,8 @@
   "ui.hud.deployed": "{name} · Deployed",
   "ui.hud.emp-disabled": "Disabled by EMP",
   "ui.hud.burning": "On fire",
+  "ui.hud.surge": "Mass Production Surge",
+  "ui.hud.surge-active": "Production +{percent}% · {seconds}s remaining",
   "ui.hud.packed": "{name} · Packed",
   "ui.hud.attack": "Attack target",
   "ui.hud.harvest": "Harvest ore",

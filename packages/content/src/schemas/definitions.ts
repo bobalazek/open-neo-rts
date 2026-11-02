@@ -351,6 +351,13 @@ export const SCHEMAS = {
     abilities: opt(arr(ability)),
     research: opt(arr(research)),
     spawnsWith: opt(arr(idOf("unit"))),
+    productionReward: opt(
+      obj({
+        resource: oneOf(["credits", "materials", "industrial-capacity", "salvage-points"]),
+        amount: int(1, 0x7fffffff),
+        cap: int(1, 0x7fffffff),
+      }),
+    ),
     productionSlots: opt(
       int(1, 5, "simultaneously active unit items; total player queue limit is five"),
     ),

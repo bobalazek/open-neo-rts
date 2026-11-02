@@ -740,6 +740,38 @@
         "description": "unit ID"
       }
     },
+    "productionReward": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "resource": {
+          "enum": [
+            "credits",
+            "materials",
+            "industrial-capacity",
+            "salvage-points"
+          ]
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "resource",
+        "amount",
+        "cap"
+      ],
+      "additionalProperties": false
+    },
     "productionSlots": {
       "type": "integer",
       "minimum": 1,

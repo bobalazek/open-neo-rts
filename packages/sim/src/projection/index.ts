@@ -92,6 +92,7 @@ export interface PresentedEntity {
   attackTarget?: string;
   disabled?: true;
   burning?: true;
+  productionSurge?: { id: string; until: number; readyAt: number; perMille: number };
 }
 export interface PresentedConstructionRequest {
   handle: string;
@@ -233,8 +234,12 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             ? world.get(id, AttackOrder, "target")
             : 0;
         const deployment = kernel.unitModes?.snapshot(id);
+        const surge = permits(force, "commander.abilities")
+          ? kernel.productionSurges?.snapshot(id)
+          : undefined;
         const powerDetails = inspectPower ? kernel.power?.details(id) : undefined;
         entities.push({
+          ...(surge && { productionSurge: surge }),
           ...(controlled &&
             kernel.transport?.snapshot(id) && { cargo: kernel.transport.snapshot(id) }),
           ...(deployment && {

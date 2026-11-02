@@ -1,7 +1,9 @@
-import type { ArmorClass, ResolvedCatalog, ResourceId } from "@open-neo-rts/content";
+import type { ArmorClass, Issue, ResolvedCatalog, ResourceId } from "@open-neo-rts/content";
 import {
   type Definition,
   type DeployModeDefinition,
+  type ProductionSurgeDefinition,
+  productionSurgeSchema,
   type RepairDefinition,
   toDefinition,
 } from "./definitions";
@@ -104,6 +106,55 @@ export interface GameplayCatalog {
   readonly gameplayHash: string;
   readonly definitions: readonly GameplayDefinition[];
   readonly factions: readonly GameplayFaction[];
+}
+
+function productionSurge(
+  abilities: readonly GameplayAbility[],
+): ProductionSurgeDefinition | undefined {
+  const candidates = abilities.filter((ability) =>
+    ability.effects.some(
+      (effect) =>
+        effect.type === "modifyStat" &&
+        effect.stat === "productionSpeed" &&
+        effect.scope === "force",
+    ),
+  );
+  if (candidates.length > 1)
+    throw new Error("Only one Force production surge per provider is supported");
+  const ability = candidates[0];
+  if (!ability) return;
+  const effect = ability.effects[0];
+  if (
+    ability.target !== "self" ||
+    ability.effects.length !== 1 ||
+    !effect ||
+    effect.type !== "modifyStat" ||
+    effect.stat !== "productionSpeed" ||
+    effect.scope !== "force" ||
+    effect.target ||
+    effect.amount ||
+    effect.unit !== undefined ||
+    effect.radiusSubcells !== undefined ||
+    !effect.durationTicks ||
+    effect.perMille === undefined ||
+    ability.autoCast ||
+    ability.rangeSubcells !== undefined
+  )
+    throw new Error(`Unsupported Force production surge: ${ability.id}`);
+  const result = {
+    id: ability.id,
+    perMille: effect.perMille,
+    durationTicks: effect.durationTicks,
+    cooldownTicks: ability.cooldownTicks,
+    cost: { ...ability.cost },
+  };
+  const issues: Issue[] = [];
+  productionSurgeSchema.check(result, ability.id, issues);
+  if (issues.length)
+    throw new Error(
+      `Invalid production surge: ${issues.map((issue) => `${issue.path}: ${issue.message}`).join("; ")}`,
+    );
+  return result;
 }
 
 /** Persistent self modifiers with an explicit movement lock are deploy modes, not arbitrary spells. */
@@ -330,6 +381,7 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       effects: list(a.effects).map((e) => effect(pack, e)),
     }));
     const deployment = kind === "unit" ? deployMode(abilities) : undefined;
+    const surge = kind === "structure" ? productionSurge(abilities) : undefined;
     if (
       transport?.fireWhileDeployed === true &&
       (!deployment || !["wheeled", "tracked"].includes(data(raw.movement).domain as string))
@@ -359,6 +411,7 @@ export function compileGameplayCatalog(catalog: ResolvedCatalog): GameplayCatalo
       weapons: list(raw.weapons).map((w) => weapon(pack, w)),
       abilities,
       ...(deployment && { deployMode: deployment }),
+      ...(surge && { productionSurge: surge }),
       research: list(raw.research).map((r) => ({
         id: r.id as string,
         cost: numbers(r.cost),

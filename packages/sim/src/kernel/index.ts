@@ -20,6 +20,7 @@ import {
 } from "../commands";
 import { type Component, World } from "../ecs";
 import type { UnitModes } from "../features/abilities";
+import type { ProductionSurges } from "../features/abilities/production-surge";
 import type { BotSeats } from "../features/control/bots";
 import type { ForceBanks, ForceExtraction, ForcePower } from "../features/economy";
 import type { UnitTransports } from "../features/entities/transport";
@@ -113,6 +114,7 @@ export interface LogEntry {
 export interface Kernel {
   transport?: UnitTransports;
   unitModes?: UnitModes;
+  productionSurges?: ProductionSurges;
   statistics?: MatchStatistics;
   /** Derived capacity/availability check at the canonical shot handoff. */
   canLaunch?: (definition: number, weapon: number) => boolean;

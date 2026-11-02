@@ -12,7 +12,6 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-43c · Mode transformation playback](./phases/2.md#2-43--data-driven-tier-1-modes-and-required-modifiers). PR type: engine after lifecycle; EMP integration is implemented, but authored transformation clips remain.
-- [ ] [2-45b · Industrial-capacity reward and Mass Production Surge engine](./phases/2.md#2-45--tier-1-industrial-capacity-and-production-bonuses). PR type: engine after reactor adjacency; real paid-unit awards, granted activation, Force cooldown and bounded production progress.
 - [ ] [2-45c · Authored industrial awards and Force surge scope](./phases/2.md#2-45--tier-1-industrial-capacity-and-production-bonuses). PR type: faction after engine; minimal provisional earning/cap values and explicit authored Force scope, retaining existing surge numbers and approved free mode toggles.
 - [ ] [2-46 · Veterancy progression and effective stats](./phases/2.md#2-46--veterancy-progression-and-effective-stats). PR type: engine; canonical XP/ranks, bounded bonuses, top-rank repair and settings/projection/replay behavior.
 - [ ] [2-22c · Controller APM and per-type/time-series statistics](./phases/2.md#2-22--caps-defeat-victory-and-match-statistics). PR type: engine; actual accepted orders and sampled gameplay totals after canonical summary counters.
