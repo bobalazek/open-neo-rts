@@ -913,3 +913,56 @@ test("retained death freezes a partial deployment instead of returning the chass
     f.dispose();
   }
 });
+
+test("reversals before import match an already loaded APC, including legal paused single-step toggles", async () => {
+  const data = await bytes("metamorphic-apc");
+  for (const paused of [false, true]) {
+    const ready = fixture(),
+      late = fixture();
+    let resolve: ((data: Uint8Array) => void) | undefined;
+    const pending = new Promise<Uint8Array>((done) => {
+      resolve = done;
+    });
+    const loaded = createEntityPresentation(ready.scene, ready.terrain, async () => ({
+      bytes: data,
+      movementDomain: "wheeled",
+    }));
+    const delayed = createEntityPresentation(late.scene, late.terrain, async () => ({
+      bytes: await pending,
+      movementDomain: "wheeled",
+    }));
+    const state = (tick: number, active: boolean) =>
+      snapshot(tick, [entity("apc", { deploy: { id: "bunker", active } })]);
+    try {
+      await loaded.accept(state(0, false), 0);
+      const first = delayed.accept(state(0, false), 0);
+      if (paused) {
+        loaded.setPlaybackRate(0);
+        delayed.setPlaybackRate(0);
+      }
+      await loaded.accept(state(1, true), paused ? 0 : 50);
+      const deploy = delayed.accept(state(1, true), paused ? 0 : 50);
+      await loaded.accept(state(61, false), paused ? 0 : 1550);
+      const pack = delayed.accept(state(61, false), paused ? 0 : 1550);
+      loaded.render(paused ? 0 : 2050);
+      delayed.render(paused ? 0 : 2050);
+      resolve?.(data);
+      await Promise.all([first, deploy, pack]);
+      for (const name of ["deploy_chassis", "deploy_wheels_l", "deploy_wheels_r"]) {
+        const part = (scene: Scene) => {
+          const node = root(scene, "apc")
+            .getChildTransformNodes()
+            .find((node) => node.name === name);
+          assert(node);
+          return node.position.asArray();
+        };
+        expect(part(late.scene)).toEqual(part(ready.scene));
+      }
+    } finally {
+      loaded.dispose();
+      delayed.dispose();
+      ready.dispose();
+      late.dispose();
+    }
+  }
+});

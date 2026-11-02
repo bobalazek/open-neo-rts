@@ -38,6 +38,7 @@ interface Entity {
   attackElapsed?: number;
   deployed: boolean;
   deployElapsed?: number;
+  deployHistory?: number[];
   deathElapsed?: number;
   height?: number;
   root?: TransformNode;
@@ -342,6 +343,12 @@ export function createEntityPresentation(
   function sampleDeployment(entity: Entity) {
     if (!entity.playback) return;
     const length = entity.playback.duration("deploy");
+    if (entity.deployHistory) {
+      let elapsed = 0;
+      for (const span of entity.deployHistory) elapsed = length - Math.min(length, elapsed + span);
+      entity.deployElapsed = elapsed + (entity.deployElapsed ?? 0);
+      entity.deployHistory = undefined;
+    }
     const elapsed = Math.min(length, entity.deployElapsed ?? length);
     entity.playback.deploy(entity.deployed ? elapsed : length - elapsed);
   }
@@ -437,8 +444,15 @@ export function createEntityPresentation(
         entity.rank = projected.veterancy?.rank;
         const deployed = projected.deploy?.active ?? false;
         if (deployed !== entity.deployed) {
-          const length = entity.playback?.duration("deploy") ?? 0;
-          entity.deployElapsed = length - Math.min(length, entity.deployElapsed ?? length);
+          if (entity.playback) {
+            const length = entity.playback.duration("deploy");
+            entity.deployElapsed = length - Math.min(length, entity.deployElapsed ?? length);
+          } else {
+            // The authored duration is unknown until import; retain time between observed toggles.
+            entity.deployHistory ??= [];
+            if (entity.deployElapsed !== undefined) entity.deployHistory.push(entity.deployElapsed);
+            entity.deployElapsed = 0;
+          }
           entity.deployed = deployed;
         }
         entity.construction = projected.construction
