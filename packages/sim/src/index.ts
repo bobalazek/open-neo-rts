@@ -7,6 +7,7 @@ export * from "./features/economy";
 export * from "./features/entities";
 export * from "./features/movement";
 export * from "./features/production";
+export * from "./features/vision";
 export * from "./kernel";
 export * from "./match";
 export * from "./projection";

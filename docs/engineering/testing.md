@@ -35,7 +35,7 @@ The game is only as trustworthy as its determinism. Most of the testing effort g
 
 ### Map-aware command-log format (version 2)
 
-The JSON envelope is `{ "format": 2, "simVersion": 19, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
+The JSON envelope is `{ "format": 2, "simVersion": 20, "setup": { ... }, "commands": [ ... ] }`. `format` versions the file shape; `simVersion` must equal the exported `SIM_VERSION`. Unknown fields and malformed values are rejected with JSON paths. Logs from previous simulation versions are incompatible: there is no implicit migration. Re-author them with explicit map and placement metadata under the current simulation version and regenerate their goldens deliberately.
 
 Optional `setup.normal` records the normal starting kit, content identity, selected
 spawns/teams and resolved starting settings. Normal startup creates real entities
@@ -118,6 +118,15 @@ Tests cover exact budgets/remainders, clipping/overlaps/overflow, mining bounds,
 neighbour-seeded regrowth, match isolation and restored-cell continuation.
 Startup rejects reachable zero-cap cells when all actual stock is inaccessible.
 Debug state hashes are unchanged; no global ore snapshot or hauling is claimed.
+
+SIM20 adds authored vision metadata, normal fog mode and canonical exploration.
+Normal-start goldens become `56b929058985be63` initially and `38a78eb76ef7cd23`
+at tick two. Focused regressions cover circular range, below-cliff occlusion,
+opaque endpoints/corner ties, movement/death/ownership/site completion, teams,
+copied grids, strict same-match load and derived-cache rebuild. Normal startup
+wires vision; debug can explicitly opt in without changing its default hashes.
+`load()` validates feature layout/groups; the future outer save envelope owns
+sim/map/content identity. No ghost/client fog publication is claimed until 2-19.
 
 `setup` contains:
 

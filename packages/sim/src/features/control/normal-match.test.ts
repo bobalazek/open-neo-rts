@@ -120,6 +120,32 @@ function state() {
   return createNormalMatchSetup(options());
 }
 
+test("normal setup preserves authored vision and validates fog modes", () => {
+  const input = options();
+  const setup = createNormalMatchSetup({ ...input, settings: { fog: "explored" } });
+  expect(setup.normal?.settings.fog).toBe("explored");
+  for (const definition of setup.definitions)
+    expect(definition.visionSubcells).toBe(
+      input.catalog.definitions.find((entry) => entry.id === definition.id)?.visionSubcells,
+    );
+  const kernel = createMatch(setup);
+  expect(kernel.vision?.mode).toBe("explored");
+  expect(kernel.vision?.copyGrid(1)?.cells.some((cell) => cell === 0)).toBe(false);
+  expect(kernel.vision?.copyGrid(1)?.cells.some((cell) => cell === 2)).toBe(true);
+  expect(state().normal?.settings.fog).toBe("standard");
+  const normal = setup.normal;
+  if (!normal) throw new Error("Expected normal setup");
+  expect(() =>
+    createMatch({
+      ...setup,
+      normal: {
+        ...normal,
+        settings: { ...normal.settings, fog: "invalid" as "standard" },
+      },
+    }),
+  ).toThrow();
+});
+
 test("normal setup preserves data-defined extractor rates and copies their immutable match inputs", () => {
   const input = options();
   const base = catalog.definitions.find(
@@ -163,7 +189,7 @@ test("normal initialization creates the authored headquarters, two builders, har
   const setup = state();
   const kernel = createMatch(setup);
   const ids = kernel.world.query(Template, OwnerForce, Health, Transform);
-  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"540efd00592032f2"`);
+  expect(checkpointHash(kernel)).toMatchInlineSnapshot(`"56b929058985be63"`);
   expect(ids).toHaveLength(14);
   expect(kernel.tick).toBe(0);
   expect(kernel.log).toEqual([]);
@@ -234,7 +260,7 @@ test("normal setup survives JSON scenario/worker validation and canonical replay
   expect(runScenario(scenario, { ticks: 2 })).toMatchInlineSnapshot(`
     [
       {
-        "hash": "8520c8ea79fb7845",
+        "hash": "38a78eb76ef7cd23",
         "tick": 2,
       },
     ]
