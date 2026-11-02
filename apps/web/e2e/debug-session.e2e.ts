@@ -1,6 +1,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
+import manifest from "../../../content/core/manifest.json" with { type: "json" };
 
 async function observeWorker(page: Page) {
   await page.addInitScript(() => {
@@ -108,7 +109,11 @@ for (const production of [false, true]) {
       const canvas = page.locator("#game");
       await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
       const definitions = page.getByRole("listbox", { name: "Definition" });
-      expect(await definitions.locator("option").count()).toBe(136);
+      await expect(definitions.locator("option")).toHaveCount(
+        manifest.files.units.length +
+          manifest.files.structures.length +
+          manifest.files.props.length,
+      );
       await page.getByRole("searchbox", { name: "Search definitions" }).fill("Dragon Tank");
       expect(await definitions.locator("option").count()).toBe(1);
       await page.getByRole("searchbox", { name: "Search definitions" }).fill("");

@@ -25,6 +25,7 @@ test("the committed two-Force scenario reproduces its real tier-1 setup and acce
   expect(kernel.world.query()).toHaveLength(14);
 });
 
+// Repeated full replays include cold CLI processes on shared CI runners.
 test("10,000 ticks match all 100 goldens twice in one process and in two fresh CLI processes", () => {
   expect(golden.map(({ tick }) => tick)).toEqual(
     Array.from({ length: 100 }, (_, i) => (i + 1) * 100),
@@ -40,4 +41,4 @@ test("10,000 ticks match all 100 goldens twice in one process and in two fresh C
     expect(result.stderr.toString()).toBe("");
     expect(result.stdout.toString()).toBe(expected);
   }
-});
+}, 15_000);
