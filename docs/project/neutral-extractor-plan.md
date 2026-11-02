@@ -2,6 +2,8 @@
 
 Status: design proposal, 2026-11-01. The owner approved one neutral extractor built by any faction on either raw-material or oil nodes, then requested a planning pass in the context of the other structures. That shared-type direction is decided; the operating details below are recommendations, not approved stats or implementation instructions.
 
+The [normal construction proposal](./construction-policy-proposal.md) makes the related footprint, expansion, payment and clearance recommendations concrete for owner review. It does not activate those rules or settle extraction rates and balance.
+
 ## Recommended role
 
 Add one shared **Resource Extractor** (_Addition_) as a node producer. Keep the existing ore logistics, faction drop-offs and power structures. A shared design becomes owned by the building Force and uses its team color; “neutral” describes availability to every faction, not ownerless production.
