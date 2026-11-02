@@ -8,9 +8,17 @@ import { type Grant, validateCommands } from "../../commands";
 import { checkpointHash, createKernel, register, step } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
+import { initializeObservations } from "../../projection/observations";
 import { flatMap } from "../../testing";
 import { ConstructionSite } from "../construction";
-import { entitiesFeature, OwnerForce, spawnEntity, toDefinition } from "../entities";
+import {
+  entitiesFeature,
+  Health,
+  OwnerForce,
+  spawnEntity,
+  Transform,
+  toDefinition,
+} from "../entities";
 import { movementFeature } from "../movement";
 import { initializeForcePower, StructurePower } from "./power";
 
@@ -35,7 +43,7 @@ function fixture(spawn = true) {
   const kernel = createKernel(setup);
   register(kernel, entitiesFeature(definitions));
   register(kernel, movementFeature({ definitions, grants }));
-  const power = initializeForcePower(kernel, setup.forces, grants);
+  const power = initializeForcePower(kernel, setup.forces, grants, definitions);
   const entities = (spawn ? definitions : []).map((definition, index) =>
     spawnEntity(kernel, index, definition, {
       definition: definition.id,
@@ -157,7 +165,7 @@ test("amounts and toggles are serialized/hashed; restored Worlds keep the same c
   const disabled = checkpointHash(kernel);
   kernel.world.set(plant, StructurePower, "amount", 130);
   expect(checkpointHash(kernel)).not.toBe(disabled);
-  expect(() => initializeForcePower(kernel, [], [])).toThrow("already initialized");
+  expect(() => initializeForcePower(kernel, [], [], [])).toThrow("already initialized");
 });
 
 test("power projection copies economically permitted totals and gives economy-only seats private structure handles", () => {
@@ -186,4 +194,123 @@ test("power projection copies economically permitted totals and gives economy-on
   expect(power.canInspect(3, 1)).toBe(false);
   expect(army.snapshot(kernel).power).toEqual([]);
   expect(army.snapshot(kernel).entities).toEqual([]);
+});
+
+const addReactor = (kernel: ReturnType<typeof createKernel>, x: number, y: number, force = 1) =>
+  spawnEntity(kernel, 1, definitions[1]!, { definition: reactor.id, force, x, y, facing: 16384 });
+
+test("authored reactor bonuses add to base output, cap sources by ID and never recursively multiply", () => {
+  const { kernel, power, plant } = fixture();
+  const { world } = kernel;
+  world.set(plant, Transform, "x", 10 * 1024);
+  world.set(plant, Transform, "y", 10 * 1024);
+  world.set(plant, Transform, "facing", 16384);
+  const sources = [
+    [13, 10],
+    [7, 10],
+    [10, 14],
+    [10, 6],
+  ].map(([x, y]) => addReactor(kernel, x! * 1024, y! * 1024));
+  expect(power.details(plant)).toEqual({
+    amount: 182,
+    baseAmount: 140,
+    sources: sources.slice(0, 3),
+  });
+  expect(power.details(sources[0]!)).toEqual({ amount: 154, baseAmount: 140, sources: [plant] });
+  expect(world.get(plant, StructurePower, "amount")).toBe(140);
+  expect(power.balance(1)?.produced).toBe(818);
+  const a = power.details(plant);
+  (a.sources as number[]).length = 0;
+  expect(power.details(plant).sources).toHaveLength(3);
+});
+
+test("adjacency measures inclusive rotated footprint edges and excludes diagonal gap shortcuts", () => {
+  const { kernel, power } = fixture(false),
+    world = kernel.world;
+  const a = addReactor(kernel, 4 * 1024, 4 * 1024),
+    b = addReactor(kernel, 7 * 1024, 4 * 1024);
+  expect(power.details(a).amount).toBe(154);
+  world.set(b, Transform, "x", 7 * 1024 + 1);
+  expect(power.details(a).amount).toBe(140);
+  world.set(b, Transform, "x", 7 * 1024);
+  world.set(b, Transform, "y", 8 * 1024);
+  expect(power.details(a).amount).toBe(140);
+  world.set(b, Transform, "x", 6 * 1024);
+  expect(power.details(a).amount).toBe(154);
+  world.set(b, Transform, "x", 8 * 1024);
+  world.set(b, Transform, "y", 4 * 1024);
+  expect(power.details(a).amount).toBe(140);
+  world.set(a, Transform, "facing", 0);
+  expect(power.details(a).amount).toBe(154);
+});
+
+test("completion, power, EMP, death and ownership immediately change links without altering base power", () => {
+  const { kernel, power } = fixture(false),
+    world = kernel.world;
+  const a = addReactor(kernel, 4 * 1024, 4 * 1024),
+    b = addReactor(kernel, 7 * 1024, 4 * 1024);
+  expect(power.details(a).amount).toBe(154);
+  world.add(b, ConstructionSite);
+  expect(power.details(a).amount).toBe(140);
+  world.remove(b, ConstructionSite);
+  world.set(b, StructurePower, "enabled", 0);
+  expect(power.details(a).amount).toBe(140);
+  world.set(b, StructurePower, "enabled", 1);
+  kernel.disabled = (id) => id === b;
+  expect(power.details(a).amount).toBe(140);
+  expect(power.balance(1)?.produced).toBe(140);
+  delete kernel.disabled;
+  world.set(b, Health, "current", 0);
+  expect(power.details(a).amount).toBe(140);
+  world.set(b, Health, "current", 1300);
+  world.set(b, OwnerForce, "force", 2);
+  expect(power.details(a).amount).toBe(140);
+  world.set(b, OwnerForce, "force", 1);
+  expect(power.balance(1)?.produced).toBe(308);
+  world.destroy(b);
+  expect(power.details(a)).toEqual({ baseAmount: 140, amount: 140, sources: [] });
+});
+
+test("economic projections copy boosted amounts and opaque source handles without leaking to army-only seats", () => {
+  const { setup, kernel, power } = fixture(false);
+  addReactor(kernel, 4 * 1024, 4 * 1024);
+  addReactor(kernel, 7 * 1024, 4 * 1024);
+  const economic = createProjection(setup, 2, "controlled"),
+    packet = economic.snapshot(kernel);
+  expect(packet.entities[0]?.power).toEqual({
+    amount: 154,
+    baseAmount: 140,
+    sources: [packet.entities[1]!.handle],
+    enabled: true,
+    powered: true,
+  });
+  expect(packet.entities[1]?.power?.sources).toEqual([packet.entities[0]!.handle]);
+  Reflect.set(packet.entities[0]!.power!.sources!, 0, "e999");
+  expect(economic.snapshot(kernel).entities[0]?.power?.sources).toEqual([
+    packet.entities[1]!.handle,
+  ]);
+  expect(power.balance(1)?.produced).toBe(308);
+  expect(createProjection(setup, 3, "controlled").snapshot(kernel).entities).toEqual([]);
+  initializeObservations(kernel, setup);
+  const observed = kernel.observe!(2),
+    before = checkpointHash(kernel);
+  Reflect.set(observed.entities[0]!.power!.sources!, 0, "e999");
+  expect(kernel.observe!(2).entities[0]?.power?.sources).toEqual([packet.entities[1]!.handle]);
+  expect(checkpointHash(kernel)).toBe(before);
+});
+
+test("power adjacency conversion rejects invalid tags, bounds and non-generating definitions", () => {
+  const rule = reactor.adjacency[0]!;
+  for (const change of [
+    { tags: [] },
+    { radius: 11 },
+    { percent: 99 },
+    { percent: 1001 },
+    { maxSources: 6 },
+  ])
+    expect(() => toDefinition({ ...reactor, adjacency: [{ ...rule, ...change }] })).toThrow(
+      "Invalid definition",
+    );
+  expect(() => toDefinition({ ...reactor, power: 0 })).toThrow("positive-output");
+  expect(() => toDefinition({ ...builder, adjacency: [rule] })).toThrow("positive-output");
 });

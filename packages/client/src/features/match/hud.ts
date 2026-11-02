@@ -1107,7 +1107,7 @@ export function createMatchHud(
           state: workState(entity.extraction.status),
         }),
       );
-    if (entity.power)
+    if (entity.power && !entity.disabled && !entity.constructionSite)
       lines.push(
         text(
           entity.power.enabled
@@ -1116,6 +1116,29 @@ export function createMatchHud(
               : "ui.hud.brownout"
             : "ui.hud.disabled",
         ),
+      );
+    if (entity.power)
+      lines.push(
+        text("ui.hud.power-amount", {
+          value:
+            entity.power.enabled && !entity.disabled && !entity.constructionSite
+              ? entity.power.amount
+              : 0,
+        }),
+      );
+    if (entity.power?.sources?.length && entity.power.baseAmount !== undefined)
+      lines.push(
+        text("ui.hud.power-adjacency", {
+          base: entity.power.baseAmount,
+          sources: entity.power.sources
+            .map((handle) => {
+              const source = snapshot?.entities.find((candidate) => candidate.handle === handle);
+              return source
+                ? `${name(source.definition)} (${Math.floor(source.x / 1024)}, ${Math.floor(source.y / 1024)})`
+                : text("ui.hud.selection");
+            })
+            .join(", "),
+        }),
       );
     if (entity.order)
       lines.push(text(entity.order.type === "move" ? "ui.hud.moving" : "ui.hud.attacking"));

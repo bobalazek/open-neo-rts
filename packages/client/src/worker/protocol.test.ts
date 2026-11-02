@@ -320,6 +320,29 @@ test("worker replies reject malformed, duplicate, unsorted and contradictory pow
     expect(isWorkerReply(powerReply([power], [{ ...entity, power: malformed }]))).toBe(false);
 });
 
+test("power adjacency wire data requires a bounded opaque source list and consistent effective/base amounts", () => {
+  const value = { amount: 154, baseAmount: 140, sources: ["e2"], enabled: true, powered: true };
+  const packet = (power: unknown) => powerReply(undefined, [{ ...entity, power }]);
+  expect(isWorkerReply(packet(value))).toBe(true);
+  expect(isWorkerReply(packet({ ...value, amount: 1, baseAmount: 1 }))).toBe(true);
+  for (const malformed of [
+    { ...value, baseAmount: 0 },
+    { ...value, baseAmount: 140.5 },
+    { ...value, amount: 139 },
+    { ...value, enabled: false },
+    { ...value, powered: false },
+    { ...value, sources: [] },
+    { ...value, sources: Array(1) },
+    { ...value, sources: [2] },
+    { ...value, sources: ["g1"] },
+    { ...value, sources: ["e2", "e2"] },
+    { ...value, sources: Array.from({ length: 41 }, (_, i) => `e${i + 1}`) },
+    { amount: 154, enabled: true, powered: true, sources: ["e2"] },
+    { ...value, extra: 1 },
+  ])
+    expect(isWorkerReply(packet(malformed))).toBe(false);
+});
+
 test("worker replies validate construction markers and private clearance/refusal state", () => {
   const request = {
     handle: "e2",

@@ -45,6 +45,13 @@ export interface DeployModeDefinition {
   readonly cost: Readonly<Partial<Record<ResourceId, number>>>;
 }
 
+export interface PowerAdjacency {
+  readonly tags: readonly string[];
+  readonly radiusSubcells: number;
+  readonly perMille: number;
+  readonly maxSources: number;
+}
+
 /** Spawnable content in simulation units. A zero health prop is indestructible. */
 export interface Definition {
   id: string;
@@ -57,6 +64,7 @@ export interface Definition {
   visionSubcells?: number;
   /** Completed structure capacity: positive supply, negative draw. */
   power?: number;
+  powerAdjacency?: readonly PowerAdjacency[];
   role?: string;
   tags?: readonly string[];
   repair?: RepairDefinition;
@@ -118,6 +126,18 @@ export const definitionSchema = strictObject({
   turnRate: int(0, 0x10000),
   visionSubcells: opt(int(0, 40 * 1024)),
   power: opt(int(-500, 500)),
+  powerAdjacency: opt(
+    arr(
+      strictObject({
+        tags: arr(str(/^[a-z0-9-]+$/), 1, 1000),
+        radiusSubcells: int(0, 10 * 1024),
+        perMille: int(1000, 10000),
+        maxSources: int(1, 5),
+      }),
+      1,
+      8,
+    ),
+  ),
   harvestCapacity: opt(int(1, INT32_MAX)),
   harvestAmountPerSecond: opt(int(1, INT32_MAX)),
   dock: opt(bool()),
@@ -240,6 +260,14 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       });
     if (kind !== "structure" && definition.power !== undefined)
       issues.push({ path: `${path}.power`, message: "only structures declare power" });
+    if (
+      definition.powerAdjacency &&
+      (kind !== "structure" || !definition.footprint || (definition.power ?? 0) <= 0)
+    )
+      issues.push({
+        path: `${path}.powerAdjacency`,
+        message: "power adjacency requires a positive-output structure with a footprint",
+      });
     if (
       (definition.harvestCapacity !== undefined ||
         definition.harvestAmountPerSecond !== undefined) &&
@@ -375,6 +403,14 @@ export function toDefinition(content: {
   extraction?: Definition["extraction"];
   blocks?: string;
   power?: number;
+  tags?: readonly string[];
+  adjacency?: readonly {
+    tags: readonly string[];
+    radius: number;
+    stat: string;
+    percent: number;
+    maxSources: number;
+  }[];
 }): Definition {
   const { speed = 0, turnRate = 7200 } = content.movement ?? {};
   if (!Number.isFinite(speed) || speed < 0 || !Number.isFinite(turnRate) || turnRate < 0)
@@ -397,6 +433,17 @@ export function toDefinition(content: {
     turnRate: Math.round((turnRate * 0x10000) / 7200),
     ...(content.vision !== undefined && { visionSubcells: Math.round(content.vision * 1024) }),
     ...(content.power !== undefined && { power: content.power }),
+    ...(content.tags && { tags: [...content.tags] }),
+    ...(content.adjacency?.some((rule) => rule.stat === "power") && {
+      powerAdjacency: content.adjacency
+        .filter((rule) => rule.stat === "power")
+        .map((rule) => ({
+          tags: [...rule.tags],
+          radiusSubcells: Math.round(rule.radius * 1024),
+          perMille: rule.percent * 10,
+          maxSources: rule.maxSources,
+        })),
+    }),
     ...(content.movement?.domain !== undefined && { domain: content.movement.domain }),
     ...(content.radius !== undefined && { radiusSubcells: Math.round(content.radius * 1024) }),
     ...(content.domains && { domains: [...content.domains] }),

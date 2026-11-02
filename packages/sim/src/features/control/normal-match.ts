@@ -220,6 +220,7 @@ export function createNormalMatchSetup(options: NormalMatchOptions): MatchSetup 
     turnRate: def.turnRate,
     ...(def.visionSubcells !== undefined && { visionSubcells: def.visionSubcells }),
     ...(def.power !== undefined && { power: def.power }),
+    ...(def.powerAdjacency && { powerAdjacency: def.powerAdjacency }),
     ...(def.role !== undefined && { role: def.role }),
     ...(def.tags.length && { tags: def.tags }),
     ...(def.repair && { repair: def.repair }),
