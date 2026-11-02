@@ -2,12 +2,18 @@
   "$schema": "../../../../schemas/structure.schema.json",
   "id": "structure:neutral/resource-extractor",
   "name": "Resource Extractor",
-  "description": "Shared node-bound producer built by any faction. Debug placement only; 800 health, 4 vision and 10 power use are provisional. Economy values remain unset. (Addition.)",
+  "description": "Shared node-bound producer built by any faction. Produces materials or credits from oil; output halves in brownout and stops when powered off. Provisional balance. (Addition.)",
   "role": "extractor",
+  "cost": { "credits": 800 },
+  "buildTime": 20,
   "health": 800,
   "armor": "structure",
   "footprint": [2, 2],
   "nodeKinds": ["materials", "oil"],
+  "extraction": {
+    "materials": { "resource": "materials", "amountPerSecond": 1 },
+    "oil": { "resource": "credits", "amountPerSecond": 2 }
+  },
   "power": -10,
   "vision": 4,
   "presentation": {
