@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 21,
+  "simVersion": 23,
   "setup": {
     "map": {
       "id": "map:fixture-terrain",
@@ -145,6 +145,8 @@
       },
       {
         "id": "unit:eastern-collective/supply-truck",
+        "harvestCapacity": 500,
+        "harvestAmountPerSecond": 5,
         "visionSubcells": 6144,
         "pop": 0,
         "role": "harvester",

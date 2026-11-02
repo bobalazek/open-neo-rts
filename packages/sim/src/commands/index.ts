@@ -53,6 +53,7 @@ export interface ConstructionBuild extends DebugSpawn {
 }
 
 export interface Payloads {
+  "unit.harvest": UnitStop;
   "production.enqueue": { entity: number; definition: string };
   "production.cancel": { item: number };
   "production.rally": { entity: number; x: number; y: number };
@@ -115,6 +116,7 @@ const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
 const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
+  "unit.harvest": { entities: IDS },
   "production.enqueue": {
     entity: ID,
     definition: /^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/,

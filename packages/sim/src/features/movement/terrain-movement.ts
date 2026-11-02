@@ -203,6 +203,14 @@ export class TerrainMovement {
     this.plan(id, target, "order", 0);
   }
 
+  /** Logistics selects reachable stock/docks instead of accepting movement's nearest-goal fallback. */
+  canReach(id: number, point: Point): boolean {
+    if (!this.canStand(id, point)) return false;
+    const { labels } = this.profile(this.definitionOf(id));
+    const start = labels[this.cell(this.position(id))];
+    return !!start && start === labels[this.cell(point)];
+  }
+
   /** Certified exterior work positions use the same radius/domain/occupancy grid as normal orders. */
   canStand(id: number, point: Point): boolean {
     return this.canStandDefinition(this.definitionOf(id), point);

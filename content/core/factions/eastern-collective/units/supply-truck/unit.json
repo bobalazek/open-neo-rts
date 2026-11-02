@@ -46,7 +46,8 @@
     }
   ],
   "harvest": {
-    "capacity": 500
+    "capacity": 500,
+    "amountPerSecond": 5
   },
   "presentation": {
     "model": "supply-truck.glb",

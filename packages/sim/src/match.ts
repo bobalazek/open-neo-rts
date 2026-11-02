@@ -12,6 +12,7 @@ import {
   initializeExtraction,
   initializeForceBanks,
   initializeForcePower,
+  initializeHarvesting,
   initializeOre,
 } from "./features/economy";
 import {
@@ -36,7 +37,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 21;
+export const SIM_VERSION = 23;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -129,6 +130,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) register(kernel, constructionFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, productionFeature({ ...setup, definitions }));
+  if (setup.normal) initializeHarvesting(kernel, { definitions, grants: setup.grants });
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });
   if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
   initializeObservations(kernel, { ...setup, definitions });

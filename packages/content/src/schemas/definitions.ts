@@ -308,7 +308,7 @@ export const SCHEMAS = {
     weapons: arr(weapon),
     abilities: opt(arr(ability)),
     turret: opt(obj({ turnRate: num(0, 3600, "degrees per second") })),
-    harvest: opt(obj({ capacity: int(1) })),
+    harvest: opt(obj({ capacity: int(1), amountPerSecond: opt(int(1, 0x7fffffff)) })),
     transport: opt(obj({ slots: int(1, 20) })),
     ammo: opt(int(1, 50, "attack runs before rearming (fixed-wing)")),
     repair: opt(repair),

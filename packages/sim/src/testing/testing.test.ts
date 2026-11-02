@@ -95,6 +95,8 @@ describe("Eastern Collective tier-1 definitions", () => {
       },
       {
         id: "unit:eastern-collective/supply-truck",
+        harvestCapacity: 500,
+        harvestAmountPerSecond: 5,
         pop: 0,
         role: "harvester",
         health: 900,
