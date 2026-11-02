@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { OfflineState, PlacementDiagnostic } from "../../../packages/client/src/worker";
 
-async function openPlacement(page: Page) {
+async function openPlacement(page: Page, url = "/debug") {
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
     window.Worker = class extends OriginalWorker {
@@ -19,7 +19,7 @@ async function openPlacement(page: Page) {
       }
     };
   });
-  await page.goto("/debug");
+  await page.goto(url);
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready");
   const definitions = page.getByRole("listbox", { name: "Definition" });
@@ -64,6 +64,39 @@ test("authoritative placement preview agrees with rotated refusals and camera ch
   } finally {
     await page.keyboard.up("ArrowRight");
   }
+});
+
+test("shared extractor snaps to a material node, renders and refuses a second claim", async ({
+  page,
+}) => {
+  const { definitions, preview, result, diagnostic, state, x, y } = await openPlacement(
+    page,
+    "/debug?map=core.map%3Asandbox-resources",
+  );
+  await definitions.selectOption("core.structure:neutral/resource-extractor");
+  await page.mouse.move(x, y);
+  await expect(preview).toContainText("Allowed");
+  expect((await diagnostic()).cells?.map(({ x, y }) => [x, y])).toEqual([
+    [31, 31],
+    [32, 31],
+    [31, 32],
+    [32, 32],
+  ]);
+  await page.mouse.click(x, y);
+  await expect(result).toContainText("Spawned Resource Extractor");
+  await expect(page.getByLabel("Model status", { exact: true })).toContainText("Models ready · 1");
+  expect((await state()).snapshot.entities[0]).toMatchObject({
+    definition: "core.structure:neutral/resource-extractor",
+    x: 31 * 1024,
+    y: 31 * 1024,
+    health: 800,
+    maxHealth: 800,
+  });
+  await expect(preview).toContainText("blocked");
+  await page.mouse.click(x, y);
+  await expect(result).toContainText("placement_failed · blocked");
+  expect((await state()).snapshot.entities).toHaveLength(1);
+  await page.screenshot({ path: test.info().outputPath("extractor-node.png") });
 });
 
 test("authoritative placement commits refresh occupancy and reset on reload", async ({ page }) => {
