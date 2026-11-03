@@ -649,3 +649,57 @@ Hosted CI billing, local Firefox launch and hardware FPS remain unqualified.
 Next: remaining functional timed effects, complete orders and persistence/audio/
 help/tools, then later phases. Do not rerun long AI qualification after every small
 feature: the exact seed-20 diagnosis remains separate and the phase exit is open.
+
+## First-playable combat movement and Hold position, SIM51
+
+Runtime candidate `60fd5f393a8c2d1dbeccdf925ae5d029378d8773` delivers 2-17a:
+explicit attacks now pursue current visible eligible targets, stop when range and
+line of fire permit shooting and cancel the route on target loss. Minimum-range
+weapons back into a legal band through bounded integer/grid candidates. Attack-move
+retains its destination while pausing for in-range combat, then resumes. Failed
+or completed movement does not continually resubmit a stationary destination.
+Same-cell target movement can update an exhausted pursuit endpoint. No hidden
+target tracking, new tactical stance or chase/leash balance numbers are added.
+
+H/Hold position uses the normal worker/HUD path and `unit.orders`. It cancels
+movement/combat/work/boarding while retaining in-range automatic fire and aiming.
+Only current unit controllers see its flag. Refusals preserve it; accepted
+replacement orders clear it. Mixed selections ignore structures before mutation
+or grant checks. The committed regression retains friendly and hostile structure
+attack locks. Bounded Shift queues, waypoint presentation and remaining context
+actions remain 2-17b in tasks.md; the whole order model is not complete.
+
+All repository batch gates pass (`/tmp/neo-orders-complete-*`), including 522
+simulation cases and all 11 typecheck/test tasks; build and content validation
+pass. Scenario headers advance to SIM51. Normal startup/short replay goldens are
+`dca9da8e35ff7dc8` / `f336249aa74d5705`. Catalog identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`, 137 definitions and 833 assets.
+
+Chromium and WebKit both pass the actual worker/HUD journey
+(`/tmp/neo-orders-final-browsers.log`): pay for/build an original Industrial
+Reactor with original builders, pursue/damage it using original Collective
+Soldiers, issue H, retain position, retreat then attack-move and engage again.
+Both terminal records reproduce tick917/hash `fa97049404edd8fb` in Bun.
+Records are `/tmp/neo-combat-orders-final-results/**/combat-orders.record.json`;
+author replays are logged in `/tmp/neo-orders-original-record-replay.log`.
+This fixture preserves original kits/stats but uses a compact flat map, no fog,
+an explicit shared enemy control grant, stub target/ground picking and explicit
+surrender. It does not establish rendered picking, natural bots or the human exit.
+The first browser batch timed out on an incorrect exact button label; corrected
+Chromium/WebKit reruns pass. No runtime diagnosis came from that harness timeout.
+
+Independent fresh-context review found no introduced blocker after 13 probes/60
+assertions (`/tmp/neo-orders-review-probes.log`): same-cell short-range pursuit,
+blocked fire lines, finite unreachable/resumed routes, repeated engagements,
+rejected/duplicate Hold, EMP/grant privacy, deployed passenger fire/reload/cargo,
+mixed selection and JSON terminal replay. The actual compiled Mobile EMP backs
+into its original [4,14] band and selects its target; its arc projectile remains
+excluded by the pre-existing projectile allowlist. This proves its movement band,
+not functional original EMP firing; that unit is outside the accepted tier-1
+mirror. The full later roster still needs projectile activation.
+
+Next: complete first-playable Shift queues/context orders (2-17b), then remaining
+effects/statistics and full persistence/replay/audio/help/tooling. All later phases
+and the real human/20-current-version-match acceptance remain open. Preserve old
+seed-20 evidence; this slice changes combat movement, not a proven seed-20 repair.
+Hosted CI billing, local Firefox launch and hardware FPS remain unqualified.
