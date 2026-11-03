@@ -30,6 +30,7 @@ interface Route {
 }
 interface Profile extends AnchorGrid {
   uniform: boolean;
+  objects: readonly NavigationObject[];
 }
 
 /** Fixed work quota, shared by every domain/radius and Force in this match. */
@@ -123,6 +124,7 @@ export class TerrainMovement {
     );
     const first = grid.cost.findIndex((cost) => cost !== 0);
     profile = {
+      objects,
       ...indexAnchors(grid, labelReachability(grid)),
       uniform: grid.cost.every(
         (cost, index) =>
@@ -484,6 +486,16 @@ export class TerrainMovement {
   /** Explicit diagnostics/save preparation; ordinary checkpoint hashes do not allocate this. */
   snapshot() {
     return {
+      occupancy: this.occupancy,
+      profiles: [...this.profiles]
+        .sort(([a], [b]) => a - b)
+        .map(([definition, profile]) => ({
+          definition,
+          objects: profile.objects.map((object) => ({
+            ...object,
+            position: [...object.position] as [number, number],
+          })),
+        })),
       routes: [...this.routes]
         .sort(([a], [b]) => a - b)
         .map(([entity, route]) => ({

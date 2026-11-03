@@ -5,6 +5,7 @@ import type {
   DebugSpawn,
   MatchRecord,
   MatchSetup,
+  MatchSnapshot,
   ProjectionMode,
   Scenario,
   SeatSnapshot,
@@ -94,6 +95,8 @@ export interface OfflineSetup {
   setup: MatchSetup;
   seat: number;
   mode: ProjectionMode;
+  /** Local host state, never a remote seat snapshot. Validated inside the new worker. */
+  savedMatch?: MatchSnapshot;
 }
 export interface OfflineState {
   snapshot: SeatSnapshot;
@@ -139,6 +142,25 @@ export function isMatchRecord(value: unknown): value is MatchRecord {
     value.scenario.simVersion === SIM_VERSION
   );
 }
+/** The authoritative worker performs full parsing and history verification. */
+export function isMatchSnapshot(value: unknown): value is MatchSnapshot {
+  return (
+    isDebugSessionExport(value) &&
+    isRecord(value) &&
+    value.format === 1 &&
+    value.simVersion === SIM_VERSION &&
+    value.scenario.simVersion === SIM_VERSION &&
+    value.scenario.setup.debug === false &&
+    isRecord(value.scenario.setup.normal) &&
+    typeof value.world === "string" &&
+    /^[0-9a-f]+$/.test(value.world) &&
+    value.world.length % 2 === 0 &&
+    typeof value.checksum === "string" &&
+    /^[0-9a-f]{16}$/.test(value.checksum) &&
+    Array.isArray(value.streams) &&
+    ["movement", "vision", "visibility", "bots"].every((key) => Object.hasOwn(value, key))
+  );
+}
 export type WorkerRequest =
   | { type: "init"; options: OfflineSetup }
   | { type: "command"; command: { type: string; payload: unknown } }
@@ -146,7 +168,9 @@ export type WorkerRequest =
   | { type: "speed"; speed: number }
   | { type: "placement"; spawn: DebugSpawn }
   | { type: "overlays"; options: DebugOverlayOptions }
-  | { type: "step" | "export" | "export-session" | "export-match-record" };
+  | {
+      type: "step" | "export" | "export-session" | "export-match-record" | "export-match-snapshot";
+    };
 
 export interface WorkerReply {
   id: number;
