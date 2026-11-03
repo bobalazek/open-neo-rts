@@ -29,6 +29,7 @@ const PAN_KEYS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
 };
+export type CameraKeyAction = "up" | "down" | "left" | "right" | "reset";
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -41,7 +42,8 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   camera.maxZ = 1000;
   const target = camera.target;
   let goal = camera.radius;
-  const keys = new Set<string>();
+  const keys = new Map<string, [number, number]>();
+  let resolveKey: ((event: KeyboardEvent) => CameraKeyAction | undefined) | undefined;
   let pointer: { x: number; y: number } | null = null;
   let drag: { id: number; button: number; x: number; y: number; moved: boolean } | null = null;
   let selecting = false;
@@ -65,24 +67,38 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   window.addEventListener(
     "keydown",
     (e) => {
-      if (!enabled || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!enabled || e.defaultPrevented || e.isComposing) return;
       if (
         e.target instanceof Element &&
         e.target.closest("input, select, textarea, button, a, [contenteditable]")
       )
         return;
-      if (e.code === "Backspace") {
+      const action = resolveKey?.(e);
+      if (!resolveKey && (e.ctrlKey || e.metaKey || e.altKey)) return;
+      if (action === "reset" || (!resolveKey && e.code === "Backspace")) {
         e.preventDefault();
         camera.alpha = Math.PI / 2;
       }
-      if (PAN_KEYS[e.code]) {
+      const direction = action
+        ? { up: [0, 1], down: [0, -1], left: [-1, 0], right: [1, 0], reset: undefined }[action]
+        : !resolveKey
+          ? PAN_KEYS[e.code]
+          : undefined;
+      if (direction) {
         e.preventDefault();
-        keys.add(e.code);
+        keys.set(e.code, direction as [number, number]);
       }
     },
     { signal },
   );
-  window.addEventListener("keyup", (e) => keys.delete(e.code), { signal });
+  window.addEventListener(
+    "keyup",
+    (e) => {
+      keys.delete(e.code);
+      if (["Control", "Alt", "Shift", "Meta"].includes(e.key)) keys.clear();
+    },
+    { signal },
+  );
   window.addEventListener("blur", () => keys.clear(), { signal });
   window.addEventListener(
     "focusin",
@@ -160,12 +176,9 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     const dt = Math.min(scene.getEngine().getDeltaTime() / 1000, 0.1);
     let right = 0;
     let forward = 0;
-    for (const k of keys) {
-      const v = PAN_KEYS[k];
-      if (v) {
-        right += v[0];
-        forward += v[1];
-      }
+    for (const v of keys.values()) {
+      right += v[0];
+      forward += v[1];
     }
     if (edgeScroll && pointer && !drag && !selecting) {
       if (pointer.x < EDGE) right -= 1;
@@ -199,6 +212,10 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       edgeScroll = options.edgeScroll;
       reducedMotion = options.reducedMotion;
       pointer = null;
+    },
+    setKeyResolver(resolve: (event: KeyboardEvent) => CameraKeyAction | undefined) {
+      resolveKey = resolve;
+      keys.clear();
     },
     panTo(x: number, z: number, height = target.y) {
       target.set(clamp(x, bounds.minX, bounds.maxX), height, clamp(z, bounds.minZ, bounds.maxZ));

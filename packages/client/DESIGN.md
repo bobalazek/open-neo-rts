@@ -42,6 +42,12 @@ focus and Escape while its separate canvas leaves the world renderer intact.
 Save-before-leave, restart and load decisions use that same panel vocabulary in
 a separate modal, preserving the parent pane and original thumbnail source.
 
+The device-local Keyboard controls editor extends that shared native panel with
+category, action and primary/alternate choices, staged key capture and explicit
+conflict feedback. Applied bindings update the running match's captions while
+command positions stay fixed; graphite controls and warm status/coral alerts
+reuse the existing panel vocabulary.
+
 Load and results extend that shared native panel with original match thumbnails,
 selected-slot details, framed tabs, history plots and complete scrollable tables.
 Their existing controllers and semantic HTML remain authoritative; the canvas
@@ -90,6 +96,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native Home actions, original vector lettering and an authored model display.
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
+- Native staged keyboard bindings with explicit conflicts and live match captions.
 - Native save-before-replacement decisions with explicit cancellation and recovery.
 - Native save galleries with original match thumbnails and selected-slot details.
 - Native results with original plots and complete scrollable match records.
@@ -197,7 +204,8 @@ recipes or dock hit region; economy, helpers, map and global actions remain.
 The station combines the actual Force label and color chip, actor name/count,
 scrollable model/type buttons with counts, bounded aggregate health, commands,
 contextual build/train icons and queue progress. Commands keep four stable
-keyboard columns (QWER / ASDF / ZXCV); recipes use at most six columns. Desktop
+columns independently of their key captions (Grid defaults: QWER / ASDF / ZXCV);
+recipes use at most six columns. Desktop
 shows commands and available recipes together. Main command and recipe cells
 are compact squares (32px base), with a smaller queue and icon mode controls.
 Original pictograms use 4px inner insets and model thumbnails 2px.
@@ -384,8 +392,9 @@ the text leaves space for that disclosure mark.
   corner hotkey and optional count/progress. Hover warms the frame; armed commands
   use the primary well. Synchronized focus thickens the ivory frame to 2px.
   Unavailable actions dim to 0.45 alpha and retain explanations; activation keeps
-  validation in the existing controller. B switches build/train; I toggles Details.
-  Those local shortcuts are visible from initial widget creation. Only keys of
+  validation in the existing controller. Grid defaults B and I switch build/train
+  and Details; both follow the active device profile. Current shortcuts are
+  visible from initial widget creation and refresh after Apply. Only keys of
   at most two characters draw as badges; full Home/Space shortcut names remain
   in hover/focus descriptions instead of crowding compact icons.
 - **Shared native panel:** Settings from Home and the match, pause actions,
@@ -401,6 +410,24 @@ the text leaves space for that disclosure mark.
   and reduced motion keep existing validation and storage. Preview applies live;
   Apply saves, Defaults previews defaults and Back/cancel restores saved values.
   Status is warm metal, errors light coral; empty notices reserve no extra block.
+- **Keyboard controls:** Settings and the pause menu open the shared native
+  panel's editor for 64 implemented normal-match actions. Category/action and
+  primary/alternate choice fields expose up to two physical key-code chords or
+  no binding. Capture uses a pressed listening state and live status; Escape or
+  window blur cancels it. Clear, per-action defaults and Grid/WASD presets stage
+  changes. Conflicts name the actions in the fixed alert area and disable Apply;
+  capture and asynchronous import also disable competing controls. Bounded JSON
+  import validates into the staged profile; Export downloads that profile. Apply
+  persists the versioned device profile before refreshing active controls and
+  captions; a failed save keeps the previous profile. Status, alerts, scrolling,
+  semantic focus and graphics fallback use the existing panel treatment.
+  Quicksave/load bindings are optional and initially unbound. The provisional
+  WASD preset uses W/A/S/D pan, numeric command slots, Alt-number group select,
+  Ctrl+Alt-number set, Alt+Shift-number add and bracket speed controls with
+  numpad alternatives; F1 remains unassigned. See
+  `../../docs/project/decisions/2026-11-03-match-input-bindings.md`.
+  Debug/replay shortcuts, mouse/audio options and unimplemented actions retain
+  their own scope; physical-key and OS accelerator capture remain unqualified.
 - **Pause dialog and named saves:** the HTML dialog owns modal focus, Escape and
   the existing pause/resume workflow. Its canvas is separate from the match canvas,
   preserving world rendering and save thumbnails. Resume uses the primary fill

@@ -11,7 +11,9 @@ const draw = (page: Page) =>
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     const points = new Map<string, { x: number; y: number }>();
+    const actions = new Map<string, { x: number; y: number }>();
     Reflect.set(window, "nativeDrawnText", points);
+    Reflect.set(window, "nativeDrawnActionText", actions);
     const fill = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (
       this: CanvasRenderingContext2D,
@@ -24,6 +26,8 @@ test.beforeEach(async ({ page }) => {
         y: y - size / 3,
       });
       points.set(text, { x: point.x, y: point.y });
+      // Headings share captions with actions; their bold glyphs are not pointer targets.
+      if (!/\bbold\b|\b[6-9]00\b/.test(this.font)) actions.set(text, { x: point.x, y: point.y });
       Reflect.apply(fill, this, args);
     };
   });
@@ -32,10 +36,12 @@ test.beforeEach(async ({ page }) => {
 // Target painted glyphs, then use real pointer input; semantic HTML controls stay clipped.
 async function clickNative(page: Page, text: string) {
   await expect
-    .poll(() => page.evaluate((text) => Reflect.get(window, "nativeDrawnText").has(text), text))
+    .poll(() =>
+      page.evaluate((text) => Reflect.get(window, "nativeDrawnActionText").has(text), text),
+    )
     .toBe(true);
   const point = await page.evaluate(
-    (text) => Reflect.get(window, "nativeDrawnText").get(text) as { x: number; y: number },
+    (text) => Reflect.get(window, "nativeDrawnActionText").get(text) as { x: number; y: number },
     text,
   );
   await page.mouse.click(point.x, point.y);

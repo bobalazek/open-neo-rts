@@ -2,6 +2,15 @@
 
 Everything is rebindable in [settings](screens/settings.md). Two layouts ship: **Grid** (default) and **WASD camera**.
 
+Current normal-match keyboard actions now use native Controls from Settings or
+Current controls → Edit shortcuts. A device profile supports two assignments per
+action, clearing/resetting, staged import/export and conflict-checked Apply.
+Commands, camera, map/idle helpers, panels, pause/speed, optional quicksave/load
+and group select/set/add update without restarting the match. Unimplemented
+actions below remain with their gameplay phases; debug and replay keep their
+existing controls. Escape/Tab retain modal navigation, and known browser/OS
+accelerators cannot be assigned.
+
 ## Grid layout (default)
 
 The command card is a 4×3 grid mapped to the left hand:
@@ -42,7 +51,14 @@ Arrow keys, edge scroll, middle-drag to rotate, wheel to zoom, Backspace to rese
 
 ## WASD camera layout
 
-WASD pans the camera; the command card moves to **1–4 / Shift + 1–4 / Alt + 1–4**, and control groups move to **F1–F4 + Ctrl/Shift**. Meant for players coming from other genres.
+WASD pans the camera; the command card moves to **1–4 / 5–8 / 9,0,−,+**.
+**Alt + 0–9** recalls groups, **Ctrl + Alt + 0–9** stores them and
+**Alt + Shift + 0–9** adds selection. Brackets change game speed, with the
+existing numpad alternatives. All assignments are editable.
+
+This [provisional preset](../project/decisions/2026-11-03-match-input-bindings.md)
+replaces the conflicting F1–F4 proposal and keeps F1 untouched. It does not claim
+native browser/OS capture; that acceptance remains deferred.
 
 ## Browser-reserved keys
 

@@ -7,6 +7,16 @@ import {
 import { type MatchResource, resourceNodeOrigin, resourceOccupies } from "@open-neo-rts/sim/maps";
 import { setText, text } from "../../shared";
 import type { OfflineState } from "../../worker";
+import {
+  type BindingAction,
+  bindingText,
+  COMMAND_ACTIONS,
+  CONTROL_GROUPS,
+  chordText,
+  defaultBindings,
+  type KeyBindings,
+  matchesBinding,
+} from "../settings/bindings";
 import { createControlGroups } from "./groups";
 import {
   affordable,
@@ -52,6 +62,7 @@ type Options = {
   fail: (error: unknown) => void;
   present?: () => void;
   blocksPointer?: (x: number, y: number) => boolean;
+  bindings?: () => KeyBindings;
 };
 
 let hudIdentity = 0;
@@ -65,6 +76,15 @@ export function createMatchHud(
 ) {
   const definitions = new Map(options.catalog.map((entry) => [entry.gameplay.id, entry]));
   const groups = createControlGroups();
+  const defaults = defaultBindings();
+  const bindings = options.bindings ?? (() => defaults);
+  const bound = (action: BindingAction, event: KeyboardEvent) =>
+    matchesBinding(bindings(), action, event);
+  function hint(button: HTMLButtonElement, action: BindingAction, label: string) {
+    const keys = bindings()[action];
+    button.dataset.hotkey = keys[0] ? chordText(keys[0]) : "";
+    actionText(button, `${keys.length ? `${bindingText(bindings(), action)} · ` : ""}${label}`);
+  }
   let snapshot: SeatSnapshot | undefined,
     mode: Mode | undefined,
     busy = false;
@@ -314,6 +334,7 @@ export function createMatchHud(
     "rotate",
   ] as const;
   commandButtons.forEach((button, index) => {
+    button.dataset.commandIndex = String(index);
     decorateAction(button, commandIcons[index]!, keys[index]);
   });
   const deployButton = button(
@@ -451,7 +472,7 @@ export function createMatchHud(
       preview();
     }
   }
-  const groupButtons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((index) =>
+  const groupButtons = CONTROL_GROUPS.map((index) =>
     button(
       String(index),
       () => {
@@ -792,23 +813,26 @@ export function createMatchHud(
   canvas.addEventListener(
     "keydown",
     (event) => {
-      if (event.repeat || event.altKey || event.metaKey) return;
-      if (/^Digit\d$/.test(event.code)) {
-        event.preventDefault();
-        const index = Number(event.code.at(-1));
-        cancel();
-        if (event.ctrlKey || event.shiftKey)
-          groups.set(
-            index,
-            own().map((entity) => entity.handle),
-            event.shiftKey,
-          );
-        else options.select(groups.get(index));
-        update();
-        return;
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.metaKey) return;
+      for (const index of CONTROL_GROUPS) {
+        const operation = (["select", "set", "add"] as const).find((operation) =>
+          bound(`group.${operation}.${index}`, event),
+        );
+        if (operation) {
+          event.preventDefault();
+          cancel();
+          if (operation === "select") options.select(groups.get(index));
+          else
+            groups.set(
+              index,
+              own().map((entity) => entity.handle),
+              operation === "add",
+            );
+          update();
+          return;
+        }
       }
-      if (event.ctrlKey) return;
-      if (event.code === "Escape") {
+      if (event.code === "Escape" && !event.ctrlKey && !event.altKey) {
         const cancelled = cancel();
         if (cancelled || options.selection().length > 0) {
           event.preventDefault();
@@ -818,24 +842,29 @@ export function createMatchHud(
           return;
         }
       }
-      const index = keys.findIndex((key) => event.code === `Key${key}`);
-      if (event.code === "KeyU") {
-        event.preventDefault();
-        unloadButton.click();
-      }
-      if (event.code === "KeyH") {
-        event.preventDefault();
-        holdButton.click();
-      }
+      const index = COMMAND_ACTIONS.findIndex((action) => bound(action, event));
+      for (const [action, control] of [
+        ["unload", unloadButton],
+        ["hold", holdButton],
+        ["load", loadButton],
+        ["deploy", deployButton],
+        ["salvage", salvageButton],
+        ["surge", surgeButton],
+      ] as const)
+        if (bound(action, event)) {
+          event.preventDefault();
+          control.click();
+          return;
+        }
       if (index >= 0) {
         event.preventDefault();
         activate(index);
       }
-      if (event.code === "Period") {
+      if (bound("idleBuilder", event)) {
         event.preventDefault();
         get<HTMLButtonElement>("[data-idle-builder]").click();
       }
-      if (event.code === "Comma") {
+      if (bound("idleProducer", event)) {
         event.preventDefault();
         get<HTMLButtonElement>("[data-idle-producer]").click();
       }
@@ -1062,6 +1091,17 @@ export function createMatchHud(
       mode?.type === "economy.build",
     ];
     commandButtons.forEach((button, index) => {
+      hint(
+        button,
+        COMMAND_ACTIONS[index]!,
+        text(
+          index === 6 && !selectedBuilders.length && deployments.length
+            ? "ui.hud.deploy-toggle"
+            : index === 9 && structure?.power?.enabled === false
+              ? "ui.hud.power-on"
+              : labels[index]!,
+        ),
+      );
       button.dataset.available = String(!!eligible[index]);
       button.disabled = disabled || !eligible[index];
       button.title = options.paused()
@@ -1084,16 +1124,15 @@ export function createMatchHud(
         String(mode !== undefined && mode.type === targetingTypes[index]),
       );
     });
-    if (commandButtons[6])
-      actionText(
-        commandButtons[6],
-        `D · ${text(!selectedBuilders.length && deployments.length ? "ui.hud.deploy-toggle" : "ui.hud.assist")}`,
-      );
-    if (commandButtons[9])
-      actionText(
-        commandButtons[9],
-        `X · ${text(structure?.power?.enabled ? "ui.hud.power-off" : "ui.hud.power-on")}`,
-      );
+    for (const [control, action, label] of [
+      [unloadButton, "unload", "ui.hud.unload"],
+      [holdButton, "hold", "ui.hud.hold"],
+      [loadButton, "load", "ui.hud.load"],
+      [deployButton, "deploy", "ui.hud.deploy-toggle"],
+      [salvageButton, "salvage", "ui.hud.clear-remains"],
+      [surgeButton, "surge", "ui.hud.surge"],
+    ] as const)
+      hint(control, action, control === surgeButton ? (surgeName ?? text(label)) : text(label));
     const buildIds = selectedBuilders[0]
       ? (definitions
           .get(selectedBuilders[0].definition)
@@ -1311,11 +1350,15 @@ export function createMatchHud(
       ),
     );
     groupButtons.forEach((button, i) => {
-      const group = i === 9 ? 0 : i + 1;
+      const group = CONTROL_GROUPS[i]!;
       setText(button, `${group}: ${groups.get(group).length}`);
       button.dataset.count = String(groups.get(group).length);
       button.disabled = groups.get(group).length === 0;
       button.title = text("ui.hud.select-group", { group });
+      button.dataset.hotkey = bindings()[`group.select.${group}`][0]
+        ? chordText(bindings()[`group.select.${group}`][0]!)
+        : "";
+      button.title += ` · ${bindingText(bindings(), `group.select.${group}`)}`;
     });
     get<HTMLButtonElement>("[data-set-group]").disabled = !owned.length;
     get<HTMLButtonElement>("[data-add-group]").disabled = !owned.length;
@@ -1328,6 +1371,7 @@ export function createMatchHud(
         button,
         text(producer ? "ui.hud.idle-production" : "ui.hud.idle-builders", {
           count,
+          key: bindingText(bindings(), producer ? "idleProducer" : "idleBuilder"),
         }),
       );
       button.disabled = count === 0;

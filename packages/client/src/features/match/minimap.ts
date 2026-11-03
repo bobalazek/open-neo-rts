@@ -2,8 +2,15 @@ import { BIOMES, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content
 import { PALETTES } from "@open-neo-rts/render";
 import type { GameplayDefinition, SeatSnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
+import {
+  bindingText,
+  chordText,
+  defaultBindings,
+  type KeyBindings,
+  matchesBinding,
+} from "../settings/bindings";
 import { createMatchNotices, type NoticeKind, PING_KINDS } from "./alerts";
-import { decorateAction, hudIcon } from "./icons";
+import { actionText, decorateAction, hudIcon } from "./icons";
 import {
   type MapPoint,
   minimapMarkers,
@@ -29,9 +36,12 @@ export function createMinimap(
     order: (point: MapPoint) => void;
     armAttackMove: () => void;
     readOnly?: boolean;
+    bindings?: () => KeyBindings;
   },
   signal: AbortSignal,
 ) {
+  const defaults = defaultBindings();
+  const bindings = options.bindings ?? (() => defaults);
   const panel = document.createElement("section");
   panel.className = "hud-minimap";
   panel.setAttribute("aria-label", text("ui.minimap.title"));
@@ -45,8 +55,8 @@ export function createMinimap(
   const home = document.createElement("button"),
     alert = document.createElement("button");
   home.type = alert.type = "button";
-  home.textContent = text("ui.minimap.home");
-  alert.textContent = text("ui.minimap.alert");
+  home.textContent = text("ui.minimap.home", { key: bindingText(bindings(), "home") });
+  alert.textContent = text("ui.minimap.alert", { key: bindingText(bindings(), "alert") });
   decorateAction(home, "rally", "Home");
   decorateAction(alert, "attack", "Space");
   alert.disabled = true;
@@ -130,7 +140,9 @@ export function createMinimap(
   function refreshFeed() {
     const entries = notices.entries();
     alert.disabled = entries.length === 0;
-    alert.title = entries.length ? text("ui.minimap.alert") : text("ui.minimap.no-alerts");
+    alert.title = entries.length
+      ? text("ui.minimap.alert", { key: bindingText(bindings(), "alert") })
+      : text("ui.minimap.no-alerts");
     const ids = entries.map((entry) => entry.id).join(",");
     if (ids === feedIds) return;
     delete status.dataset.feedback;
@@ -290,21 +302,22 @@ export function createMinimap(
     { signal, passive: false },
   );
   function shortcuts(event: KeyboardEvent) {
-    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.repeat)
-      return;
-    if (event.code === "Home") {
+    if (event.defaultPrevented || event.isComposing || event.repeat) return;
+    if (matchesBinding(bindings(), "home", event)) {
       event.preventDefault();
       goHome();
-    } else if (event.code === "Space" && !options.readOnly) {
+    } else if (matchesBinding(bindings(), "alert", event) && !options.readOnly) {
       event.preventDefault();
       nextAlert();
     } else if (event.currentTarget === canvas) {
-      const direction = {
-        ArrowLeft: [-1, 0],
-        ArrowRight: [1, 0],
-        ArrowUp: [0, -1],
-        ArrowDown: [0, 1],
-      }[event.code];
+      const direction = (
+        [
+          ["panLeft", [-1, 0]],
+          ["panRight", [1, 0]],
+          ["panUp", [0, -1]],
+          ["panDown", [0, 1]],
+        ] as const
+      ).find(([id]) => matchesBinding(bindings(), id, event))?.[1];
       if (direction) {
         event.preventDefault();
         const current = options.camera();
@@ -313,7 +326,7 @@ export function createMinimap(
           y: Math.max(0, Math.min(terrain.height - 1, current.y + (direction[1] ?? 0))),
         });
       }
-      if (event.code === "KeyA" && !options.readOnly) {
+      if (matchesBinding(bindings(), "attackMove", event) && !options.readOnly) {
         event.preventDefault();
         options.armAttackMove();
       }
@@ -441,6 +454,24 @@ export function createMinimap(
     zoom: options.zoom,
     update(value: SeatSnapshot) {
       snapshot = value;
+      for (const [button, action, label] of [
+        [home, "home", "ui.minimap.home"],
+        [alert, "alert", "ui.minimap.alert"],
+      ] as const) {
+        actionText(button, text(label, { key: bindingText(bindings(), action) }));
+        button.dataset.hotkey = bindings()[action][0] ? chordText(bindings()[action][0]!) : "";
+      }
+      canvas.setAttribute(
+        "aria-label",
+        text("ui.minimap.bound-instructions", {
+          attack: bindingText(bindings(), "attackMove"),
+          home: bindingText(bindings(), "home"),
+          alert: bindingText(bindings(), "alert"),
+          camera: ["panUp", "panLeft", "panDown", "panRight"]
+            .map((id) => bindingText(bindings(), id as "panUp"))
+            .join(" / "),
+        }),
+      );
       if (options.readOnly) return;
       notices.update(value);
       refreshFeed();

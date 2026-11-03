@@ -29,6 +29,7 @@ import { postMatchScreen } from "../post-match";
 import { savedReplay } from "../replays/files";
 import { replayStore } from "../replays/storage";
 import { applyInterfaceScale, type DeviceSettings, readDeviceSettings } from "../settings";
+import { BINDINGS_CHANGED, bindingText, matchesBinding, readBindings } from "../settings/bindings";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
@@ -73,6 +74,20 @@ export function createNormalSession(
   let interaction: ReturnType<typeof bindWorldInteraction> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
+  let bindings = readBindings();
+  window.addEventListener(
+    BINDINGS_CHANGED,
+    () => {
+      if (disposed) return;
+      bindings = readBindings();
+      if (latest) {
+        hud?.update(latest);
+        minimap?.update(latest.snapshot);
+      }
+      nativeHud?.update();
+    },
+    { signal: signal.signal },
+  );
   let resultDefinitions: { id: string; name: string; kind: string }[] = [];
   const replayUrls = new Set<string>();
   let autosave: ReturnType<typeof setInterval> | undefined,
@@ -206,6 +221,20 @@ export function createNormalSession(
       }),
     );
     label("[data-pause]", text(state.paused ? "ui.match.resume" : "ui.match.pause"));
+    root
+      .querySelector("[data-pause]")
+      ?.setAttribute(
+        "title",
+        `${text(state.paused ? "ui.match.resume" : "ui.match.pause")} · ${bindingText(bindings, "pause")}`,
+      );
+    canvas.setAttribute(
+      "aria-label",
+      text("ui.match.bound-map-label", {
+        camera: ["panUp", "panLeft", "panDown", "panRight"]
+          .map((id) => bindingText(bindings, id as "panUp"))
+          .join(" / "),
+      }),
+    );
     root.querySelector("[data-pause]")?.setAttribute("aria-pressed", String(state.paused));
     label("[data-speed]", text("ui.menu.current-speed", { speed: state.speed }));
     menu?.update();
@@ -279,6 +308,17 @@ export function createNormalSession(
         return;
       }
       renderer = nextRenderer;
+      renderer.camera.setKeyResolver((event) => {
+        for (const [id, action] of [
+          ["panUp", "up"],
+          ["panDown", "down"],
+          ["panLeft", "left"],
+          ["panRight", "right"],
+          ["resetCamera", "reset"],
+        ] as const)
+          if (matchesBinding(bindings, id, event)) return action;
+        return undefined;
+      });
       applyPreferences(preferences);
       const spawn = map.spawns.find((spawn) => spawn.id === config.yourSpawn);
       if (!spawn) throw new Error(text("ui.skirmish.spawn-error"));
@@ -474,6 +514,7 @@ export function createNormalSession(
           fail: failed,
           present: () => nativeHud?.update(),
           blocksPointer: (x, y) => nativeHud?.blocksPointer(x, y) ?? false,
+          bindings: () => bindings,
         },
         signal.signal,
       );
@@ -511,10 +552,18 @@ export function createNormalSession(
           }),
           order: hud.orderPoint,
           armAttackMove: hud.armAttackMove,
+          bindings: () => bindings,
         },
         signal.signal,
       );
-      nativeHud = mountNativeMatchHud(root, canvas, activeRenderer.scene, minimap, signal.signal);
+      nativeHud = mountNativeMatchHud(
+        root,
+        canvas,
+        activeRenderer.scene,
+        minimap,
+        signal.signal,
+        () => bindings,
+      );
       interaction = bindWorldInteraction(
         canvas,
         activeRenderer.scene,
@@ -557,7 +606,12 @@ export function createNormalSession(
           available: () => ready && !disposed && !busy,
           pause: activeMatch.pause,
           speed: activeMatch.speed,
-          controls: activeRenderer.camera.setInputEnabled,
+          controls: (enabled) => {
+            activeRenderer.camera.setInputEnabled(enabled);
+            // Pause replies arrive before modal teardown; refresh command availability on restoration.
+            if (latest) hud?.update(latest);
+            nativeHud?.update();
+          },
           applySettings: applyPreferences,
           restart: rematch,
           leave: leaveMatch,
@@ -614,9 +668,7 @@ export function createNormalSession(
             latest?.snapshot.victory?.result ||
             event.defaultPrevented ||
             event.repeat ||
-            event.ctrlKey ||
-            event.metaKey ||
-            event.altKey
+            event.isComposing
           )
             return;
           if (
@@ -625,12 +677,16 @@ export function createNormalSession(
               (event.code !== "Escape" && event.target.closest("button,a")))
           )
             return;
-          if (event.code === "Pause") {
+          if (matchesBinding(bindings, "pause", event)) {
             event.preventDefault();
             void toggle();
             return;
           }
-          if (["Equal", "NumpadAdd", "Minus", "NumpadSubtract"].includes(event.code) && latest) {
+          if (
+            (matchesBinding(bindings, "speedUp", event) ||
+              matchesBinding(bindings, "speedDown", event)) &&
+            latest
+          ) {
             event.preventDefault();
             const index = NORMAL_GAME_SPEEDS.findIndex((speed) => speed === latest?.speed);
             const next =
@@ -639,15 +695,45 @@ export function createNormalSession(
                   0,
                   Math.min(
                     NORMAL_GAME_SPEEDS.length - 1,
-                    index + (["Equal", "NumpadAdd"].includes(event.code) ? 1 : -1),
+                    index + (matchesBinding(bindings, "speedUp", event) ? 1 : -1),
                   ),
                 )
               ];
             if (next !== undefined) void activeMatch.speed(next).catch(failed);
             return;
           }
+          if (matchesBinding(bindings, "quicksave", event)) {
+            event.preventDefault();
+            void persist("quick", text("ui.saves.quick")).catch((error) => {
+              if (!disposed)
+                label(
+                  "[data-save-notice]",
+                  error instanceof Error ? error.message : text("ui.saves.failed"),
+                );
+            });
+            return;
+          }
+          if (matchesBinding(bindings, "quickload", event) && persistence) {
+            event.preventDefault();
+            void saveStore
+              .read("quicksave")
+              .then((saved) => {
+                if (!disposed) return persistence.load(saved);
+              })
+              .catch((error) => {
+                if (!disposed)
+                  label(
+                    "[data-save-notice]",
+                    error instanceof Error ? error.message : text("ui.saves.failed"),
+                  );
+              });
+            return;
+          }
           if (
             event.code === "Escape" &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey &&
             !event.defaultPrevented &&
             ready &&
             !latest?.snapshot.victory?.result

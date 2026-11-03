@@ -11,6 +11,16 @@ Descriptions are visible alongside fields and keyboard focus scrolls them into
 view. Semantic HTML retains assistive editing and the graphics-failure fallback.
 The additional categories/options in the target layout below remain future work.
 
+Controls now edits the currently implemented normal-match shortcuts in the same
+native panel. Choose a category/action and primary/alternate slot, then capture
+a physical key chord; Escape cancels capture. Clear and Reset action affect the
+draft. Grid and provisional WASD presets replace the draft; import/export uses
+bounded versioned JSON. Conflicts name the affected actions and block Apply.
+Only a successful Apply changes active controls and device storage. Back keeps
+the prior profile, including when a write fails. Current controls in a match
+shows actual assignments and links to the same editor. Mouse/overlay options
+and unimplemented action categories remain later work.
+
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ ◂ Back                         SETTINGS                                     │
