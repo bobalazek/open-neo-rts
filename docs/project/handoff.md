@@ -793,3 +793,66 @@ continued hash (`/tmp/snapshot-continuation-review.ts`). The reviewer independen
 recompiled original setup and verified both actual browser snapshot and terminal
 record artifacts (`/tmp/snapshot-browser-review.ts`). Hosted CI billing, local
 Firefox and hardware FPS remain unqualified; full phase-2/later exits remain open.
+
+## SIM52 — browser save slots and transactional loading (2-34)
+
+Runtime candidate `4b325977ec4579eb03e037d1825d1d2fd2d87847` connects actual normal
+skirmishes to IndexedDB named saves, quicksave/load and three rotating autosaves
+(at mission start/every three wall-clock minutes). Menu buttons preserve reserved
+browser keys. `/load` and Home Continue provide compatible saves, type/search,
+metadata/thumbnails, validated portable imports, exports and confirmed deletion.
+Files contain real pack/version/gameplay/cosmetic metadata, installed map hash,
+configuration and full canonical snapshot/history. Loaded games start paused;
+camera/selection reset as documented, and current device preferences apply.
+
+A replacement loads offscreen while the paused old host stays alive. Commit only
+after renderer/worker/UI readiness; cancel, timeout and failure dispose only the
+candidate. Active-session error recovery remains live after a canceled load.
+Atomic IndexedDB transactions retain previous slots on failed writes. Revision
+checks protect load; deletion compares the full displayed record inside one
+read/write transaction, retaining unseen newer saves from another tab. Unsupported
+versions/content are explained, and unsafe preview URLs are rejected. Pending
+worker inputs now flush at one real tick boundary before capture rather than
+leaving a paused save stuck; no pending command is discarded.
+
+Independent review reproduced/fixed stale deletion and abandoned-generation error
+recovery, then rechecked current source with real Chromium/IndexedDB probes:
+`/tmp/saves-stale-delete-review.ts`, `/tmp/saves-cancel-failure-review.ts`.
+A real transaction abort after request success preserves the previous quicksave.
+The app config probe `/tmp/saves-selected-config-review.ts` also verifies selected
+seed42/veterancyfalse survive initial cancellation, and a failed saved replacement
+with99/true cannot alter active7/false rematch configuration.
+
+Repository fix, all11 typecheck/test tasks, build and validation pass. Logs:
+`/tmp/neo-browser-saves-{regression-typecheck,final2-test,final2-build,final2-validate}.log`.
+SIM52/goldens remain unchanged, as do137definitions/833assets and content identities
+`97ddd2a140545413` / `54a8905a7eee497b`.
+
+The broad browser batch `/tmp/neo-browser-saves-final-browsers.log` passes both full
+save journeys, both worker save/resume journeys and several existing menu flows.
+It exposes two Chromium regressions: initial cancellation reset setup choices
+(fixed), and restart's test mistook the retained old canvas for the replacement
+(test now waits real detachment). Both affected complete Chromium journeys pass
+against4b32597 in `/tmp/neo-browser-saves-regression-browsers.log` (32.0s).
+The broad batch's five WebKit skips are existing Chromium-only graphical checks,
+not failures. Reusing its artifact output folder in that focused rerun overwrote
+some JSON evidence; protected full-journey replays are regenerated separately at
+`/tmp/neo-browser-saves-preserved-results` and logged in
+`/tmp/neo-browser-saves-preserved-browsers.log`.
+
+Full save journeys use real original content/rendering/workers and IndexedDB:
+named save/actual thumbnail, quicksave/failed-write preservation, triggered real
+autosave callbacks, export/import, blocked-init cancellation preserving old host,
+corrupt/SVG import refusal, later restoration to the same saved hash, stale
+load/delete protection, incompatible-version explanation, narrow layout, surviving
+host failure recovery, `/load` search and Home Continue. Failure/interval injection
+is test-only; it is not a hardware/performance or natural full-match acceptance.
+Independent artifact checks recompile installed catalog and Training Grounds,
+check header metadata/map hash/JPEG and compare restored/uninterrupted60ticks:
+`/tmp/browser-save-artifacts-review.ts`.
+
+Next: remaining phase2 functional systems (statistics, replay viewer, effects,
+audio/input/help/tooling and bot qualification). Direct state loading stays2-33b;
+current saves reconstruct history. Save-before-leave remains2-31b, native desktop
+storage/multiplayer saves remain later phases. Hosted CI billing/Firefox/hardware
+FPS and actual human/20-current-version complete matches remain unqualified.
