@@ -16,6 +16,7 @@ export { createPlacementOverlay } from "./overlays/placement";
 export { createMenuScene, type MenuAction } from "./scene/menu";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
+export { createSkirmishScene, type SkirmishField } from "./scene/skirmish";
 export { CELL_SIZE, LEVEL_HEIGHT, PALETTES } from "./terrain";
 export {
   createMapPresentation,

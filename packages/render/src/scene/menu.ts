@@ -38,8 +38,12 @@ export interface MenuContent {
 const wordmark = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="390" height="155" viewBox="0 0 390 155"><g fill="#ddc382"><path d="M2 39V8h23v31H2zm7-7h9V15H9zM33 39V8h24v20H40v11zm7-18h10v-6H40zM65 39V8h25v7H72v5h16v7H72v5h18v7zM98 39V8h7l13 18V8h7v31h-7l-13-18v18z"/><path d="M2 138V58h18l43 51V58h20v80H65L22 87v51zM98 138V58h83v19h-62v12h52v18h-52v12h62v19zM197 73l15-15h75l15 15v50l-15 15h-75l-15-15zm21 4v42h63V77z"/></g><path fill="#eff1e9" d="M320 138v-26h18v16h-5l6 10h-8l-5-10v10zm6-16h6v-4h-6zM344 112h20v6h-7v20h-6v-20h-7zM368 112h20v6h-14v4h14v16h-20v-6h14v-4h-14z"/></svg>`)}`;
 
 /** Scene-owned native GUI. Actions belong to the client; this scene never touches a match. */
-export async function createMenuScene(canvas: HTMLCanvasElement, content: MenuContent) {
-  const engine = await createEngine(canvas);
+export async function createMenuScene(
+  canvas: HTMLCanvasElement,
+  content: MenuContent,
+  signal: AbortSignal,
+) {
+  const engine = await createEngine(canvas, signal);
   engine.canvasTabIndex = -1;
   canvas.tabIndex = -1;
   const scene = createScene(engine);

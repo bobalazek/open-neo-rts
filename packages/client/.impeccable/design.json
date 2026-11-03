@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T08:39:39+00:00",
-  "title": "Design System: Open Neo RTS Home and match HUD",
+  "generatedAt": "2026-11-03T09:08:23+00:00",
+  "title": "Design System: Open Neo RTS Home, Skirmish setup and match HUD",
   "extensions": {
     "colorMeta": {
       "panel": {
@@ -171,6 +171,48 @@
           "oklch(84% 0.025 88)",
           "oklch(95% 0.025 88)"
         ]
+      },
+      "setup-input-focus": {
+        "role": "neutral",
+        "displayName": "Setup input focus",
+        "tonalRamp": [
+          "oklch(15% 0.024 230)",
+          "oklch(26% 0.024 230)",
+          "oklch(38% 0.024 230)",
+          "oklch(49% 0.024 230)",
+          "oklch(61% 0.024 230)",
+          "oklch(72% 0.024 230)",
+          "oklch(84% 0.024 230)",
+          "oklch(95% 0.024 230)"
+        ]
+      },
+      "force-you": {
+        "role": "secondary",
+        "displayName": "Your Force",
+        "tonalRamp": [
+          "oklch(15% 0.09 215)",
+          "oklch(26% 0.09 215)",
+          "oklch(38% 0.09 215)",
+          "oklch(49% 0.09 215)",
+          "oklch(61% 0.09 215)",
+          "oklch(72% 0.09 215)",
+          "oklch(84% 0.09 215)",
+          "oklch(95% 0.09 215)"
+        ]
+      },
+      "force-opponent": {
+        "role": "secondary",
+        "displayName": "Opposing Force",
+        "tonalRamp": [
+          "oklch(15% 0.09 30)",
+          "oklch(26% 0.09 30)",
+          "oklch(38% 0.09 30)",
+          "oklch(49% 0.09 30)",
+          "oklch(61% 0.09 30)",
+          "oklch(72% 0.09 30)",
+          "oklch(84% 0.09 30)",
+          "oklch(95% 0.09 30)"
+        ]
       }
     },
     "shadows": [
@@ -210,6 +252,10 @@
       {
         "name": "home-short-landscape",
         "value": "width > height and height < 600px"
+      },
+      {
+        "name": "setup-wide",
+        "value": "900px \u00d7 effective UI scale"
       }
     ],
     "typographyMeta": {
@@ -224,6 +270,22 @@
       "home-support": {
         "displayName": "Home supporting note",
         "purpose": "Local-match preview note; version and secondary controls use 12px base."
+      },
+      "setup-heading": {
+        "displayName": "Setup section heading",
+        "purpose": "Forces, Map and Rules headings retain their base font size while surrounding geometry scales."
+      },
+      "setup-body": {
+        "displayName": "Setup supporting text",
+        "purpose": "Starting-kit note, map description, fixed rules and feedback."
+      },
+      "setup-field": {
+        "displayName": "Setup rule field",
+        "purpose": "Native numeric text controls; semantic and native edits share the validator."
+      },
+      "setup-action": {
+        "displayName": "Setup action",
+        "purpose": "Native framed actions and narrow faction labels."
       }
     },
     "motion": [
@@ -288,17 +350,41 @@
       "description": "Static HTML preview of native Babylon GUI action states; production focus uses a 2px frame and lightened text.",
       "html": "<button class=\"ds-home-action\">Quick start local match</button>",
       "css": ".ds-home-action{display:block;width:100%;min-height:50px;padding:0 18px;border:1px solid #ddc382;border-radius:0;background:#3c392d;color:#ddc382;text-align:left;font:16px Arial,sans-serif;cursor:pointer}.ds-home-action:hover{background:#35434a}.ds-home-action:active{background:#4a4535}.ds-home-action:focus-visible{color:#fff6db;border:2px solid #fff6db}"
+    },
+    {
+      "name": "Setup rule input",
+      "kind": "input",
+      "refersTo": "setup-input",
+      "description": "Static HTML preview of the native pointer editor; semantic editing currently mirrors the focus frame but not caret or selection.",
+      "html": "<label class=\"ds-setup-field\">Seed<input type=\"text\" inputmode=\"numeric\" value=\"1\" /></label>",
+      "css": ".ds-setup-field{display:grid;gap:8px;color:#b5c0bf;font:13px Arial,sans-serif}.ds-setup-field input{height:44px;padding:0 10px;border:1px solid #eff1e9;border-radius:0;background:#18262e;color:#eff1e9;font:16px Arial,sans-serif}.ds-setup-field input:focus-visible{outline:none;border-color:#ddc382;background:#25343b}"
+    },
+    {
+      "name": "Setup spawn choice",
+      "kind": "button",
+      "description": "Static preview of the native spawn button; production options open in a framed list with 44px rows.",
+      "html": "<button class=\"ds-setup-spawn\" aria-haspopup=\"listbox\">North-west</button>",
+      "css": ".ds-setup-spawn{width:100%;height:44px;padding:0;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:16px Arial,sans-serif;cursor:pointer}.ds-setup-spawn:hover{background:#35434a}.ds-setup-spawn:active{background:#4a4535}.ds-setup-spawn:focus-visible{outline:none;border-width:2px}"
+    },
+    {
+      "name": "Setup primary action",
+      "kind": "button",
+      "refersTo": "setup-action-primary",
+      "description": "Static preview of the native Start action; production validation disables it and dims it to 0.4 alpha.",
+      "html": "<button class=\"ds-setup-start\">Start local match</button>",
+      "css": ".ds-setup-start{width:100%;height:44px;padding:0;border:1px solid #ddc382;border-radius:0;background:#3c392d;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-setup-start:hover:not(:disabled){background:#35434a}.ds-setup-start:active:not(:disabled){background:#4a4535}.ds-setup-start:focus-visible{outline:none;border-width:2px}.ds-setup-start:disabled{opacity:.4;cursor:default}"
     }
   ],
   "narrative": {
     "northStar": "Graphite Command Stations",
-    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nThis records the built Home and normal match. Other screens, including setup, settings, load, results and debug, retain older styling and are outside this system's current scope. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `src/app/shell.css` and `src/features/match/`.",
+    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nThis records the built Home, Skirmish setup and normal match HUD. Settings, load, results and debug retain their existing presentation outside this system's current scope. Home and setup use native GUI; the recorded HUD retains its HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `src/app/shell.css` and `src/features/match/`.",
     "keyCharacteristics": [
       "Battlefield first, with a slim resource strip and bottom command docks.",
       "Graphite surfaces, restrained brass highlights and tabular counters.",
       "Original brick models and original line pictograms.",
       "Narrow screens expose one dock through explicit panel tabs.",
-      "Native Home actions, original vector lettering and an authored model display."
+      "Native Home actions, original vector lettering and an authored model display.",
+      "Native setup fields, compact Force rows and an authored terrain preview."
     ],
     "rules": [
       {
@@ -317,11 +403,12 @@
       "Do use real match state for portraits, counters, availability and feedback.",
       "Do preserve full recipe values and readable unavailable explanations.",
       "Do retain accessible action names, visible focus and narrow panel switching.",
-      "Do keep native Home controls synchronized with semantic HTML and preserve the graphics fallback.",
-      "Do honor reduced motion in the Home model display."
+      "Do keep native Home and setup controls synchronized with semantic HTML and preserve the graphics fallback.",
+      "Do honor reduced motion in the Home model display.",
+      "Do use authored terrain, resource positions and selected spawns for the setup preview."
     ],
     "donts": [
-      "Don't promote legacy setup, results or debug styling into Home or the match HUD.",
+      "Don't promote legacy settings, load, results or debug styling into Home, setup or the match HUD.",
       "Don't substitute borrowed artwork or text glyphs for original model and SVG assets.",
       "Don't add ornamental animation that competes with battlefield activity."
     ]

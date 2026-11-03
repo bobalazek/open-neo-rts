@@ -35,6 +35,7 @@
   "ui.skirmish.veterancy": "Unit veterancy",
   "ui.skirmish.rules-note": "Standard fog · Normal speed · Last Man Standing",
   "ui.skirmish.preview": "Both Forces receive the authored starting kit. You control the first Force; the basic bot controls the second.",
+  "ui.skirmish.preview-unavailable": "Map preview unavailable. Match loading will check the terrain.",
   "ui.skirmish.start": "Start local match",
   "ui.skirmish.save": "Save setup",
   "ui.skirmish.load": "Load saved setup",

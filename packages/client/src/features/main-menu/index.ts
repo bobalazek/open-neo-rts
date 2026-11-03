@@ -135,20 +135,24 @@ export function homeScreen(
     ({ raw }) => (raw as { id: string }).id === "unit:eastern-collective/dragon-tank",
   );
   canvas.hidden = false;
-  void createMenuScene(canvas, {
-    intro: text("ui.home.intro"),
-    note: text("ui.home.preview"),
-    version,
-    modelLabel: `Eastern Collective · ${(model?.raw as { name?: string } | undefined)?.name ?? "Dragon Tank"}`,
-    reducedMotion,
-    scale: settings.uiScale / 100,
-    model: async (signal) => {
-      if (!model?.model) throw new Error("Menu model unavailable");
-      const response = await fetch(model.model, { signal });
-      if (!response.ok) throw new Error(`Menu model HTTP ${response.status}`);
-      return new Uint8Array(await response.arrayBuffer());
+  void createMenuScene(
+    canvas,
+    {
+      intro: text("ui.home.intro"),
+      note: text("ui.home.preview"),
+      version,
+      modelLabel: `Eastern Collective · ${(model?.raw as { name?: string } | undefined)?.name ?? "Dragon Tank"}`,
+      reducedMotion,
+      scale: settings.uiScale / 100,
+      model: async (signal) => {
+        if (!model?.model) throw new Error("Menu model unavailable");
+        const response = await fetch(model.model, { signal });
+        if (!response.ok) throw new Error(`Menu model HTTP ${response.status}`);
+        return new Uint8Array(await response.arrayBuffer());
+      },
     },
-  })
+    signal.signal,
+  )
     .then((scene) => {
       if (disposed) {
         scene.dispose();

@@ -273,14 +273,16 @@
   max-width: 70rem;
   margin: 7vh auto 0;
 }
-.game-shell.home-native {
+.game-shell.home-native,
+.game-shell.setup-native {
   padding: 0;
   background: transparent;
   pointer-events: none;
   overflow: hidden;
 }
 /* The visible controls are Babylon GUI; retain semantic Home navigation for assistive technology. */
-.home-native .home-screen {
+.home-native .home-screen,
+.setup-native .setup-screen {
   position: absolute;
   width: 1px;
   height: 1px;
