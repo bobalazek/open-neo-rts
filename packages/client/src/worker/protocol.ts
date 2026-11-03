@@ -16,6 +16,7 @@ import {
   EXTRACTION_STATUSES,
   HARVEST_STATUSES,
   MAX_COMBAT_EVENTS,
+  MAX_PRODUCTION_EXITS,
   PRODUCTION_STATUSES,
   SIM_VERSION,
   STAT_COUNTERS,
@@ -586,6 +587,29 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       !isGhosts(snapshot.ghosts, snapshot.fog, Number(snapshot.tick), snapshot.entities)
     )
       return false;
+  }
+  if (snapshot.productionExits !== undefined) {
+    const exits = snapshot.productionExits;
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(exits) ||
+      Object.getPrototypeOf(exits) !== Array.prototype ||
+      exits.length > MAX_PRODUCTION_EXITS ||
+      Reflect.ownKeys(exits).length !== exits.length + 1
+    )
+      return false;
+    const known = new Set(snapshot.entities.filter(isRecord).map((entity) => entity.handle));
+    const seen = new Set();
+    for (const handle of exits) {
+      if (
+        typeof handle !== "string" ||
+        !/^e[1-9][0-9]*$/.test(handle) ||
+        !known.has(handle) ||
+        seen.has(handle)
+      )
+        return false;
+      seen.add(handle);
+    }
   }
   if (snapshot.combatEvents !== undefined) {
     if (

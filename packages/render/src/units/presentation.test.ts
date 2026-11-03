@@ -16,7 +16,7 @@ import {
 } from "@babylonjs/core";
 import { parseTerrain, RAMP, WATER } from "@open-neo-rts/content";
 import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
-import { createEntityPresentation } from ".";
+import { createEntityPresentation, loadModel } from ".";
 
 const bytes = (name = "collective-soldier", folder = "units") =>
   Bun.file(
@@ -62,6 +62,157 @@ function fixture() {
     },
   };
 }
+
+test("original producer doors open, hold, reverse closing, pause and close independently after observed exits", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("barracks-complex", "structures"),
+    movementDomain: null,
+    footprint: [3, 2],
+  }));
+  const state = (tick: number, exit = false) => ({
+    ...snapshot(tick, [entity("a"), entity("b")]),
+    ...(exit && { productionExits: ["a"] }),
+  });
+  const door = (handle: string) => {
+    const node = root(f.scene, handle)
+      .getChildTransformNodes()
+      .find((node) => node.name === "door_l");
+    assert(node);
+    return node;
+  };
+  try {
+    await layer.accept(state(0), 0);
+    const rest = door("a").position.y;
+    await layer.accept(state(1, true), 50);
+    layer.render(500);
+    expect(door("a").position.y).toBeCloseTo(rest + 0.5625);
+    expect(door("b").position.y).toBe(rest);
+    layer.setPlaybackRate(0);
+    layer.render(5000);
+    expect(door("a").position.y).toBeCloseTo(rest + 0.5625);
+    layer.setPlaybackRate(8);
+    layer.render(5450);
+    expect(door("a").position.y).toBeCloseTo(rest + 1.125);
+    await layer.accept(state(2, true), 5900);
+    layer.render(6800);
+    layer.render(7250);
+    const reversing = door("a").position.y;
+    expect(reversing).toBeCloseTo(rest + 0.5625);
+    await layer.accept(state(3, true), 7250);
+    expect(door("a").position.y).toBeCloseTo(reversing);
+    layer.render(7700);
+    expect(door("a").position.y).toBeCloseTo(rest + 1.125);
+    layer.render(9500);
+    expect(door("a").position.y).toBeCloseTo(rest);
+    await layer.accept(snapshot(4, []), 9550);
+    expect(f.scene.meshes).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
+test("door overlays preserve original factory activity and explicit rest/preview playback", async () => {
+  const f = fixture();
+  try {
+    const model = await loadModel(f.scene, await bytes("war-factory", "structures"));
+    const crate = f.scene.getTransformNodeByName("crate_0") ?? f.scene.getMeshByName("crate_0");
+    const door = f.scene.getTransformNodeByName("door") ?? f.scene.getMeshByName("door");
+    assert(crate && door);
+    model.play("active");
+    model.seek(1500);
+    const working = crate.position.z;
+    model.door("open", 600);
+    f.scene.activeCamera = new ArcRotateCamera("door proof", 0, 1, 20, Vector3.Zero(), f.scene);
+    f.scene.render();
+    expect(door.scaling.y).toBeCloseTo(0.54);
+    expect(crate.position.z).toBe(working);
+    model.door("close", 600);
+    expect(door.scaling.y).toBeCloseTo(0.54);
+    model.door("close", 1200);
+    expect(door.scaling.y).toBeCloseTo(1);
+    expect(crate.position.z).toBe(working);
+    model.play("open");
+    model.seek(1200);
+    expect(door.scaling.y).toBeCloseTo(0.08);
+    model.play("");
+    expect(door.scaling.y).toBe(1);
+    expect(crate.position.z).not.toBe(working);
+    model.dispose();
+  } finally {
+    f.dispose();
+  }
+});
+
+test("multiple exits before import match ready doors, while ghosts never open from live exit signals", async () => {
+  const data = await bytes("barracks-complex", "structures");
+  for (const paused of [false, true]) {
+    const ready = fixture(),
+      late = fixture();
+    let resolve: ((data: Uint8Array) => void) | undefined;
+    const pending = new Promise<Uint8Array>((done) => {
+      resolve = done;
+    });
+    const loaded = createEntityPresentation(ready.scene, ready.terrain, async () => ({
+      bytes: data,
+      movementDomain: null,
+      footprint: [3, 2],
+    }));
+    const delayed = createEntityPresentation(late.scene, late.terrain, async () => ({
+      bytes: await pending,
+      movementDomain: null,
+      footprint: [3, 2],
+    }));
+    const ghost = createEntityPresentation(
+      ready.scene,
+      ready.terrain,
+      async () => ({ bytes: data, movementDomain: null, footprint: [3, 2] }),
+      { ghost: true },
+    );
+    const state = (tick: number, exit = true) => ({
+      ...snapshot(tick, [entity("a")]),
+      ...(exit && { productionExits: ["a"] }),
+    });
+    try {
+      await loaded.accept(state(0, false), 0);
+      const waits = [delayed.accept(state(0, false), 0)];
+      await ghost.accept({ ...state(0), entities: [entity("g1")], productionExits: ["g1"] }, 0);
+      const ghostRest = root(ready.scene, "g1")
+        .getChildTransformNodes()
+        .find((node) => node.name === "door_l")!.position.y;
+      if (paused) {
+        loaded.setPlaybackRate(0);
+        delayed.setPlaybackRate(0);
+      }
+      for (const [tick, time] of [
+        [1, 50],
+        [2, 1950],
+        [3, 3000],
+      ] as const) {
+        await loaded.accept(state(tick), paused ? 0 : time);
+        waits.push(delayed.accept(state(tick), paused ? 0 : time));
+      }
+      loaded.render(paused ? 0 : 3500);
+      delayed.render(paused ? 0 : 3500);
+      resolve?.(data);
+      await Promise.all(waits);
+      const pose = (scene: Scene, handle = "a") =>
+        root(scene, handle)
+          .getChildTransformNodes()
+          .find((node) => node.name === "door_l")!.position.y;
+      expect(pose(late.scene)).toBeCloseTo(pose(ready.scene), 6);
+      ghost.render(1000);
+      expect(pose(ready.scene, "g1")).toBeCloseTo(ghostRest);
+    } finally {
+      loaded.dispose();
+      delayed.dispose();
+      ghost.dispose();
+      ready.dispose();
+      late.dispose();
+    }
+  }
+});
 
 test("original structures share materials but own assembly stages, rotated scaffolds and completion cleanup", async () => {
   const f = fixture();

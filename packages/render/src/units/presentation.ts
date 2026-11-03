@@ -48,6 +48,8 @@ interface Entity {
   deployed: boolean;
   deployElapsed?: number;
   deployHistory?: number[];
+  doorElapsed?: number;
+  doorHistory?: number[];
   deathElapsed?: number;
   height?: number;
   root?: TransformNode;
@@ -73,6 +75,15 @@ interface Template {
 
 const keyFor = (definition: string, force: number) => JSON.stringify([definition, force]);
 const poseOf = ({ x, y, facing }: Pose): Pose => ({ x, y, facing });
+
+/** Continue opening, renew an open hold, or reverse the authored closing phase. */
+function reopenDoor(elapsed: number, opening: number, closing: number): number {
+  if (!opening || !closing) return 0;
+  if (elapsed < opening) return elapsed;
+  if (elapsed < opening * 2) return opening;
+  if (elapsed < opening * 2 + closing) return opening * (1 - (elapsed - opening * 2) / closing);
+  return 0;
+}
 
 /** A presentation-only owner. Call accept on copied worker snapshots, render with the same monotonic clock. */
 export function createEntityPresentation(
@@ -203,6 +214,7 @@ export function createEntityPresentation(
       if (entity.attackElapsed !== undefined) entity.attackElapsed += delta;
       if (entity.working) entity.workElapsed = (entity.workElapsed ?? 0) + delta;
       if (entity.deployElapsed !== undefined) entity.deployElapsed += delta;
+      if (entity.doorElapsed !== undefined) entity.doorElapsed += delta;
     }
     for (const [handle, entity] of dying) {
       entity.deathElapsed = (entity.deathElapsed ?? 0) + delta;
@@ -217,6 +229,7 @@ export function createEntityPresentation(
       }
       entity.playback.seek(entity.deathElapsed);
       sampleDeployment(entity);
+      sampleDoor(entity);
     }
     pruneTemplates();
     const alpha =
@@ -357,6 +370,7 @@ export function createEntityPresentation(
         entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
       }
       sampleDeployment(entity);
+      sampleDoor(entity);
       const bar =
         !options.ghost &&
         (selected.has(handle) ||
@@ -395,6 +409,31 @@ export function createEntityPresentation(
     }
     const elapsed = Math.min(length, entity.deployElapsed ?? length);
     entity.playback.deploy(entity.deployed ? elapsed : length - elapsed);
+  }
+
+  function sampleDoor(entity: Entity) {
+    const playback = entity.playback;
+    if (!playback) return;
+    const opening = playback.duration("open"),
+      closing = playback.duration("close");
+    if (!opening || !closing) {
+      entity.doorElapsed = undefined;
+      entity.doorHistory = undefined;
+      return;
+    }
+    if (entity.doorHistory) {
+      let elapsed = 0;
+      for (const span of entity.doorHistory) elapsed = reopenDoor(elapsed + span, opening, closing);
+      entity.doorElapsed = elapsed + (entity.doorElapsed ?? 0);
+      entity.doorHistory = undefined;
+    }
+    const elapsed = entity.doorElapsed;
+    if (elapsed === undefined || elapsed >= opening * 2 + closing) {
+      entity.doorElapsed = undefined;
+      playback.door("close", closing);
+    } else if (elapsed < opening) playback.door("open", elapsed);
+    else if (elapsed < opening * 2) playback.door("open", opening);
+    else playback.door("close", elapsed - opening * 2);
   }
 
   return {
@@ -446,6 +485,7 @@ export function createEntityPresentation(
             entity.playback.play("death");
             entity.playback.seek(0);
             sampleDeployment(entity);
+            sampleDoor(entity);
             for (const mesh of entity.root.getChildMeshes()) {
               meshHandles.delete(mesh);
               mesh.isPickable = false;
@@ -517,6 +557,19 @@ export function createEntityPresentation(
             projected.repairOrder?.state === "working");
         if (working !== entity.working) entity.workElapsed = 0;
         entity.working = working;
+        if (!options.ghost && snapshot.productionExits?.includes(handle)) {
+          if (entity.playback)
+            entity.doorElapsed = reopenDoor(
+              entity.doorElapsed ?? Infinity,
+              entity.playback.duration("open"),
+              entity.playback.duration("close"),
+            );
+          else {
+            entity.doorHistory ??= [];
+            if (entity.doorElapsed !== undefined) entity.doorHistory.push(entity.doorElapsed);
+            entity.doorElapsed = 0;
+          }
+        }
         if (
           !options.ghost &&
           (snapshot.combatEvents ?? []).some(

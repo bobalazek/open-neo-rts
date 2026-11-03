@@ -13,7 +13,7 @@ import {
   Template,
   Transform,
 } from "../features/entities";
-import { canObserveEventSource } from "../features/events";
+import { canObserveEventSource, emitProductionExit } from "../features/events";
 import { MoveIntent } from "../features/movement";
 import { checkpointHash, register, registerController, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
@@ -240,6 +240,27 @@ test("structure ghosts retain the observed health, ownership and site state thro
   f.kernel.world.set(f.scout, Transform, "y", 8 * 1024 + 512);
   f.refresh();
   expect(f.projection.snapshot(f.kernel).ghosts).toEqual([]);
+});
+
+test("producer exits disclose only currently projected actors without allocating hidden handles or animating ghosts", () => {
+  const f = fixture();
+  const initial = f.projection.snapshot(f.kernel),
+    allocation = f.projection.serialize();
+  emitProductionExit(f.kernel, f.factory);
+  emitProductionExit(f.kernel, f.hidden);
+  emitProductionExit(f.kernel, 1000000);
+  const packet = f.projection.snapshot(f.kernel);
+  const factory = initial.entities.find((row) => f.projection.resolve(row.handle) === f.factory)!;
+  expect(packet.productionExits).toEqual([factory.handle]);
+  expect(f.projection.serialize()).toEqual(allocation);
+  expect(packet.entities.find((row) => row.handle === factory.handle)?.production).toBeUndefined();
+  f.kernel.world.set(f.scout, Transform, "x", 20 * 1024 + 512);
+  f.kernel.world.set(f.scout, Transform, "y", 20 * 1024 + 512);
+  f.refresh();
+  expect(f.projection.snapshot(f.kernel).productionExits).toEqual([]);
+  expect(
+    f.projection.snapshot(f.kernel).ghosts?.some((row) => row.definition.includes("factory")),
+  ).toBe(true);
 });
 
 test("memory is canonical and copied, rejects malformed loads atomically, and does not depend on projector polling", () => {

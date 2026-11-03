@@ -75,6 +75,23 @@ clock controls progression and pause, without multiplying speed twice. Retained 
 clips hold the last stance; fog removal/disposal still removes the instance. This adds
 no simulation state, private cooldown dependency, inferred death or wreck lifecycle.
 
+Successful production output publishes `productionExits`: a bounded, copied list
+of already projected opaque producer handles, coalesced per producer/tick. No
+queue contents, output type, cost or hidden actor handle is included. Blocked
+exits, population/EMP/refusal and mere queue progress do not emit it; actual gift
+output does. The stream is cosmetic, cleared each production tick, excluded from
+controller observations and canonical hashes, and cannot affect unit output.
+
+Paired authored `open`/`close` clips reserve their genuinely moving channels
+separately from deployment and base activity. An observed exit opens the door,
+holds it for one authored opening duration and closes it. Repeated output keeps
+opening continuous, renews a hold or reverses closing. Pending imports retain
+inter-exit spans until clip durations are known, then catch up without replaying
+finished activity. Ghosts remain closed and inert; disappearance revokes the
+instance. The existing simulation-millisecond clock controls pause/speed. Preview
+clip selection/rest still works. These visual timings delay no gameplay output
+and introduce no balance number; models without both clips remain inert.
+
 ## Phase-1b entity presentation
 
 `createEntityPresentation(scene, terrain, resolveModel)` consumes only copied `SeatSnapshot` values. The caller resolves a definition ID to `{ bytes, movementDomain }`, using the existing content domain or `null` for structures. This layer owns no pack catalog or simulation. Set Force colours with `setForceColor(force, "#RRGGBB")`; call `accept(snapshot, receivedAtMs)` on delivery and `render(nowMs)` each frame, using the same monotonic clock. Await or handle the promise from `accept` to report model-loading errors. Dispose the layer before its scene.

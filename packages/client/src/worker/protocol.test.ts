@@ -330,6 +330,34 @@ test("worker replies bound combat events and reject authoritative round IDs, for
   expect(isWorkerReply(packet([event], "debug-no-fog"))).toBe(false);
 });
 
+test("worker accepts bounded unique producer handles only when that actor is in the current controlled projection", () => {
+  const packet = (productionExits: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: { tick: 1, mode, entities: [entity], productionExits },
+    },
+  });
+  expect(isWorkerReply(packet([]))).toBe(true);
+  expect(isWorkerReply(packet([entity.handle]))).toBe(true);
+  const expando = Object.assign([entity.handle], { queue: "private" });
+  for (const value of [
+    null,
+    {},
+    Array(1),
+    [1],
+    ["g1"],
+    ["e0"],
+    ["e9999"],
+    [entity.handle, entity.handle],
+    expando,
+    Array(8193).fill(entity.handle),
+  ])
+    expect(isWorkerReply(packet(value))).toBe(false);
+  expect(isWorkerReply(packet([], "debug-no-fog"))).toBe(false);
+});
+
 test("worker replies validate extraction status and bounded finite or unlimited remaining deposits", () => {
   const extraction = { kind: "materials", remaining: 4, status: "active" };
   const packet = (value: unknown, mode = "controlled") =>
