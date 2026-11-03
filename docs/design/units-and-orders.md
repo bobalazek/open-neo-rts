@@ -47,6 +47,11 @@ What units can be told to do, and what they do on their own. Every order is a si
 
 Hold position is an order, not a stance, so it can sit in a queue.
 
+The first-playable [combat-order slice](../project/decisions/2026-11-03-first-playable-combat-orders.md)
+implements visible-target pursuit, minimum-range backing, attack-move engagement
+and H/Hold. Shift queues and the remaining context actions are tracked separately
+by 2-17b; the full queue/stance model above remains the target behavior.
+
 ## Automatic behaviour
 
 - **Target acquisition** follows the priority rules in [combat-and-balance.md](combat-and-balance.md#targeting).

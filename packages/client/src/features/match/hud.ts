@@ -232,6 +232,15 @@ export function createMatchHud(
     get(".hud-command-panel"),
   );
   salvageButton.dataset.salvage = "";
+  const holdButton = button(
+    `H · ${text("ui.hud.hold")}`,
+    () => {
+      cancel();
+      void issue("unit.hold", { entities: units().map((entity) => entity.handle) });
+    },
+    get(".hud-command-panel"),
+  );
+  holdButton.dataset.hold = "";
   const surgeButton = button(
     text("ui.hud.surge"),
     () => {
@@ -651,6 +660,10 @@ export function createMatchHud(
         event.preventDefault();
         unloadButton.click();
       }
+      if (event.code === "KeyH") {
+        event.preventDefault();
+        holdButton.click();
+      }
       if (index >= 0) {
         event.preventDefault();
         activate(index);
@@ -672,6 +685,11 @@ export function createMatchHud(
       owned = own();
     const selectedUnits = units(),
       selectedBuilders = builders();
+    holdButton.disabled = busy || options.paused() || !selectedUnits.length;
+    holdButton.setAttribute(
+      "aria-pressed",
+      String(selectedUnits.length > 0 && selectedUnits.every((entity) => entity.holdPosition)),
+    );
     loadButton.hidden = !selectedUnits.some(
       (entity) => definitions.get(entity.definition)?.gameplay.domain === "foot",
     );
@@ -1187,6 +1205,7 @@ export function createMatchHud(
       );
     if (entity.repairOrder)
       lines.push(text("ui.hud.repair-state", { state: workState(entity.repairOrder.state) }));
+    if (entity.holdPosition) lines.push(text("ui.hud.holding"));
     if (entity.salvageOrder)
       lines.push(text("ui.hud.salvage-state", { state: workState(entity.salvageOrder.state) }));
     if (entity.harvesting)

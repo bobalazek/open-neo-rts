@@ -175,6 +175,7 @@ port.onmessage = ({ data }) => {
             type === "unit.move" ||
             type === "unit.attackMove" ||
             type === "unit.stop" ||
+            type === "unit.hold" ||
             type === "unit.harvest" ||
             type === "unit.attack"
           ) {

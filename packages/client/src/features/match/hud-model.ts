@@ -46,6 +46,7 @@ export function idleBuilder(entity: PresentedEntity, definition: GameplayDefinit
     !entity.order &&
     !entity.constructionOrder &&
     !entity.repairOrder &&
+    !entity.holdPosition &&
     !entity.salvageOrder
   );
 }

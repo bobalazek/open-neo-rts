@@ -12,7 +12,8 @@ export async function start(setup: MatchSetup) {
   const abort = new AbortController();
   let state: OfflineState | undefined,
     selection: string[] = [],
-    targetHandle: string | null = null;
+    targetHandle: string | null = null,
+    targetCell: { x: number; y: number } | null = null;
   const errors: string[] = [];
   const match = createOfflineMatch(
     (next) => {
@@ -49,7 +50,7 @@ export async function start(setup: MatchSetup) {
         hud.update();
       },
       pick: () => targetHandle,
-      pickCell: () => (targetHandle ? { x: 0, y: 0 } : null),
+      pickCell: () => targetCell ?? (targetHandle ? { x: 0, y: 0 } : null),
       command,
       preview: () => {},
       paused: () => false,
@@ -63,13 +64,19 @@ export async function start(setup: MatchSetup) {
     errors: () => errors,
     command,
     target(id: string, force = 0) {
+      targetCell = null;
       targetHandle =
         state?.snapshot.entities.find(
           (entity) => entity.force === force && entity.definition === id,
         )?.handle ?? null;
     },
     targetRemains(id: string) {
+      targetCell = null;
       targetHandle = state?.snapshot.remains?.find((row) => row.definition === id)?.handle ?? null;
+    },
+    ground(x: number, y: number) {
+      targetHandle = null;
+      targetCell = { x, y };
     },
     select(ids: string[]) {
       selection =

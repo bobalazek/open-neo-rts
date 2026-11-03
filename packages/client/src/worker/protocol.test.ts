@@ -48,6 +48,38 @@ test("remains packets are bounded, strict, unique opaque rows separate from livi
 
 const resources = { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
 
+test("Hold position wire state is a strict normal-match flag", () => {
+  const packet = (holdPosition: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1,
+        mode,
+        entities: [
+          {
+            handle: "e1",
+            definition: "core.unit:fixture/soldier",
+            force: 0,
+            x: 0,
+            y: 0,
+            facing: 0,
+            health: 100,
+            maxHealth: 100,
+            order: null,
+            holdPosition,
+          },
+        ],
+      },
+    },
+  });
+  expect(isWorkerReply(packet(true))).toBe(true);
+  for (const flag of [false, 0, 1, "true", null, {}, []])
+    expect(isWorkerReply(packet(flag))).toBe(false);
+  expect(isWorkerReply(packet(true, "debug-no-fog"))).toBe(false);
+});
+
 test("salvage orders accept only strict states and a currently published remains target", () => {
   const row = {
     handle: "e2",

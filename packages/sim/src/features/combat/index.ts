@@ -17,7 +17,19 @@ import { suspendSalvage } from "../salvage";
 export const MAX_SHOT_INTENTS = 4096;
 export { Burning } from "./burn";
 export { Disabled } from "./disable";
-export const AttackOrder = defineComponent("AttackOrder", { target: "u32" });
+export const AttackOrder = defineComponent("AttackOrder", {
+  target: "u32",
+  x: "i32",
+  y: "i32",
+  planned: "u8",
+});
+/** Retains the destination while combat temporarily stops its movement route. */
+export const AttackMoveOrder = defineComponent("AttackMoveOrder", {
+  x: "i32",
+  y: "i32",
+  paused: "u8",
+});
+export const HoldPosition = defineComponent("HoldPosition", {});
 export const WeaponState = defineComponent("WeaponState", {
   shooter: "u32",
   weapon: "u8",
@@ -63,7 +75,13 @@ const angleDelta = (from: number, to: number) => ((to - from + 0x8000) & 0xffff)
 export function clearAttackOrder(kernel: Kernel, actor: number): void {
   const world = kernel.world;
   const shooters = new Set([actor, ...(kernel.transport?.passengers(actor) ?? [])]);
-  if (world.has(actor, AttackOrder)) world.remove(actor, AttackOrder);
+  if (world.has(actor, AttackOrder)) {
+    kernel.movement?.cancel(actor);
+    if (world.has(actor, MoveIntent)) world.remove(actor, MoveIntent);
+    world.remove(actor, AttackOrder);
+  }
+  if (world.has(actor, AttackMoveOrder)) world.remove(actor, AttackMoveOrder);
+  if (world.has(actor, HoldPosition)) world.remove(actor, HoldPosition);
   for (const state of world.query(WeaponState))
     if (shooters.has(world.get(state, WeaponState, "shooter"))) {
       world.set(state, WeaponState, "remaining", 0);
@@ -192,7 +210,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
       })[0];
   };
   return {
-    components: [AttackOrder, WeaponState, ShotIntent],
+    components: [AttackOrder, AttackMoveOrder, HoldPosition, WeaponState, ShotIntent],
     handlers: {
       "unit.attack": (kernel, { seat, payload: { entities, entity } }) => {
         const world = kernel.world;
@@ -222,6 +240,130 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
       },
     },
     systems: {
+      control: [
+        (kernel) => {
+          const { world } = kernel;
+          kernel.vision?.update();
+          const halt = (actor: number) => {
+            kernel.movement?.cancel(actor);
+            if (world.has(actor, MoveIntent)) world.remove(actor, MoveIntent);
+          };
+          const ready = (actor: number, target: number) =>
+            [actor, ...(kernel.transport?.firingPassengers(actor) ?? [])].some((shooter) =>
+              definitionOf(kernel, shooter)?.weapons?.some(
+                (weapon) =>
+                  eligible(kernel, shooter, target, weapon) &&
+                  inRange(kernel, shooter, target, weapon) &&
+                  lineOf(kernel, shooter, target, weapon),
+              ),
+            );
+          for (const actor of world.query(AttackOrder)) {
+            const target = world.get(actor, AttackOrder, "target");
+            if (!live(kernel, actor) || !canAttack(kernel, actor, target)) {
+              clearAttackOrder(kernel, actor);
+              continue;
+            }
+            if (kernel.disabled?.(actor) || kernel.unitModes?.active(actor)) continue;
+            if (ready(actor, target)) {
+              halt(actor);
+              world.set(actor, AttackOrder, "planned", 2);
+              continue;
+            }
+            if (!definitionOf(kernel, actor)?.speed) continue;
+            const point = combatPoint(kernel, definitions, target);
+            const moved =
+              Math.floor(point.x / 1024) !==
+                Math.floor(world.get(actor, AttackOrder, "x") / 1024) ||
+              Math.floor(point.y / 1024) !==
+                Math.floor(world.get(actor, AttackOrder, "y") / 1024) ||
+              (!world.has(actor, MoveIntent) &&
+                (point.x !== world.get(actor, AttackOrder, "x") ||
+                  point.y !== world.get(actor, AttackOrder, "y")));
+            // One bounded route per target cell; an unreachable stationary target never causes an order loop.
+            if (world.get(actor, AttackOrder, "planned") === 1 && !moved) continue;
+            world.set(actor, AttackOrder, "x", point.x);
+            world.set(actor, AttackOrder, "y", point.y);
+            world.set(actor, AttackOrder, "planned", 1);
+            halt(actor);
+            let goal = point;
+            const origin = combatPoint(kernel, definitions, actor);
+            const minimum = definitionOf(kernel, actor)
+              ?.weapons?.filter((weapon) => eligible(kernel, actor, target, weapon))
+              .sort((a, b) => a.rangeSubcells[0] - b.rangeSubcells[0])[0];
+            if (
+              minimum &&
+              (point.x - origin.x) ** 2 + (point.y - origin.y) ** 2 < minimum.rangeSubcells[0] ** 2
+            ) {
+              const maximum =
+                kernel.unitModes?.range(actor, minimum.rangeSubcells[1]) ??
+                minimum.rangeSubcells[1];
+              const radius = Math.floor((minimum.rangeSubcells[0] + maximum) / 2);
+              const candidates = Array.from({ length: 8 }, (_, index) => ({
+                x:
+                  Math.floor((point.x + mulDiv(radius, cos(index * 8192), 0x4000)) / 1024) * 1024 +
+                  512,
+                y:
+                  Math.floor((point.y + mulDiv(radius, sin(index * 8192), 0x4000)) / 1024) * 1024 +
+                  512,
+              })).filter((candidate) => {
+                const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
+                return (
+                  distance >= minimum.rangeSubcells[0] ** 2 &&
+                  distance <= maximum ** 2 &&
+                  (!kernel.movement || kernel.movement.canReach(actor, candidate))
+                );
+              });
+              candidates.sort(
+                (a, b) =>
+                  (a.x - origin.x) ** 2 +
+                    (a.y - origin.y) ** 2 -
+                    ((b.x - origin.x) ** 2 + (b.y - origin.y) ** 2) ||
+                  a.y - b.y ||
+                  a.x - b.x,
+              );
+              if (!candidates[0]) continue;
+              goal = candidates[0];
+            }
+            if (kernel.movement) kernel.movement.order(actor, goal);
+            else world.add(actor, MoveIntent, goal);
+          }
+          for (const actor of world.query(AttackMoveOrder, Transform, Template)) {
+            if (!live(kernel, actor)) {
+              clearAttackOrder(kernel, actor);
+              continue;
+            }
+            if (kernel.disabled?.(actor) || kernel.unitModes?.active(actor)) continue;
+            const point = {
+              x: world.get(actor, AttackMoveOrder, "x"),
+              y: world.get(actor, AttackMoveOrder, "y"),
+            };
+            const engage = [actor, ...(kernel.transport?.firingPassengers(actor) ?? [])].some(
+              (shooter) =>
+                definitionOf(kernel, shooter)?.weapons?.some(
+                  (weapon) => choose(kernel, shooter, weapon) !== undefined,
+                ),
+            );
+            if (engage) {
+              halt(actor);
+              world.set(actor, AttackMoveOrder, "paused", 1);
+              continue;
+            }
+            if (world.has(actor, MoveIntent)) continue;
+            if (
+              !world.get(actor, AttackMoveOrder, "paused") ||
+              (world.get(actor, Transform, "x") === point.x &&
+                world.get(actor, Transform, "y") === point.y)
+            ) {
+              world.remove(actor, AttackMoveOrder);
+              continue;
+            }
+            world.set(actor, AttackMoveOrder, "paused", 0);
+            if (kernel.movement) kernel.movement.order(actor, point);
+            else world.add(actor, MoveIntent, { ...point, attackMove: 1 });
+            if (world.has(actor, MoveIntent)) world.set(actor, MoveIntent, "attackMove", 1);
+          }
+        },
+      ],
       combat: [
         (kernel) => {
           const world = kernel.world;

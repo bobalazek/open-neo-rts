@@ -116,6 +116,8 @@
   "ui.hud.assist": "Assist build",
   "ui.hud.repair": "Repair",
   "ui.hud.clear-remains": "Clear / salvage",
+  "ui.hud.hold": "Hold position",
+  "ui.hud.holding": "Holding position",
   "ui.hud.pick-remains": "Pick visible wreckage or rubble.",
   "ui.hud.salvage-state": "Salvage: {state}",
   "ui.hud.state-contested": "another Force is clearing this",

@@ -829,6 +829,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "attackTarget",
             "disabled",
             "burning",
+            "holdPosition",
             "productionSurge",
             "veterancy",
             "repair",
@@ -853,6 +854,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
+    if (
+      entity.holdPosition !== undefined &&
+      (snapshot.mode !== "controlled" || entity.holdPosition !== true)
+    )
+      return false;
     if (entity.veterancy !== undefined) {
       const veterancy = entity.veterancy;
       if (
