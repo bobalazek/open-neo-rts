@@ -56,14 +56,18 @@ export function mountNativeMatchHud(
     return {
       id: identify(button),
       label: button.getAttribute("aria-label") ?? button.textContent ?? "",
-      tooltip:
+      tooltip: [
         button.dataset.recipeInfo ??
-        [context, button.getAttribute("aria-label") ?? button.textContent, button.title]
-          .filter(Boolean)
-          .join("\n"),
+          [context, button.getAttribute("aria-label") ?? button.textContent, button.title]
+            .filter(Boolean)
+            .join("\n"),
+        button.dataset.hotkey,
+      ]
+        .filter(Boolean)
+        .join("\n"),
       image: image(button),
       key: button.dataset.hotkey,
-      badge: row ? context?.match(/^\d+/)?.[0] : undefined,
+      badge: button.dataset.count ?? (row ? context?.match(/^\d+/)?.[0] : undefined),
       disabled: button.disabled || button.getAttribute("aria-disabled") === "true",
       active: button.getAttribute("aria-pressed") === "true",
       activate: () => {
@@ -87,7 +91,7 @@ export function mountNativeMatchHud(
   function snapshot(): BattlefieldHudContent {
     const health = root.querySelector<HTMLProgressElement>("[data-health]");
     const typeButtons = buttons("[data-types] button");
-    const label = typeButtons.map((button) => button.label).join(" · ");
+    const summary = root.querySelector<HTMLElement>("[data-summary]");
     const groups = buttons("[data-groups] button").map((item, i) => {
       const source = root.querySelectorAll<HTMLButtonElement>("[data-groups] button")[i]!;
       const group = i === 9 ? 0 : i + 1;
@@ -177,7 +181,6 @@ export function mountNativeMatchHud(
         },
       });
     const details = [
-      ...typeButtons,
       ...buttons(
         "[data-order-queue] button,.hud-sites button,[data-requests] button,[data-set-group],[data-add-group]",
       ),
@@ -198,8 +201,14 @@ export function mountNativeMatchHud(
       });
     return {
       scale: (Number.parseFloat(document.documentElement.style.fontSize) || 100) / 100,
+      objective: {
+        label: text("ui.match.objective"),
+        tooltip: `${root.querySelector(".match-top > strong")?.textContent ?? ""}\n${text("ui.menu.objectives-help")}`,
+      },
       resources: [
-        ...root.querySelectorAll<HTMLElement>(".match-top > span:not([data-save-notice])"),
+        ...root.querySelectorAll<HTMLElement>(
+          ".match-top > span:not([data-save-notice],[data-time],[data-speed])",
+        ),
       ]
         .filter((node) => !node.hidden)
         .map((node) => ({
@@ -208,13 +217,21 @@ export function mountNativeMatchHud(
           tooltip: node.title || node.textContent || "",
           image: image(node),
         })),
+      status: [
+        ...root.querySelectorAll<HTMLElement>(".match-top > [data-time],.match-top > [data-speed]"),
+      ].map((node) => ({
+        id: identify(node),
+        label: node.textContent ?? "",
+        tooltip: node.title || node.textContent || "",
+        image: image(node),
+      })),
       top: buttons(".match-top > button"),
       selection: {
-        label: label || text("ui.hud.selection"),
-        image: health?.hidden
-          ? undefined
-          : (root.querySelector<HTMLImageElement>("[data-portrait]")?.getAttribute("src") ??
-            undefined),
+        label: summary?.dataset.name || text("ui.hud.selection"),
+        owner: summary?.dataset.owner ?? "",
+        color: summary?.dataset.color ?? "#ddc382",
+        count: Number(summary?.dataset.count ?? "0"),
+        types: typeButtons,
         health: health?.hidden ? 0 : (health?.value ?? 0),
         maxHealth: health?.hidden ? 0 : (health?.max ?? 0),
         details: root.querySelector("[data-details]")?.textContent ?? "",

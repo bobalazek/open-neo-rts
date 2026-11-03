@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { SeatSnapshot } from "../../../packages/sim/src";
-import { nativeFrame, nativeMapPoint, observeNativePaint } from "./native-paint";
+import { clickNativeIcon, nativeFrame, nativeMapPoint, observeNativePaint } from "./native-paint";
 
 async function clickMap(
   page: Page,
@@ -85,6 +85,11 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   await page.mouse.move(10, 50, { steps: 3 });
   await page.mouse.up();
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 7");
+  await page.screenshot({ path: info.outputPath("mixed-desktop.png") });
+  const truck = page.locator("[data-types] button").filter({ hasText: "Supply Truck" });
+  await clickNativeIcon(page, truck);
+  await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
+  await expect(page.locator("[data-details]")).toContainText("Supply Truck");
   await page.keyboard.press("Escape");
   const centre = 410;
   await page.mouse.move(632, centre - 8);

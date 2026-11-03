@@ -8,6 +8,25 @@ import {
   observeNativePaint,
 } from "./native-paint";
 
+async function holdHudFrames(page: import("@playwright/test").Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        const original = window.requestAnimationFrame;
+        const parked: FrameRequestCallback[] = [];
+        Reflect.set(window, "resumeHudFrames", () => {
+          window.requestAnimationFrame = original;
+          for (const callback of parked) original.call(window, callback);
+        });
+        window.requestAnimationFrame = (callback) => {
+          parked.push(callback);
+          resolve();
+          return -parked.length;
+        };
+      }),
+  );
+}
+
 test("native battlefield integrates selected commands, recipes, circular map and a working Resume", async ({
   page,
 }, info) => {
@@ -21,8 +40,13 @@ test("native battlefield integrates selected commands, recipes, circular map and
   const world = page.locator("#game");
   await expect(world).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(world).toHaveAttribute("data-hud", "native");
+  await expect(page.locator("[data-summary]")).toHaveAttribute("data-count", "0");
+  await nativeFrame(page);
+  expect(await page.evaluate(() => Reflect.get(window, "nativePaintText").has("I"))).toBe(false);
+  await page.screenshot({ path: info.outputPath("empty-desktop.png") });
   await clickNativeText(page, ".");
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
+  await expect(page.locator("[data-summary]")).toHaveAttribute("data-owner", "You · Team 1");
   await expect
     .poll(() =>
       page.evaluate(() => {
@@ -41,15 +65,32 @@ test("native battlefield integrates selected commands, recipes, circular map and
     .poll(() => page.evaluate(() => Reflect.get(window, "nativePaintText").has("Barracks Complex")))
     .toBe(true);
   await page.screenshot({ path: info.outputPath("desktop.png") });
-  await page.keyboard.press("Control+1");
-  await expect(page.locator("[data-groups] button").first()).toHaveAttribute("data-count", "1");
   const map = page.locator(".hud-minimap canvas");
   const pan = await nativeMapPoint(page, 0.7, 0.7);
-  await page.mouse.click(pan.x, pan.y);
+  // Hold the next paint so a newly revealed group cannot borrow a stale fullscreen hit box.
+  await holdHudFrames(page);
+  try {
+    await page.keyboard.press("Control+1");
+    await expect(page.locator("[data-groups] button").first()).toHaveAttribute("data-count", "1");
+    await page.mouse.click(pan.x, pan.y);
+  } finally {
+    await page.evaluate(() => Reflect.get(window, "resumeHudFrames")());
+  }
   await nativeFrame(page);
   await expect(map).toHaveAttribute("data-camera-cell", /^8[89],8[89]$/);
   await page.keyboard.press("Home");
   await expect(map).toHaveAttribute("data-camera-cell", /^(19|20),(19|20)$/);
+  await world.focus();
+  await holdHudFrames(page);
+  try {
+    await page.keyboard.press("Control+2");
+    await page.keyboard.press("q");
+    await expect(world).toHaveAttribute("data-command-mode", "unit.move");
+    await page.mouse.click(510, 500);
+    await expect(world).not.toHaveAttribute("data-command-mode", "unit.move");
+  } finally {
+    await page.evaluate(() => Reflect.get(window, "resumeHudFrames")());
+  }
   const menuButton = page.getByRole("button", { name: "Match menu", exact: true });
   await clickNativeIcon(page, menuButton);
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });

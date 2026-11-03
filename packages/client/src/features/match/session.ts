@@ -420,6 +420,10 @@ export function createNormalSession(
           roster: firstPlayableRoster,
           resources: setup.map?.resources ?? [],
           force: 0,
+          forceIdentity: (force) => ({
+            label: text(force === 0 ? "ui.skirmish.you" : "ui.skirmish.opponent"),
+            color: force === 0 ? "#d8443a" : "#3c93d9",
+          }),
           populationCap: config.popCap,
           selection: activePresentation.selection,
           select: activePresentation.select,

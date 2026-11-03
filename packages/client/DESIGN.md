@@ -3,10 +3,10 @@
 name: Open Neo RTS native menus and match HUD
 description: Native Home, setup, game panels, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
 colors: { panel: "#182126", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
-typography: { body: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, title: { fontFamily: "Arial, sans-serif", fontSize: "14px", fontWeight: 700 }, label: { fontFamily: "Arial, sans-serif", fontSize: "12px" }, hotkey: { fontFamily: "Arial, sans-serif", fontSize: "10px" }, count: { fontFamily: "Arial, sans-serif", fontSize: "11px" }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
+typography: { body: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, title: { fontFamily: "Arial, sans-serif", fontSize: "13px", fontWeight: 700 }, label: { fontFamily: "Arial, sans-serif", fontSize: "12px" }, hotkey: { fontFamily: "Arial, sans-serif", fontSize: "10px" }, count: { fontFamily: "Arial, sans-serif", fontSize: "11px" }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
 rounded: { control: "0px", home-control: "0px" }
-spacing: { command-gap: "5px", station-inset: "12px", home-action-gap: "8px", home-action-inset: "18px" }
-components: { command-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.control}", padding: "0", height: "36px", width: "36px" }, command-button-active: { backgroundColor: "{colors.home-primary}" }, dock-panel: { backgroundColor: "{colors.panel}", rounded: "{rounded.control}" }, recipe-detail: { backgroundColor: "{colors.panel}", textColor: "{colors.ink}", padding: "12px", typography: "{typography.body}" }, home-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-hover: { backgroundColor: "{colors.home-hover}" }, home-button-active: { backgroundColor: "{colors.home-pressed}" }, setup-input: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.setup-field}", height: "44px" }, setup-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, setup-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, panel-input: { backgroundColor: "{colors.home-shade}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.panel-field}", height: "44px" }, panel-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" }, panel-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" } }
+spacing: { command-gap: "4px", recipe-gap: "5px", edge-inset: "12px", home-action-gap: "8px", home-action-inset: "18px" }
+components: { command-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.control}", padding: "0", height: "32px", width: "32px" }, command-button-active: { backgroundColor: "{colors.home-primary}" }, dock-panel: { backgroundColor: "{colors.panel}", rounded: "{rounded.control}" }, recipe-detail: { backgroundColor: "{colors.panel}", textColor: "{colors.ink}", padding: "12px", typography: "{typography.body}" }, home-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-hover: { backgroundColor: "{colors.home-hover}" }, home-button-active: { backgroundColor: "{colors.home-pressed}" }, setup-input: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.setup-field}", height: "44px" }, setup-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, setup-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, panel-input: { backgroundColor: "{colors.home-shade}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.panel-field}", height: "44px" }, panel-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" }, panel-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" } }
 ---
 
 # Design System: Open Neo RTS native menus and match HUD
@@ -16,10 +16,12 @@ components: { command-button: { backgroundColor: "{colors.home-control}", textCo
 **Creative North Star: "Graphite Command Stations"**
 
 The normal match uses thin steel frames, warm metal command pictograms and
-original model portraits around a dominant battlefield. The native bottom-left
-station integrates selection, contextual icon commands,
-build/train recipes and queue progress beside a circular right minimap. Quiet
-controls support reading resources, inspecting real actor state and issuing orders.
+original model portraits around a dominant battlefield. Economy stacks beside
+the native selection station, which integrates Force identity, type counts,
+contextual icon commands, build/train recipes and queue progress. A circular
+minimap anchors the right. Compact objective, clock/speed and global controls
+occupy separate top regions. Quiet controls support reading resources,
+inspecting real actor state and issuing orders; an empty selection leaves no station.
 There is no decorative animation; minimap activity communicates game events.
 
 Home shares graphite steel, warm metal and original assets through native Babylon
@@ -57,7 +59,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 
 **Key Characteristics:**
 
-- Battlefield first, with a slim resource strip, integrated station and right circular map.
+- Battlefield first, with regional controls, bottom economy and selection, and a right circular map.
 - Graphite surfaces, restrained brass highlights and compact numeric counters.
 - Original brick models and original line pictograms.
 - Narrow screens switch commands/build within the station; the map remains visible.
@@ -90,7 +92,7 @@ information and muted grey carries supporting state.
 
 ### Neutral
 
-- **Graphite panel** (`panel`): opaque resource strip, station, tooltip and Details frames.
+- **Graphite panel** (`panel`): opaque economy, station, tooltip and Details frames.
 - **Ivory ink** (`ink`): names, primary readouts and focused rich save-row/table frames.
 - **Cool grey** (`muted`): selection details and secondary feedback.
 - **Steel seam** (`hud-line`): panel frames and separators.
@@ -151,25 +153,37 @@ minimum size for future surfaces.
 
 ## Layout
 
-The native match uses a full-width resource strip, a bottom-left selection and
-command station, and a circular minimap at the right. The station combines the
-portrait, actual actor name/count, bounded health bar, commands, contextual
-build/train icons and queue progress. Commands keep four stable keyboard columns
-(QWER / ASDF / ZXCV); recipes fill the available width. Desktop shows commands
-and available recipes together, rather than splitting them across independent docks.
+The native match uses the owner's Age of Empires IV regional roles, documented
+with primary sources in `../../docs/project/decisions/2026-11-03-battlefield-regions.md`.
+The actual objective sits at top left, clock and speed at top centre, and compact
+global action icons at top right. On desktop, economy is a vertical bottom-left
+stack beside the selection/command station; the circular minimap sits at bottom
+right. The centre remains available for battlefield interaction without a
+full-width header blocker. No selection means no station frame, commands,
+recipes or dock hit region; economy, helpers, map and global actions remain.
 
-Below 940px viewport width, the station spans the width minus two edge insets;
-Commands and Build / train switch its contextual grid. The minimap moves above
-the station at the right and shrinks from a 216px to 144px base diameter. Below
-650px, resources wrap into at most three columns and reserve another row for top
-actions. Main station and map dimensions follow the effective match scale.
+The station combines the actual Force label and color chip, actor name/count,
+scrollable model/type buttons with counts, bounded aggregate health, commands,
+contextual build/train icons and queue progress. Commands keep four stable
+keyboard columns (QWER / ASDF / ZXCV); recipes use at most six columns. Desktop
+shows commands and available recipes together. Main command and recipe cells
+are compact squares (32px base), with a smaller queue and icon mode controls.
+Original pictograms use 4px inner insets and model thumbnails 2px.
 
-Details fits its actual text and secondary actions, scrolls at its height cap,
-and stays between the resource strip and station. Hover/focus descriptions are
-content-sized and constrained to viewport edges. Idle helpers and populated
-control groups sit above the station; Groups reveals every group. Temporary
-feedback sits below resources, and a bounded notice list sits above the station.
-Pointer-blocking regions use CSS pixels even when graphics resolution changes.
+Below 940px viewport width, economy spans the width minus two edge insets above
+the station and wraps into at most three columns. The station uses the same
+width; icon controls switch Commands and Build / train. The minimap moves above
+economy at the right and shrinks from a 216px to 144px base diameter. The objective
+keeps its icon and hover description while its persistent label hides. Main
+station and map dimensions follow the effective match scale.
+
+Details fits its actual text and secondary actions and scrolls at its height cap.
+On desktop it opens above the station; on narrow screens it opens above both map
+and economy, preserving the controls below. Hover/focus descriptions are
+content-sized and constrained to viewport edges. Idle helpers sit above economy;
+populated control groups form a left rail and Groups reveals every group.
+Temporary feedback sits below the top controls; up to three notices sit above
+the map. Pointer-blocking regions use CSS pixels even when graphics resolution changes.
 
 Home uses a full-viewport scene with a near-opaque left navigation field on desktop
 and a lighter full-width field below its narrow breakpoint (alpha 0.96 and 0.18,
@@ -312,7 +326,9 @@ the text leaves space for that disclosure mark.
   use the primary well. Synchronized focus thickens the ivory frame to 2px.
   Unavailable actions dim to 0.45 alpha and retain explanations; activation keeps
   validation in the existing controller. B switches build/train; I toggles Details.
-  Those local shortcuts are visible from initial widget creation.
+  Those local shortcuts are visible from initial widget creation. Only keys of
+  at most two characters draw as badges; full Home/Space shortcut names remain
+  in hover/focus descriptions instead of crowding compact icons.
 - **Shared native panel:** Settings from Home and the match, pause actions,
   Objectives, Current controls, named saves, Load and results reuse one native renderer.
   Framed actions use Home's ordinary/primary/hover/pressed fills; disabled actions
@@ -356,9 +372,14 @@ the text leaves space for that disclosure mark.
   editing mirrors native focus, caret and selection while HTML remains the
   keyboard and clipboard editor. Pointer editing stays native; leaving a semantic
   field clears its mirrored range.
-- **Selection station:** original model portrait, actual name/count and bounded
-  health bar integrated with commands, contextual recipes and the production queue.
-  Details opens above it with the actual actor statistics, selection-type controls,
+- **Selection station:** actual actor name/count, readable Force ownership and a
+  matching color chip, original-model type buttons with counts and bounded health
+  integrate with commands, contextual recipes and the production queue. Mixed
+  Forces show all owner names and the neutral warm accent chip. Type buttons use
+  the existing select-type action, scroll when needed and reveal keyboard focus.
+  Nothing selected hides the complete station and its pointer-blocking region.
+  Details opens above the station, or above map and economy on narrow screens,
+  with the actual actor statistics,
   orders, construction/request controls and secondary group controls. It fits
   measured content up to its height cap and then scrolls. Escape closes Details
   and the expanded group view before handing control back to the battlefield.
@@ -367,7 +388,7 @@ the text leaves space for that disclosure mark.
   prices, build time, requirements and actual unavailable reasons. Disabled recipe
   activation leaves the explanation readable; player-facing reasons avoid internal
   content-authoring vocabulary. Focusing a hidden recipe switches its station view.
-- **Context navigation:** Commands and Build / train use square framed controls
+- **Context navigation:** Commands and Build / train use square framed icon controls
   and the primary well for the selected view. Desktop can show both grids; compact
   views show the selected grid while retaining selection, queue and map.
 - **Minimap:** the circular frame contains the complete rotated square map and a

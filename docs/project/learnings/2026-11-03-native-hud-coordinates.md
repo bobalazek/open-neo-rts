@@ -26,3 +26,10 @@ The original test passed on recheck, and three bounded independent repetitions
 delivered the first click with correct coordinates and clean capture state.
 The cause remains unconfirmed; retain this observation for browser qualification
 rather than adding a speculative input workaround.
+
+Follow-up: the region pass reproduced that missed click and identified a newly
+visible group button requesting 30×30 pixels while its cached native measure was
+still the full 1440×900 texture. It stole the minimap click before its first paint.
+Newly shown buttons now stay out of hit testing until the scene has rendered
+their actual layout. A browser regression holds animation frames, reveals group
+1 and clicks the map before releasing the frame; it fails on the prior build.

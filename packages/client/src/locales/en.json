@@ -144,6 +144,8 @@
   "ui.hud.armor": "Armor: {value}",
   "ui.hud.weapon-stats": "Weapon range {range} cells · reload {reload}s",
   "ui.hud.other-force": "Other Force · inspection only",
+  "ui.hud.your-force": "Your Force",
+  "ui.match.objective": "Last Man Standing",
   "ui.hud.construction": "Building {progress}% · {count} working",
   "ui.hud.builder-state": "Construction: {state}",
   "ui.hud.repair-state": "Repair: {state}",

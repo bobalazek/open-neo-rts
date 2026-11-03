@@ -40,6 +40,7 @@ type Options = {
   roster: ReadonlySet<string>;
   resources: readonly MatchResource[];
   force: number;
+  forceIdentity?: (force: number) => { label: string; color: string };
   populationCap: number;
   selection: () => string[];
   select: (handles: readonly string[]) => void;
@@ -914,6 +915,21 @@ export function createMatchHud(
     );
     const definition = structure && definitions.get(structure.definition)?.gameplay;
     summary.textContent = text("ui.match.selection", { count: selected.length });
+    const forces = [...new Set(selected.map((entity) => entity.force))];
+    const identities = forces.map(
+      (force) =>
+        options.forceIdentity?.(force) ?? {
+          label: force === options.force ? text("ui.hud.your-force") : text("ui.hud.other-force"),
+          color: "#ddc382",
+        },
+    );
+    summary.dataset.owner = identities.map((identity) => identity.label).join(" / ");
+    summary.dataset.color = identities.length === 1 ? identities[0]!.color : "#ddc382";
+    summary.dataset.count = String(selected.length);
+    summary.dataset.name =
+      selected.length && selected.every((entity) => entity.definition === selected[0]!.definition)
+        ? name(selected[0]!.definition)
+        : text("ui.hud.selection");
     const portrait = get<HTMLImageElement>("[data-portrait]");
     const portraitUrl = selected[0] && definitions.get(selected[0].definition)?.icon;
     portrait.hidden = !portraitUrl;
@@ -932,8 +948,8 @@ export function createMatchHud(
       selectionKey = nextSelectionKey;
       types.replaceChildren();
       const kinds = [...new Set(selected.map((entity) => entity.definition))];
-      for (const id of kinds)
-        button(
+      for (const id of kinds) {
+        const kind = button(
           text("ui.hud.type-count", {
             name: name(id),
             count: selected.filter((entity) => entity.definition === id).length,
@@ -946,6 +962,17 @@ export function createMatchHud(
           },
           types,
         );
+        kind.dataset.count = String(selected.filter((entity) => entity.definition === id).length);
+        const icon = definitions.get(id)?.icon;
+        if (icon) {
+          const image = document.createElement("img");
+          image.src = icon;
+          image.alt = "";
+          image.width = 32;
+          image.height = 32;
+          kind.prepend(image);
+        }
+      }
     }
     const lines = selected.slice(0, 8).map((entity) => describe(entity));
     details.textContent = lines.join("\n") || text("ui.hud.select-help");
