@@ -15,6 +15,14 @@ test("browser Back disposes an unsaved in-match settings preview", async ({ page
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
     .toBe("150%");
   await page.goBack();
+  await page
+    .getByRole("dialog", { name: "Leave match?", exact: true })
+    .getByRole("button", { name: "Cancel", exact: true })
+    .press("Enter");
+  await expect(page).toHaveURL(/\/match$/);
+  await expect(menu.getByLabel("Interface scale", { exact: true })).toHaveValue("150");
+  await page.goBack();
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/$/);
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
@@ -85,9 +93,9 @@ test("shared device settings preview, cancel, persist and apply live across inte
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
-  page.once("dialog", (dialog) => dialog.accept());
   await expect(menu).not.toBeVisible();
   await page.getByRole("button", { name: "Leave match", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
 });
 
@@ -139,12 +147,15 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   await page.keyboard.press("Pause");
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
-  page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
+  await page
+    .getByRole("dialog", { name: "Restart match?", exact: true })
+    .getByRole("button", { name: "Cancel", exact: true })
+    .press("Enter");
   expect(workers).toBe(1);
   const previousCanvas = await canvas.elementHandle();
-  page.once("dialog", (dialog) => dialog.accept());
   await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Restart without saving", exact: true }).press("Enter");
   await expect
     .poll(() => previousCanvas!.evaluate((element) => element.isConnected), { timeout: 60000 })
     .toBe(false);

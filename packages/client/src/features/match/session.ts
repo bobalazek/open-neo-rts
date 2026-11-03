@@ -16,6 +16,7 @@ import { createPresentationClock } from "../debug/clock";
 import { mapDecorations, resolveMapModel } from "../debug/map-visuals";
 import { loadMap } from "../debug/maps";
 import { createInGameMenu } from "../in-game-menu";
+import type { MatchExit } from "../in-game-menu/exit";
 import {
   type SavedGame,
   type SaveKind,
@@ -77,6 +78,7 @@ export function createNormalSession(
   let autosave: ReturnType<typeof setInterval> | undefined,
     saving = false,
     autoSlot = 0;
+  let lastSavedTick = persistence?.saved?.match.tick;
   const saveName = () =>
     `${map.name} · ${Math.floor((latest?.snapshot.tick ?? 0) / 1200)}:${String(Math.floor((latest?.snapshot.tick ?? 0) / 20) % 60).padStart(2, "0")}`;
   async function persist(kind: SaveKind, name: string) {
@@ -107,6 +109,8 @@ export function createNormalSession(
         match: snapshot,
       };
       await saveStore.write(file);
+      if (disposed) return;
+      lastSavedTick = snapshot.tick;
       if (kind === "auto") autoSlot++;
       label("[data-save-notice]", text("ui.saves.saved"));
     } finally {
@@ -392,7 +396,7 @@ export function createNormalSession(
         .querySelector("[data-pause]")
         ?.addEventListener("click", () => void toggle(), { signal: signal.signal });
       const leaveMatch = () => {
-        if (window.confirm(text("ui.menu.leave-confirm"))) leave();
+        leave();
       };
       root
         .querySelector("[data-leave]")
@@ -687,5 +691,14 @@ export function createNormalSession(
     ready: initialize(),
     dispose: release,
     pause: () => match?.pause(true) ?? Promise.resolve(),
+    confirmExit: (kind: MatchExit) =>
+      disposed || !ready || latest?.snapshot.victory?.result
+        ? Promise.resolve(true)
+        : (menu?.confirmExit(kind) ?? Promise.resolve(false)),
+    hasUnsavedProgress: () =>
+      !disposed &&
+      ready &&
+      !latest?.snapshot.victory?.result &&
+      (!latest?.paused || latest.snapshot.tick !== lastSavedTick),
   };
 }

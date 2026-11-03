@@ -39,6 +39,8 @@ Settings, pause actions, Objectives, Current controls and named saves extend
 the same native graphite vocabulary through a shared content-sized panel.
 In a match it floats above the dimmed battlefield; the HTML dialog owns modal
 focus and Escape while its separate canvas leaves the world renderer intact.
+Save-before-leave, restart and load decisions use that same panel vocabulary in
+a separate modal, preserving the parent pane and original thumbnail source.
 
 Load and results extend that shared native panel with original match thumbnails,
 selected-slot details, framed tabs, history plots and complete scrollable tables.
@@ -88,6 +90,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native Home actions, original vector lettering and an authored model display.
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
+- Native save-before-replacement decisions with explicit cancellation and recovery.
 - Native save galleries with original match thumbnails and selected-slot details.
 - Native results with original plots and complete scrollable match records.
 - Native loading with actual stage progress, cancellation and explicit recovery.
@@ -260,6 +263,11 @@ the footer reserves 20px scaled plus a 16px scaled gap and measured error only
 when present. Action rows use a 52px scaled pitch. Focus reveals its control and
 help when the combined span fits the scroll region.
 
+Save-before-replacement uses this compact measured layout. Cancel stays in the
+fixed header; primary Save and explicit continue-without-saving actions share
+the responsive body grid. Pending status and failure alerts remain outside its
+scroll region.
+
 Load and results fill the available height within those edge insets. The Load
 gallery uses equal list/detail columns with a 32px scaled gap when its inner
 width reaches 760px times scale. Otherwise the selected detail follows the list.
@@ -401,6 +409,16 @@ the text leaves space for that disclosure mark.
   field mirrors semantic caret and selection while preserving required/max-length
   validation and existing save handlers.
   Opening Load keeps native panel presentation and uses the same separate canvas.
+- **Save before replacement:** Leave, Restart, replacing the match by Load and
+  browser Back share a separate modal over the intact world and any parent pane.
+  The worker pauses before choices become available. The editable required save
+  name uses the existing native field; Save and leave/restart/load uses the warm
+  primary fill, continue without saving remains explicit, and Cancel stays in
+  the fixed header. Pending pause/save disables competing actions and displays
+  actual status. A save failure keeps the match and edited name, shows the coral
+  alert and returns focus to Save for retry. Cancel or Escape restores the prior
+  pause state and initiating focus. Ending/disposal removes the prompt and
+  suppresses late continuations; reload/close uses the browser warning.
 - **Load gallery:** original match thumbnails accompany saved names and dates;
   selected rows use the warm primary fill and thicker frame. Rich row focus uses
   an ivory 3px frame. Selected detail shows the original thumbnail, metadata,

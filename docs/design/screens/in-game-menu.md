@@ -12,6 +12,17 @@ Escape closes a native choice list before backing out or
 resuming. Disposing the menu cancels pending graphics startup and preference
 previews; it never owns or disposes the battlefield renderer.
 
+In an active local match, Leave, Restart, loading a different save and browser
+Back first open a separate native save decision. The existing world and menu
+pane stay intact. Save and continue uses the editable default map/time name and
+waits for the actual browser-storage transaction before replacing the session;
+continue without saving is explicit. Cancel restores the previous pause state
+and focus, including the existing Load gallery or unsaved Settings preview.
+Saving disables duplicate actions and Escape; failure keeps the match and name
+with a retryable error. Ending or disposing the session closes pending prompts.
+Full-page reload/close uses the browser's unsaved-progress warning; save from the
+menu before leaving that way. Completed matches retain their result navigation.
+
 ```text
             ┌──────────────────────────────┐
             │          PAUSED              │   (single player / playtest)

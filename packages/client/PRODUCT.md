@@ -63,6 +63,16 @@ source.
   the paused battlefield dimly visible behind it. Menu state and actions still
   come from the existing worker/controller; Current controls keeps the complete
   existing help text. Compact panels size and scroll from their actual content.
+- Leave, Restart, replacing a match by Load and browser Back ask whether to save
+  before continuing. The separate native modal first pauses the worker and keeps
+  the parent pane, world and thumbnail source intact. Players can edit the save
+  name, choose primary Save and continue, explicitly continue without saving, or
+  use fixed-header Cancel. A manual save must finish before replacement; pending
+  work disables competing choices. Failure retains the match and edited name
+  with an actual alert and retry through Save. Cancel or Escape restores the
+  previous pause state and focus. Match ending or disposal removes the prompt
+  and prevents late asynchronous work from continuing navigation. Reload or
+  close uses the browser's unsaved-progress warning.
 - Named saves and Load search in standalone and in-match galleries mirror semantic
   keyboard caret and selection with the same native text-field treatment as setup.
 - Load shows original match thumbnails, selected-slot metadata and actions;

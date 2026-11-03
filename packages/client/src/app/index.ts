@@ -38,6 +38,7 @@ export function startApp(canvas: HTMLCanvasElement) {
   let cancelLoading: (() => void) | undefined;
   let dismissLoading: (() => void) | undefined;
   let disposeLoading: (() => void) | undefined;
+  let leavingHistory = false;
   function stop() {
     cancelLoading?.();
     cancelLoading = undefined;
@@ -55,9 +56,19 @@ export function startApp(canvas: HTMLCanvasElement) {
     canvas.hidden = true;
   }
   function navigate(path: string, notice = "") {
-    stop();
-    history.pushState(null, "", path);
-    show(notice);
+    const previous = session,
+      ticket = generation;
+    const commit = () => {
+      if (disposed || session !== previous || generation !== ticket) return;
+      stop();
+      history.pushState(null, "", path);
+      show(notice);
+    };
+    if (!previous) commit();
+    else
+      void previous.confirmExit("leave").then((accepted) => {
+        if (accepted) commit();
+      });
   }
   function start(selected: SkirmishSetup) {
     void begin(selected).catch((error) => {
@@ -69,6 +80,11 @@ export function startApp(canvas: HTMLCanvasElement) {
   async function begin(selected: SkirmishSetup, saved?: SavedGame): Promise<void> {
     if (loading || disposed) throw new Error(text("ui.saves.busy"));
     const previous = session;
+    if (previous) {
+      const ticket = generation;
+      if (!(await previous.confirmExit(saved ? "load" : "restart"))) return;
+      if (disposed || session !== previous || generation !== ticket) return;
+    }
     if (!previous && !saved) config = { ...selected };
     const requestedAt = generation;
     loading = true;
@@ -311,8 +327,31 @@ export function startApp(canvas: HTMLCanvasElement) {
   window.addEventListener(
     "popstate",
     () => {
+      if (session && !leavingHistory) {
+        const previous = session,
+          ticket = generation;
+        history.pushState(null, "", "/match");
+        void previous.confirmExit("leave").then((accepted) => {
+          if (accepted && !disposed && previous === session && generation === ticket) {
+            leavingHistory = true;
+            history.back();
+          }
+        });
+        return;
+      }
+      leavingHistory = false;
       stop();
       show();
+    },
+    { signal: signal.signal },
+  );
+  window.addEventListener(
+    "beforeunload",
+    (event) => {
+      if (session?.hasUnsavedProgress()) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
     },
     { signal: signal.signal },
   );
