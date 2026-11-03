@@ -9,7 +9,7 @@ import {
   LEVEL_HEIGHT,
   resourceInstances,
 } from "@open-neo-rts/render";
-import { text } from "../../shared";
+import { setText, text } from "../../shared";
 import { createOfflineMatch, NORMAL_GAME_SPEEDS, type OfflineState } from "../../worker";
 import { catalogEntry, resolveEntityModel } from "../debug/catalog";
 import { createPresentationClock } from "../debug/clock";
@@ -61,6 +61,7 @@ export function createNormalSession(
   let minimap: ReturnType<typeof createMinimap> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
+  let resultDefinitions: { id: string; name: string; kind: string }[] = [];
   const replayUrls = new Set<string>();
   let autosave: ReturnType<typeof setInterval> | undefined,
     saving = false,
@@ -140,7 +141,7 @@ export function createNormalSession(
   };
   const label = (selector: string, value: string) => {
     const element = root.querySelector(selector);
-    if (element) element.textContent = value;
+    if (element) setText(element, value);
   };
   const update = (state: OfflineState) => {
     if (disposed) return;
@@ -218,6 +219,7 @@ export function createNormalSession(
             replayUrls.delete(url);
           }, 1000);
         },
+        resultDefinitions,
       );
     }
   };
@@ -281,6 +283,11 @@ export function createNormalSession(
           ...(entry?.icon && { icon: entry.icon }),
         };
       });
+      resultDefinitions = uiCatalog.map(({ gameplay, name }) => ({
+        id: gameplay.id,
+        name,
+        kind: gameplay.kind,
+      }));
       presentation = createMatchPresentation(
         renderer.scene,
         loaded.grid,

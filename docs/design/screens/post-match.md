@@ -30,3 +30,11 @@ Campaign missions show the [debriefing](campaign.md#debriefing) instead.
 - Under Shared Command, stats are per Force, with a per-controller breakdown on hover (orders issued, APM).
 - **Rematch** (multiplayer) returns everyone to the same lobby with the same settings.
 - Behind this screen, the match scene keeps rendering slowly orbiting over the final battlefield.
+
+The [first-playable detailed statistics](../../project/decisions/2026-11-03-detailed-match-statistics.md)
+provide Summary, Economy, Military, Structures and Orders/APM views. Order APM is
+accepted gameplay orders per active Force minute, excluding selection/camera and
+refusals; controller rows identify bots. Histories retain initialization/end and
+coarsen in long matches, with the actual samples available as tables. Score and
+territory views await their rules; replay playback/recorded-camera following remain
+separate work.

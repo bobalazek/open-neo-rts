@@ -5,11 +5,19 @@ import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
 import { flatMap } from "../../testing";
 import { applyWarhead } from "../combat/damage";
-import { OwnerForce, Template, Transform } from "../entities";
-import { ForceStatistics, STAT_COUNTERS } from "./statistics";
+import { ConstructionRequest } from "../construction";
+import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
+import {
+  ControllerStatistics,
+  ForceStatistics,
+  MAX_STAT_SAMPLES,
+  STAT_COUNTERS,
+  StatisticsSample,
+  StatisticsSeries,
+} from "./statistics";
 
-function fixture() {
-  const setup: MatchSetup = {
+function fixture(configure?: (setup: MatchSetup) => MatchSetup) {
+  let setup: MatchSetup = {
     debug: false,
     seed: 1,
     map: {
@@ -64,6 +72,7 @@ function fixture() {
       })),
     },
   };
+  setup = configure?.(setup) ?? setup;
   const kernel = createMatch(setup);
   const statistics = kernel.statistics,
     bank = kernel.economy;
@@ -141,6 +150,27 @@ test("damage records actual clamped loss once and awards kills only against anot
   hit(2, 1);
   expect(counters(0).unitsDestroyed).toBe(1);
   expect(counters(2).unitsLost).toBe(1);
+  step(
+    kernel,
+    [0, 2].map((force) => ({
+      tick: 0,
+      seat: force + 1,
+      sequence: force,
+      type: "match.surrender",
+      payload: { force },
+    })),
+  );
+  const types = kernel.statistics!.snapshot(1);
+  expect(
+    types
+      .find((row) => row.force === 0)
+      ?.details?.types.find((type) => type.definition === "unit:stats/builder")?.destroyed,
+  ).toBe(1);
+  expect(
+    types
+      .find((row) => row.force === 1)
+      ?.details?.types.find((type) => type.definition === "unit:stats/builder")?.lost,
+  ).toBe(1);
 });
 
 test("live statistics are private copied data and terminal totals freeze", () => {
@@ -174,4 +204,267 @@ test("live statistics are private copied data and terminal totals freeze", () =>
   statistics.record(0, "unitsBuilt");
   expect(view.snapshot(kernel).statistics).toEqual(final);
   expect(Object.keys(ForceStatistics.fields).length).toBe(STAT_COUNTERS.length + 1);
+  const observed = kernel.observe?.(1)?.statistics?.[0]?.details;
+  assert(observed);
+  observed.history[0]!.values.credits = 999;
+  expect(view.snapshot(kernel).statistics?.[0]?.details?.history[0]?.values.credits).toBe(100);
+});
+
+test("accepted mixed attacks credit eligible acting Forces, excluding unarmed selected units and the target", () => {
+  const armed: Definition = {
+    id: "unit:stats/armed",
+    armor: "infantry",
+    health: 100,
+    speed: 100,
+    turnRate: 65536,
+    domain: "foot",
+    radiusSubcells: 128,
+    weapons: [
+      {
+        id: "gun",
+        targets: ["ground"],
+        rangeSubcells: [0, 1024],
+        reloadTicks: 20,
+        projectile: { kind: "instant" },
+        warheads: [{ type: "damage", amount: 1, tags: [] }],
+      },
+    ],
+  };
+  const { kernel, setup } = fixture((setup) => ({
+    ...setup,
+    definitions: [...setup.definitions, armed],
+    grants: [...setup.grants, { seat: 1, force: 1, scopes: ["unit.orders"], grantedAtTick: 0 }],
+  }));
+  const world = kernel.world;
+  const unit = (force: number) =>
+    world
+      .query(Template, OwnerForce)
+      .find(
+        (id) =>
+          world.get(id, Template, "definition") === 1 &&
+          world.get(id, OwnerForce, "force") === force,
+      )!;
+  const actor = spawnEntity(kernel, 2, setup.definitions[2]!, {
+    definition: armed.id,
+    force: 1,
+    x: 25 * 1024 + 512,
+    y: 15 * 1024 + 512,
+    facing: 0,
+  });
+  expect(
+    step(kernel, [
+      {
+        tick: 0,
+        seat: 1,
+        sequence: 0,
+        type: "unit.attack",
+        payload: { entities: [unit(0), actor], entity: unit(2) },
+      },
+    ])[0]?.result,
+  ).toBe("accepted");
+  const count = (force: number) =>
+    world
+      .query(ControllerStatistics)
+      .filter(
+        (id) =>
+          world.get(id, ControllerStatistics, "force") === force &&
+          world.get(id, ControllerStatistics, "seat") === 1,
+      )
+      .reduce((n, id) => n + world.get(id, ControllerStatistics, "orders"), 0);
+  expect(count(0)).toBe(0);
+  expect(count(1)).toBe(1);
+  expect(count(2)).toBe(0);
+});
+
+test("cleanup accepted after headquarters defeat cannot inflate that Force's frozen order APM", () => {
+  const { kernel } = fixture((setup) => ({
+    ...setup,
+    definitions: [
+      setup.definitions[0]!,
+      { ...setup.definitions[1]!, builds: ["structure:stats/reactor"] },
+      {
+        id: "structure:stats/reactor",
+        role: "power",
+        health: 100,
+        speed: 0,
+        turnRate: 0,
+        footprint: [1, 1],
+        construction: { cost: { credits: 10 }, buildTicks: 100 },
+      },
+    ],
+    normal: {
+      ...setup.normal!,
+      settings: { ...setup.normal!.settings, elimination: "headquarters" },
+    },
+  }));
+  const world = kernel.world,
+    own = (definition: number) =>
+      world
+        .query(Template, OwnerForce)
+        .find(
+          (id) =>
+            world.get(id, Template, "definition") === definition &&
+            world.get(id, OwnerForce, "force") === 0,
+        )!;
+  const hq = own(0),
+    builder = own(1);
+  let hit = false;
+  kernel.systems.combat.push(() => {
+    if (!hit) {
+      world.set(hq, Health, "current", 0);
+      hit = true;
+    }
+  });
+  expect(
+    step(kernel, [
+      {
+        tick: 0,
+        seat: 1,
+        sequence: 0,
+        type: "economy.build",
+        payload: {
+          builders: [builder],
+          definition: "structure:stats/reactor",
+          force: 0,
+          x: Math.floor(world.get(builder, Transform, "x") / 1024) * 1024,
+          y: Math.floor(world.get(builder, Transform, "y") / 1024) * 1024,
+          facing: 16384,
+        },
+      },
+    ])[0]?.result,
+  ).toBe("accepted");
+  const request = world.query(ConstructionRequest)[0]!;
+  const counter = world
+    .query(ControllerStatistics)
+    .find(
+      (id) =>
+        world.get(id, ControllerStatistics, "force") === 0 &&
+        world.get(id, ControllerStatistics, "seat") === 1,
+    )!;
+  expect(kernel.victory?.ended).toBe(false);
+  expect(world.isAlive(request)).toBe(true);
+  const orders = world.get(counter, ControllerStatistics, "orders");
+  expect(
+    step(kernel, [
+      {
+        tick: kernel.tick,
+        seat: 1,
+        sequence: 1,
+        type: "economy.cancelConstruction",
+        payload: { entity: request },
+      },
+    ])[0]?.result,
+  ).toBe("accepted");
+  expect(world.get(counter, ControllerStatistics, "orders")).toBe(orders);
+});
+
+test("queued work counts at admission once and rejected inputs do not change order counts", () => {
+  const { kernel } = fixture();
+  const world = kernel.world,
+    actor = world
+      .query(Template, OwnerForce)
+      .find(
+        (id) =>
+          world.get(id, Template, "definition") === 1 && world.get(id, OwnerForce, "force") === 0,
+      )!;
+  const row = world
+    .query(ControllerStatistics)
+    .find(
+      (id) =>
+        world.get(id, ControllerStatistics, "force") === 0 &&
+        world.get(id, ControllerStatistics, "seat") === 1,
+    )!;
+  const command = (sequence: number, seat = 1) => ({
+    tick: 0,
+    seat,
+    sequence,
+    type: "unit.move",
+    payload: { entities: [actor], x: 12 * 1024 + 512, y: 14 * 1024 + 512, append: 1 },
+  });
+  expect(step(kernel, [command(0), command(1, 2)])[0]?.result).toBe("accepted");
+  expect(world.get(row, ControllerStatistics, "orders")).toBe(1);
+  for (let i = 0; i < 100; i++) step(kernel, []);
+  expect(world.get(row, ControllerStatistics, "orders")).toBe(1);
+});
+
+test("same-tick surrender counts once while subsequent accepted cleanup cannot add an order", () => {
+  const { kernel } = fixture((setup) => ({
+    ...setup,
+    definitions: [
+      setup.definitions[0]!,
+      { ...setup.definitions[1]!, builds: ["structure:stats/reactor"] },
+      {
+        id: "structure:stats/reactor",
+        role: "power",
+        health: 100,
+        speed: 0,
+        turnRate: 0,
+        footprint: [1, 1],
+        construction: { cost: { credits: 10 }, buildTicks: 100 },
+      },
+    ],
+  }));
+  const world = kernel.world,
+    builder = world
+      .query(Template, OwnerForce)
+      .find(
+        (id) =>
+          world.get(id, Template, "definition") === 1 && world.get(id, OwnerForce, "force") === 0,
+      )!;
+  expect(
+    step(kernel, [
+      {
+        tick: 0,
+        seat: 1,
+        sequence: 0,
+        type: "economy.build",
+        payload: {
+          builders: [builder],
+          definition: "structure:stats/reactor",
+          force: 0,
+          x: Math.floor(world.get(builder, Transform, "x") / 1024) * 1024,
+          y: Math.floor(world.get(builder, Transform, "y") / 1024) * 1024,
+          facing: 16384,
+        },
+      },
+    ])[0]?.result,
+  ).toBe("accepted");
+  const request = world.query(ConstructionRequest)[0]!;
+  const row = world
+    .query(ControllerStatistics)
+    .find(
+      (id) =>
+        world.get(id, ControllerStatistics, "force") === 0 &&
+        world.get(id, ControllerStatistics, "seat") === 1,
+    )!;
+  const before = world.get(row, ControllerStatistics, "orders");
+  expect(
+    step(kernel, [
+      { tick: kernel.tick, seat: 1, sequence: 1, type: "match.surrender", payload: { force: 0 } },
+      {
+        tick: kernel.tick,
+        seat: 1,
+        sequence: 2,
+        type: "economy.cancelConstruction",
+        payload: { entity: request },
+      },
+    ]).map((entry) => entry.result),
+  ).toEqual(["accepted", "accepted"]);
+  expect(world.get(row, ControllerStatistics, "orders")).toBe(before + 1);
+});
+
+test("bounded history coarsens while preserving initialization and the latest regular sample", () => {
+  const { kernel, statistics } = fixture();
+  for (let i = 1; i <= MAX_STAT_SAMPLES; i++) statistics.sample(i * 600);
+  const world = kernel.world;
+  const samples = world
+    .query(StatisticsSample)
+    .filter((id) => world.get(id, StatisticsSample, "force") === 0);
+  expect(samples.length).toBeLessThanOrEqual(MAX_STAT_SAMPLES);
+  expect(world.get(samples[0]!, StatisticsSample, "tick")).toBe(0);
+  expect(world.get(samples.at(-1)!, StatisticsSample, "tick")).toBe(MAX_STAT_SAMPLES * 600);
+  const clock = world
+    .query(StatisticsSeries)
+    .find((id) => world.get(id, StatisticsSeries, "force") === 0)!;
+  expect(world.get(clock, StatisticsSeries, "interval")).toBe(1200);
 });

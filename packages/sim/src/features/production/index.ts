@@ -220,7 +220,7 @@ export function productionFeature(
         if (!earned?.ok) throw new Error("Validated production reward could not be credited");
       }
     }
-    kernel.statistics?.record(force, "unitsBuilt");
+    kernel.statistics?.built(force, index);
     // Harvesting orders belong to logistics; a harvester never inherits a combat point rally.
     if (world.has(producer, ProductionRally) && unit.role !== "harvester")
       kernel.movement?.order(spawned, {

@@ -16,9 +16,11 @@ import {
   CONSTRUCTION_REFUSALS,
   EXTRACTION_STATUSES,
   HARVEST_STATUSES,
+  HISTORY_METRICS,
   MAX_COMBAT_EVENTS,
   MAX_PRODUCTION_EXITS,
   MAX_REMAINS,
+  MAX_STAT_SAMPLES,
   PRODUCTION_STATUSES,
   QUEUED_ORDER_TYPES,
   REJECTIONS,
@@ -343,6 +345,88 @@ const exact = (value: Record<string, unknown>, keys: readonly string[]) =>
   Reflect.ownKeys(value).length === keys.length &&
   keys.every((key) => Object.hasOwn(value, key));
 
+function isStatisticsDetails(value: unknown, tick: number): boolean {
+  if (
+    !isRecord(value) ||
+    !exact(value, ["controllers", "types", "history"]) ||
+    !Array.isArray(value.controllers) ||
+    value.controllers.length > 16 ||
+    !Array.isArray(value.types) ||
+    value.types.length > 65536 ||
+    !Array.isArray(value.history) ||
+    value.history.length < 1 ||
+    value.history.length > MAX_STAT_SAMPLES
+  )
+    return false;
+  let previousSeat = 0;
+  for (const controller of value.controllers) {
+    if (
+      !isRecord(controller) ||
+      !exact(controller, ["seat", "bot", "orders", "ticks", "apm"]) ||
+      !bounded(controller.seat) ||
+      Number(controller.seat) <= previousSeat ||
+      typeof controller.bot !== "boolean" ||
+      !bounded(controller.orders, 0xffffffff) ||
+      !bounded(controller.ticks, tick) ||
+      !bounded(controller.apm, 0xffffffff) ||
+      controller.apm !==
+        (controller.ticks
+          ? Math.min(
+              0xffffffff,
+              Math.floor((Number(controller.orders) * 1200) / Number(controller.ticks)),
+            )
+          : 0)
+    )
+      return false;
+    previousSeat = Number(controller.seat);
+  }
+  const definitions = new Set<string>();
+  for (const type of value.types) {
+    if (
+      !isRecord(type) ||
+      !exact(type, ["definition", "built", "lost", "destroyed", "remaining"]) ||
+      typeof type.definition !== "string" ||
+      !/^(?:[a-z0-9-]+\.)*(?:unit|structure):[a-z0-9/_-]+$/.test(type.definition) ||
+      definitions.has(type.definition) ||
+      !["built", "lost", "destroyed", "remaining"].every((field) =>
+        bounded(type[field], 0xffffffff),
+      )
+    )
+      return false;
+    definitions.add(type.definition);
+  }
+  let previousTick = -1;
+  let previousValues: Record<string, unknown> | undefined;
+  for (const point of value.history) {
+    if (
+      !isRecord(point) ||
+      !exact(point, ["tick", "values"]) ||
+      !bounded(point.tick, tick) ||
+      Number(point.tick) <= previousTick ||
+      (previousTick === -1 && point.tick !== 0) ||
+      !isRecord(point.values) ||
+      !exact(point.values, HISTORY_METRICS) ||
+      !HISTORY_METRICS.every((metric) =>
+        bounded((point.values as Record<string, unknown>)[metric], 0xffffffff),
+      )
+    )
+      return false;
+    if (
+      previousValues &&
+      HISTORY_METRICS.some(
+        (metric) =>
+          metric.endsWith("Gathered") &&
+          Number((point.values as Record<string, unknown>)[metric]) <
+            Number(previousValues![metric]),
+      )
+    )
+      return false;
+    previousValues = point.values;
+    previousTick = Number(point.tick);
+  }
+  return true;
+}
+
 function isVictory(value: unknown, tick: number): boolean {
   if (
     !isRecord(value) ||
@@ -587,7 +671,12 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     for (const entry of snapshot.statistics) {
       if (
         !isRecord(entry) ||
-        !exact(entry, ["force", "counters"]) ||
+        !exact(
+          entry,
+          Object.hasOwn(entry, "details")
+            ? ["force", "counters", "details"]
+            : ["force", "counters"],
+        ) ||
         !bounded(entry.force) ||
         Number(entry.force) <= previous ||
         !isRecord(entry.counters)
@@ -597,6 +686,13 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       if (
         !exact(counters, STAT_COUNTERS) ||
         !STAT_COUNTERS.every((key) => bounded(counters[key], 0xffffffff))
+      )
+        return false;
+      if (
+        entry.details !== undefined &&
+        (!isRecord(snapshot.victory) ||
+          !isRecord(snapshot.victory.result) ||
+          !isStatisticsDetails(entry.details, Number(snapshot.tick)))
       )
         return false;
       previous = Number(entry.force);

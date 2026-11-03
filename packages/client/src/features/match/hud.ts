@@ -5,7 +5,7 @@ import {
   type SeatSnapshot,
 } from "@open-neo-rts/sim";
 import { type MatchResource, resourceNodeOrigin, resourceOccupies } from "@open-neo-rts/sim/maps";
-import { text } from "../../shared";
+import { setText, text } from "../../shared";
 import type { OfflineState } from "../../worker";
 import { createControlGroups } from "./groups";
 import {
@@ -883,7 +883,7 @@ export function createMatchHud(
       definitions
         .get(surgeProvider.definition)
         ?.gameplay.abilities.find((ability) => ability.id === surge?.id)?.name;
-    surgeButton.textContent = surgeName ?? text("ui.hud.surge");
+    setText(surgeButton, surgeName ?? text("ui.hud.surge"));
     const surgeBank = snapshot.banks?.find((bank) => bank.force === options.force)?.resources;
     const funded =
       !surgeBank ||
@@ -981,12 +981,15 @@ export function createMatchHud(
       );
     });
     if (commandButtons[6])
-      commandButtons[6].textContent = `D · ${text(!selectedBuilders.length && deployments.length ? "ui.hud.deploy-toggle" : "ui.hud.assist")}`;
-    commandButtons[9]?.replaceChildren(
-      document.createTextNode(
+      setText(
+        commandButtons[6],
+        `D · ${text(!selectedBuilders.length && deployments.length ? "ui.hud.deploy-toggle" : "ui.hud.assist")}`,
+      );
+    if (commandButtons[9])
+      setText(
+        commandButtons[9],
         `X · ${text(structure?.power?.enabled ? "ui.hud.power-off" : "ui.hud.power-on")}`,
-      ),
-    );
+      );
     const buildIds = selectedBuilders[0]
       ? (definitions
           .get(selectedBuilders[0].definition)
@@ -1081,7 +1084,7 @@ export function createMatchHud(
       item.disabled = disabled || !!lock || full || (!producing && !funds);
       const cost = item.querySelector("small");
       const recipe = recipeText(entry.gameplay);
-      if (cost) cost.textContent = `${recipe}${reason && reason !== recipe ? ` · ${reason}` : ""}`;
+      if (cost) setText(cost, `${recipe}${reason && reason !== recipe ? ` · ${reason}` : ""}`);
     }
     const nextAdviceKey = JSON.stringify([producing, definition?.id, structure?.production?.rally]);
     if (nextAdviceKey !== adviceKey) {
@@ -1140,7 +1143,7 @@ export function createMatchHud(
     );
     groupButtons.forEach((button, i) => {
       const group = i === 9 ? 0 : i + 1;
-      button.textContent = `${group}: ${groups.get(group).length}`;
+      setText(button, `${group}: ${groups.get(group).length}`);
       button.disabled = groups.get(group).length === 0;
       button.title = text("ui.hud.select-group", { group });
     });
@@ -1151,9 +1154,12 @@ export function createMatchHud(
         producer ? "[data-idle-producer]" : "[data-idle-builder]",
       );
       const count = idle(producer).length;
-      button.textContent = text(producer ? "ui.hud.idle-production" : "ui.hud.idle-builders", {
-        count,
-      });
+      setText(
+        button,
+        text(producer ? "ui.hud.idle-production" : "ui.hud.idle-builders", {
+          count,
+        }),
+      );
       button.disabled = count === 0;
     }
     const population = snapshot.entities

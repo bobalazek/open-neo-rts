@@ -49,7 +49,6 @@ export function initializeBurn(kernel: Kernel, definitions: readonly Definition[
             );
             world.set(id, Burning, "carry", progress % 20);
             if (!amount) continue;
-            const definition = definitions[world.get(id, Template, "definition")]!;
             world.set(id, Health, "current", world.get(id, Health, "current") - amount);
             kernel.veterancy?.damage(
               world.get(id, Burning, "source"),
@@ -61,7 +60,7 @@ export function initializeBurn(kernel: Kernel, definitions: readonly Definition[
             kernel.statistics?.damage(
               world.get(id, Burning, "force"),
               force,
-              !!definition.footprint,
+              world.get(id, Template, "definition"),
               amount,
               world.get(id, Health, "current") === 0,
             );

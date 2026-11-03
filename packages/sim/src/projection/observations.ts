@@ -12,6 +12,16 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       statistics: snapshot.statistics.map((entry) => ({
         ...entry,
         counters: { ...entry.counters },
+        ...(entry.details && {
+          details: {
+            controllers: entry.details.controllers.map((controller) => ({ ...controller })),
+            types: entry.details.types.map((type) => ({ ...type })),
+            history: entry.details.history.map((point) => ({
+              tick: point.tick,
+              values: { ...point.values },
+            })),
+          },
+        }),
       })),
     }),
     ...(snapshot.victory && {

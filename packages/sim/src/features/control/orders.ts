@@ -63,8 +63,17 @@ export class UnitOrders {
       kernel.handlers.set(type, (kernel, raw) => {
         const command = raw as OrderCommand;
         if (command.payload.append === 1) return this.append(command);
+        const candidates = this.actors(command).filter((actor) => this.capable(command, actor));
         const result = handler(kernel, command);
         if (!result) {
+          const credited = candidates.filter(
+            (actor) =>
+              !["unit.move", "unit.attackMove", "unit.attack"].includes(command.type) ||
+              this.affected(command, actor),
+          );
+          kernel.statistics?.order(command.seat, [
+            ...new Set(credited.map((actor) => kernel.world.get(actor, OwnerForce, "force"))),
+          ]);
           for (const actor of this.actors(command).filter((actor) => this.affected(command, actor)))
             this.clear(actor);
           if (type === "unit.unload")
@@ -286,6 +295,9 @@ export class UnitOrders {
       });
       if (world.has(actor, OrderFailure)) world.remove(actor, OrderFailure);
     }
+    kernel.statistics?.order(command.seat, [
+      ...new Set(actors.map((actor) => world.get(actor, OwnerForce, "force"))),
+    ]);
   }
   private busy(actor: number): boolean {
     const { world } = this.kernel;
