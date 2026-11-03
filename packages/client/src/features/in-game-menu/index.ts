@@ -4,6 +4,7 @@ import { mountNativePanel } from "../../shared/native-panel";
 import { NORMAL_GAME_SPEEDS } from "../../worker";
 import { loadGameScreen, type SavedGame } from "../load-game";
 import { type DeviceSettings, settingsScreen } from "../settings";
+import { createExitPrompt, type MatchExit } from "./exit";
 
 export function createInGameMenu(
   root: HTMLElement,
@@ -43,6 +44,7 @@ export function createInGameMenu(
     pane = "menu";
   let settings: ReturnType<typeof settingsScreen> | undefined;
   let cleanupPane: (() => void) | undefined;
+  let exit: ReturnType<typeof createExitPrompt> | undefined;
   const ended = () => !!options.state()?.ended;
   const focus = () => dialog.querySelector<HTMLButtonElement>("button")?.focus();
   function present() {
@@ -58,11 +60,12 @@ export function createInGameMenu(
     else native.update();
   }
   function update() {
-    if (!dialog.open || disposed) return;
+    if (disposed) return;
     if (ended()) {
       finish();
       return;
     }
+    if (!dialog.open) return;
     status!.textContent = text(
       options.state()?.paused ? "ui.menu.paused" : pending ? "ui.menu.pausing" : "ui.menu.running",
     );
@@ -75,6 +78,8 @@ export function createInGameMenu(
     present();
   }
   function finish() {
+    exit?.dispose();
+    exit = undefined;
     native?.dispose();
     native = undefined;
     cleanupPane?.();
@@ -195,7 +200,7 @@ export function createInGameMenu(
         present();
       });
     body!.querySelector("[data-restart]")?.addEventListener("click", () => {
-      if (window.confirm(text("ui.menu.restart-confirm"))) options.restart();
+      options.restart();
     });
     body!.querySelector("[data-leave-menu]")?.addEventListener("click", options.leave);
     body!.querySelector("[data-surrender]")?.addEventListener(
@@ -217,7 +222,7 @@ export function createInGameMenu(
     });
   }
   async function open() {
-    if (disposed || dialog.open || !options.available() || ended()) return;
+    if (disposed || dialog.open || exit || !options.available() || ended()) return;
     menu();
     dialog.showModal();
     options.controls(false);
@@ -240,5 +245,51 @@ export function createInGameMenu(
     dialog.remove();
   };
   signal.addEventListener("abort", dispose, { once: true });
-  return { open, update, finish, isOpen: () => dialog.open };
+  return {
+    open,
+    update,
+    finish,
+    isOpen: () => dialog.open || !!exit,
+    async confirmExit(kind: MatchExit): Promise<boolean> {
+      if (disposed || ended()) return true;
+      if (exit || !options.available()) return false;
+      const paused = options.state()?.paused ?? true;
+      const origin = document.activeElement;
+      options.controls(false);
+      const prompt = createExitPrompt(root, kind, {
+        pause: () => options.pause(true),
+        save: options.save,
+        name: options.saveName?.() ?? "",
+      });
+      exit = prompt;
+      const accepted = await prompt.result;
+      if (disposed || ended() || exit !== prompt) return false;
+      if (!accepted) {
+        try {
+          await options.pause(paused);
+        } catch {
+          if (disposed || ended() || exit !== prompt) return false;
+          if (!dialog.open) {
+            menu();
+            dialog.showModal();
+          }
+          error!.textContent = text("ui.menu.failed");
+          update();
+        }
+        if (!disposed && !ended() && exit === prompt) {
+          options.controls(!dialog.open);
+          requestAnimationFrame(() => {
+            if (disposed || exit || ended()) return;
+            if (dialog.open && dialog.contains(document.activeElement)) return;
+            if (origin instanceof HTMLElement && origin.isConnected && origin !== document.body)
+              origin.focus({ preventScroll: true });
+            else if (dialog.open) focus();
+            else options.focus();
+          });
+        }
+      }
+      if (exit === prompt) exit = undefined;
+      return accepted;
+    },
+  };
 }

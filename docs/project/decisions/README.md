@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Save before leaving or replacing a match](./2026-11-03-save-before-leave.md) — Native paused save/discard/cancel decisions preserve the old world until persistence commits.
+
 - [2026-11-03 — Battlefield screen regions](./2026-11-03-battlefield-regions.md) — AoE IV reference analysis, economy beside contextual selection, compact global controls and no empty selection panel.
 
 - [2026-11-03 — Native battlefield command station](./2026-11-03-native-battlefield-station.md) — Right circular map, integrated selection/commands, icon tooltips and render-scale-safe input.

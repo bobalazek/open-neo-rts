@@ -133,8 +133,8 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   await expect(minimap).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath("minimap-mobile.png") });
-  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(world).not.toHaveAttribute("data-session", "ready");
   await expect(world).toHaveAttribute("data-setup", "ready");
   await expect(minimap).toHaveCount(0);
@@ -184,10 +184,10 @@ test("local minimap pings refuse shroud and support keyboard placement and Space
   await page.keyboard.press("Space");
   await expect(minimap).toHaveAttribute("data-camera-cell", /^(19|20),(19|20)$/);
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
-  page.once("dialog", (dialog) => dialog.accept());
   await page
     .getByRole("dialog", { name: "Match menu", exact: true })
     .getByRole("button", { name: "Leave match", exact: true })
     .press("Enter");
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(page.locator(".match-notices")).toHaveCount(0);
 });

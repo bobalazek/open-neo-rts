@@ -158,6 +158,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   const previousTick = await page.locator("#game").getAttribute("data-tick");
   await page.evaluate(() => Reflect.set(window, "holdSavedLoad", true));
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);
@@ -199,6 +200,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     })
     .toBe(2);
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(manual.match.tick), {
     timeout: 60_000,
   });
@@ -262,6 +264,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     Reflect.set(window, "savedLoadBlocked", false);
   });
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);

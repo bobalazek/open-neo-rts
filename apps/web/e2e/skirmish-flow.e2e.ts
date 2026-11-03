@@ -77,8 +77,8 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   const tick = await page.locator("#game").getAttribute("data-tick");
   await page.screenshot({ path: info.outputPath("normal-match-desktop.png") });
   expect(await page.locator("#game").getAttribute("data-tick")).toBe(tick);
-  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match" }).press("Enter");
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
   await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
   await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
@@ -109,8 +109,8 @@ test("failed worker loading can retry through the same quick-start path", async 
     timeout: 60_000,
   });
   await expect(page).toHaveURL(/\/match$/);
-  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match" }).press("Enter");
+  await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
   await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
 });
