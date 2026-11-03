@@ -748,3 +748,48 @@ seeking and remaining phase-2 systems. Phase 2 and all later phases remain open;
 20 current-version complete AI games and the actual human match are unqualified.
 Hosted CI remains affected by the known billing block; Firefox launch and deferred
 hardware FPS acceptance remain unqualified.
+
+## SIM52 — first functional local snapshot save/resume (2-33a)
+
+Runtime candidate `66c6b46dc9adf02ccdd6779c9cf511146873e9ab` adds explicit normal
+local-host snapshot export and fresh paused-worker initialization from `savedMatch`.
+Full ECS bytes, PRNG words, queued work, navigation paths/search/cached obstacles,
+fog/ghost state, bot memory/handle continuity/pending commands and accepted external
+history are captured. No normal seat publication includes hidden save state.
+Installed setup must match; failed loading leaves the old host untouched. Exports
+refuse pending worker inputs. Resumed worker input sequences continue correctly.
+
+This is a functional history-verified implementation, not direct state loading:
+the loader reconstructs accepted history, rejects refused commands and compares the
+entire captured state before returning the verified host. This removes the need
+for a second partially validated loader. Two-hour/100,000-input and JSON limits
+bound imports. Direct state loading remains 2-33b; do not mark whole 2-33 complete.
+Browser persistence/menu/quicksave/autosave (2-34) is next. Full pack/time metadata,
+replay keyframes/viewer and remaining phases are still work.
+
+Final batch passes fix, all 11 typecheck/test tasks (540 simulation cases), build
+and content validation: `/tmp/neo-snapshots-finish-*.log` and
+`/tmp/neo-snapshots-final2-{build,validate}.log`. SIM52/goldens and content identity
+remain unchanged (137 definitions/833 assets, gameplay `97ddd2a140545413`, cosmetic
+`54a8905a7eee497b`). Five committed save regressions cover continuation, full
+terminal replay, import isolation/identity/corruption, unsigned PRNG state and
+refused-history rejection. Earlier batch failures were regression-fixture target
+selection mistakes; the final run passes.
+
+Chromium and WebKit pass the original Training Grounds/kit/standard-fog/basic-bot
+worker journey in `/tmp/neo-snapshots-final-browsers.log` (16.1 s total). Save at tick
+120/hash `dab049d6406939bf`, resume/continue both hosts to tick 180/hash
+`49db2f17401adf02`, then explicit surrender exports a complete verified record at
+181/`b86d217efa330f38`. Artifacts:
+`/tmp/neo-snapshots-browser-results/**/{match-snapshot.json,resumed.record.json}`.
+This tests the actual worker transport/API, not a storage/load-screen UI or natural
+complete match. Ten additional original queued-order checkpoints continue with
+matching hashes (`/tmp/neo-snapshot-original-proof2.log`).
+
+Independent review found unsigned PRNG capture, semantically forged queued-cargo
+state and refused input history issues; all were fixed. Raw adversarial imports
+now reject. Seven standard-fog/basic-bot save splits through tick 1050 match every
+continued hash (`/tmp/snapshot-continuation-review.ts`). The reviewer independently
+recompiled original setup and verified both actual browser snapshot and terminal
+record artifacts (`/tmp/snapshot-browser-review.ts`). Hosted CI billing, local
+Firefox and hardware FPS remain unqualified; full phase-2/later exits remain open.
