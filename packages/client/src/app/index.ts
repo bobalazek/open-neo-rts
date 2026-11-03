@@ -62,6 +62,7 @@ export function startApp(canvas: HTMLCanvasElement) {
   async function begin(selected: SkirmishSetup, saved?: SavedGame): Promise<void> {
     if (loading || disposed) throw new Error(text("ui.saves.busy"));
     const previous = session;
+    if (!previous && !saved) config = { ...selected };
     const requestedAt = generation;
     loading = true;
     if (previous) {

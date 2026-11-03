@@ -145,8 +145,12 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Restart match", exact: true }).click();
   expect(workers).toBe(1);
+  const previousCanvas = await canvas.elementHandle();
   page.once("dialog", (dialog) => dialog.accept());
   await menu.getByRole("button", { name: "Restart match", exact: true }).click();
+  await expect
+    .poll(() => previousCanvas!.evaluate((element) => element.isConnected), { timeout: 60000 })
+    .toBe(false);
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   expect(workers).toBe(2);
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
