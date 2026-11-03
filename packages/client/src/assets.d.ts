@@ -20,6 +20,8 @@ declare module "virtual:debug-builtins" {
 declare module "virtual:normal-catalog" {
   export const content: {
     catalog: import("@open-neo-rts/sim").GameplayCatalog | null;
+    packs: readonly import("@open-neo-rts/content").PackIdentity[];
+    cosmeticHash: string | null;
     error: string | null;
   };
 }

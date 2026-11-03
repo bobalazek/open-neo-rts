@@ -3,7 +3,8 @@
 The owner delegated provisional implementation choices and prioritized working
 gameplay over performance. Task 2-33a adds an explicit authoritative snapshot
 export and initialization of a new local worker from a saved match. Browser save
-slots, quicksave, autosave and load screens remain 2-34.
+slots, quicksave, autosave and load screens are connected by
+[2-34](./2026-11-03-browser-save-slots.md).
 
 The format records the current simulation version, complete resolved setup and
 accepted external input history, tick/hash, versioned ECS bytes, unsigned PRNG
@@ -20,7 +21,9 @@ the checkpoint hash. Checksums detect corruption; they are not signatures.
 Provisional limits are two hours at 20 ticks/second, 100,000 external inputs,
 eight million JSON values, 32 levels and 64 MiB of text. Loading runs in a new
 paused worker; failure leaves the existing session available. Pending worker
-inputs must finish before export, so saving cannot silently discard them.
+inputs must finish before export, so saving cannot silently discard them. The
+2-34 integration now flushes them at one real tick boundary before capture instead
+of refusing the paused save; no pending input is discarded.
 
 **Known cost:** this first version reconstructs and verifies the saved history
 before returning that verified host. It preserves all feature state and subsequent

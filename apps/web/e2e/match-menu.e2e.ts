@@ -121,7 +121,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   const tick = await canvas.getAttribute("data-tick");
-  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeDisabled();
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
   await menu.getByLabel("Game speed", { exact: true }).selectOption("0.75");
   await expect(page.locator("[data-speed]")).toHaveText("Speed 0.75×");
   await menu.getByLabel("Game speed", { exact: true }).selectOption("1.5");

@@ -289,7 +289,7 @@ port.onmessage = ({ data }) => {
         publish(id, createMatchRecord(kernel, setup));
         return;
       case "export-match-snapshot":
-        if (queued.length) throw new Error("Wait for pending inputs before saving");
+        if (queued.length) tick();
         publish(id, createMatchSnapshot(kernel, setup));
         return;
       default:

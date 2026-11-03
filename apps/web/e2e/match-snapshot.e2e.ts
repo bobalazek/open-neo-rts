@@ -73,13 +73,8 @@ test("original skirmish saves and resumes in a fresh worker with fog, bot work a
         x: 20 * 1024 + 512,
         y: 20 * 1024 + 512,
       });
-      let pendingRefused = false;
-      try {
-        await original.exportMatchSnapshot();
-      } catch {
-        pendingRefused = true;
-      }
-      await original.step();
+      const pendingSave = await original.exportMatchSnapshot();
+      const pendingCaptured = pendingSave.tick === 1 && pendingSave.scenario.commands.length === 1;
       await order;
       for (let i = 0; i < 119; i++) await original.step();
       const saved = await original.exportMatchSnapshot();
@@ -113,7 +108,7 @@ test("original skirmish saves and resumes in a fresh worker with fog, bot work a
       await resumed.step();
       await surrender;
       return {
-        pendingRefused,
+        pendingCaptured,
         corruptRefused,
         saved,
         restored,
@@ -126,7 +121,7 @@ test("original skirmish saves and resumes in a fresh worker with fog, bot work a
       invalid.dispose();
     }
   }, setup);
-  expect(result.pendingRefused).toBe(true);
+  expect(result.pendingCaptured).toBe(true);
   expect(result.corruptRefused).toBe(true);
   const saved = parseMatchSnapshot(result.saved);
   expect(saved.tick).toBe(120);

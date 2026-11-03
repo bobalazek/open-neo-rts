@@ -16,6 +16,14 @@ import { createPresentationClock } from "../debug/clock";
 import { mapDecorations, resolveMapModel } from "../debug/map-visuals";
 import { loadMap } from "../debug/maps";
 import { createInGameMenu } from "../in-game-menu";
+import {
+  type SavedGame,
+  type SaveKind,
+  saveCompatibility,
+  saveMapHash,
+  saveStore,
+  saveThumbnail,
+} from "../load-game";
 import { postMatchScreen } from "../post-match";
 import { applyInterfaceScale, type DeviceSettings, readDeviceSettings } from "../settings";
 import { firstPlayableRoster } from "../skirmish/roster";
@@ -36,6 +44,7 @@ export function createNormalSession(
   leave: () => void,
   rematch: () => void,
   home: () => void,
+  persistence?: { saved?: SavedGame; load: (save: SavedGame) => Promise<void> },
 ) {
   const signal = new AbortController();
   let disposed = false,
@@ -53,6 +62,45 @@ export function createNormalSession(
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
   const replayUrls = new Set<string>();
+  let autosave: ReturnType<typeof setInterval> | undefined,
+    saving = false,
+    autoSlot = 0;
+  const saveName = () =>
+    `${map.name} · ${Math.floor((latest?.snapshot.tick ?? 0) / 1200)}:${String(Math.floor((latest?.snapshot.tick ?? 0) / 20) % 60).padStart(2, "0")}`;
+  async function persist(kind: SaveKind, name: string) {
+    if (saving) throw new Error(text("ui.saves.busy"));
+    if (!match || !renderer || disposed || !content.cosmeticHash)
+      throw new Error(text("ui.saves.failed"));
+    saving = true;
+    try {
+      const snapshot = await match.exportMatchSnapshot();
+      if (disposed) return;
+      renderer.scene.render();
+      const file: SavedGame = {
+        format: 1,
+        id:
+          kind === "quick"
+            ? "quicksave"
+            : kind === "auto"
+              ? `autosave-${autoSlot % 3}`
+              : `manual-${crypto.randomUUID()}`,
+        name,
+        kind,
+        createdAt: Date.now(),
+        config: { ...config },
+        thumbnail: saveThumbnail(canvas),
+        packs: content.packs,
+        cosmeticHash: content.cosmeticHash,
+        mapHash: saveMapHash(snapshot),
+        match: snapshot,
+      };
+      await saveStore.write(file);
+      if (kind === "auto") autoSlot++;
+      label("[data-save-notice]", text("ui.saves.saved"));
+    } finally {
+      saving = false;
+    }
+  }
   const applyPreferences = (next: DeviceSettings) => {
     if (disposed) return;
     if (next.quality !== preferences.quality) renderer?.setQuality(next.quality);
@@ -69,6 +117,7 @@ export function createNormalSession(
     if (disposed) return;
     menu?.finish();
     disposed = true;
+    clearInterval(autosave);
     signal.abort();
     for (const url of replayUrls) URL.revokeObjectURL(url);
     replayUrls.clear();
@@ -177,6 +226,12 @@ export function createNormalSession(
       progress(0);
       if (!content.catalog)
         throw new Error(`${text("ui.skirmish.content-error")} ${content.error ?? ""}`);
+      if (persistence?.saved) {
+        const reason = saveCompatibility(persistence.saved, content.catalog.gameplayHash);
+        if (reason) throw new Error(reason);
+        if (saveMapHash(persistence.saved.match) !== persistence.saved.mapHash)
+          throw new Error(text("ui.saves.invalid"));
+      }
       progress(1);
       const loaded = await loadMap(`core.${map.id}`);
       if (disposed) return;
@@ -246,7 +301,12 @@ export function createNormalSession(
       });
       progress(3);
       match = createOfflineMatch(update, failed);
-      await match.init({ setup, seat: 1, mode: "controlled" });
+      await match.init({
+        setup,
+        seat: 1,
+        mode: "controlled",
+        ...(persistence?.saved && { savedMatch: persistence.saved.match }),
+      });
       if (disposed) return;
       if (!latest) throw new Error(text("ui.loading.failed"));
       progress(4);
@@ -256,6 +316,10 @@ export function createNormalSession(
       root.innerHTML = `<section class="match-top" aria-label="${text("ui.match.title")}"><strong>${map.name}</strong><span data-credits></span><span data-materials></span><span data-industrial></span><span data-salvage></span><span data-power></span><span data-population></span><span data-time></span><span data-speed></span><button type="button" data-pause>${text("ui.match.pause")}</button><button type="button" data-menu>${text("ui.menu.title")}</button><button type="button" data-leave>${text("ui.match.leave")}</button></section>`;
       const activeMatch = match,
         activeRenderer = renderer;
+      const saveNotice = document.createElement("span");
+      saveNotice.setAttribute("role", "status");
+      saveNotice.setAttribute("data-save-notice", "");
+      root.querySelector(".match-top")?.append(saveNotice);
       const toggle = async () => {
         if (!latest || busy || disposed || latest.snapshot.victory?.result) return;
         busy = true;
@@ -417,6 +481,16 @@ export function createNormalSession(
           leave: leaveMatch,
           surrender: surrenderMatch,
           focus: () => canvas.focus({ preventScroll: true }),
+          save: (name) => persist("manual", name),
+          saveName,
+          load: persistence?.load,
+          quicksave: () => persist("quick", text("ui.saves.quick")),
+          quickload:
+            persistence &&
+            (async () => {
+              const saved = await saveStore.read("quicksave");
+              await persistence.load(saved);
+            }),
         },
         signal.signal,
       );
@@ -511,7 +585,16 @@ export function createNormalSession(
       canvas.dataset.session = "ready";
       canvas.dataset.mode = "controlled";
       update(latest);
-      await match.pause(false);
+      if (!persistence?.saved) await match.pause(false);
+      const auto = () => {
+        if (disposed || saving || latest?.snapshot.victory?.result) return;
+        void persist("auto", text("ui.saves.auto")).catch(() => {
+          if (!disposed) label("[data-save-notice]", text("ui.saves.auto-failed"));
+        });
+      };
+      // shortcut: three wall-clock slots every three minutes; expose cadence with future save preferences.
+      autosave = setInterval(auto, 3 * 60 * 1000);
+      if (!persistence?.saved) auto();
       if (!disposed) canvas.focus({ preventScroll: true });
     } catch (error) {
       if (!disposed) {
@@ -520,5 +603,9 @@ export function createNormalSession(
       }
     }
   }
-  return { ready: initialize(), dispose: release };
+  return {
+    ready: initialize(),
+    dispose: release,
+    pause: () => match?.pause(true) ?? Promise.resolve(),
+  };
 }
