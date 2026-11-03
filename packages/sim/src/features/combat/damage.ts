@@ -9,6 +9,7 @@ import { weaponTargets } from ".";
 import { applyBurn } from "./burn";
 import { applyDisable } from "./disable";
 import { applySlow } from "./slow";
+import { applySpawn } from "./spawn";
 
 export interface DamageImpact {
   readonly source?: number;
@@ -87,7 +88,12 @@ export function applyWarhead(
   warhead: GameplayWarhead,
   impact: DamageImpact,
   friendlyFire: boolean,
+  populationCap?: number,
 ): void {
+  if (warhead.type === "spawn") {
+    applySpawn(kernel, definitions, warhead, impact, populationCap);
+    return;
+  }
   if (warhead.type === "reveal") {
     kernel.vision?.revealArea(
       impact.force,

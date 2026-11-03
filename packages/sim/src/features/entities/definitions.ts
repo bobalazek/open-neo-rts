@@ -273,6 +273,20 @@ export function checkDefinitions(definitions: readonly Definition[], issues: Iss
       if (weaponIds.has(weapon.id))
         issues.push({ path: `${path}.weapons[${index}].id`, message: "duplicate local weapon ID" });
       weaponIds.add(weapon.id);
+      for (const [warheadIndex, warhead] of weapon.warheads.entries()) {
+        if (warhead.type !== "spawn" || warhead.unit === undefined) continue;
+        const unit = definitions.find((candidate) => candidate.id === warhead.unit);
+        if (
+          unit?.id.split(":")[0]?.split(".").at(-1) !== "unit" ||
+          unit.pop === undefined ||
+          unit.domain === undefined ||
+          unit.radiusSubcells === undefined
+        )
+          issues.push({
+            path: `${path}.weapons[${index}].warheads[${warheadIndex}].unit`,
+            message: "spawn references require unit population and movement metadata",
+          });
+      }
       if (weapon.rangeSubcells[0] > weapon.rangeSubcells[1])
         issues.push({ path: `${path}.weapons[${index}].rangeSubcells`, message: "inverted range" });
       if (weapon.aim === "turret" && definition.turretTurnAnglePerTick === undefined)
