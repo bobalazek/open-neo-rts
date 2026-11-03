@@ -202,6 +202,12 @@ pixels, independently of backing-buffer resolution. Remains are valid context
 targets but stay outside army and box selection. Manual builder clearance/value
 and wreck restoration remain separate gameplay work.
 
+Initial debris color readiness is still under investigation (2-21b3a): some
+parallel browser captures show a white first sample, while later samples and
+independent first-only Chromium/WebKit runs show correct original colors. Both
+sets of evidence are retained. Functional rendering/picking/fog checks do not
+establish unconditional first-frame visual readiness.
+
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
 - **Packing up and deploying** (Phoenix Initiative mobile structures such as the Command Node) shuffles the bricks into the vehicle form and back.

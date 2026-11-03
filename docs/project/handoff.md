@@ -534,3 +534,63 @@ primitive World bytes; diagnostics must not change the reproduced hash. Observe
 the same process without restarting it. Inspect those raw artifacts before any
 further bot repair; do not guess the cause. This is historical SIM48 evidence
 while canonical remains advances to SIM49, not current full acceptance.
+
+## Persistent remains presentation, SIM49 retained
+
+`/tmp/neo-remains-presentation`, branch `codex/remains-presentation`, implements
+the functional 2-21b3 slice. Public canonical remains resolve separate original
+`presentation.wreck` URLs through the validated builtin catalog and normal session.
+All 84 required original non-foot-unit/structure remains GLBs exist. Instances
+share geometry/materials and preserve original neutral vertex-color debris;
+live Force-color models remain separate. Final pose, rotated footprint and actual
+terrain/water height drive positioning. Remains have no live clips, bars,
+construction shaders or foundations. Context picking compares real distances
+across live/remains layers, while army and box selection exclude remains.
+Fog omission, rewind/group reset, late imports and disposal revoke roots/picking.
+
+Runtime candidate is `ef86e7f188f2b082e0437d1b0238145f842c6865`; later edits
+only clarify documentation/evidence. Repository fix/typecheck/test/build/content
+validation pass. Catalog identities and all canonical goldens remain unchanged;
+there is no additional simulation-version change. The assembled Chromium/WebKit
+batch passed 11 cases with nine expected non-Chromium skips, covering existing
+worker/HUD/replay journeys and the new remains proof. Logs are
+`/tmp/neo-remains-presentation-final-*` and `/tmp/neo-remains-final-browsers.log`;
+report/artifacts are `/tmp/neo-remains-browser-report.json` and
+`/tmp/neo-remains-browser-results`. Chromium explicitly reports `webgpu`.
+
+The new proof uses actual original catalog/stats/Training Grounds and explicit
+fixture-only extra Tank/Reactor/Truck placement with bots disabled. Real permitted
+attacks produce Reactor rubble at tick 1087 and a Supply Truck wreck at 8991;
+moving the own mobile units away actually removes current sight by 9054. Only
+those actual remains rows are displayed, with a close camera on original terrain.
+Both original GLBs pick through their real geometry and stay out of army selection;
+the no-remains sample removes both roots. This is not a normal economy or natural
+full-match/replay proof. Catalog coverage is not 84 individually rendered assets.
+
+Independent fresh-context review found no confirmed runtime blocker: 32 focused
+tests, exact Chromium/WebKit reruns, a first-only single-Reactor probe with the
+render loop held at three frames, plus async group/rewind/disposal probes passed.
+It found a stale phase summary, now corrected. Visual acceptance remains explicitly
+conditional: author parallel captures sometimes show an entirely white first-only
+Reactor, followed by correct neutral colors. Independent exact and held first-only
+captures have correct colors, so neither a persistent defect nor a timing cause
+is established. Two readiness frames did not explain the author artifact.
+
+Preserved contrary evidence: `/tmp/neo-remains-first-sample-artifacts` contains
+both white captures and the broad report. Independent correct samples/probes are
+under `/tmp/neo-remains-independent-review` (`first.png`, `held-first.png` and
+the final exact WebKit results). Do not claim unconditional first-frame visual
+readiness or silently discard these samples. The owner permits rough edges while
+functional gameplay advances; 2-21b3a tracks this investigation after builder
+clearance, and 2-21b1c remains construction-shadow polish. Hosted CI billing,
+local Firefox launch and hardware FPS remain unqualified.
+
+Next: actual builder clearance and bounded salvage (2-16b2), then the remaining
+gameplay/persistence/audio/help/tools and later phases. The exact SIM48 seed-20
+forensic process (44053) has now exited zero and verified `f837039a18dfb9f9`.
+Raw artifacts are complete under `/tmp/neo-ai-stall-sim48-seed20`. Force 0 has
+only a surviving unarmed Supply Depot; Force 1 has healthy scouts moving to an
+unexplored northeast goal, no remembered enemy structures and no failed/stuck
+route flags in the sampled routes. This differs from seed-12 quota starvation;
+no new AI fix is included or proven. Inspect actual goal/vision/travel history
+before diagnosing or changing it. Preserve both frozen worktrees and all records.
