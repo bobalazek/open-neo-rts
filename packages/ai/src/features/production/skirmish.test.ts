@@ -424,6 +424,75 @@ test("scouting spends its bounded sample on new shroud before revisiting explore
   });
 });
 
+test("scouts search the last observed headquarters perimeter before roaming after it disappears", () => {
+  const decide = basicSkirmishProgram(policy);
+  const own = [
+    entity("e1", "hq"),
+    ...Array.from({ length: 6 }, (_, i) => entity(`e${i + 2}`, "soldier")),
+  ];
+  const enemy = entity("e9", "hq", 3, 10 * 1024);
+  const first = runDecision(
+    decide,
+    {
+      ...observation([...own, enemy]),
+      fog: [{ width: 32, height: 32, cells: new Uint8Array(1024).fill(2) }],
+    },
+    state(),
+    createStream(3, "ai:1"),
+    64,
+  );
+  expect(first.state.memory?.enemyBase).toEqual({
+    x: 10 * 1024 + 512,
+    y: 5 * 1024 + 512,
+    radius: 6 * 1024 + 512,
+  });
+  const cells = new Uint8Array(1024).fill(2);
+  cells[5 * 32 + 4] = 0;
+  const next = runDecision(
+    decide,
+    { ...observation(own), tick: 20, fog: [{ width: 32, height: 32, cells }] },
+    first.state,
+    first.random,
+    64,
+  );
+  expect(next.state.memory?.goal).toMatchObject({ x: 4 * 1024, y: 5 * 1024 + 512, handle: null });
+  expect(next.state.memory?.baseScout).toBe(5);
+  expect(next.commands).toContainEqual({
+    type: "unit.attackMove",
+    payload: { entities: ["e2"], x: 4 * 1024, y: 5 * 1024 + 512 },
+  });
+  expect(next.state.memory?.enemyBase).toEqual(first.state.memory?.enemyBase);
+});
+
+test("perimeter search resumes within a one-work budget, bounds corners and exhausts before global scouting", () => {
+  const decide = basicSkirmishProgram(policy);
+  const own = [
+    entity("e1", "hq"),
+    ...Array.from({ length: 6 }, (_, i) => entity(`e${i + 2}`, "soldier")),
+  ];
+  const memory = initialSkirmishMemory();
+  memory.enemyBase = { x: 512, y: 512, radius: 8 * 1024 };
+  let saved: DecisionState<PolicyCommand, SkirmishMemory> = { ...state(), memory };
+  let random = createStream(3, "ai:1");
+  const cells = new Uint8Array(256).fill(2);
+  for (let tick = 0; tick < 200; tick++) {
+    const next = runDecision(
+      decide,
+      { ...observation(own), tick, fog: [{ width: 16, height: 16, cells }] },
+      saved,
+      random,
+      1,
+    );
+    expect(next.used).toBeLessThanOrEqual(1);
+    saved = next.state;
+    random = next.random;
+    expect(saved.memory?.goal).toBeNull();
+  }
+  expect(saved.memory?.baseScout).toBe(8);
+  expect(saved.memory?.scout).toBeGreaterThan(0);
+  expect(saved.memory?.enemyBase).toEqual(memory.enemyBase);
+});
+
 test("after headquarters loss a completed structure anchors retreat instead of the first moving unit", () => {
   const decide = basicSkirmishProgram(policy);
   const view = observation([

@@ -47,3 +47,11 @@ Faction and personality differences (aggressive, turtle, tech-rush) are **conten
 ## 5. First bot (first playable)
 
 Plays the Eastern Collective's tier-1 roster in a mirror match: fixed build order, harvests, builds a few combat units, attacks in waves, retreats damaged units. Good enough to make skirmish testable, and to start AI-vs-AI determinism runs.
+
+The implemented bot retains a hostile headquarters' centre and search radius
+only after observing it. When no visible target or permitted remembered structure
+remains, it checks eight bounded perimeter positions before general scouting.
+The cursor consumes counted candidate work, survives restore and exhausts rather
+than resetting on repeated views of the same building. Existing travel deadlines
+bound unreachable goals. This uses no spawn knowledge or private path queries;
+see the [provisional correction and seed-20 proof](../project/decisions/2026-11-03-bot-base-perimeter-search.md).
