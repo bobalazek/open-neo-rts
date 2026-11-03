@@ -19,6 +19,8 @@ import {
   MAX_PRODUCTION_EXITS,
   MAX_REMAINS,
   PRODUCTION_STATUSES,
+  QUEUED_ORDER_TYPES,
+  REJECTIONS,
   SIM_VERSION,
   STAT_COUNTERS,
 } from "@open-neo-rts/sim";
@@ -763,6 +765,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     }
   }
   const entityHandles = new Set();
+  const targetHandles = new Set(
+    [...snapshot.entities, ...(Array.isArray(snapshot.remains) ? snapshot.remains : [])].flatMap(
+      (row: unknown) => (isRecord(row) && typeof row.handle === "string" ? [row.handle] : []),
+    ),
+  );
   if (snapshot.remains !== undefined) {
     const remains = snapshot.remains;
     if (
@@ -830,6 +837,8 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "disabled",
             "burning",
             "holdPosition",
+            "queuedOrders",
+            "orderFailure",
             "productionSurge",
             "veterancy",
             "repair",
@@ -852,6 +861,80 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       (entity.constructionSite !== true || !bounded(entity.constructionStage, 100))
     )
       return false;
+    if (entity.queuedOrders !== undefined) {
+      const queue = entity.queuedOrders;
+      if (
+        snapshot.mode !== "controlled" ||
+        !Array.isArray(queue) ||
+        Object.getPrototypeOf(queue) !== Array.prototype ||
+        queue.length < 1 ||
+        queue.length > 32 ||
+        Reflect.ownKeys(queue).length !== queue.length + 1
+      )
+        return false;
+      const items = new Set<string>();
+      for (const row of queue) {
+        if (
+          !isRecord(row) ||
+          Object.getPrototypeOf(row) !== Object.prototype ||
+          Reflect.ownKeys(row).some(
+            (key) =>
+              !["handle", "type", "x", "y", "target", "definition", "reason"].includes(
+                String(key),
+              ) || typeof key !== "string",
+          ) ||
+          typeof row.handle !== "string" ||
+          !/^e[1-9][0-9]*$/.test(row.handle) ||
+          !bounded(Number(row.handle.slice(1)), 0xfffffffe) ||
+          items.has(row.handle) ||
+          entityHandles.has(row.handle) ||
+          !QUEUED_ORDER_TYPES.some((type) => type === row.type)
+        )
+          return false;
+        items.add(row.handle);
+        entityHandles.add(row.handle);
+        const positional = ["unit.move", "unit.attackMove", "economy.build"].includes(
+          String(row.type),
+        );
+        if (positional ? !point(row) : row.x !== undefined || row.y !== undefined) return false;
+        if (
+          row.type === "economy.build"
+            ? typeof row.definition !== "string" ||
+              !/^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(row.definition)
+            : row.definition !== undefined
+        )
+          return false;
+        if (
+          row.target !== undefined &&
+          (positional ||
+            ["unit.stop", "unit.hold", "unit.harvest", "unit.deploy", "unit.unload"].includes(
+              String(row.type),
+            ) ||
+            typeof row.target !== "string" ||
+            !/^e[1-9][0-9]*$/.test(row.target) ||
+            !targetHandles.has(row.target))
+        )
+          return false;
+        if (
+          row.reason !== undefined &&
+          (typeof row.reason !== "string" || !Object.hasOwn(REJECTIONS, row.reason))
+        )
+          return false;
+      }
+    }
+    if (entity.orderFailure !== undefined) {
+      const failure = entity.orderFailure;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(failure) ||
+        !exact(failure, ["reason", "tick"]) ||
+        typeof failure.reason !== "string" ||
+        !Object.hasOwn(REJECTIONS, failure.reason) ||
+        !bounded(failure.tick) ||
+        Number(failure.tick) > Number(snapshot.tick)
+      )
+        return false;
+    }
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
     if (

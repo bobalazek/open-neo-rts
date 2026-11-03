@@ -1,4 +1,9 @@
-import type { GameplayDefinition, PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
+import {
+  type GameplayDefinition,
+  type PresentedEntity,
+  QUEUED_ORDER_TYPES,
+  type SeatSnapshot,
+} from "@open-neo-rts/sim";
 import { type MatchResource, resourceNodeOrigin, resourceOccupies } from "@open-neo-rts/sim/maps";
 import { text } from "../../shared";
 import type { OfflineState } from "../../worker";
@@ -13,7 +18,7 @@ import {
 } from "./hud-model";
 
 type Point = { x: number; y: number };
-type Mode =
+type Mode = (
   | {
       type:
         | "unit.move"
@@ -26,7 +31,9 @@ type Mode =
         | "production.rally";
       handles: string[];
     }
-  | { type: "economy.build"; handles: string[]; definition: string; rotation: number };
+  | { type: "economy.build"; handles: string[]; definition: string; rotation: number }
+  | { type: "unit.editQueued"; handles: string[]; grid: boolean }
+) & { append?: boolean };
 type Options = {
   catalog: readonly HudDefinition[];
   roster: ReadonlySet<string>;
@@ -64,6 +71,36 @@ export function createMatchHud(
     adviceKey = "";
   let idleBuilderIndex = 0,
     idleProducerIndex = 0;
+  let shiftHeld = false,
+    ordersKey = "";
+  window.addEventListener(
+    "keydown",
+    (event) => {
+      shiftHeld = event.shiftKey;
+    },
+    { signal, capture: true },
+  );
+  window.addEventListener(
+    "keyup",
+    (event) => {
+      shiftHeld = event.shiftKey;
+    },
+    { signal, capture: true },
+  );
+  window.addEventListener(
+    "blur",
+    () => {
+      shiftHeld = false;
+    },
+    { signal },
+  );
+  window.addEventListener(
+    "pointerdown",
+    (event) => {
+      shiftHeld = event.shiftKey;
+    },
+    { signal, capture: true },
+  );
   const section = document.createElement("section");
   section.className = "match-hud";
   section.setAttribute("aria-label", text("ui.hud.title"));
@@ -88,6 +125,9 @@ export function createMatchHud(
     resultLabel = get("[data-result]"),
     requests = get("[data-requests]");
   const groupIndex = get<HTMLSelectElement>("[data-group-index]");
+  const orderPanel = document.createElement("div");
+  orderPanel.dataset.orderQueue = "";
+  get(".hud-command-panel").append(orderPanel);
   const own = () =>
     snapshot
       ? selectedEntities(snapshot, options.selection()).filter(
@@ -148,7 +188,7 @@ export function createMatchHud(
   }
   function arm(next: Mode) {
     if (busy || options.paused()) return;
-    mode = next;
+    mode = { ...next, append: next.append ?? shiftHeld };
     canvas.dataset.commandMode = next.type;
     resultLabel.textContent = "";
     modeLabel.textContent = text(
@@ -161,7 +201,7 @@ export function createMatchHud(
     canvas.focus({ preventScroll: true });
     update();
   }
-  async function issue(type: string, payload: unknown) {
+  async function issue(type: string, payload: unknown, append = shiftHeld) {
     if (busy) return;
     if (options.paused()) {
       feedback("ui.hud.resume-first");
@@ -170,7 +210,15 @@ export function createMatchHud(
     busy = true;
     update();
     try {
-      const result = await options.command(type, payload);
+      const result = await options.command(
+        type,
+        append &&
+          QUEUED_ORDER_TYPES.some((order) => order === type) &&
+          typeof payload === "object" &&
+          payload !== null
+          ? { ...payload, append: 1 }
+          : payload,
+      );
       if (signal.aborted) return;
       if (result === "accepted") feedback("ui.hud.accepted");
       else feedback("ui.hud.refused", { reason: refusal(result) });
@@ -181,7 +229,7 @@ export function createMatchHud(
       if (!signal.aborted) update();
     }
   }
-  function commandLabel(type: Mode["type"]) {
+  function commandLabel(type: Mode["type"] | (typeof QUEUED_ORDER_TYPES)[number]) {
     const labels = {
       "unit.move": "ui.hud.move",
       "unit.attackMove": "ui.hud.attack-move",
@@ -192,6 +240,12 @@ export function createMatchHud(
       "economy.salvage": "ui.hud.clear-remains",
       "production.rally": "ui.hud.rally",
       "economy.build": "ui.hud.build",
+      "unit.editQueued": "ui.hud.edit-waypoint",
+      "unit.stop": "ui.hud.stop",
+      "unit.hold": "ui.hud.hold",
+      "unit.harvest": "ui.hud.harvest",
+      "unit.deploy": "ui.hud.deploy-toggle",
+      "unit.unload": "ui.hud.unload",
     } as const;
     return text(labels[type]);
   }
@@ -433,26 +487,41 @@ export function createMatchHud(
     if (!mode || busy || options.paused() || !snapshot) return;
     const active = mode,
       cell = options.pickCell(x, y);
+    const append = active.append || shiftHeld;
+    const finish = () => {
+      if (!append) cancel();
+    };
     if (!cell) {
       feedback("ui.orders.outside");
       return;
     }
     const point = { x: cell.x * 1024 + 512, y: cell.y * 1024 + 512 };
-    if (active.type === "economy.build") {
-      const definition = definitions.get(active.definition)?.gameplay;
-      const origin = definition ? placementCell(definition, cell) : cell;
+    if (active.type === "unit.editQueued") {
       cancel();
       void issue(active.type, {
-        definition: active.definition,
-        builders: active.handles,
-        force: options.force,
-        x: origin.x * 1024,
-        y: origin.y * 1024,
-        facing: ((active.rotation + 1) * 0x4000) & 0xffff,
+        item: active.handles[0],
+        x: cell.x * 1024 + (active.grid ? 0 : 512),
+        y: cell.y * 1024 + (active.grid ? 0 : 512),
       });
+    } else if (active.type === "economy.build") {
+      const definition = definitions.get(active.definition)?.gameplay;
+      const origin = definition ? placementCell(definition, cell) : cell;
+      finish();
+      void issue(
+        active.type,
+        {
+          definition: active.definition,
+          builders: active.handles,
+          force: options.force,
+          x: origin.x * 1024,
+          y: origin.y * 1024,
+          facing: ((active.rotation + 1) * 0x4000) & 0xffff,
+        },
+        append,
+      );
     } else if (active.type === "unit.move" || active.type === "unit.attackMove") {
-      cancel();
-      void issue(active.type, { entities: active.handles, ...point });
+      finish();
+      void issue(active.type, { entities: active.handles, ...point }, append);
     } else if (active.type === "production.rally") {
       cancel();
       void issue(active.type, { entity: active.handles[0], ...point });
@@ -464,8 +533,8 @@ export function createMatchHud(
           feedback("ui.hud.pick-remains");
           return;
         }
-        cancel();
-        void issue(active.type, { builders: active.handles, entity: handle });
+        finish();
+        void issue(active.type, { builders: active.handles, entity: handle }, append);
         return;
       }
       const entity = snapshot.entities.find((entity) => entity.handle === handle);
@@ -495,12 +564,13 @@ export function createMatchHud(
         feedback("ui.hud.need-damage");
         return;
       }
-      cancel();
+      finish();
       void issue(
         active.type,
         active.type === "unit.attack" || active.type === "unit.load"
           ? { entities: active.handles, entity: handle }
           : { builders: active.handles, entity: handle },
+        append,
       );
     }
   }
@@ -556,7 +626,17 @@ export function createMatchHud(
         return;
       if (cancel() || busy || options.paused()) return;
       const selected = units();
-      if (!selected.length) return;
+      if (!selected.length) {
+        const producer = own().find((entity) => entity.production && !entity.constructionSite);
+        const cell = options.pickCell(event.clientX, event.clientY);
+        if (producer && cell)
+          void issue("production.rally", {
+            entity: producer.handle,
+            x: cell.x * 1024 + 512,
+            y: cell.y * 1024 + 512,
+          });
+        return;
+      }
       const targetHandle = options.pick(event.clientX - bounds.left, event.clientY - bounds.top),
         enemy = snapshot?.entities.find(
           (entity) => entity.handle === targetHandle && entity.force !== options.force,
@@ -570,7 +650,26 @@ export function createMatchHud(
       );
       const remains = snapshot?.remains?.find((row) => row.handle === targetHandle),
         clearing = builders();
-      if (remains && clearing.length)
+      const friendly = snapshot?.entities.find(
+        (entity) =>
+          entity.handle === targetHandle &&
+          entity.force === options.force &&
+          definitions.get(entity.definition)?.gameplay.kind === "structure",
+      );
+      const repairers = clearing.filter(
+        (entity) => definitions.get(entity.definition)?.gameplay.repair,
+      );
+      if (friendly?.constructionSite && clearing.length)
+        void issue("economy.assistConstruction", {
+          entity: friendly.handle,
+          builders: clearing.map((entity) => entity.handle),
+        });
+      else if (friendly && friendly.health < friendly.maxHealth && repairers.length)
+        void issue("economy.repair", {
+          entity: friendly.handle,
+          builders: repairers.map((entity) => entity.handle),
+        });
+      else if (remains && clearing.length)
         void issue("economy.salvage", {
           entity: remains.handle,
           builders: clearing.map((entity) => entity.handle),
@@ -685,6 +784,50 @@ export function createMatchHud(
       owned = own();
     const selectedUnits = units(),
       selectedBuilders = builders();
+    const queuedOwner = own()[0];
+    const orderKey = JSON.stringify([
+      queuedOwner?.handle,
+      queuedOwner?.queuedOrders,
+      queuedOwner?.orderFailure,
+    ]);
+    if (ordersKey !== orderKey) {
+      ordersKey = orderKey;
+      orderPanel.replaceChildren();
+      const hint = document.createElement("p");
+      hint.textContent = text("ui.hud.shift-queue");
+      orderPanel.append(hint);
+      for (const [index, queued] of (queuedOwner?.queuedOrders ?? []).entries()) {
+        const row = document.createElement("div");
+        row.textContent = `${index + 1} · ${commandLabel(queued.type)}${queued.x === undefined ? "" : ` (${Math.floor(queued.x / 1024)}, ${Math.floor((queued.y ?? 0) / 1024)})`}${queued.reason ? ` · ${refusal(queued.reason)}` : ""}`;
+        button(
+          text("ui.hud.remove-order"),
+          () => {
+            void issue("unit.cancelQueued", { item: queued.handle });
+          },
+          row,
+        );
+        if (queued.x !== undefined)
+          button(
+            text("ui.hud.edit-waypoint"),
+            () =>
+              arm({
+                type: "unit.editQueued",
+                handles: [queued.handle],
+                grid: queued.type === "economy.build",
+              }),
+            row,
+          );
+        orderPanel.append(row);
+      }
+      if (queuedOwner?.orderFailure) {
+        const failure = document.createElement("p");
+        failure.setAttribute("role", "status");
+        failure.textContent = text("ui.hud.queued-refused", {
+          reason: refusal(queuedOwner.orderFailure.reason),
+        });
+        orderPanel.append(failure);
+      }
+    }
     holdButton.disabled = busy || options.paused() || !selectedUnits.length;
     holdButton.setAttribute(
       "aria-pressed",
@@ -1297,6 +1440,7 @@ export function createMatchHud(
         return;
       }
       const type = attackMove || mode?.type === "unit.attackMove" ? "unit.attackMove" : "unit.move";
+      const append = mode?.append || shiftHeld;
       const handles = units()
         .filter((entity) => (definitions.get(entity.definition)?.gameplay.speed ?? 0) > 0)
         .map((entity) => entity.handle);
@@ -1305,7 +1449,11 @@ export function createMatchHud(
         feedback("ui.match.select-first");
         return;
       }
-      void issue(type, { entities: handles, x: point.x * 1024 + 512, y: point.y * 1024 + 512 });
+      void issue(
+        type,
+        { entities: handles, x: point.x * 1024 + 512, y: point.y * 1024 + 512 },
+        append,
+      );
     },
   };
 }
@@ -1335,6 +1483,8 @@ function costText(amounts: Readonly<Partial<Record<string, number>>>) {
 
 function refusal(value: unknown) {
   const reasons = {
+    unload_blocked: "ui.hud.unload-blocked",
+    order_queue_full: "ui.hud.order-queue-full",
     transport_full: "ui.hud.transport-full",
     cooldown: "ui.hud.deploy-not-ready",
     immobile: "ui.hud.deploy-immobile",

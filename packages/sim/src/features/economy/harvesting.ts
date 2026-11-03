@@ -438,6 +438,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
                 continue;
               }
               world.set(id, Harvester, "cargo", 0);
+              kernel.orders?.harvestFinished(id);
               world.set(id, Harvester, "dock", 0);
               world.set(id, Harvester, "unloadTicks", 0);
               world.set(id, Harvester, "retryAt", 0);

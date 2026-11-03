@@ -16,6 +16,7 @@ import { strictObject } from "../../snapshots/schema";
 import { ConstructionRequest } from "../construction";
 import { OwnerForce } from "../entities";
 import { ProductionItem } from "../production";
+import { orderScope, QueuedOrder } from "./orders";
 import { skirmishPolicy } from "./skirmish";
 
 /** Provisional counted candidate evaluations per seat per tick, independent of machine speed. */
@@ -263,13 +264,20 @@ export class BotSeats {
         ? ["commander.abilities"]
         : command.type === "match.surrender"
           ? ["surrender"]
-          : command.type.startsWith("unit.")
-            ? ["unit.orders"]
-            : command.type.startsWith("production.")
-              ? ["production.queue"]
-              : command.type === "economy.power"
-                ? ["economy.build", "economy.transfer", "production.queue", "research.spend"]
-                : ["economy.build"];
+          : command.type === "unit.deploy"
+            ? ["unit.abilities"]
+            : (command.type === "unit.cancelQueued" || command.type === "unit.editQueued") &&
+                this.kernel.orders &&
+                this.kernel.world.isAlive(command.payload.item) &&
+                this.kernel.world.has(command.payload.item, QueuedOrder)
+              ? [orderScope(this.kernel.orders.type(command.payload.item))]
+              : command.type.startsWith("unit.")
+                ? ["unit.orders"]
+                : command.type.startsWith("production.")
+                  ? ["production.queue"]
+                  : command.type === "economy.power"
+                    ? ["economy.build", "economy.transfer", "production.queue", "research.spend"]
+                    : ["economy.build"];
     return (force: number) =>
       scopes.some(
         (scope) =>
@@ -291,6 +299,10 @@ export class BotSeats {
     const ids: number[] = [];
     for (const field of ["entities", "builders", "entity", "item"]) {
       if (command.type === "unit.attack" && field === "entity") continue;
+      if (command.type === "economy.salvage" && field === "entity") {
+        if (!this.kernel.remains?.canSee(seat, command.payload.entity)) return false;
+        continue;
+      }
       const value = fields[field];
       if (Array.isArray(value)) ids.push(...value);
       else if (typeof value === "number") ids.push(value);
@@ -304,12 +316,15 @@ export class BotSeats {
           ? ConstructionRequest
           : world.has(id, ProductionItem)
             ? ProductionItem
-            : undefined;
+            : this.kernel.orders && world.has(id, QueuedOrder)
+              ? QueuedOrder
+              : undefined;
       return (
         component !== undefined &&
         allowed(world.get(id, component, "force")) &&
         (component === ConstructionRequest ||
           component === ProductionItem ||
+          component === QueuedOrder ||
           this.kernel.visibility?.canSeeEntity(seat, id) === true)
       );
     });

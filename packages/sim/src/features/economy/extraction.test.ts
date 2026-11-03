@@ -19,6 +19,7 @@ import {
   RepairOrder,
   RepairWork,
 } from "../construction";
+import { OrderFailure, QueuedOrder } from "../control/orders";
 import {
   type Definition,
   Health,
@@ -313,6 +314,8 @@ test("canonical snapshots include fractional progress and deposit state, with id
     AttackOrder,
     AttackMoveOrder,
     HoldPosition,
+    QueuedOrder,
+    OrderFailure,
     WeaponState,
     ShotIntent,
     CombatMotion,

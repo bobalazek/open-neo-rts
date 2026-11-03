@@ -703,3 +703,48 @@ effects/statistics and full persistence/replay/audio/help/tooling. All later pha
 and the real human/20-current-version-match acceptance remain open. Preserve old
 seed-20 evidence; this slice changes combat movement, not a proven seed-20 repair.
 Hosted CI billing, local Firefox launch and hardware FPS remain unqualified.
+
+## SIM52 — bounded Shift queues and context actions
+
+Runtime/test candidate `12bd91920884df6338c92e7b321609752aa3fe35` implements
+2-17b. Up to 32 pending ECS orders per unit retain issuer/grant checks; native
+handlers revalidate sight, terrain, prices and targets when work starts. Accepted
+ordinary replacements clear only affected actors; refusals preserve pending work.
+Shared multi-builder construction starts once and pays once. Harvesting yields
+after a paid unload; queued transport unloading waits until every passenger exits,
+including fully blocked retries. Damaged emergency ejection clears passenger queues.
+Current controllers see copied private queues, selected waypoint lines and HUD
+edit/remove actions. Shift input, right-click assistance/repair and producer rally
+are connected. World-marker drag/delete remains 2-17c interaction polish.
+
+Repository boundary checks pass: fix, all 11 typecheck/test tasks (535 simulation
+cases), build and content validation. Logs: `/tmp/neo-queues-final-*.log` and
+`/tmp/neo-queues-docs-fix.log`. SIM52 scenario headers and normal goldens are
+`c4b10b9977fd27d4` / `eafd7492b3c46470`. Catalog identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`, 137 definitions and 833 assets.
+
+Chromium and WebKit pass `/tmp/neo-queues-browsers2.log`: actual HUD/worker Shift
+movement, waypoint edit/delete, two sequential paid Reactors, Barracks assistance
+and damage/repair, rally placement and terminal record export. Both records in
+`/tmp/neo-queues-browser-results2/**/order-queues.record.json` reproduce tick 1633 /
+`f2a4392776cf1376` in Bun. The fixture uses original compiled definitions/kits/stats,
+a compact flat/no-fog map, bots disabled, shared enemy control, injected picking
+and explicit surrender. It does not prove real rendered input, natural bot games
+or the human exit. The first browser batch exposed an overly strict generic
+scenario shape check for append; debug refusal now stays in the debug handler,
+and the corrected connected journey passes in both browsers.
+
+Independent fresh-context review found two issues: ignored packed-carrier attacks
+could clear pending work, and partially successful unloads could drop their job
+on the next fully blocked retry. Both are fixed with regressions. Six fresh raw
+probes/24 assertions pass against the frozen candidate. Independent replay also
+checks intermediate authoritative movement, untouched pending credits, once-only
+building debits, actual repair and rally state in both browser records:
+`/tmp/queue-browser-records-review.ts`. Both terminal hashes match; all 16 external
+commands are accepted. The reviewer did not rerun browser rendering or hardware.
+
+Next: 2-33 whole-match canonical save/restore, then browser persistence/replay
+seeking and remaining phase-2 systems. Phase 2 and all later phases remain open;
+20 current-version complete AI games and the actual human match are unqualified.
+Hosted CI remains affected by the known billing block; Firefox launch and deferred
+hardware FPS acceptance remain unqualified.
