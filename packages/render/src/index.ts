@@ -13,6 +13,7 @@ export { createCombatEffects } from "./effects";
 export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createPlacementOverlay } from "./overlays/placement";
+export { createMenuScene, type MenuAction } from "./scene/menu";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
 export { CELL_SIZE, LEVEL_HEIGHT, PALETTES } from "./terrain";

@@ -24,6 +24,14 @@ The name is used in lobbies and saves and can be changed later in settings. Grap
 
 ## Home
 
+The current implementation uses native Babylon fullscreen GUI, with an original
+angular vector wordmark and the authored Eastern Collective Dragon Tank on a
+rotating display plinth. Narrow screens place navigation below the model. Saved
+or OS reduced-motion settings stop rotation. Semantic HTML retains keyboard and
+assistive access; it becomes the visible fallback when the engine cannot start.
+See the [implementation decision](../../project/decisions/2026-11-03-native-menu.md).
+The battle diorama and later-phase entries in the target layout below remain work.
+
 **Route:** `/` · **To:** single player, multiplayer, map editor, replays, settings, credits
 
 ```text

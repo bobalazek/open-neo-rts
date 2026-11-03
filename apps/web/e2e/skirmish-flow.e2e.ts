@@ -22,8 +22,8 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Open Neo RTS" })).toBeVisible();
   await page.screenshot({ path: info.outputPath("home-desktop.png") });
-  await page.getByRole("button", { name: "Single player", exact: true }).click();
-  await page.getByRole("button", { name: "Skirmish setup", exact: true }).click();
+  await page.getByRole("button", { name: "Single player", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Skirmish setup", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
   await page.getByLabel("Your spawn").selectOption("south-east");
   await expect(page.getByRole("button", { name: "Start local match" })).toBeDisabled();
@@ -98,7 +98,7 @@ test("failed worker loading can retry through the same quick-start path", async 
     route.fulfill({ status: 503, body: "Unavailable" }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(
     page.getByRole("heading", { name: "Could not start this match. Retry, or return to setup." }),
   ).toBeVisible({ timeout: 60_000 });

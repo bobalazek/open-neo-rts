@@ -34,5 +34,7 @@ source.
 - The battlefield remains visible while the player commands units.
 - Show the selected actors' actual state and context-appropriate controls.
 - Preserve accessible names, keyboard controls and narrow-screen operation.
+- The owner prefers native Babylon GUI for game presentation. Home uses it;
+  other screens retain their existing implementation during the staged conversion.
 - The owner delegates routine choices; implement coherent defaults and review
   the running result instead of interrupting for repeated design approvals.

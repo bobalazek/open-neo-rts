@@ -4,7 +4,7 @@ test("browser Back disposes an unsaved in-match settings preview", async ({ page
   test.skip(info.project.name !== "chromium", "Bounded normal settings/WebGL journey");
   test.setTimeout(90_000);
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match", exact: true }).click();
+  await page.getByRole("button", { name: "Quick start local match", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
@@ -37,7 +37,7 @@ test("shared device settings preview, cancel, persist and apply live across inte
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
     .toBe("100%");
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).press("Enter");
   await page.getByLabel("Graphics preset", { exact: true }).selectOption("low");
   await page.getByLabel("Interface scale", { exact: true }).selectOption("125");
   await page.getByLabel("Camera pan speed", { exact: true }).selectOption("150");
@@ -52,7 +52,7 @@ test("shared device settings preview, cancel, persist and apply live across inte
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
     .toBe("125%");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
@@ -104,7 +104,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   page.on("worker", () => workers++);
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: /Idle builders 2/ }).click();

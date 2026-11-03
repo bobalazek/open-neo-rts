@@ -13,6 +13,13 @@ hardware qualification and full-match UI acceptance remain later checks.
 
 `packages/render`, on Babylon.js. The renderer reads presentation snapshots from the sim and never writes to it. Art direction and graphics presets are in [art-and-audio.md](../design/art-and-audio.md).
 
+Home's visible controls use the official Babylon fullscreen GUI extension in
+`scene/menu.ts`. Its render owner accepts action descriptors and original model
+bytes; client/main-menu owns routing, save continuation and synchronized semantic
+controls. The menu owns and disposes its engine, scene, GUI, asset request and
+resize listener. A full camera viewport keeps GUI pixels aligned with input;
+camera screen offsets frame the model without shrinking the fullscreen controls.
+
 ## Terrain inspection
 
 The terrain view at `/` or `/debug` loads the selected built-in map's authored dimensions and `.r8` layers. The Map picker links to `?map=core.map:sandbox-flat` and the other sandbox maps or Training Grounds. Layer downloads, lengths and terrain values are checked before rendering; a failed map keeps the picker available with an error. The renderer receives a parsed grid and owns no content loading or simulation state. Its returned `dispose()` releases the scene, engine, render loop and resize handler.

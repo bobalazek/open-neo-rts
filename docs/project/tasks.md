@@ -10,6 +10,8 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
+The owner now prioritizes the UI pass. Home uses [native Babylon GUI](./decisions/2026-11-03-native-menu.md), an original vector wordmark and an authored model display. Continue the native presentation through skirmish setup and the game screens while preserving their existing functional flows and keyboard/assistive access.
+
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.
 - [ ] [2-17c · World-marker drag/delete interaction](./phases/2.md#2-17--finish-first-playable-context-orders). PR type: engine; later interaction polish for the delivered Shift queues, which already support waypoint editing/removal in the HUD.
