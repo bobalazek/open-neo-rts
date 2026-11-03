@@ -8,7 +8,14 @@ import { flatMap } from "../../testing/maps";
 import { AttackOrder } from "../combat";
 import { ConstructionSite } from "../construction";
 import { StructurePower } from "../economy";
-import { compileGameplayCatalog, Health, OwnerForce, Template, Transform } from "../entities";
+import {
+  compileGameplayCatalog,
+  Health,
+  OwnerForce,
+  spawnEntity,
+  Template,
+  Transform,
+} from "../entities";
 import { createNormalMatchSetup } from "./normal-match";
 
 const root = new URL("../../../../../content/core/", import.meta.url);
@@ -271,6 +278,50 @@ test("lost builders are replaced by the real headquarters queue and manually dis
   expect(ids(kernel, unit("field-technician"))).not.toHaveLength(0);
   expect(kernel.world.get(hq, StructurePower, "enabled")).toBe(1);
   expect(kernel.economy?.balance(1)?.credits).toBeLessThan(5000);
+});
+
+test("a hosted bot pays for and legally outputs reinforcements when its 24 survivors retreat", () => {
+  const kernel = createMatch(setup());
+  const spawn = (id: string, x: number, y: number) => {
+    const index = catalog.definitions.findIndex((definition) => definition.id === id);
+    const definition = catalog.definitions[index];
+    if (!definition) throw new Error("Missing original definition");
+    return spawnEntity(kernel, index, definition, {
+      definition: id,
+      force: 1,
+      x,
+      y,
+      facing: 0x4000,
+    });
+  };
+  // Fixture only: a completed original producer and wounded reserves isolate the observed starvation.
+  spawn(structure("barracks-complex"), 26 * 1024, 20 * 1024);
+  while (ids(kernel, unit("collective-soldier")).length < 24)
+    spawn(unit("collective-soldier"), 8 * 1024, 8 * 1024);
+  for (const id of ids(kernel, unit("collective-soldier")))
+    kernel.world.set(id, Health, "current", 34);
+  kernel.vision?.update();
+  kernel.visibility?.update();
+  kernel.captureObservations?.();
+  expect(ids(kernel, unit("collective-soldier"))).toHaveLength(24);
+  const before = kernel.economy?.balance(1)?.credits;
+  for (let tick = 0; tick < 500 && ids(kernel, unit("collective-soldier")).length === 24; tick++)
+    step(kernel, []);
+  expect(ids(kernel, unit("collective-soldier")).length).toBeGreaterThan(24);
+  expect(kernel.economy?.balance(1)?.credits).toBeLessThan(before!);
+  expect(
+    kernel.log.some((entry) => {
+      const command = entry.command as { type?: string; payload?: { definition?: string } };
+      return (
+        entry.result === "accepted" &&
+        command.type === "production.enqueue" &&
+        command.payload?.definition === unit("collective-soldier")
+      );
+    }),
+  ).toBe(true);
+  expect(
+    kernel.log.some((entry) => (entry.command as { type: string }).type.startsWith("debug.")),
+  ).toBe(false);
 });
 
 test("discovered node observations follow canonical exploration and active grants without stock or claims", () => {

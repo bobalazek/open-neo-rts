@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "simVersion": 47,
+  "simVersion": 48,
   "setup": {
     "map": {
       "id": "map:fixture-terrain",
