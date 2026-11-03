@@ -662,6 +662,9 @@ test("persistent fire projection discloses only visible cells, with no source, r
   expect(f.kernel.world.query(GroundFire)).toHaveLength(1);
   const view = createProjection(f.setup, 1, "controlled");
   const grid = view.snapshot(f.kernel).groundFire!;
+  const observation = f.kernel.observe!(1).groundFire!;
+  observation.cells.fill(0);
+  expect(f.kernel.observe!(1).groundFire!.cells.some(Boolean)).toBe(true);
   expect(grid.cells.some(Boolean)).toBe(true);
   expect(Object.keys(grid)).toEqual(["width", "height", "cells"]);
   for (const [index, cell] of grid.cells.entries())

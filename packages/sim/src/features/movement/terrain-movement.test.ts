@@ -3,6 +3,7 @@ import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createCommandLog, flatMap, terrainMap } from "../../testing";
 import { Transform, toDefinition } from "../entities";
+import { perimeterPoint } from "../entities/perimeter";
 import { MoveIntent } from ".";
 import { compileNavigation } from "./navigation";
 import { clearSegment, smoothPath } from "./segment";
@@ -33,6 +34,70 @@ const point = (kernel: ReturnType<typeof createMatch>, id = 1) => ({
 const run = (kernel: ReturnType<typeof createMatch>, ticks: number) => {
   for (let i = 0; i < ticks; i++) step(kernel, []);
 };
+
+test("movement restores cached terrain and active continuations without replaying elapsed ticks", () => {
+  const original = setup(flatMap(64)),
+    source = createMatch(original),
+    c = createCommandLog();
+  const commands = [c.spawn(0, 0, block.id, 1, 25 * 1024, 25 * 1024)];
+  for (let i = 0; i < 80; i++)
+    commands.push(
+      c.spawn(0, 0, unit.id, 1, (3 + (i % 10)) * 1024 + 512, (3 + Math.floor(i / 10)) * 1024 + 512),
+    );
+  commands.push(
+    c.move(
+      0,
+      1,
+      Array.from({ length: 80 }, (_, i) => i + 2),
+      55 * 1024 + 512,
+      55 * 1024 + 512,
+    ),
+  );
+  step(source, commands);
+  const dock = perimeterPoint(
+    block,
+    { x: 25 * 1024, y: 25 * 1024, facing: 0x4000 },
+    { side: "north", cell: [1, 0] },
+    unit.radiusSubcells!,
+  );
+  source.movement!.cancel(2);
+  source.world.remove(2, MoveIntent);
+  source.movement!.order(2, dock);
+  const capture = source.movement!.snapshot();
+  expect(capture.routes.find((route) => route.entity === 2)?.requested).toMatchObject({
+    facing: dock.facing,
+  });
+  expect(capture.routes.length).toBeGreaterThan(0);
+  expect(
+    capture.scheduler.queues.flat().length + capture.scheduler.anchors.flat().length,
+  ).toBeGreaterThan(0);
+  const restored = createMatch(original);
+  restored.world.load(source.world.serialize());
+  restored.tick = source.tick;
+  restored.movement!.load(capture);
+  expect(restored.movement!.snapshot()).toEqual(capture);
+  expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  for (let i = 0; i < 40; i++) {
+    step(source, []);
+    step(restored, []);
+    expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  }
+  source.world.destroy(1);
+  restored.world.destroy(1);
+  step(source, []);
+  step(restored, []);
+  expect(checkpointHash(restored)).toBe(checkpointHash(source));
+  expect(restored.movement!.snapshot()).toEqual(source.movement!.snapshot());
+  const before = restored.movement!.snapshot();
+  for (const invalid of [
+    { ...before, extra: 1 },
+    { ...before, scheduler: { ...before.scheduler, budget: 1 } },
+    { ...before, routes: [{ ...before.routes[0]!, entity: 999999 }] },
+  ]) {
+    expect(() => restored.movement!.load(invalid)).toThrow();
+    expect(restored.movement!.snapshot()).toEqual(before);
+  }
+});
 
 test("map setup rejects missing original movement metadata before simulation starts", () => {
   const { domain: _domain, ...missingDomain } = unit;

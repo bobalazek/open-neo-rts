@@ -4,6 +4,7 @@ import { OwnerForce, Template, Transform } from "../features/entities";
 import { checkpointHash, step, stream } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
 import { flatMap } from "../testing/maps";
+import { createMatchKeyframe } from "./keyframe";
 import { createMatchRecord, verifyMatchRecord } from "./match-record";
 import {
   createMatchSnapshot,
@@ -85,6 +86,51 @@ function seal<T extends object>(value: T): T {
   addString(hash, sorted);
   return { ...body, checksum: digest(hash).hex } as T;
 }
+
+test("owned keyframes restore repeatedly without elapsed-tick replay, isolate future state and retain input records", () => {
+  const { setup, kernel } = fixture();
+  const actor = kernel.world
+    .query(Template)
+    .find((id) => kernel.world.get(id, Template, "definition") === 1)!;
+  step(kernel, [
+    {
+      tick: 0,
+      seat: 1,
+      sequence: 0,
+      type: "unit.move",
+      payload: { entities: [actor], x: 20 * 1024 + 512, y: 20 * 1024 + 512 },
+    },
+  ]);
+  for (let i = 0; i < 60; i++) step(kernel, []);
+  const frame = createMatchKeyframe(kernel, setup),
+    savedHash = checkpointHash(kernel);
+  expect(Object.isFrozen(frame)).toBe(true);
+  expect(Object.keys(frame)).toEqual(["tick", "hash", "restore"]);
+  const first = frame.restore(setup),
+    second = frame.restore(setup);
+  expect(checkpointHash(first)).toBe(savedHash);
+  expect(checkpointHash(second)).toBe(savedHash);
+  expect(first.log).toHaveLength(1); // elapsed hosted-controller steps were not replayed into the log
+  expect(() => frame.restore({ ...setup, seed: 99 })).toThrow("setup");
+  first.world.set(actor, Transform, "x", 1024);
+  expect(checkpointHash(second)).toBe(savedHash);
+  expect(checkpointHash(frame.restore(setup))).toBe(savedHash);
+  for (let i = 0; i < 20; i++) {
+    step(kernel, []);
+    step(second, []);
+    expect(checkpointHash(second)).toBe(checkpointHash(kernel));
+  }
+  const surrender = {
+    tick: kernel.tick,
+    seat: 1,
+    sequence: 1,
+    type: "match.surrender",
+    payload: { force: 0 },
+  };
+  step(kernel, [surrender]);
+  step(second, [surrender]);
+  expect(verifyMatchRecord(createMatchRecord(second, setup)).hash).toBe(checkpointHash(kernel));
+});
 
 test("snapshot isolates its bytes, restores queued movement/bot state/fog and retains the full terminal record", () => {
   const { setup, kernel } = fixture();

@@ -1,4 +1,4 @@
-import type { GroundDomain } from "@open-neo-rts/content";
+import { type GroundDomain, validate } from "@open-neo-rts/content";
 import {
   addInt,
   addString,
@@ -9,6 +9,7 @@ import {
   isqrt,
 } from "@open-neo-rts/deterministic";
 import type { Kernel } from "../../kernel";
+import { canonicalJson } from "../../snapshots/schema";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent, MovementFailure } from ".";
 import { type AnchorGrid, indexAnchors } from "./anchor-search";
@@ -16,6 +17,7 @@ import { compileNavigation, type NavigationObject } from "./navigation";
 import { PathScheduler } from "./path-scheduler";
 import { labelReachability } from "./reachability";
 import { clearSegment, type Point, smoothPath } from "./segment";
+import { movementStateSchema } from "./state";
 
 interface Route {
   definition: number;
@@ -43,7 +45,7 @@ export const MOVEMENT_MAX_REPATHS = 2;
 export class TerrainMovement {
   private readonly profiles = new Map<number, Profile>();
   private readonly routes = new Map<number, Route>();
-  private readonly scheduler: PathScheduler;
+  private scheduler: PathScheduler;
   private readonly definitionHash: string;
   private occupancy = "";
 
@@ -116,6 +118,22 @@ export class TerrainMovement {
         owner: "neutral",
       });
     }
+    profile = this.compileProfile(definition, objects);
+    this.profiles.set(definition, profile);
+    return profile;
+  }
+
+  private compileProfile(definition: number, objects: readonly NavigationObject[]): Profile {
+    const found = this.definitions[definition];
+    const map = this.kernel.map;
+    if (
+      !map ||
+      !found ||
+      found.domain === undefined ||
+      found.domain === "air" ||
+      found.radiusSubcells === undefined
+    )
+      throw new Error("Ground movement requires original domain and radius");
     const grid = compileNavigation(
       map,
       this.definitions,
@@ -123,7 +141,7 @@ export class TerrainMovement {
       objects,
     );
     const first = grid.cost.findIndex((cost) => cost !== 0);
-    profile = {
+    return {
       objects,
       ...indexAnchors(grid, labelReachability(grid)),
       uniform: grid.cost.every(
@@ -132,8 +150,6 @@ export class TerrainMovement {
           (cost === grid.cost[first] && grid.speedPercent[index] === grid.speedPercent[first]),
       ),
     };
-    this.profiles.set(definition, profile);
-    return profile;
   }
 
   cancel(id: number): void {
@@ -509,5 +525,105 @@ export class TerrainMovement {
         })),
       scheduler: this.scheduler.snapshot(),
     };
+  }
+
+  /** Prepare all caches/continuations before replacing this same-match movement owner. */
+  load(value: unknown): void {
+    const map = this.kernel.map;
+    if (!map) throw new Error("Movement restore requires a map");
+    const plain = JSON.parse(canonicalJson(value));
+    const expected = this.scheduler.snapshot();
+    if (
+      validate(
+        movementStateSchema(
+          map.terrain.width,
+          map.terrain.height,
+          this.definitions.length,
+          expected.forces.length,
+        ),
+        plain,
+      ).length
+    )
+      throw new Error("Invalid movement state");
+    const state = plain as ReturnType<TerrainMovement["snapshot"]>;
+    if (
+      state.scheduler.budget !== expected.budget ||
+      canonicalJson(state.scheduler.forces) !== canonicalJson(expected.forces)
+    )
+      throw new Error("Movement scheduler identity mismatch");
+    const profiles = new Map<number, Profile>(),
+      routes = new Map<number, Route>();
+    for (const entry of state.profiles) {
+      if (
+        profiles.has(entry.definition) ||
+        (profiles.size && entry.definition <= [...profiles.keys()].at(-1)!)
+      )
+        throw new Error("Invalid movement profile order");
+      for (const object of entry.objects) {
+        const found = this.definitions.find((definition) => definition.id === object.definition);
+        if (
+          !found ||
+          found.id.split(":")[0]?.split(".").at(-1) === "unit" ||
+          object.rotation % 90 !== 0 ||
+          object.position[0] >= map.terrain.width * 1024 ||
+          object.position[1] >= map.terrain.height * 1024
+        )
+          throw new Error("Invalid movement obstacle");
+      }
+      profiles.set(entry.definition, this.compileProfile(entry.definition, entry.objects));
+    }
+    for (const { entity, ...route } of state.routes) {
+      const { world } = this.kernel;
+      if (
+        (routes.size && entity <= [...routes.keys()].at(-1)!) ||
+        !world.isAlive(entity) ||
+        !world.has(entity, Template) ||
+        !world.has(entity, Transform) ||
+        !world.has(entity, OwnerForce) ||
+        this.definitionOf(entity) !== route.definition ||
+        (route.preparing && (!route.searching || route.goal !== -1)) ||
+        (this.definitions[route.definition]?.domain !== "air" && !profiles.has(route.definition))
+      )
+        throw new Error("Invalid movement route actor");
+      routes.set(entity, route);
+    }
+    const pending = [...state.scheduler.queues.flat(), ...state.scheduler.anchors.flat()];
+    const queued = new Set<number>();
+    for (const { request } of pending) {
+      const route = routes.get(request.entity);
+      if (
+        !route?.searching ||
+        request.issueTick > this.kernel.tick ||
+        request.force !== this.kernel.world.get(request.entity, OwnerForce, "force")
+      )
+        throw new Error("Invalid movement request actor");
+      queued.add(request.entity);
+    }
+    for (const [entity, route] of routes)
+      if (route.searching !== queued.has(entity)) throw new Error("Movement route/queue mismatch");
+    let committed = false;
+    const profile = (request: { entity: number }) => {
+      if (committed) return this.profile(this.definitionOf(request.entity));
+      const found = profiles.get(routes.get(request.entity)!.definition);
+      if (!found) throw new Error("Movement request has no profile");
+      return found;
+    };
+    const scheduler = PathScheduler.restore(
+      (request) => profile(request).grid,
+      state.scheduler,
+      profile,
+    );
+    if (canonicalJson(scheduler.snapshot()) !== canonicalJson(state.scheduler))
+      throw new Error("Movement continuation mismatch");
+    this.profiles.clear();
+    for (const [definition, compiled] of profiles) this.profiles.set(definition, compiled);
+    this.routes.clear();
+    for (const [entity, route] of routes) this.routes.set(entity, route);
+    this.occupancy = state.occupancy;
+    this.scheduler = scheduler;
+    committed = true;
+    // Live callbacks no longer need the preparation maps or their obsolete cached grids.
+    profiles.clear();
+    routes.clear();
   }
 }

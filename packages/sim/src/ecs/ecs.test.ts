@@ -30,6 +30,25 @@ function scenario(): World {
 
 const hex = (bytes: Uint8Array) => Buffer.from(bytes).toString("hex");
 
+test("isolated initialized worlds replace rows without stale slots and reject allocation bounds", () => {
+  const source = scenario(),
+    target = scenario();
+  target.add(target.create(), Position, { x: 123, y: 456 });
+  target.replace(source.serialize(), 1000);
+  expect(target.serialize()).toEqual(source.serialize());
+  const id = target.create();
+  expect(id).toBe(source.create());
+  expect(target.has(id, Position)).toBe(false);
+  target.add(id, Position);
+  source.add(id, Position);
+  expect(target.serialize()).toEqual(source.serialize());
+  expect(() => world().load(source.serialize(), 1)).toThrow("entity limit");
+  expect(() => world().load(source.serialize(), -1)).toThrow("entity limit");
+  const bad = source.serialize();
+  bad.fill(0, 4, 8);
+  expect(() => world().load(bad, 1000)).toThrow("nextId");
+});
+
 describe("entity IDs", () => {
   test("start at 1, ascend, and are never reused", () => {
     const w = world();
