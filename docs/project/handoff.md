@@ -332,8 +332,9 @@ exec session 12497, output `/tmp/neo-ai-qualification-sim46-60000-20261103`, log
 do not restart on an observation timeout or overwrite evidence. The historical
 SIM39 batch remains 13 natural outcomes/seven caps and is not current acceptance.
 
-Next: actual production door events (2-21b2) and canonical wreck/salvage plus
-presentation as separate tasks. Construction assembly/scaffolds are delivered below. Continue
+Next: inspect the frozen bot batch's reproducible seed-12 cap, then canonical
+wreck/salvage and remains presentation as separate tasks. Construction assembly
+and production-door delivery are recorded below. Continue
 remaining phase-2 effects/orders, full persistence/replay, audio/help/content
 tools and acceptance, then phases 3–5. The overall goal remains unfinished.
 
@@ -382,3 +383,41 @@ twenty-seed batch is still running on `20623ea` (session 12497); its results are
 evidence for that older revision, not full SIM47 acceptance. Preserve that process
 and its worktree/evidence; do not launch another long qualification batch for each
 small feature while phase-2 canonical work is still changing.
+
+## Actual production doors, SIM47 retained
+
+`/tmp/neo-production-door-events`, branch `codex/production-door-events`, implements
+2-21b2. Successful paid or gift output emits a bounded cosmetic producer set;
+per-tick coalescing and projection reuse already published opaque actor handles.
+Private queues, output types/costs and hidden/dead actors do not enter the stream.
+Bots never receive it, capacity cannot change output/World/IDs/hash, and all
+canonical goldens remain unchanged. SIM47 is retained; content identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`.
+
+Original paired clips open, hold for one authored opening duration and close.
+Repeated output preserves the current opening phase, renews holds or reverses
+closing; pending imports reconstruct the observed inter-exit spans. Base activity,
+deployment, preview/rest, pause and instance ownership remain separate. Ghost
+doors remain closed/inert. Models without paired clips do nothing; output gains
+no gameplay delay or new balance value.
+
+Independent review accepted `1fa2b65`: 101 tests / 1,055 assertions plus four
+independent cases / 54 assertions covering refusal, saturation with bot/world/hash
+twins, repeated/late opening and hidden pending removal. The author batch passed
+fix/typecheck/test/build/content checks and 83 focused cases / 871 assertions.
+The assembled Chromium/WebKit batch passed 19 cases, with 11 expected
+non-Chromium skips. A full Chromium-channel run explicitly recorded `webgpu`
+and passed the actual catalog/worker/HUD production journey and terminal Bun
+replay. Original Barracks opening/open/closed frames were inspected under
+`/tmp/neo-production-doors-browser-results`; the GPU run/report is under
+`/tmp/neo-production-doors-webgpu-*`. Its renderer-only flat ground, close camera,
+filtered producer view, test-only builder kit/fog-off/stub HUD picking and manual
+snapshot playback are explicit fixtures, not natural-match or FPS acceptance.
+Hosted CI billing and local Firefox launch remain unavailable.
+
+The frozen SIM46 batch remains session 12497 on clean `20623ea` in
+`/tmp/neo-veterancy-credit-fix`. At the latest inspection, 14 double trials were
+recorded: 13 natural outcomes, one reproducible seed-12 cap at tick 60000/hash
+`db0d49c446004166`. Preserve its first replay/result and scenario before diagnosis.
+It is older-revision evidence, not SIM47 acceptance. Continue observing the same
+live process; do not cancel/restart it or mutate its source while investigating.
