@@ -182,6 +182,32 @@ advances building work. Partial models currently cast no shadow; registration
 begins at completion, pending clipped depth-pass support. Site removal, cancellation,
 fog revocation and disposal release the scaffold/material and model instance.
 
+Canonical `snapshot.remains` rows own persistent wreck/rubble instances. The
+catalog resolves their separate original `presentation.wreck` GLB rather than
+loading the living model. All 84 required original non-foot-unit/structure remains
+assets are present. Shared geometry/materials retain authored vertex colors and
+neutral debris palettes; team slots, where provided, use the existing Force-color
+path. Live model colors are independent.
+
+Remains use the final public pose, rotated structure footprint and existing
+terrain/water height rules, with no interpolation, idle/fire/door/deploy playback,
+health bars, construction plugin or foundation. They appear only while their
+canonical rows are projected. Cosmetic death playback remains separate; absence
+of a live actor never manufactures a wreck. Removing a row releases its geometry
+and picking immediately, including while an asset import is pending. Match reset,
+rewind, vision-group changes and disposal follow the same ownership rules.
+
+Picking compares actual live and remains hit distances; screen picking uses CSS
+pixels, independently of backing-buffer resolution. Remains are valid context
+targets but stay outside army and box selection. Manual builder clearance/value
+and wreck restoration remain separate gameplay work.
+
+Initial debris color readiness is still under investigation (2-21b3a): some
+parallel browser captures show a white first sample, while later samples and
+independent first-only Chromium/WebKit runs show correct original colors. Both
+sets of evidence are retained. Functional rendering/picking/fog checks do not
+establish unconditional first-frame visual readiness.
+
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
 - **Packing up and deploying** (Phoenix Initiative mobile structures such as the Command Node) shuffles the bricks into the vehicle form and back.
