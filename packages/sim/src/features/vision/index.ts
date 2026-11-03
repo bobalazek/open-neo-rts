@@ -6,8 +6,10 @@ import type { MatchSetup } from "../../match";
 import { strictObject } from "../../snapshots/schema";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
+import { AreaReveal, MAX_AREA_REVEALS } from "./reveal";
 
 export * from "./memory";
+export * from "./reveal";
 
 export const FOG_MODES = ["standard", "explored", "off"] as const;
 export type FogMode = (typeof FOG_MODES)[number];
@@ -66,6 +68,7 @@ export class TerrainVision {
   private blockerKey = "";
   private readonly identity: string;
   private readonly level: readonly number[];
+  private readonly areaReveals: boolean;
 
   constructor(
     private readonly kernel: Kernel,
@@ -77,6 +80,12 @@ export class TerrainVision {
     this.height = map.terrain.height;
     this.level = map.terrain.level;
     this.mode = setup.normal?.settings.fog ?? "standard";
+    this.areaReveals = setup.definitions.some((definition) =>
+      definition.weapons?.some((weapon) =>
+        weapon.warheads.some((warhead) => warhead.type === "reveal"),
+      ),
+    );
+    if (this.areaReveals) register(kernel, { components: [AreaReveal] });
     const forces = [...setup.forces].sort((a, b) => a.index - b.index);
     const teams = setup.normal?.forces ?? [];
     for (const force of forces) {
@@ -120,6 +129,43 @@ export class TerrainVision {
 
   groupForForce(force: number): number | undefined {
     return this.forceGroups.get(force);
+  }
+
+  /** A sensor circle starts at the next published tick and lasts exactly duration snapshots. */
+  revealArea(force: number, x: number, y: number, radius: number, duration: number): boolean {
+    if (
+      !this.areaReveals ||
+      this.forceGroups.get(force) === undefined ||
+      ![x, y, radius, duration].every(Number.isInteger) ||
+      radius <= 0 ||
+      radius > 0x7fffffff ||
+      duration <= 0 ||
+      duration > 0x7fffffff ||
+      !this.inBounds(cell(x), cell(y))
+    )
+      return false;
+    // Larger radii cannot see beyond this map; keep squared distances exactly representable.
+    radius = Math.min(radius, (this.width + this.height) * 1024);
+    const from = Math.min(0xffffffff, this.kernel.tick + 1);
+    const until = Math.min(0xffffffff, from + duration);
+    if (until <= from) return false;
+    const { world } = this.kernel;
+    const fields = world.query(AreaReveal);
+    for (const id of fields)
+      if (
+        world.get(id, AreaReveal, "force") === force &&
+        world.get(id, AreaReveal, "x") === x &&
+        world.get(id, AreaReveal, "y") === y &&
+        world.get(id, AreaReveal, "radius") === radius
+      ) {
+        if (world.get(id, AreaReveal, "until") <= this.kernel.tick)
+          world.set(id, AreaReveal, "from", from);
+        world.set(id, AreaReveal, "until", Math.max(until, world.get(id, AreaReveal, "until")));
+        return true;
+      }
+    if (fields.length >= MAX_AREA_REVEALS) return false;
+    world.add(world.create(), AreaReveal, { force, x, y, radius, from, until });
+    return true;
   }
 
   /** Unknown Forces and invalid coordinates always fail closed, including no-fog games. */
@@ -166,10 +212,12 @@ export class TerrainVision {
     return { group: id, width: this.width, height: this.height, cells };
   }
 
-  /** Runs only after movement/destruction; AI keeps the completed previous tick's observation. */
-  update(): void {
-    if (this.mode === "off") return;
+  /** Refresh current geometry; end-of-tick destruction/victory pass the next published tick. */
+  update(atTick = this.kernel.tick): void {
     const { world } = this.kernel;
+    const fields = this.areaReveals ? world.query(AreaReveal) : [];
+    for (const id of fields) if (world.get(id, AreaReveal, "until") <= atTick) world.destroy(id);
+    if (this.mode === "off") return;
     const entities = world.query(Template, Transform);
     const blockers = entities.filter((id) => {
       const definition = this.setup.definitions[world.get(id, Template, "definition")];
@@ -224,9 +272,7 @@ export class TerrainVision {
         y,
         world.get(id, Transform, "facing"),
       ].join(":");
-      const previous = this.stamps.get(id);
-      if (previous?.key === sourceKey) continue;
-      if (previous) this.unstamp(previous);
+      if (this.stamps.get(id)?.key === sourceKey) continue;
       const origins =
         kind(definition) === "unit"
           ? [{ x, y }]
@@ -234,15 +280,17 @@ export class TerrainVision {
               x: (index % this.width) * 1024 + 512,
               y: Math.floor(index / this.width) * 1024 + 512,
             }));
-      const revealed = new Set<number>();
-      for (const origin of origins) this.reveal(origin, definition.visionSubcells, revealed);
-      const cells = [...revealed].sort((a, b) => a - b);
-      const state = this.groups.get(group) as Group;
-      for (const index of cells) {
-        state.counts[index] = (state.counts[index] ?? 0) + 1;
-        state.explored[index] = 1;
-      }
-      this.stamps.set(id, { group, key: sourceKey, cells });
+      this.stamp(id, group, sourceKey, origins, definition.visionSubcells, true);
+    }
+    for (const id of fields) {
+      if (!world.isAlive(id) || world.get(id, AreaReveal, "from") > atTick) continue;
+      const group = this.forceGroups.get(world.get(id, AreaReveal, "force"));
+      if (group === undefined) continue;
+      present.add(id);
+      const x = world.get(id, AreaReveal, "x"),
+        y = world.get(id, AreaReveal, "y");
+      const radius = world.get(id, AreaReveal, "radius");
+      this.stamp(id, group, `reveal:${group}:${x}:${y}:${radius}`, [{ x, y }], radius, false);
     }
     for (const [id, source] of this.stamps)
       if (!present.has(id)) {
@@ -314,6 +362,28 @@ export class TerrainVision {
     for (const index of source.cells) group.counts[index] = (group.counts[index] ?? 0) - 1;
   }
 
+  private stamp(
+    id: number,
+    group: number,
+    key: string,
+    origins: readonly Point[],
+    radius: number,
+    occluded: boolean,
+  ): void {
+    const previous = this.stamps.get(id);
+    if (previous?.key === key) return;
+    if (previous) this.unstamp(previous);
+    const revealed = new Set<number>();
+    for (const origin of origins) this.reveal(origin, radius, revealed, occluded);
+    const cells = [...revealed].sort((a, b) => a - b);
+    const state = this.groups.get(group) as Group;
+    for (const index of cells) {
+      state.counts[index] = (state.counts[index] ?? 0) + 1;
+      state.explored[index] = 1;
+    }
+    this.stamps.set(id, { group, key, cells });
+  }
+
   private inBounds(x: number, y: number): boolean {
     return (
       Number.isInteger(x) &&
@@ -346,7 +416,7 @@ export class TerrainVision {
     );
   }
 
-  private reveal(origin: Point, radius: number, revealed: Set<number>): void {
+  private reveal(origin: Point, radius: number, revealed: Set<number>, occluded = true): void {
     if (!this.inBounds(cell(origin.x), cell(origin.y))) return;
     const minX = Math.max(0, cell(origin.x - radius)),
       maxX = Math.min(this.width - 1, cell(origin.x + radius));
@@ -357,7 +427,7 @@ export class TerrainVision {
         if (revealed.has(y * this.width + x)) continue;
         const dx = x * 1024 + 512 - origin.x,
           dy = y * 1024 + 512 - origin.y;
-        if (dx * dx + dy * dy <= radius * radius && this.clearRay(origin, x, y))
+        if (dx * dx + dy * dy <= radius * radius && (!occluded || this.clearRay(origin, x, y)))
           revealed.add(y * this.width + x);
       }
   }
@@ -411,7 +481,7 @@ export function initializeVision(kernel: Kernel, setup: VisionSetup): TerrainVis
   const vision = new TerrainVision(kernel, setup);
   kernel.vision = vision;
   // Register last: destruction/territory/fog share this phase, before victory and snapshots.
-  register(kernel, { systems: { destruction: [() => vision.update()] } });
+  register(kernel, { systems: { destruction: [() => vision.update(kernel.tick + 1)] } });
   vision.update();
   return vision;
 }

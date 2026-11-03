@@ -28,7 +28,7 @@ import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent, MAX_COMBAT_EVENTS } from "../events/combat";
 import { movementFeature } from "../movement";
 import { ForceStatistics } from "../victory/statistics";
-import { initializeVision } from "../vision";
+import { AreaReveal, CELL_VISION, initializeVision } from "../vision";
 import { initializeProjectiles, MAX_ACTIVE_ROUNDS, PendingImpact, Projectile } from ".";
 
 const unit: Definition = {
@@ -192,6 +192,98 @@ const slow: GameplayWeapon = {
   projectile: { kind: "instant" },
   warheads: [{ type: "slow", perMille: 500, durationTicks: 20, tags: ["nanite"] }],
 };
+
+const sensor: GameplayWeapon = {
+  ...gun,
+  projectile: { kind: "instant" },
+  warheads: [{ type: "reveal", radiusSubcells: 2 * 1024, durationTicks: 20, tags: [] }],
+};
+
+test("delayed mixed sensor rounds reveal their impact after shooter and direct victim die", () => {
+  const f = fixture({
+    weapon: {
+      ...sensor,
+      warheads: [
+        { type: "damage", amount: 1000, tags: [] },
+        { ...sensor.warheads[0]!, delayTicks: 3 },
+      ],
+    },
+  });
+  f.fire();
+  expect(f.hp()).toBe(0);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+  f.kernel.world.destroy(f.actor);
+  f.advance(2);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+  f.advance();
+  const fields = f.kernel.world.query(AreaReveal);
+  expect(fields).toHaveLength(1);
+  expect(f.kernel.world.get(fields[0]!, AreaReveal, "force")).toBe(0);
+  expect(f.kernel.world.get(fields[0]!, AreaReveal, "x")).toBe(
+    24 * 1024 + 512 - unit.radiusSubcells!,
+  );
+  expect(f.kernel.world.get(fields[0]!, AreaReveal, "from")).toBe(4);
+  expect(f.kernel.world.get(fields[0]!, AreaReveal, "until")).toBe(24);
+  f.advance(20);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+});
+
+test("ground sensor impacts expose only permitted actors, then hide units and preserve last-seen structures", () => {
+  const f = fixture({
+    weapon: { ...sensor, rangeSubcells: [0, 0] },
+    fog: "standard",
+    friendlyFire: false,
+  });
+  const building = f.spawn(4, 1, 25, 20);
+  const projection = createProjection(f.setup, 1, "controlled");
+  const impact = {
+    force: 0,
+    direct: 0,
+    x: 24 * 1024 + 512,
+    y: 20 * 1024 + 512,
+    fromX: 0,
+    fromY: 0,
+    air: false,
+    maxLevel: 0,
+  };
+  for (const warhead of [
+    { type: "reveal", durationTicks: 2, tags: [] },
+    { type: "reveal", radiusSubcells: 2048, tags: [] },
+  ])
+    applyWarhead(f.kernel, f.definitions, sensor, warhead, impact, false);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+  applyWarhead(
+    f.kernel,
+    f.definitions,
+    sensor,
+    { ...sensor.warheads[0]!, durationTicks: 2 },
+    impact,
+    false,
+  );
+  expect(projection.snapshot(f.kernel).entities.some((entity) => entity.force === 1)).toBe(false);
+  f.advance();
+  const packet = projection.snapshot(f.kernel);
+  expect(packet.entities.some((entity) => projection.resolve(entity.handle) === f.target)).toBe(
+    true,
+  );
+  expect(packet.entities.some((entity) => projection.resolve(entity.handle) === building)).toBe(
+    true,
+  );
+  expect(packet.entities.filter((entity) => entity.force === 1)).toHaveLength(2);
+  expect(JSON.stringify(packet)).not.toMatch(/AreaReveal|durationTicks|radiusSubcells/);
+  const field = f.kernel.world.query(AreaReveal)[0]!;
+  expect(packet.entities.some((entity) => projection.resolve(entity.handle) === field)).toBe(false);
+  expect(f.kernel.vision?.canSeeCell(1, 23, 20)).toBe(true); // enemy's ordinary one-cell vision
+  expect(f.kernel.vision?.canSeeCell(1, 22, 20)).toBe(false); // our sensor is not shared with enemies
+  f.advance(2);
+  const expired = projection.snapshot(f.kernel);
+  expect(f.kernel.vision?.cellState(0, 24, 20)).toBe(CELL_VISION.explored);
+  expect(expired.entities.some((entity) => entity.force === 1)).toBe(false);
+  expect(expired.ghosts?.some((ghost) => ghost.definition === f.definitions[4]!.id)).toBe(true);
+  f.kernel.world.set(building, Health, "current", 0);
+  f.advance();
+  expect(projection.snapshot(f.kernel).ghosts).toEqual(expired.ghosts);
+});
 
 test("slow composes with shallow-wheel speed, retains its route and resumes exactly at expiry", () => {
   const f = fixture({ weapon: slow, targetDomain: "wheeled", shallow: true });
@@ -571,6 +663,7 @@ for (const [weapon, status] of [
   [emp, "disabled"],
   [flame, "burning"],
   [slow, "slowed"],
+  [sensor, "revealed"],
 ] as const)
   test(`timed ${status} combat from starting kits replays canonical state and the final hash`, () => {
     const base = fixture({ weapon, targetDomain: "tracked" }).setup;
@@ -624,10 +717,17 @@ for (const [weapon, status] of [
           ? kernel.disabled?.(target) === true
           : status === "burning"
             ? kernel.burning?.(target) === true
-            : !!kernel.slowPerMille?.(target);
-      if (status === "slowed" && kernel.tick === 100) {
-        expect(kernel.slowPerMille?.(target)).toBeGreaterThan(0);
-        expect(checkpointHash(kernel)).toBe("4373496c276f116c");
+            : status === "slowed"
+              ? !!kernel.slowPerMille?.(target)
+              : kernel.world.query(AreaReveal).length > 0;
+      if ((status === "slowed" || status === "revealed") && kernel.tick === 100) {
+        if (status === "slowed") {
+          expect(kernel.slowPerMille?.(target)).toBeGreaterThan(0);
+          expect(checkpointHash(kernel)).toBe("4373496c276f116c");
+        } else {
+          expect(kernel.world.query(AreaReveal)).not.toEqual([]);
+          expect(checkpointHash(kernel)).toBe("eecbfe6741791c31");
+        }
         const restored = restoreMatchSnapshot(createMatchSnapshot(kernel, setup), setup);
         expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
         step(restored, []);

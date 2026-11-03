@@ -88,6 +88,16 @@ export function applyWarhead(
   impact: DamageImpact,
   friendlyFire: boolean,
 ): void {
+  if (warhead.type === "reveal") {
+    kernel.vision?.revealArea(
+      impact.force,
+      impact.x,
+      impact.y,
+      warhead.radiusSubcells ?? 0,
+      warhead.durationTicks ?? 0,
+    );
+    return;
+  }
   if (!["damage", "disable", "burn", "slow"].includes(warhead.type)) return;
   const { world } = kernel;
   const radius = warhead.radiusSubcells ?? 0;

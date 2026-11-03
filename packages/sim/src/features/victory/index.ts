@@ -126,7 +126,7 @@ export class MatchVictory {
       world.set(this.result, MatchOutcome, "tick", this.kernel.tick + 1);
       this.kernel.queued = [];
     }
-    this.kernel.vision?.update();
+    this.kernel.vision?.update(this.kernel.tick + 1);
     this.kernel.visibility?.update();
   }
   snapshot(): VictorySnapshot {
