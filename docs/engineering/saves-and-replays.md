@@ -47,8 +47,8 @@ include the full save. Failed loading leaves the old worker/session untouched.
   recorded a second time. `parseMatchRecord` rejects malformed/incompatible data
   and `verifyMatchRecord` requires the exact canonical terminal tick and hash.
   Export is refused while a normal match is running. This headless record is not
-  a full save or the final replay file: installed-pack/cosmetic metadata, creation
-  metadata, snapshot keyframes, seeking and the interactive viewer remain work.
+  a full save or the final replay file. The native library below now wraps these
+  records with local metadata and plays/seeks them through owned frames.
 - Playback re-runs the sim from the command log; keyframes allow seeking.
 - **Host playback engine:** `createMatchPlayback` owns a bounded record, compares
   its full setup with the installed setup, then verifies the exact terminal result
@@ -56,6 +56,14 @@ include the full save. Failed loading leaves the old worker/session untouched.
   seeks from them without replaying the prefix. Its host-only kernel is available
   only after successful verification and a completed seek; it is never a seat
   update. [Bounds and remaining viewer work](../project/decisions/2026-11-03-batched-replay-playback.md).
+- **Local library and viewer:** `/replays` stores a format-1 envelope containing
+  ID/name/creation time, local configuration, installed pack/cosmetic identities,
+  verified winner and the terminal record. Both envelope and bare-record imports
+  must verify in a separate worker before persistence. `/replay/:id` provides
+  native playback/speed/seek/vision controls and a read-only map. All vision is an
+  explicit terminal-replay host permission; live match workers cannot request it.
+  Keyframes remain owned in-memory captures rebuilt during verification, not
+  trusted imported bytes. [Flow, bounds and remaining format work](../project/decisions/2026-11-03-native-replay-viewer.md).
 - Viewers can see everything or follow one player's vision.
 - Playing a replay requires the same sim version and content hashes. Old replays stay playable by loading the matching game version, which is why releases keep versioned web builds hosted ([deployment-and-operations.md](deployment-and-operations.md)).
 - Replays of matches with custom packs record each pack's ID, version and hash. The server keeps a copy of every pack used in a stored replay, so the replay outlives the mod's removal.

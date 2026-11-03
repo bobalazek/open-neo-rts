@@ -1,8 +1,10 @@
 import { expect, test } from "bun:test";
 import type { Command } from "../commands";
 import { OwnerForce, Template } from "../features/entities";
+import { emitCombatEvent } from "../features/events/combat";
 import { checkpointHash, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
+import { createProjection, createReplayProjection } from "../projection";
 import { flatMap } from "../testing/maps";
 import { createMatchRecord } from "./match-record";
 import { createMatchPlayback, REPLAY_KEYFRAME_INTERVAL } from "./playback";
@@ -134,6 +136,11 @@ test("bounded preparation and repeated keyframe seeking equal the uninterrupted 
   expect(checkpointHash(atEnd)).toBe(record.hash);
   expect(createMatchRecord(replay.kernel, setup)).toEqual(record);
   expect(REPLAY_KEYFRAME_INTERVAL).toBe(1200);
+  while (!replay.seek(1199, 1000)) {}
+  const continuous = replay.kernel;
+  expect(replay.seek(1200, 1)).toBe(true);
+  expect(replay.kernel).toBe(continuous);
+  expect(checkpointHash(replay.kernel)).toBe(hashes.get(1200)!);
 });
 
 test("the host owns the record/setup and a superseding seek ignores an unfinished destination", () => {
@@ -208,4 +215,43 @@ test("invalid requests are atomic; corrupt input and false terminal claims canno
   );
   expect(() => notTerminal.prepare()).toThrow("terminal tick and hash");
   expect(() => notTerminal.kernel).toThrow();
+});
+
+test("verified replay views are copied, read-only projections; ordinary seats retain fog and economy permissions", () => {
+  const { setup, record } = fixture(2);
+  const replay = createMatchPlayback(record, setup);
+  expect(() => replay.snapshot("all")).toThrow("unfinished");
+  replay.prepare();
+  replay.seek(0);
+  const kernel = replay.kernel,
+    hash = checkpointHash(kernel);
+  const ordinary = createProjection(setup, 1, "controlled").snapshot(kernel);
+  const observer = replay.snapshot("all");
+  expect(ordinary.entities.every((entity) => entity.force === 0)).toBe(true);
+  expect(ordinary.banks).toEqual([]);
+  expect(observer.entities.some((entity) => entity.force === 1)).toBe(true);
+  expect(observer.banks?.map((bank) => bank.force)).toEqual([0, 1]);
+  expect(observer.power?.map((bank) => bank.force)).toEqual([0, 1]);
+  expect(observer.statistics?.map((bank) => bank.force)).toEqual([0, 1]);
+  expect(observer.fog?.[0]?.cells.every((cell) => cell === 2)).toBe(true);
+  expect(replay.snapshot(1)).toEqual(ordinary);
+  expect(Object.keys(createReplayProjection(setup, "all"))).toEqual(["snapshot"]);
+  expect(() => replay.snapshot(99)).toThrow("Unknown player");
+  emitCombatEvent(kernel, { type: "damage", x: 18 * 1024, y: 8 * 1024, force: 1, amount: 5 });
+  expect(replay.snapshot(1).combatEvents).toEqual([]);
+  expect(replay.snapshot("all").combatEvents).toHaveLength(1);
+  const own = observer.entities[0]!;
+  const x = own.x;
+  own.x = -1;
+  (observer.banks![0]!.resources as Record<string, number>).credits = -1;
+  observer.fog![0]!.cells.fill(0);
+  const fresh = replay.snapshot("all");
+  expect(fresh.entities[0]?.x).toBe(x);
+  expect(fresh.banks?.[0]?.resources.credits).toBe(100);
+  expect(fresh.fog?.[0]?.cells.every((cell) => cell === 2)).toBe(true);
+  expect(checkpointHash(kernel)).toBe(hash);
+  replay.seek(1);
+  expect(replay.snapshot(1).tick).toBe(1);
+  replay.seek(0);
+  expect(replay.snapshot(1).entities).toEqual(ordinary.entities);
 });

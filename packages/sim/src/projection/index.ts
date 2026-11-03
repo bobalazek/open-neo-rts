@@ -182,6 +182,26 @@ const HANDLE_MAX = 0xfffffffe;
 
 /** Per-seat handles never contain ECS IDs. Keep this object inside the authoritative host. */
 export function createProjection(setup: MatchSetup, seat: number, mode: ProjectionMode) {
+  return createSeatProjection(setup, seat, mode);
+}
+
+/** Trusted replay host only. Returns copied presentation, with no command-handle resolver. */
+export function createReplayProjection(setup: MatchSetup, vision: number | "all") {
+  const projection = createSeatProjection(
+    setup,
+    vision === "all" ? setup.seats[0]! : vision,
+    "controlled",
+    vision === "all",
+  );
+  return { snapshot: projection.snapshot };
+}
+
+function createSeatProjection(
+  setup: MatchSetup,
+  seat: number,
+  mode: ProjectionMode,
+  replayAll = false,
+) {
   if (!setup.seats.includes(seat)) throw new Error("Unknown player seat");
   if (mode === "debug-no-fog" && !setup.debug) throw new Error("No-fog requires debug mode");
   const handles = new Map<number, string>();
@@ -201,9 +221,11 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         if (remembered.tick !== kernel.tick) deathHandles.delete(entity);
       visible = new Map();
       const permits = (force: number, scope: Scope) =>
-        kernel.visibility
+        replayAll ||
+        (kernel.visibility
           ? kernel.visibility.permits(seat, force, scope)
-          : hasGrant(setup.grants, seat, force, scope, kernel.tick);
+          : hasGrant(setup.grants, seat, force, scope, kernel.tick));
+      const canSee = (id: number) => replayAll || kernel.visibility?.canSeeEntity(seat, id);
       const inspectEconomy = (force: number) =>
         (["economy.build", "economy.transfer", "production.queue", "research.spend"] as const).some(
           (scope) => permits(force, scope),
@@ -225,7 +247,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         const force = world.get(id, OwnerForce, "force");
         const inspectPower =
           inspectEconomy(force) &&
-          kernel.power?.canInspect(seat, force) &&
+          (replayAll || kernel.power?.canInspect(seat, force)) &&
           world.has(id, StructurePower);
         const site = !!setup.normal && world.has(id, ConstructionSite);
         const inspectSite = site && permits(force, "economy.build");
@@ -247,6 +269,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         const controlled = permits(force, "unit.orders");
         if (
           mode !== "debug-no-fog" &&
+          !replayAll &&
           !(kernel.visibility
             ? kernel.visibility.canSeeEntity(seat, id)
             : controlled ||
@@ -261,7 +284,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         const handle = handleOf(id);
         const queued = kernel.orders
           ?.rows(id)
-          .filter((row) => kernel.orders?.allowed(seat, row))
+          .filter((row) => replayAll || kernel.orders?.allowed(seat, row))
           .map((row) => {
             const type = kernel.orders!.type(row),
               target = world.get(row, QueuedOrder, "target");
@@ -269,8 +292,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
               target &&
               type !== "unit.unload" &&
               (type === "economy.salvage"
-                ? kernel.remains?.canSee(seat, target)
-                : world.isAlive(target) && kernel.visibility?.canSeeEntity(seat, target));
+                ? replayAll || kernel.remains?.canSee(seat, target)
+                : world.isAlive(target) && canSee(target));
             return {
               handle: handleOf(row),
               type,
@@ -348,7 +371,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(inspectBuilder &&
             kernel.remains &&
             world.has(id, SalvageOrder) &&
-            kernel.remains.canSee(seat, world.get(id, SalvageOrder, "target")) && {
+            (replayAll || kernel.remains.canSee(seat, world.get(id, SalvageOrder, "target"))) && {
               salvageOrder: {
                 target: handleOf(world.get(id, SalvageOrder, "target")),
                 state: SALVAGE_STATES[world.get(id, SalvageOrder, "state")]!,
@@ -375,7 +398,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(inspectHarvester && { harvesting }),
           ...(attackTarget &&
             world.isAlive(attackTarget) &&
-            kernel.visibility?.canSeeEntity(seat, attackTarget) && {
+            canSee(attackTarget) && {
               attackTarget: handleOf(attackTarget),
             }),
           ...(site && {
@@ -428,7 +451,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             }),
           ...(approachSite &&
             world.isAlive(approachSite) &&
-            (!kernel.visibility || kernel.visibility.canSeeEntity(seat, approachSite)) &&
+            (!kernel.visibility || canSee(approachSite)) &&
             world.has(approachSite, ConstructionSite) && {
               constructionOrder: {
                 site: handleOf(approachSite),
@@ -490,7 +513,15 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         }
       const fog: VisionGrid[] = [];
       const ghosts: PresentedGhost[] = [];
-      if (mode === "controlled" && kernel.visibility) {
+      if (replayAll && kernel.map) {
+        const { width, height } = kernel.map.terrain;
+        fog.push({
+          group: 0x7fffffff,
+          width,
+          height,
+          cells: new Uint8Array(width * height).fill(2),
+        });
+      } else if (mode === "controlled" && kernel.visibility) {
         for (const { force } of kernel.visibility.groupsForSeat(seat)) {
           const grid = kernel.vision?.copyGrid(force);
           if (grid) fog.push(grid);
@@ -524,7 +555,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       const remains: PresentedRemains[] = [];
       if (kernel.remains && mode === "controlled")
         for (const id of kernel.world.query(Remains, Transform)) {
-          if (!kernel.remains.canSee(seat, id)) continue;
+          if (!replayAll && !kernel.remains.canSee(seat, id)) continue;
           const { world } = kernel;
           remains.push({
             handle: handleOf(id),
@@ -550,12 +581,28 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         entities,
         ...(kernel.remains && mode === "controlled" && { remains }),
         ...(kernel.victory && { victory: kernel.victory.snapshot() }),
-        ...(kernel.statistics && { statistics: kernel.statistics.snapshot(seat) }),
+        ...(kernel.statistics && {
+          statistics: kernel.statistics.snapshot(replayAll ? "all" : seat),
+        }),
         ...(kernel.economy && {
-          banks: kernel.economy.snapshot(seat).filter((bank) => inspectEconomy(bank.force)),
+          banks: replayAll
+            ? [...setup.forces]
+                .sort((a, b) => a.index - b.index)
+                .flatMap(({ index: force }) => {
+                  const resources = kernel.economy!.balance(force);
+                  return resources ? [{ force, resources: { ...resources } }] : [];
+                })
+            : kernel.economy.snapshot(seat).filter((bank) => inspectEconomy(bank.force)),
         }),
         ...(kernel.power && {
-          power: kernel.power.snapshot(seat).filter((power) => inspectEconomy(power.force)),
+          power: replayAll
+            ? [...setup.forces]
+                .sort((a, b) => a.index - b.index)
+                .flatMap(({ index: force }) => {
+                  const power = kernel.power!.balance(force);
+                  return power ? [{ ...power }] : [];
+                })
+            : kernel.power.snapshot(seat).filter((power) => inspectEconomy(power.force)),
         }),
         ...(setup.normal && { constructionRequests }),
         ...(setup.normal &&
@@ -583,11 +630,14 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 if (previous) deathHandles.set(entity, { handle: previous, tick: kernel.tick });
                 return previous;
               },
+              replayAll,
             ),
           }),
         ...(mode === "controlled" &&
           kernel.visibility && {
-            ...(kernel.groundFire && { groundFire: kernel.groundFire.project(seat) }),
+            ...(kernel.groundFire && {
+              groundFire: kernel.groundFire.project(replayAll ? "all" : seat),
+            }),
             fog,
             ghosts,
             resourceNodes: [

@@ -51,8 +51,18 @@ remains available. Failure shows the actual coral alert with primary Retry and
 ordinary Back actions. The loading dialog owns a separate native canvas so the
 initializing world cannot remove its feedback by redrawing the application root.
 
+The local Replay library extends the gallery with the original installed Training
+Grounds preview and selected-record actions. Its viewer retains a dominant
+battlefield, warm-metal transport pictograms and timeline, permitted Force
+readouts and original active-production thumbnails, with the circular minimap
+at the right. Semantic controls own keyboard behavior and mirror focus into the
+native interface. This records the first playable Eastern Collective local mirror,
+not portable frames, recorded cameras, event markers, analytics or live spectating.
+The timeline explicitly participates in sequential keyboard focus after speed and
+vision, retaining its native focus frame.
+
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
-results and native normal match HUD. Debug retains HTML/CSS presentation; native
+results, local Replays and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -64,7 +74,8 @@ evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `src/features/settings/`, `src/features/in-game-menu/`,
 `../render/src/scene/battlefield-hud.ts`, `../render/src/scene/battlefield-map.ts`,
 `src/features/match/native-hud.ts`
-and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.
+and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`,
+`src/features/replays/` and `../render/src/scene/replay-hud.ts`.
 
 **Key Characteristics:**
 
@@ -80,6 +91,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native save galleries with original match thumbnails and selected-slot details.
 - Native results with original plots and complete scrollable match records.
 - Native loading with actual stage progress, cancellation and explicit recovery.
+- Native local Replay library and read-only playback with synchronized keyboard focus.
 
 ## Colors
 
@@ -111,6 +123,8 @@ information and muted grey carries supporting state.
 - **Home control** (`home-control`): ordinary native actions, setup fields and setup scroll track.
 - **Home hover / pressed** (`home-hover`, `home-pressed`): native action pointer feedback.
 - **Home focus** (`home-focus`): lightened action text on synchronized keyboard focus.
+- **Replay focus** (`home-focus`): ivory speed/vision/action frames and the
+  timeline's two-pixel frame mirror their semantic control's focus.
 - **Setup input focus** (`setup-input-focus`): the focused fill of native text editors,
   including the named-save field.
 - **Modal shade** (`modal-shade`): the native pause canvas's dimming layer.
@@ -131,6 +145,10 @@ descriptions measure wrapping at 1.4 times body size per line. Station dimension
 and actor-name type use the effective match scale; most compact readout and
 annotation sizes remain fixed. The match scale is
 `min(device UI scale, max(0.85, viewport width / 900))`.
+
+Replay playback reuses compact Arial: map title at 14px, current time and metric
+values at 13px, and Force labels, action values and tooltip copy at 12px. Larger
+numeric values compact visually while hover descriptions retain their exact value.
 
 Home uses Arial/sans-serif for readable supporting type and native actions. The
 frontmatter records base sizes; the renderer multiplies them by its bounded UI
@@ -259,6 +277,16 @@ height. The progress track spans the inner width at 12px times scale, with its
 fill anchored left. Cancel shares the ordinary action grid; Retry and Back sit
 side by side when two columns fit and stack in narrow views.
 
+The Replay library reuses the Load gallery's list/detail columns, shared search
+and measured scrolling. At narrow widths the selected details and actions follow
+the list inside the scroll region. Replay playback keeps its map title and
+vision/exit controls at the top, permitted Force rows below, and transport/timeline
+at bottom left beside the bottom-right circular map. Native layout changes below
+700px width: map diameter is 112px instead of 204px, multiplied by the bounded
+replay scale `min(device UI scale, max(0.8, viewport width / 420))`. Graphite frames
+retain a 12px viewport inset. Production thumbnails occupy only the available row
+width; semantic readouts retain the current production names and progress.
+
 ## Elevation & Depth
 
 The native match HUD is flat: opaque graphite frames and thin steel seams
@@ -266,6 +294,8 @@ separate information from terrain. Warm borders identify hover, ivory thicker
 frames identify synchronized focus, and warm wells identify armed or selected
 actions. Tooltips and Details sit above the scene without gradients or shadows.
 There is no ornamental motion in the match.
+Replay hover/focus help draws its text above its graphite tooltip frame, with
+both layers above the replay controls.
 
 World feedback follows actual depth: a thin warm silhouette groups each actor's
 visible meshes and is occluded by intervening geometry. Hidden or remembered
@@ -304,7 +334,7 @@ the text leaves space for that disclosure mark.
   Primary and ordinary actions have distinct dark fills; hover lightens the
   surface and press warms it. Synchronized HTML focus lightens text and thickens
   the frame from 1px to 2px. Continue, when available, becomes the primary action.
-  The Single player action expands to Skirmish, Load and Back; Escape returns.
+  The Single player action expands to Skirmish, Load, Replays and Back; Escape returns.
 - **Home semantic navigation:** real HTML buttons retain accessible names,
   keyboard activation and expansion state while the visible interface is Babylon
   GUI. They are visually clipped only after the GUI has rendered its actions;
@@ -386,6 +416,45 @@ the text leaves space for that disclosure mark.
   scrolling and arrows, Page Up/Down, Home/End preserve access to the full record.
   Replay export, Rematch and Home invoke existing handlers; pending replay feedback
   and errors remain visible.
+- **Replay library:** Home's Replays action and completed-match Watch replay lead
+  into native list/detail and playback surfaces. Library rows and selected detail
+  use the installed original Training Grounds preview. Search and rename keep the
+  shared native text-field/semantic keyboard bridge; selected rows retain the
+  gallery's focus treatment. Watch availability follows installed compatibility.
+  Empty, filtered, damaged and incompatible records retain actual feedback and
+  available import/delete actions. Status and alert remain outside the body
+  scroll region; narrow layouts scroll through the remaining record actions.
+- **Replay transport and vision:** original play/pause, rewind, forward, vision
+  and exit SVG pictograms reuse graphite controls and warm-metal strokes. Speed
+  cycles through 0.5×, 1×, 2×, 4× and 8×; vision cycles through All and recorded
+  seats. Native pointer activation calls the same semantic actions. HTML buttons,
+  speed/vision selects and the range input retain keyboard ownership; synchronized
+  focus uses the ivory frame, with a two-pixel frame around the focused timeline.
+  Preserve the timeline's explicit `tabindex="0"`: Tab follows speed, vision and
+  timeline in sequence, including the installed WebKit browser that otherwise
+  skips the range. This is a local browser correction, not qualification of every
+  Safari focus setting; see
+  `../../docs/project/learnings/2026-11-03-webkit-range-focus.md`.
+  Hover/focus exposes action and timeline descriptions. Leaving a transport
+  control or timeline restores the current focused control's help, including
+  pointer-out caused by resize. Space toggles playback,
+  J/L jump ten seconds, brackets change speed, V changes vision and Escape returns
+  to the library; focused fields keep ordinary keyboard editing/seeking.
+- **Replay observations and map:** permitted credits, materials and unit counts
+  come from the current copied snapshot. Up to four active-production thumbnails
+  per Force reuse original built-in art, with progress in hover descriptions and
+  semantic text. Narrow rows show only the thumbnails that fit. All and seat
+  views retain their actual visibility/economic permissions. The right circular
+  minimap preserves complete-map geometry, pan, drag and zoom, with orders and
+  pings disabled. Original models, fog, effects and work poses follow replay state.
+- **Replay loading and failure:** a separate native dialog shows actual terminal
+  verification progress with Cancel. Leaving cancels its worker; late responses
+  cannot revive the screen. Failure presents the actual alert and a Replays action
+  returning to the library without deleting the stored record. HTML retains
+  modal semantics and the library/loading graphics fallback. Imported envelopes
+  and legacy terminal records must reproduce their result before storage; version,
+  installed-content, corruption and changed-record errors remain explicit. Storage
+  and trust-boundary details belong to the native replay engineering decision.
 - **Loading and recovery:** the semantic progress element supplies its actual
   value and maximum (5) to the native panel. The existing content, map, renderer,
   worker and models stages drive status and fill; no estimated percentage or

@@ -421,10 +421,11 @@ export class MatchStatistics {
         })),
     };
   }
-  snapshot(seat: number): ForceStatisticsSnapshot[] {
+  snapshot(seat: number | "all"): ForceStatisticsSnapshot[] {
     return [...this.rows]
       .filter(
         ([force]) =>
+          seat === "all" ||
           this.kernel.victory?.ended ||
           canInspectEconomy(this.grants, seat, force, this.kernel.tick),
       )

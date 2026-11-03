@@ -145,7 +145,7 @@ export class GroundFireFields {
         );
     }
   }
-  project(seat: number): GroundFireGrid {
+  project(seat: number | "all"): GroundFireGrid {
     const { kernel, definitions } = this,
       { world } = kernel;
     const { width = 0, height = 0, level = [] } = kernel.map?.terrain ?? {};
@@ -174,7 +174,7 @@ export class GroundFireFields {
           if (
             dx * dx + dy * dy <= radius * radius &&
             (level[index] ?? 0) <= world.get(id, GroundFire, "ceiling") &&
-            kernel.visibility?.canSeeCell(seat, cx, cy)
+            (seat === "all" || kernel.visibility?.canSeeCell(seat, cx, cy))
           )
             cells[index] = 1;
         }

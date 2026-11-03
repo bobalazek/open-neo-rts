@@ -71,6 +71,7 @@ export function homeScreen(
     if (singlePlayer) {
       action("skirmish", text("ui.home.skirmish"), () => navigate("/skirmish"), true);
       action("load", text("ui.saves.title"), () => navigate("/load"));
+      action("replays", text("ui.replays.title"), () => navigate("/replays"));
       action("back", text("ui.common.back"), () => {
         singlePlayer = false;
         refresh();

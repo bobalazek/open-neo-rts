@@ -83,6 +83,7 @@ export function postMatchScreen(
   statistics?: ForceStatisticsSnapshot[],
   saveReplay?: () => Promise<void>,
   definitions: readonly { id: string; name: string; kind: string }[] = [],
+  watchReplay?: () => Promise<void>,
 ) {
   const result = matchResult(victory, force, statistics);
   if (!result) throw new Error("Cannot present an unfinished match");
@@ -165,6 +166,35 @@ export function postMatchScreen(
       } finally {
         button.disabled = false;
         native?.update();
+      }
+    });
+  }
+  if (watchReplay) {
+    const button = document.createElement("button"),
+      status = document.createElement("p");
+    button.type = "button";
+    button.textContent = text("ui.replays.watch");
+    status.setAttribute("role", "status");
+    dialog.querySelector(".setup-actions")?.prepend(button);
+    dialog.append(status);
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      status.setAttribute("role", "status");
+      status.textContent = text("ui.result.preparing-replay");
+      native?.update();
+      try {
+        await watchReplay();
+      } catch (error) {
+        if (dialog.isConnected) {
+          status.setAttribute("role", "alert");
+          status.textContent = error instanceof Error ? error.message : text("ui.replays.failed");
+        }
+      } finally {
+        if (dialog.isConnected) {
+          button.disabled = false;
+          native?.update();
+        }
       }
     });
   }

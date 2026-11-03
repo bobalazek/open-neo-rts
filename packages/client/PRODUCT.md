@@ -21,6 +21,10 @@ Skirmish setup retains the existing validator, saved setup format and normal
 match path. Its native fields and semantic form share values; the map preview
 uses authored Training Grounds terrain, resources and selected spawn coordinates.
 Online play and the complete three-faction game remain later roadmap phases.
+The first playable local replay viewer supports that Eastern Collective mirror
+on Training Grounds. Portable serialized keyframes, recorded camera tracks,
+timeline event markers, analytics overlays and live network spectating remain
+deferred; this does not complete the replay/spectator phase.
 See `../../docs/project/roadmap.md` and `../../docs/design/screens/match-hud.md`.
 
 ## Brand commitments
@@ -69,6 +73,31 @@ source.
   final and sampled table row. Tables support pointer and keyboard scrolling;
   replay export, Rematch and Home invoke their existing handlers. HTML retains
   semantics, modal ownership and the usable graphics fallback for both surfaces.
+- Home's Single player menu opens the native Replay library; finished-match Watch
+  replay stores the terminal record and opens the viewer. Search, selected-record
+  details, Rename, Export, Delete and Import share the existing native gallery
+  treatment. Desktop list/detail columns stack and scroll on narrow screens.
+  Thumbnails reuse the original installed Training Grounds preview, not imported
+  images. HTML owns semantics, keyboard/clipboard editing and the library's usable
+  graphics fallback.
+- Replay playback has its own read-only worker. Visible Babylon transport,
+  timeline, vision and right circular minimap consume verified copied snapshots;
+  permitted credits, materials, unit counts and original active-production
+  thumbnails reflect the current view. All vision and recorded-seat vision keep
+  their respective permissions. The map pans/zooms; it cannot issue orders or pings.
+  Semantic button, speed/vision select and timeline focus is mirrored natively.
+  Tab moves through speed, vision and timeline; the timeline explicitly participates
+  in sequential focus.
+  Space toggles playback, J/L jump ten seconds, brackets cycle speed, V cycles
+  vision and Escape returns to the library; fields retain ordinary keyboard use.
+- Replays use separate IndexedDB storage from saves. Import accepts the local
+  envelope or legacy terminal record, validates installed simulation/content and
+  reproduces the terminal result before storing a new ID. Incompatible Watch is
+  disabled; damaged rows remain visible and removable when their key is valid.
+  Rename/delete reject stale revisions. Actual verification progress, Cancel and
+  failure alerts retain recovery to the library without deleting its record;
+  navigation cancels the candidate worker and ignores late replies. Details:
+  `../../docs/project/decisions/2026-11-03-native-replay-viewer.md`.
 - Loading presents the existing five initialization stages and actual progress,
   with Cancel using the same dismissal as Escape. A separate dialog and canvas
   keep feedback intact while the world initializes or redraws its root. Failure
