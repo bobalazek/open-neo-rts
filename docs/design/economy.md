@@ -24,6 +24,11 @@ Power structures ──► power capacity ──► keeps everything running
 - **Drop-off docking:** one harvester unloads at a time; others queue by arrival tick, then entity ID. The approved provisional unload duration is two seconds. Completed same-Force docks use their first authored exit with radius-aware exterior clearance. Manual orders suspend automatic hauling while preserving cargo; explicit harvest resumes it. Missing or blocked docks retain cargo and retry. Mining rates are definition data; the Supply Truck now mines five credits per second with its existing 500-credit capacity.
 - **Material nodes** are single spots worked by a node-bound structure until depleted ([terrain-and-biomes.md](terrain-and-biomes.md#resource-fields-and-nodes)). The [shared extractor](../project/decisions/2026-11-02-extractor-economy.md) costs 800 credits, takes 20 seconds and consumes 10 power. Provisionally it produces one material per second, or two credits per second on oil; brownout halves output and power-off stops it. Oil uses the map's finite amount when present and is otherwise unlimited. These values await balance playtests.
 - **Salvage:** wrecks hold materials proportional to the destroyed unit's cost. Any faction's builders can clear a wreck for a small amount; the Phoenix Initiative's Salvage Crawlers and Scavenger VTOLs get the full value, plus salvage points ([phoenix-initiative.md](factions/phoenix-initiative.md)).
+  The first playable [ordinary-builder rule](../project/decisions/2026-11-03-builder-salvage.md)
+  clears visible wrecks/rubble in five seconds for one builder, with construction's
+  assistance rates. It stores one quarter of the sum of authored materials and
+  `floor(authored credits / 100)`, rounded down. Unfinished/unpriced
+  remains give zero; specialist output and faction bonuses remain later work.
 
 ## Spending
 

@@ -186,13 +186,18 @@ port.onmessage = ({ data }) => {
           } else if (
             type === "economy.build" ||
             type === "economy.assistConstruction" ||
-            type === "economy.repair"
+            type === "economy.repair" ||
+            type === "economy.salvage"
           ) {
             if (Array.isArray(fields.builders))
               fields.builders = fields.builders.map(
                 (handle) => projection.resolve(handle, "economy.build") ?? -1,
               );
-            if (type === "economy.assistConstruction" || type === "economy.repair")
+            if (
+              type === "economy.assistConstruction" ||
+              type === "economy.repair" ||
+              type === "economy.salvage"
+            )
               fields.entity = projection.resolve(fields.entity) ?? -1;
           } else if (
             type === "debug.remove" ||

@@ -22,6 +22,7 @@ type Mode =
         | "unit.load"
         | "economy.assistConstruction"
         | "economy.repair"
+        | "economy.salvage"
         | "production.rally";
       handles: string[];
     }
@@ -188,6 +189,7 @@ export function createMatchHud(
       "unit.load": "ui.hud.load",
       "economy.assistConstruction": "ui.hud.assist",
       "economy.repair": "ui.hud.repair",
+      "economy.salvage": "ui.hud.clear-remains",
       "production.rally": "ui.hud.rally",
       "economy.build": "ui.hud.build",
     } as const;
@@ -224,6 +226,12 @@ export function createMatchHud(
     get(".hud-command-panel"),
   );
   deployButton.dataset.deploy = "";
+  const salvageButton = button(
+    text("ui.hud.clear-remains"),
+    () => arm({ type: "economy.salvage", handles: builders().map((entity) => entity.handle) }),
+    get(".hud-command-panel"),
+  );
+  salvageButton.dataset.salvage = "";
   const surgeButton = button(
     text("ui.hud.surge"),
     () => {
@@ -442,6 +450,15 @@ export function createMatchHud(
     } else {
       const bounds = canvas.getBoundingClientRect(),
         handle = options.pick(x - bounds.left, y - bounds.top);
+      if (active.type === "economy.salvage") {
+        if (!snapshot.remains?.some((row) => row.handle === handle)) {
+          feedback("ui.hud.pick-remains");
+          return;
+        }
+        cancel();
+        void issue(active.type, { builders: active.handles, entity: handle });
+        return;
+      }
       const entity = snapshot.entities.find((entity) => entity.handle === handle);
       if (!entity) {
         feedback("ui.hud.pick-target");
@@ -542,7 +559,14 @@ export function createMatchHud(
       const infantry = selected.filter(
         (entity) => definitions.get(entity.definition)?.gameplay.domain === "foot",
       );
-      if (transport && infantry.length)
+      const remains = snapshot?.remains?.find((row) => row.handle === targetHandle),
+        clearing = builders();
+      if (remains && clearing.length)
+        void issue("economy.salvage", {
+          entity: remains.handle,
+          builders: clearing.map((entity) => entity.handle),
+        });
+      else if (transport && infantry.length)
         void issue("unit.load", {
           entity: transport.handle,
           entities: infantry.map((entity) => entity.handle),
@@ -742,6 +766,9 @@ export function createMatchHud(
       cooldown > 0
         ? text("ui.hud.deploy-cooldown", { seconds: Math.ceil(cooldown / 20) })
         : text("ui.hud.deploy-toggle");
+    salvageButton.hidden = !selectedBuilders.length;
+    salvageButton.disabled = disabled || !selectedBuilders.length;
+    salvageButton.setAttribute("aria-pressed", String(mode?.type === "economy.salvage"));
     renderSites(disabled);
     const eligible = [
       selectedUnits.some(
@@ -1160,6 +1187,8 @@ export function createMatchHud(
       );
     if (entity.repairOrder)
       lines.push(text("ui.hud.repair-state", { state: workState(entity.repairOrder.state) }));
+    if (entity.salvageOrder)
+      lines.push(text("ui.hud.salvage-state", { state: workState(entity.salvageOrder.state) }));
     if (entity.harvesting)
       lines.push(
         text("ui.hud.cargo", {
@@ -1310,6 +1339,8 @@ function workState(value: string) {
     blocked: "ui.hud.state-blocked",
     funds: "ui.hud.state-funds",
     grant: "ui.hud.state-grant",
+    contested: "ui.hud.state-contested",
+    storage: "ui.hud.state-storage",
     queued: "ui.hud.state-queued",
     active: "ui.hud.state-working",
     brownout: "ui.hud.brownout",

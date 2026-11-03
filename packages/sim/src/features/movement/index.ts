@@ -11,6 +11,7 @@ import { suspendRepair } from "../construction/repair";
 import type { NormalMatchSetup } from "../control";
 import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, OwnerForce, Template, Transform } from "../entities";
+import { suspendSalvage } from "../salvage";
 
 export * from "./navigation";
 export * from "./path-scheduler";
@@ -62,6 +63,7 @@ export function movementFeature(match: {
       if (match.normal) suspendHarvesting(kernel, id);
       if (match.normal) clearAttackOrder(kernel, id);
       if (match.normal) suspendRepair(kernel, id);
+      if (match.normal) suspendSalvage(kernel, id);
       if (match.normal && world.has(id, BuilderConstruction)) clearConstructionOrder(kernel, id);
       if (kernel.movement && world.has(id, MovementFailure)) world.remove(id, MovementFailure);
       if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);

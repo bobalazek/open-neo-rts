@@ -8,6 +8,7 @@ import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent } from "../movement";
 import { ProductionItem, productionReceipt } from "../production";
+import { suspendSalvage } from "../salvage";
 import { ConstructionSite } from ".";
 import { ConstructionApproach, ConstructionPayment, clearConstructionOrder } from "./sites";
 import { approachStructure } from "./work";
@@ -172,6 +173,7 @@ export function structureRepairFeature(setup: Pick<MatchSetup, "definitions" | "
           clearAttackOrder(kernel, id);
           suspendHarvesting(kernel, id);
           suspendRepair(kernel, id);
+          suspendSalvage(kernel, id);
           clearConstructionOrder(kernel, id);
           world.add(id, RepairOrder, { target: entity, seat });
           if (!world.has(id, RepairWork)) world.add(id, RepairWork);

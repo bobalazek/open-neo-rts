@@ -59,6 +59,7 @@ export interface Payloads {
   "match.surrender": { force: number };
   "economy.sell": { entity: number };
   "economy.repair": { entity: number; builders: number[] };
+  "economy.salvage": { entity: number; builders: number[] };
   "economy.cancelRepair": { entity: number };
   "unit.harvest": UnitStop;
   "production.enqueue": { entity: number; definition: string };
@@ -135,6 +136,7 @@ const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } 
   "match.surrender": { force: ID },
   "economy.sell": { entity: ID },
   "economy.repair": { entity: ID, builders: IDS },
+  "economy.salvage": { entity: ID, builders: IDS },
   "economy.cancelRepair": { entity: ID },
   "unit.harvest": { entities: IDS },
   "production.enqueue": {

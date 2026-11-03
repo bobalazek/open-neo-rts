@@ -30,7 +30,7 @@ import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { type PresentedCombatEvent, projectCombatEvents } from "../features/events/combat";
 import { MoveIntent } from "../features/movement";
 import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
-import { REMAINS_KINDS, Remains } from "../features/salvage";
+import { REMAINS_KINDS, Remains, SALVAGE_STATES, SalvageOrder } from "../features/salvage";
 import type { ForceStatisticsSnapshot, VictorySnapshot } from "../features/victory";
 import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
@@ -78,6 +78,7 @@ export interface PresentedEntity {
   };
   constructionOrder?: { site: string; state: (typeof CONSTRUCTION_WORK_STATES)[number] };
   repairOrder?: { target: string; state: (typeof REPAIR_STATES)[number]; workRemainder: number };
+  salvageOrder?: { target: string; state: (typeof SALVAGE_STATES)[number] };
   repair?: { creditCarry: number; repairersWorking: number };
   production?: {
     slots: number;
@@ -278,6 +279,15 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(kernel.disabled?.(id) && { disabled: true }),
           ...(kernel.burning?.(id) && { burning: true }),
           maxHealth: kernel.veterancy?.maxHealth(id, definition.health) ?? definition.health,
+          ...(inspectBuilder &&
+            kernel.remains &&
+            world.has(id, SalvageOrder) &&
+            kernel.remains.canSee(seat, world.get(id, SalvageOrder, "target")) && {
+              salvageOrder: {
+                target: handleOf(world.get(id, SalvageOrder, "target")),
+                state: SALVAGE_STATES[world.get(id, SalvageOrder, "state")]!,
+              },
+            }),
           ...(inspectRepair &&
             world.has(id, RepairCredit) && {
               repair: {

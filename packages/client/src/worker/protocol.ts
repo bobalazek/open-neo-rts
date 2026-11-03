@@ -833,6 +833,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "veterancy",
             "repair",
             "repairOrder",
+            "salvageOrder",
             "deploy",
             "cargo",
           ].includes(key),
@@ -1024,6 +1025,23 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
         typeof order.site !== "string" ||
         typeof order.state !== "string" ||
         !["approaching", "working", "blocked"].includes(order.state)
+      )
+        return false;
+    }
+    if (entity.salvageOrder !== undefined) {
+      const order = entity.salvageOrder;
+      if (
+        snapshot.mode !== "controlled" ||
+        !isRecord(order) ||
+        !exact(order, ["target", "state"]) ||
+        typeof order.target !== "string" ||
+        !/^e[1-9][0-9]*$/.test(order.target) ||
+        !Array.isArray(snapshot.remains) ||
+        !snapshot.remains.some((row: unknown) => isRecord(row) && row.handle === order.target) ||
+        typeof order.state !== "string" ||
+        !["approaching", "working", "blocked", "grant", "contested", "storage"].includes(
+          order.state,
+        )
       )
         return false;
     }

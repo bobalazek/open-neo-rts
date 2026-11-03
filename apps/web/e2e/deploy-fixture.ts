@@ -68,6 +68,9 @@ export async function start(setup: MatchSetup) {
           (entity) => entity.force === force && entity.definition === id,
         )?.handle ?? null;
     },
+    targetRemains(id: string) {
+      targetHandle = state?.snapshot.remains?.find((row) => row.definition === id)?.handle ?? null;
+    },
     select(ids: string[]) {
       selection =
         state?.snapshot.entities

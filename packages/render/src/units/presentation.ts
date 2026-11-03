@@ -591,7 +591,9 @@ export function createEntityPresentation(
         const working =
           !!live &&
           !live.disabled &&
-          (live.constructionOrder?.state === "working" || live.repairOrder?.state === "working");
+          (live.constructionOrder?.state === "working" ||
+            live.repairOrder?.state === "working" ||
+            live.salvageOrder?.state === "working");
         if (working !== entity.working) entity.workElapsed = 0;
         entity.working = working;
         if (!options.ghost && !options.remains && snapshot.productionExits?.includes(handle)) {

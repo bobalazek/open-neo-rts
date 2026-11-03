@@ -15,7 +15,7 @@ import {
   Transform,
 } from "../entities";
 import { checkSpawnPlacement } from "../entities/placement";
-import { MAX_REMAINS, MatchRemains, Remains } from ".";
+import { MAX_REMAINS, MatchRemains, Remains, SalvageOrder } from ".";
 
 const infantry: Definition = {
   id: "unit:fixture/infantry",
@@ -257,7 +257,7 @@ test("remains require current footprint sight, never former ownership; opaque ha
   expect(projection.resolve(row?.handle)).toBeUndefined();
 });
 
-test("nonzero remains World bytes restore pose/eligibility/age and the same capped continuation", () => {
+test("nonzero remains World bytes restore pose/value/work/orders and the same capped continuation", () => {
   const a = createKernel({ seed: 1, debug: false }),
     b = createKernel({ seed: 1, debug: false });
   for (const kernel of [a, b]) {
@@ -266,13 +266,27 @@ test("nonzero remains World bytes restore pose/eligibility/age and the same capp
   }
   a.tick = b.tick = 20;
   a.remains!.create(0, 1, { x: 16 * 1024, y: 12 * 1024, facing: 0 }, true);
+  a.world.set(1, Remains, "work", 137);
+  a.world.set(1, Remains, "materials", 3);
+  const builder = spawnEntity(a, 3, definitions[3]!, {
+    definition: definitions[3]!.id,
+    force: 0,
+    x: 14 * 1024,
+    y: 12 * 1024,
+    facing: 0,
+  });
+  a.world.add(builder, SalvageOrder, { target: 1, seat: 1, state: 1 });
   const bytes = a.world.serialize(),
     restored = new World();
-  for (const component of [Template, OwnerForce, Transform, Health, Remains])
+  for (const component of [Template, OwnerForce, Transform, Health, Remains, SalvageOrder])
     restored.register(component);
   restored.load(bytes);
   expect(restored.get(1, Remains, "eligible")).toBe(0);
   expect(restored.get(1, Remains, "created")).toBe(20);
+  expect(restored.get(1, Remains, "materials")).toBe(3);
+  expect(restored.get(1, Remains, "work")).toBe(137);
+  expect(restored.get(builder, SalvageOrder, "target")).toBe(1);
+  expect(restored.get(builder, SalvageOrder, "state")).toBe(1);
   // A fresh bare kernel has no entities, so its registered World can also load these exact bytes.
   b.world.load(bytes);
   for (let i = 0; i < MAX_REMAINS; i++) {
