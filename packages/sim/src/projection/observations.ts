@@ -50,7 +50,12 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
         },
       }),
       ...(entity.extraction && { extraction: { ...entity.extraction } }),
-      ...(entity.harvesting && { harvesting: { ...entity.harvesting } }),
+      ...(entity.harvesting && {
+        harvesting: {
+          ...entity.harvesting,
+          ...(entity.harvesting.target && { target: { ...entity.harvesting.target } }),
+        },
+      }),
       ...(entity.construction && { construction: { ...entity.construction } }),
       ...(entity.constructionOrder && { constructionOrder: { ...entity.constructionOrder } }),
       ...(entity.repair && { repair: { ...entity.repair } }),

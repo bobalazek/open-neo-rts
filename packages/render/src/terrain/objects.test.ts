@@ -29,10 +29,14 @@ test("material and oil markers retain parity and hide only while their anchor is
   const art = createMapPresentation(f.scene, grid(), placements, bytes);
   try {
     await art.ready;
+    expect(art.resourceAt(8, 8, () => false)).toHaveLength(0);
+    expect(art.resourceAt(8, 8, (x, y) => x === 8 && y === 8)).toHaveLength(0);
+    expect(art.resourceAt(8, 8, () => true).length).toBeGreaterThan(0);
     const first = f.scene.getTransformNodeByName("map object 0: material-node"),
       second = f.scene.getTransformNodeByName("map object 1: oil-well");
     if (!first || !second) throw new Error("Missing node marker roots");
     art.setOccupiedNodes([{ x: 7, y: 7 }]);
+    expect(art.resourceAt(8, 8, () => true)).toHaveLength(0);
     expect([first.isEnabled(), second.isEnabled()]).toEqual([false, true]);
     art.setOccupiedNodes([{ x: 11, y: 7 }]);
     expect([first.isEnabled(), second.isEnabled()]).toEqual([true, false]);

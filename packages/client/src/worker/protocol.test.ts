@@ -525,6 +525,27 @@ test("worker replies strictly validate private harvester cargo, status and unloa
   const packet = (value: unknown, mode = "controlled") =>
     powerReply(undefined, [{ ...entity, power: undefined, harvesting: value }], mode);
   expect(isWorkerReply(packet(harvesting))).toBe(true);
+  expect(isWorkerReply(packet({ ...harvesting, target: { x: 1024, y: 2048 } }))).toBe(true);
+  for (const target of [
+    undefined,
+    null,
+    {},
+    { x: -1, y: 0 },
+    { x: 0.5, y: 0 },
+    { x: 524288, y: 0 },
+    { x: 0, y: 0, extra: 1 },
+    Object.create({ x: 0, y: 0 }),
+    {
+      get x() {
+        throw new Error("must not read accessor");
+      },
+      y: 0,
+    },
+  ])
+    expect(isWorkerReply(packet({ ...harvesting, target }))).toBe(false);
+  expect(
+    isWorkerReply(packet({ ...harvesting, status: "unloading", target: { x: 0, y: 0 } })),
+  ).toBe(false);
   expect(isWorkerReply(packet({ ...harvesting, status: "bank_full", unloadTicks: 40 }))).toBe(true);
   for (const bad of [
     null,
@@ -543,6 +564,23 @@ test("worker replies strictly validate private harvester cargo, status and unloa
   ])
     expect(isWorkerReply(packet(bad))).toBe(false);
   expect(isWorkerReply(packet(harvesting, "debug-no-fog"))).toBe(false);
+});
+
+test("public work poses pass the wire with bounded unload progress and no private cargo", () => {
+  const packet = (pose: object) => powerReply(undefined, [{ ...entity, ...pose }]);
+  expect(isWorkerReply(packet({ workAnimation: "harvest" }))).toBe(true);
+  expect(isWorkerReply(packet({ workAnimation: "unload", workProgressTicks: 8 }))).toBe(true);
+  for (const pose of [
+    { workAnimation: "mining" },
+    { workAnimation: "unload" },
+    { workProgressTicks: 1 },
+    { workAnimation: "harvest", workProgressTicks: 1 },
+    ...[-1, 0.5, 41, "8", null].map((workProgressTicks) => ({
+      workAnimation: "unload",
+      workProgressTicks,
+    })),
+  ])
+    expect(isWorkerReply(packet(pose))).toBe(false);
 });
 
 test("worker replies accept only opaque attack target handles", () => {

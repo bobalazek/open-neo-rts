@@ -43,6 +43,8 @@ interface Entity {
   scaffold?: Mesh;
   shadows?: boolean;
   working?: boolean;
+  workClip?: string;
+  workProgressTicks?: number;
   workElapsed?: number;
   attackElapsed?: number;
   deployed: boolean;
@@ -353,9 +355,7 @@ export function createEntityPresentation(
       if (!attacking) entity.attackElapsed = undefined;
       if (!attacking) action = "";
       const work = entity.working
-        ? entity.playback.clips.includes("active")
-          ? "active"
-          : "attack"
+        ? (entity.workClip ?? (entity.playback.clips.includes("active") ? "active" : "attack"))
         : "";
       const clip =
         options.ghost || options.remains
@@ -376,9 +376,15 @@ export function createEntityPresentation(
       entity.playback.setRate(options.ghost || options.remains ? 0 : playbackRate);
       if (attacking) entity.playback.seek(entity.attackElapsed ?? 0);
       else if (work && clip === work) {
-        // The authored builder attack is also its tool motion; loop only during private working state.
+        // Unloading follows actual dock work, including suspension; other work loops.
         const length = entity.playback.duration(work);
-        entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
+        entity.playback.seek(
+          entity.workProgressTicks !== undefined
+            ? Math.min(length, entity.workProgressTicks * 50)
+            : length
+              ? (entity.workElapsed ?? 0) % length
+              : 0,
+        );
       }
       if (!options.remains) {
         sampleDeployment(entity);
@@ -593,9 +599,13 @@ export function createEntityPresentation(
           !live.disabled &&
           (live.constructionOrder?.state === "working" ||
             live.repairOrder?.state === "working" ||
-            live.salvageOrder?.state === "working");
-        if (working !== entity.working) entity.workElapsed = 0;
+            live.salvageOrder?.state === "working" ||
+            !!live.workAnimation);
+        if (working !== entity.working || live?.workAnimation !== entity.workClip)
+          entity.workElapsed = 0;
         entity.working = working;
+        entity.workClip = live?.workAnimation;
+        entity.workProgressTicks = live?.workProgressTicks;
         if (!options.ghost && !options.remains && snapshot.productionExits?.includes(handle)) {
           if (entity.playback)
             entity.doorElapsed = reopenDoor(
@@ -687,6 +697,14 @@ export function createEntityPresentation(
       return pickHit(x, y)?.handle ?? null;
     },
     pickHit,
+    meshes(handle: string) {
+      return (
+        entities
+          .get(handle)
+          ?.root?.getChildMeshes()
+          .filter((mesh) => mesh.isVisible && mesh.isEnabled()) ?? []
+      );
+    },
     /** Screen-space centres from the same rendered poses used for rings and picking. */
     inRectangle(left: number, top: number, right: number, bottom: number): string[] {
       if (options.ghost || options.remains) return [];

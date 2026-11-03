@@ -9,9 +9,10 @@ import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
 export { cameraGroundView } from "./camera";
-export { createCombatEffects } from "./effects";
+export { createCombatEffects, eventVisible } from "./effects";
 export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
+export { createInteractionOutline } from "./overlays/interaction";
 export { createPlacementOverlay } from "./overlays/placement";
 export {
   type BattlefieldAction,

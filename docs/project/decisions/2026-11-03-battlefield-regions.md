@@ -30,5 +30,5 @@ switching and scroll long type lists. Descriptions remain on hover/focus.
 
 This is presentation work. It does not add speculative eras, player scores,
 chat, economy values or campaign systems. The simulation and content roster stay
-unchanged. Working animations and world hover/harvest-target outlines requested
-by the owner follow as the next connected interaction-feedback task.
+unchanged. The owner's working-animation and world hover/harvest-target request
+is implemented in the [connected feedback pass](./2026-11-03-world-interaction-feedback.md).
