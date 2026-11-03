@@ -2,12 +2,19 @@ import { expect, test } from "bun:test";
 import { checkpointHash, createKernel, register, step } from "../../kernel";
 import { createMatch, type MatchSetup, SIM_VERSION } from "../../match";
 import { createProjection } from "../../projection";
-import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
+import {
+  createMatchSnapshot,
+  parseScenario,
+  restoreMatchSnapshot,
+  runScenario,
+  SCENARIO_FORMAT,
+} from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder, combatFeature, ShotIntent, WeaponState } from "../combat";
 import { Burning } from "../combat/burn";
 import { applyWarhead, warheadDamage } from "../combat/damage";
 import { Disabled } from "../combat/disable";
+import { Slowed } from "../combat/slow";
 import { BuilderConstruction, ConstructionSite } from "../construction";
 import {
   type Definition,
@@ -66,7 +73,9 @@ function fixture(
     miss?: number;
     raised?: boolean;
     targetSpeed?: number;
+    targetTurnRate?: number;
     targetDomain?: Definition["domain"];
+    shallow?: boolean;
   } = {},
 ) {
   const weapon = options.weapon ?? gun;
@@ -78,6 +87,7 @@ function fixture(
       ...unit,
       health: options.health ?? 1000,
       speed: options.targetSpeed ?? unit.speed,
+      turnRate: options.targetTurnRate ?? unit.turnRate,
       armor: options.armor ?? "infantry",
       domain: options.targetDomain ?? unit.domain,
       ...(options.resistance && { resistPerMille: options.resistance }),
@@ -92,7 +102,13 @@ function fixture(
   const setup: MatchSetup = {
     map: {
       ...map,
-      terrain: { ...map.terrain, level },
+      terrain: {
+        ...map.terrain,
+        level,
+        ...(options.shallow && {
+          water: map.terrain.water.map((value, cell) => (Math.floor(cell / 48) >= 12 ? 1 : value)),
+        }),
+      },
       spawns: [
         { id: "west", position: [8 * 1024, 8 * 1024], facing: 16384 },
         { id: "east", position: [38 * 1024, 8 * 1024], facing: 16384 },
@@ -169,6 +185,178 @@ const emp: GameplayWeapon = {
     { type: "disable", durationTicks: 20, tags: ["emp"] },
   ],
 };
+
+// Synthetic round exercises the authored slow vocabulary without changing the roster.
+const slow: GameplayWeapon = {
+  ...gun,
+  projectile: { kind: "instant" },
+  warheads: [{ type: "slow", perMille: 500, durationTicks: 20, tags: ["nanite"] }],
+};
+
+test("slow composes with shallow-wheel speed, retains its route and resumes exactly at expiry", () => {
+  const f = fixture({ weapon: slow, targetDomain: "wheeled", shallow: true });
+  f.fire();
+  const x = () => f.kernel.world.get(f.target, Transform, "x");
+  const before = x();
+  const move = step(f.kernel, [
+    {
+      tick: f.kernel.tick,
+      seat: 2,
+      sequence: 0,
+      type: "unit.move",
+      payload: {
+        entities: [f.target],
+        x: 32 * 1024 + 512,
+        y: 20 * 1024 + 512,
+      },
+    },
+  ]);
+  expect(move[0]?.result).toBe("accepted");
+  expect(x() - before).toBe(64);
+  expect(f.kernel.world.get(f.target, Slowed, "until")).toBe(20);
+  f.advance(18);
+  const end = x();
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(0);
+  f.advance();
+  expect(x() - end).toBe(128);
+  expect(f.kernel.world.has(f.target, Slowed)).toBe(false);
+});
+
+for (const turnRate of [0, 0x10000])
+  test(`full slow preserves its route past the stuck budget with turn rate ${turnRate}`, () => {
+    const f = fixture({
+      weapon: { ...slow, warheads: [{ ...slow.warheads[0]!, perMille: 1000, durationTicks: 160 }] },
+      targetTurnRate: turnRate,
+    });
+    f.kernel.world.set(f.target, Transform, "facing", 0x8000);
+    f.fire();
+    const x = () => f.kernel.world.get(f.target, Transform, "x");
+    const before = x();
+    step(f.kernel, [
+      {
+        tick: f.kernel.tick,
+        seat: 2,
+        sequence: 0,
+        type: "unit.move",
+        payload: {
+          entities: [f.target],
+          x: 32 * 1024 + 512,
+          y: 20 * 1024 + 512,
+        },
+      },
+    ]);
+    f.advance(158);
+    expect(x()).toBe(before);
+    expect(
+      f.kernel.movement?.snapshot().routes.find((route) => route.entity === f.target)?.stuck,
+    ).toBe(0);
+    // The zero-turn fixture needs to face its path before it can resume linear movement.
+    f.kernel.world.set(f.target, Transform, "facing", 0);
+    f.advance();
+    expect(x() - before).toBe(256);
+  });
+
+test("slow scales strength with resistance and area falloff, preserving immunity and delayed friendly-fire rules", () => {
+  for (const [resistance, strength] of [
+    [0, 0],
+    [500, 250],
+    [3000, 1000],
+  ] as const) {
+    const f = fixture({
+      weapon: { ...slow, warheads: [...slow.warheads, { type: "damage", amount: 10, tags: [] }] },
+      resistance: { nanite: resistance },
+    });
+    f.fire();
+    expect(f.kernel.slowPerMille?.(f.target)).toBe(strength);
+    expect(f.hp()).toBe(990);
+  }
+  const f = fixture({
+    weapon: {
+      ...slow,
+      warheads: [
+        { ...slow.warheads[0]!, radiusSubcells: 1024, delayTicks: 3, falloffPerMille: [1000, 500] },
+      ],
+    },
+    friendlyFire: false,
+  });
+  const outer = f.spawn(3, 1, 24, 21),
+    ally = f.spawn(3, 0, 25, 20);
+  f.fire();
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(0);
+  f.advance(3);
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(500);
+  expect(f.kernel.slowPerMille?.(outer)).toBe(250);
+  expect(f.kernel.slowPerMille?.(ally)).toBe(0);
+  const projected = createProjection(f.setup, 1, "controlled")
+    .snapshot(f.kernel)
+    .entities.find((entity) => entity.force === 1 && entity.definition === unit.id);
+  expect(projected?.slowed).toBe(true);
+  for (const field of ["strength", "until", "perMille"])
+    expect(projected).not.toHaveProperty(field);
+});
+
+test("slow refreshes without stacking, stronger replacement has its own deadline and source death cannot clear it", () => {
+  const f = fixture({ weapon: slow });
+  f.fire();
+  f.advance(2);
+  const impact = {
+    force: 0,
+    direct: f.target,
+    x: 0,
+    y: 0,
+    fromX: 0,
+    fromY: 0,
+    air: false,
+    maxLevel: 255,
+  };
+  const hit = (perMille: number, durationTicks: number) =>
+    applyWarhead(
+      f.kernel,
+      f.definitions,
+      slow,
+      { type: "slow", perMille, durationTicks, tags: [] },
+      impact,
+      false,
+    );
+  hit(250, 80);
+  expect(f.kernel.world.get(f.target, Slowed, "until")).toBe(20);
+  hit(500, 30);
+  expect(f.kernel.world.get(f.target, Slowed, "until")).toBe(33);
+  hit(750, 2);
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(750);
+  expect(f.kernel.world.get(f.target, Slowed, "until")).toBe(5);
+  f.kernel.world.destroy(f.actor);
+  f.advance();
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(750);
+  f.advance();
+  expect(f.kernel.slowPerMille?.(f.target)).toBe(0);
+  f.kernel.world.destroy(f.target);
+  expect(() => hit(1000, 100)).not.toThrow();
+});
+
+test("slow never invents missing duration/strength and does not attach to immobile structures", () => {
+  for (const warhead of [
+    { type: "slow", perMille: 500, tags: [] },
+    { type: "slow", durationTicks: 20, tags: [] },
+    { type: "slow", durationTicks: 0, perMille: 500, tags: [] },
+    { type: "slow", durationTicks: 20, perMille: 0, tags: [] },
+  ]) {
+    const f = fixture({ weapon: { ...slow, warheads: [warhead] } });
+    f.fire();
+    expect(f.kernel.world.has(f.target, Slowed)).toBe(false);
+  }
+  const f = fixture({ weapon: slow });
+  const target = f.spawn(4, 1, 30, 20);
+  applyWarhead(
+    f.kernel,
+    f.definitions,
+    slow,
+    slow.warheads[0]!,
+    { force: 0, direct: target, x: 0, y: 0, fromX: 0, fromY: 0, air: false, maxLevel: 255 },
+    false,
+  );
+  expect(f.kernel.world.has(target, Slowed)).toBe(false);
+});
 
 const flame: GameplayWeapon = {
   ...gun,
@@ -382,6 +570,7 @@ test("EMP's delayed area uses existing geometry and friendly-fire rules; project
 for (const [weapon, status] of [
   [emp, "disabled"],
   [flame, "burning"],
+  [slow, "slowed"],
 ] as const)
   test(`timed ${status} combat from starting kits replays canonical state and the final hash`, () => {
     const base = fixture({ weapon, targetDomain: "tracked" }).setup;
@@ -431,7 +620,20 @@ for (const [weapon, status] of [
     for (let i = 0; i < 200; i++) {
       step(kernel, []);
       observed ||=
-        (status === "disabled" ? kernel.disabled?.(target) : kernel.burning?.(target)) === true;
+        status === "disabled"
+          ? kernel.disabled?.(target) === true
+          : status === "burning"
+            ? kernel.burning?.(target) === true
+            : !!kernel.slowPerMille?.(target);
+      if (status === "slowed" && kernel.tick === 100) {
+        expect(kernel.slowPerMille?.(target)).toBeGreaterThan(0);
+        expect(checkpointHash(kernel)).toBe("4373496c276f116c");
+        const restored = restoreMatchSnapshot(createMatchSnapshot(kernel, setup), setup);
+        expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
+        step(restored, []);
+        step(kernel, []);
+        expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
+      }
     }
     expect(observed).toBe(true);
     const scenario = parseScenario({

@@ -501,6 +501,16 @@ test("EMP status is a strict public flag with no private deadline", () => {
   );
 });
 
+test("slow status passes the wire without private strength or expiry", () => {
+  expect(isWorkerReply(powerReply(undefined, [{ ...entity, slowed: true }]))).toBe(true);
+  for (const slowed of [false, 0, 500, "true", null, { until: 20 }])
+    expect(isWorkerReply(powerReply(undefined, [{ ...entity, slowed }]))).toBe(false);
+  for (const privateState of [{ strength: 500 }, { until: 20 }, { perMille: 500 }])
+    expect(
+      isWorkerReply(powerReply(undefined, [{ ...entity, slowed: true, ...privateState }])),
+    ).toBe(false);
+});
+
 test("burning status and beam events pass the strict wire without exposing a rate, source or timer", () => {
   const packet = powerReply(undefined, [{ ...entity, burning: true }]);
   expect(isWorkerReply(packet)).toBe(true);

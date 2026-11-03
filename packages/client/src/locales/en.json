@@ -108,6 +108,7 @@
   "ui.hud.deployed": "{name} · Deployed",
   "ui.hud.emp-disabled": "Disabled by EMP",
   "ui.hud.burning": "On fire",
+  "ui.hud.slowed": "Slowed",
   "ui.hud.surge": "Mass Production Surge",
   "ui.hud.surge-active": "Production +{percent}% · {seconds}s remaining",
   "ui.hud.packed": "{name} · Packed",

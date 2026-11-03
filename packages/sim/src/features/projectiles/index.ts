@@ -74,7 +74,9 @@ const velocity = (facing: number, speed: number) => ({
 const supported = (weapon: GameplayWeapon | undefined): weapon is GameplayWeapon =>
   !!weapon &&
   ["instant", "beam", "bullet", "missile"].includes(weapon.projectile.kind) &&
-  weapon.warheads.every((warhead) => ["damage", "disable", "burn"].includes(warhead.type)) &&
+  weapon.warheads.every((warhead) =>
+    ["damage", "disable", "burn", "slow"].includes(warhead.type),
+  ) &&
   (["instant", "beam"].includes(weapon.projectile.kind) ||
     ((weapon.projectile.speedSubcellsPerTick ?? 0) > 0 && weapon.projectile.flightTicks !== 0)) &&
   (weapon.projectile.kind !== "missile" ||

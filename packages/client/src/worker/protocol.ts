@@ -976,6 +976,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "attackTarget",
             "disabled",
             "burning",
+            "slowed",
             "holdPosition",
             "queuedOrders",
             "orderFailure",
@@ -1089,6 +1090,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     }
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
+    if (entity.slowed !== undefined && entity.slowed !== true) return false;
     if (
       entity.holdPosition !== undefined &&
       (snapshot.mode !== "controlled" || entity.holdPosition !== true)

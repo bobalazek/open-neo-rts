@@ -395,6 +395,12 @@ export class TerrainMovement {
         continue;
       }
       const definition = this.definitions[route.definition] as Definition;
+      const percent =
+        definition.domain === "air"
+          ? 100
+          : (this.profile(route.definition).grid.speedPercent[this.cell(position)] as number);
+      const slow = this.kernel.slowPerMille?.(id) ?? 0;
+      const speed = Math.floor((definition.speed * percent * (1000 - slow)) / 100000);
       const dx = waypoint.x - position.x;
       const dy = waypoint.y - position.y;
       const facing = world.get(id, Transform, "facing");
@@ -403,14 +409,10 @@ export class TerrainMovement {
       world.set(id, Transform, "facing", (facing + step) & 0xffff);
       if (step !== turn) {
         if (step !== 0) route.stuck = 0;
-        else this.stalled(id, route);
+        else if (!(slow && !speed)) this.stalled(id, route);
         continue;
       }
-      const percent =
-        definition.domain === "air"
-          ? 100
-          : (this.profile(route.definition).grid.speedPercent[this.cell(position)] as number);
-      const speed = Math.floor((definition.speed * percent) / 100);
+      if (slow && !speed) continue;
       const distance = isqrt(dx * dx + dy * dy);
       const next =
         distance <= speed

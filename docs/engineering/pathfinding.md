@@ -105,7 +105,7 @@ edge match the neighbouring plane, so parallel ramps join and raised ramp sides 
 **Addition — first-pass engineering route weights:** road 1, ordinary surfaces 2, rubble 3, for every
 ground domain. Wheeled shallow-water entry doubles that surface weight. These are route preferences,
 not approved final terrain balance. Physical speed is a separate 100% layer except wheeled shallow water
-at the owner's 50%; terrain/occupancy-blocked cells carry 0%. Centre-clearance inflation changes search anchors, not physical speed in the remaining clear parts of a cell. No other physical speed modifier is chosen here.
+at the owner's 50%; terrain/occupancy-blocked cells carry 0%. Centre-clearance inflation changes search anchors, not physical speed in the remaining clear parts of a cell. Timed [slow warheads](../project/decisions/2026-11-03-provisional-slow-warheads.md) multiply the remaining speed independently of these search costs; a zero rounded speed holds its route without consuming stuck retries.
 The use of terrain-specific locomotor costs follows [OpenRA's locomotor terrain entries](https://docs.openra.net/en/release/traits/#locomotor);
 radius-based obstruction clearance follows the approach described in [0 A.D.'s pathfinder design](https://svn.wildfiregames.com/nightly-build/trunk/docs/pathfinder.pdf).
 Those sources support the engineering separation, not these numerical balance values.
