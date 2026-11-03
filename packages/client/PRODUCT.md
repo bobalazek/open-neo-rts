@@ -47,9 +47,9 @@ source.
   fallbacks. Setup keeps validation feedback and actions visible while content
   scrolls; focused fields and the checkbox scroll into view. Leaving setup
   cancels graphics initialization and restores the canvas attributes.
-- Native pointer text editing shows a caret and selection. Semantic setup text
-  editing currently shows the native focus frame without mirrored caret or
-  selection; the remaining polish is recorded in `../../docs/project/tasks.md`.
+- Native setup text fields mirror semantic keyboard caret and selection alongside
+  their focus frame. HTML retains keyboard and clipboard ownership; pointer text
+  editing continues through the native controls.
 - Settings use the same preferences, validation and storage from Home and in a
   match. Changes preview immediately; Apply persists them, while Back or cancel
   restores the saved preferences. Graphics failure leaves semantic HTML usable.
@@ -58,9 +58,8 @@ source.
   the paused battlefield dimly visible behind it. Menu state and actions still
   come from the existing worker/controller; Current controls keeps the complete
   existing help text. Compact panels size and scroll from their actual content.
-- Semantic text entry in setup and named saves retains the deferred native
-  caret/selection-mirroring polish; focus frames remain synchronized. This does
-  not claim screen-reader or physical-device qualification.
+- Named saves and Load search in standalone and in-match galleries mirror semantic
+  keyboard caret and selection with the same native text-field treatment as setup.
 - Load shows original match thumbnails, selected-slot metadata and actions;
   desktop columns stack and scroll on narrow screens. Search keeps its native
   editor while rows change. Existing import validation, compatibility checks,
@@ -69,9 +68,8 @@ source.
   final and sampled table row. Tables support pointer and keyboard scrolling;
   replay export, Rematch and Home invoke their existing handlers. HTML retains
   semantics, modal ownership and the usable graphics fallback for both surfaces.
-- Native pointer text entry includes a caret. Semantic text entry in Load shares
-  the deferred caret/selection-mirroring polish; synchronized focus remains visible.
-  Browser review does not qualify physical touch, assistive technology or hardware FPS.
+- Browser review does not qualify physical touch, physical IME, screen readers,
+  Firefox or hardware FPS.
 - The match places a circular minimap at the right and one integrated selection
   station at the bottom left. Original command pictograms and model thumbnails
   keep persistent copy sparse. Hover and keyboard focus expose complete action

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T12:56:46.735412Z",
+  "generatedAt": "2026-11-03T13:18:16Z",
   "title": "Design System: Open Neo RTS native menus and match HUD",
   "extensions": {
     "colorMeta": {
@@ -302,7 +302,7 @@
       },
       "panel-field": {
         "displayName": "Shared panel field",
-        "purpose": "16px base native input/choice text; family inherits Babylon\u2019s current default. Native editors survive save-list updates; semantic text editing mirrors focus, with caret/selection mirroring deferred."
+        "purpose": "16px base native input/choice text; family inherits Babylon\u2019s current default. Native editors survive save-list updates; semantic keyboard editing mirrors focus, caret and selection while HTML retains keyboard and clipboard ownership."
       },
       "panel-help": {
         "displayName": "Shared panel supporting text",
@@ -389,9 +389,9 @@
       "name": "Setup rule input",
       "kind": "input",
       "refersTo": "setup-input",
-      "description": "Static HTML preview of the native pointer editor; semantic editing currently mirrors the focus frame but not caret or selection.",
+      "description": "Static HTML preview of native text-field states. Setup, named saves and standalone/in-match Load search mirror semantic keyboard focus, caret and selection; HTML retains keyboard and clipboard ownership while pointer editing stays native.",
       "html": "<label class=\"ds-setup-field\">Seed<input type=\"text\" inputmode=\"numeric\" value=\"1\" /></label>",
-      "css": ".ds-setup-field{display:grid;gap:8px;color:#b5c0bf;font:13px Arial,sans-serif}.ds-setup-field input{height:44px;padding:0 10px;border:1px solid #eff1e9;border-radius:0;background:#18262e;color:#eff1e9;font:16px Arial,sans-serif}.ds-setup-field input:focus-visible{outline:none;border-color:#ddc382;background:#25343b}"
+      "css": ".ds-setup-field{display:grid;gap:8px;color:#b5c0bf;font:13px Arial,sans-serif}.ds-setup-field input{height:44px;padding:0 10px;border:1px solid #eff1e9;border-radius:0;background:#18262e;color:#eff1e9;font:16px Arial,sans-serif}.ds-setup-field input:focus-visible{outline:none;border:2px solid #ddc382;background:#25343b}.ds-setup-field input::selection{background:rgba(221,195,130,.35);color:#eff1e9}"
     },
     {
       "name": "Shared native panel",

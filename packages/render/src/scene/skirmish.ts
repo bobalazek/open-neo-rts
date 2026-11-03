@@ -6,7 +6,6 @@ import { Container } from "@babylonjs/gui/2D/controls/container";
 import { Control } from "@babylonjs/gui/2D/controls/control";
 import { Ellipse } from "@babylonjs/gui/2D/controls/ellipse";
 import { Image } from "@babylonjs/gui/2D/controls/image";
-import { InputText } from "@babylonjs/gui/2D/controls/inputText";
 import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
@@ -14,6 +13,7 @@ import { BIOMES, SURFACES, type TerrainGrid, WATER } from "@open-neo-rts/content
 import { PALETTES } from "../terrain";
 import { createEngine, createScene } from ".";
 import type { MenuAction } from "./menu";
+import { NativeTextInput, type TextSelection } from "./text-input";
 
 export interface SkirmishField {
   id: string;
@@ -239,8 +239,8 @@ export async function createSkirmishScene(
             ensureVisible(popup);
           },
         })
-      : new InputText(field.id, field.value);
-    if (input instanceof InputText) {
+      : new NativeTextInput(field.id, field.value);
+    if (input instanceof NativeTextInput) {
       input.autoStretchWidth = false;
       input.color = "#eff1e9";
       input.background = "#18262e";
@@ -360,7 +360,7 @@ export async function createSkirmishScene(
     syncing = true;
     for (const { field, input } of fields) {
       const value = next.values[field.id] ?? "";
-      if (input instanceof InputText) input.text = value;
+      if (input instanceof NativeTextInput) input.text = value;
       else if (input.textBlock)
         input.textBlock.text =
           field.choices?.find((choice) => choice.value === value)?.label ?? value;
@@ -399,6 +399,11 @@ export async function createSkirmishScene(
   return {
     update,
     focus,
+    selection(id?: string, selection?: TextSelection) {
+      for (const { field, input } of fields)
+        if (input instanceof NativeTextInput)
+          input.mirrorSelection(field.id === id ? selection : undefined);
+    },
     activeField: () => focused,
     drawn: () =>
       new Promise<void>((resolve) => {

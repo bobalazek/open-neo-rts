@@ -20,7 +20,10 @@ also use native thumbnails, tables and history views. The
 native contextual controls and a right-hand circular minimap. Loading feedback
 and debug conversion remain UI work.
 
-- [ ] Native text input polish: mirror the caret and selection while the semantic HTML field handles keyboard editing in setup, named saves and gallery search; the native pointer editor already shows both.
+Native text inputs now mirror semantic caret and selection in setup, named saves
+and both save galleries, while retaining native pointer editing and HTML keyboard
+and clipboard ownership. The [selection adapter](./learnings/2026-11-03-native-selection-indices.md)
+isolates the pinned Babylon range representation.
 - [ ] Native minimap browser qualification: retain the [intermittent WebKit pan observation](./learnings/2026-11-03-native-hud-coordinates.md) for real playthroughs; the exact test recheck and three independent repetitions passed, with no confirmed cause for the single miss.
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
