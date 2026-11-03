@@ -16,6 +16,12 @@ import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { eventVisible } from "../effects";
 import { registerModelShadows } from "../scene/shadows";
 import { createFoundation } from "../structures";
+import {
+  createConstructionScaffold,
+  initializeConstruction,
+  prepareConstruction,
+  setConstructionStage,
+} from "../structures/construction";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 import { createModelLod } from "./lod";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
@@ -33,6 +39,9 @@ interface Entity {
   maxHealth: number;
   rank?: number;
   construction?: number;
+  constructionStage?: number;
+  scaffold?: Mesh;
+  shadows?: boolean;
   working?: boolean;
   workElapsed?: number;
   attackElapsed?: number;
@@ -142,6 +151,7 @@ export function createEntityPresentation(
             return undefined;
           }
           try {
+            if (footprint) prepareConstruction(model);
             const color = colors.get(force);
             if (color && !options.ghost) setTeamColor(model.materials, color);
             if (options.ghost) {
@@ -243,6 +253,40 @@ export function createEntityPresentation(
       if (domain === "naval" || domain === "hover" || domain === "amphibious")
         height = Math.max(height, waterHeight(terrain, x, y));
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
+      if (template?.footprint) {
+        setConstructionStage(
+          entity.root.getChildMeshes(),
+          height,
+          entity.height ?? 0.5,
+          entity.constructionStage,
+        );
+        if (entity.constructionStage !== undefined) {
+          if (!entity.scaffold) {
+            entity.scaffold = createConstructionScaffold(
+              scene,
+              template.footprint,
+              entity.height ?? 0.5,
+              !!options.ghost,
+            );
+            entity.scaffold.parent = entity.root;
+            if (!options.ghost) meshHandles.set(entity.scaffold, handle);
+          }
+        } else {
+          if (entity.scaffold) {
+            meshHandles.delete(entity.scaffold);
+            entity.scaffold.dispose();
+            entity.scaffold = undefined;
+          }
+          // shortcut: partial structures cast no shadow; add clipped depth passes when construction shadows are implemented.
+          if (!options.ghost && !entity.shadows) {
+            registerModelShadows(entity.root);
+            entity.shadows = true;
+          }
+        }
+      } else if (!options.ghost && !entity.shadows) {
+        registerModelShadows(entity.root);
+        entity.shadows = true;
+      }
       const camera = scene.activeCamera;
       entity.lod?.setDistant(
         !!camera &&
@@ -395,6 +439,9 @@ export function createEntityPresentation(
               );
             }
             entity.deathElapsed = 0;
+            if (entity.scaffold) meshHandles.delete(entity.scaffold);
+            entity.scaffold?.dispose();
+            entity.scaffold = undefined;
             entity.attackElapsed = undefined;
             entity.playback.play("death");
             entity.playback.seek(0);
@@ -455,10 +502,15 @@ export function createEntityPresentation(
           }
           entity.deployed = deployed;
         }
+        entity.constructionStage = projected.constructionSite
+          ? (projected.constructionStage ?? 0)
+          : undefined;
         entity.construction = projected.construction
           ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
             Math.max(1, projected.construction.totalTicks * 4)
-          : undefined;
+          : entity.constructionStage === undefined
+            ? undefined
+            : entity.constructionStage / 100;
         const working =
           !projected.disabled &&
           (projected.constructionOrder?.state === "working" ||
@@ -482,7 +534,10 @@ export function createEntityPresentation(
               if (!model || disposed || entities.get(handle) !== current) return;
               const instance = model.instantiateModelsToScene((name) => name, false, {
                 // Morph weights need their own manager; rigid parts use hardware instances.
-                doNotInstantiate: (node) => node instanceof Mesh && !!node.morphTargetManager,
+                doNotInstantiate: (node) =>
+                  node instanceof Mesh &&
+                  (!!node.morphTargetManager ||
+                    (!!template.footprint && !scene.getEngine().getCaps().instancedArrays)),
               });
               current.instance = instance;
               current.root = new TransformNode(`entity ${handle}`, scene);
@@ -491,6 +546,7 @@ export function createEntityPresentation(
                 .getDescendants()
                 .filter((node) => node instanceof TransformNode);
               const meshes = current.root.getChildMeshes();
+              if (template.footprint) initializeConstruction(meshes);
               for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
                 if (options.ghost) mesh.isPickable = false;
@@ -498,7 +554,6 @@ export function createEntityPresentation(
               }
               current.height = Math.max(0.5, current.root.getHierarchyBoundingVectors().max.y);
               current.lod = createModelLod(nodes, meshes);
-              if (!options.ghost) registerModelShadows(current.root);
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,

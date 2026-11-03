@@ -148,6 +148,23 @@ or missing-progress site stays at zero until actual completion. Remembered sites
 keep only the last observed stage, including through hidden progress/completion,
 ownership changes or death. The renderer must not consult live hidden state.
 
+Structures reveal from the ground in provisional 0.25 m brick layers using that
+public stage. A [custom instance buffer](https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers)
+holds each model's world-space cutoff and activation flag; original geometry and
+Force materials stay shared. GLSL/WebGL and WGSL/WebGPU hooks discard unrevealed
+fragments. Devices without hardware instancing use shared-geometry clones and
+per-mesh uniforms. Completion disables clipping, including the final partial
+layer, and removes the scaffold. Models without a known stage remain at zero
+while their construction-site marker exists.
+
+A gold wire scaffold encloses the declared footprint and full model height,
+follows terrain and rotation, and provides a selectable site envelope even at
+zero progress. Remembered scaffolds are grey and unpickable. Public stage supplies
+the progress bar where exact private work is unavailable. No animation clock
+advances building work. Partial models currently cast no shadow; registration
+begins at completion, pending clipped depth-pass support. Site removal, cancellation,
+fog revocation and disposal release the scaffold/material and model instance.
+
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
 - **Packing up and deploying** (Phoenix Initiative mobile structures such as the Command Node) shuffles the bricks into the vehicle form and back.
