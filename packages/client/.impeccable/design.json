@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T10:51:51.786416Z",
+  "generatedAt": "2026-11-03T12:56:46.735412Z",
   "title": "Design System: Open Neo RTS native menus and match HUD",
   "extensions": {
     "colorMeta": {
@@ -16,20 +16,6 @@
           "oklch(72% 0.016 230)",
           "oklch(84% 0.016 230)",
           "oklch(95% 0.016 230)"
-        ]
-      },
-      "surface": {
-        "role": "neutral",
-        "displayName": "Deep steel",
-        "tonalRamp": [
-          "oklch(15% 0.014 230)",
-          "oklch(26% 0.014 230)",
-          "oklch(38% 0.014 230)",
-          "oklch(49% 0.014 230)",
-          "oklch(61% 0.014 230)",
-          "oklch(72% 0.014 230)",
-          "oklch(84% 0.014 230)",
-          "oklch(95% 0.014 230)"
         ]
       },
       "ink": {
@@ -243,35 +229,14 @@
         ]
       }
     },
-    "shadows": [
-      {
-        "name": "resource-strip",
-        "value": "0 3px 12px #0005",
-        "purpose": "Separate the top strip from terrain."
-      },
-      {
-        "name": "dock",
-        "value": "0 3px 14px #0007, inset 0 1px #d2cba00a",
-        "purpose": "Frame command stations above terrain."
-      },
-      {
-        "name": "recipe-detail",
-        "value": "0 5px 18px #0009",
-        "purpose": "Lift readable recipe explanations above the dock."
-      }
-    ],
     "breakpoints": [
       {
-        "name": "compact-desktop",
-        "value": "1100px"
+        "name": "match-compact",
+        "value": "width < 940px"
       },
       {
-        "name": "panel-switching",
-        "value": "850px"
-      },
-      {
-        "name": "six-column-commands",
-        "value": "480px"
+        "name": "match-resource-wrap",
+        "value": "width < 650px"
       },
       {
         "name": "home-narrow",
@@ -283,7 +248,7 @@
       },
       {
         "name": "setup-wide",
-        "value": "900px × effective UI scale"
+        "value": "900px \u00d7 effective UI scale"
       },
       {
         "name": "panel-compact-insets",
@@ -291,11 +256,11 @@
       },
       {
         "name": "panel-two-columns",
-        "value": "inner content width >= 650px × effective panel scale"
+        "value": "inner content width >= 650px \u00d7 effective panel scale"
       },
       {
         "name": "gallery-two-columns",
-        "value": "inner content width >= 760px × effective panel scale"
+        "value": "inner content width >= 760px \u00d7 effective panel scale"
       }
     ],
     "typographyMeta": {
@@ -329,7 +294,7 @@
       },
       "panel-title": {
         "displayName": "Shared panel title",
-        "purpose": "Bold 27px base; inherits Babylon’s current default Arial family. Multiplied by the effective panel scale."
+        "purpose": "Bold 27px base; inherits Babylon\u2019s current default Arial family. Multiplied by the effective panel scale."
       },
       "panel-body": {
         "displayName": "Shared panel text",
@@ -337,11 +302,31 @@
       },
       "panel-field": {
         "displayName": "Shared panel field",
-        "purpose": "16px base native input/choice text; family inherits Babylon’s current default. Native editors survive save-list updates; semantic text editing mirrors focus, with caret/selection mirroring deferred."
+        "purpose": "16px base native input/choice text; family inherits Babylon\u2019s current default. Native editors survive save-list updates; semantic text editing mirrors focus, with caret/selection mirroring deferred."
       },
       "panel-help": {
         "displayName": "Shared panel supporting text",
         "purpose": "Explicit Arial help at 13px base; status/errors share that size with inherited family. Empty supporting blocks reserve no extra height."
+      },
+      "body": {
+        "displayName": "Match descriptions",
+        "purpose": "Explicit Arial for native action descriptions, Details, command mode and feedback; measured wrapping at 1.4 times font size."
+      },
+      "title": {
+        "displayName": "Selected actor",
+        "purpose": "Bold Arial actor name/count, multiplied by effective match scale."
+      },
+      "label": {
+        "displayName": "Match readouts",
+        "purpose": "Explicit Arial for resource values, health and text-only action names."
+      },
+      "hotkey": {
+        "displayName": "Action hotkey",
+        "purpose": "Compact fixed-size corner hint; not a minimum size for explanatory text."
+      },
+      "count": {
+        "displayName": "Action count",
+        "purpose": "Compact fixed-size queue/group badge."
       }
     },
     "motion": [
@@ -354,42 +339,35 @@
   },
   "components": [
     {
-      "name": "Command button",
+      "name": "Native command icon",
       "kind": "button",
       "refersTo": "command-button",
-      "description": "Original line pictogram with a corner hotkey; inherited focus stays visible.",
-      "html": "<button class=\"ds-command\" aria-label=\"Q · Move\"><span>Q</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
-      "css": ".ds-command{position:relative;display:grid;place-items:center;width:3rem;min-height:2.4rem;padding:0;border:1px solid #536164;border-radius:2px;background:linear-gradient(#293438,#1a2428);color:#e5d7b1;cursor:pointer}.ds-command svg{width:1.4rem;height:1.4rem}.ds-command span{position:absolute;top:.15rem;left:.2rem;font: .55rem/1 'Segoe UI',Tahoma,sans-serif;color:#d9e0da}.ds-command:hover:not(:disabled),.ds-command[aria-pressed=true]{border-color:#ddc382;background:#394147;color:#fff0ba}.ds-command:active:not(:disabled){background:#476071}.ds-command:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}.ds-command:disabled{color:#9ba5a5;opacity:.38;cursor:default}"
+      "description": "HTML preview of the Babylon icon command: warm hover frame, ivory focus frame, primary armed well and inspectable unavailable state.",
+      "html": "<button class=\"ds-command\" aria-label=\"Move\"><span>Q</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
+      "css": ".ds-command{position:relative;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #475354;border-radius:0;background:#18262e;color:#ddc382;cursor:pointer}.ds-command svg{width:22px;height:22px}.ds-command span{position:absolute;top:2px;left:3px;font:10px Arial,sans-serif}.ds-command:hover{border-color:#ddc382}.ds-command[aria-pressed=true],.ds-command:active{background:#3c392d}.ds-command:focus-visible{outline:none;border:2px solid #eff1e9}.ds-command[aria-disabled=true]{opacity:.45}"
     },
     {
-      "name": "Dock panel",
+      "name": "Native selection station",
       "kind": "card",
       "refersTo": "dock-panel",
-      "description": "Thin steel frame and subdued title around match information.",
-      "html": "<section class=\"ds-dock\"><h2>Selection</h2><strong>Field Technician × 1</strong><p>Field Technician: 100/100 HP · Armor: infantry</p></section>",
-      "css": ".ds-dock{padding:.55rem;border:1px solid #475354;border-top-color:#92917a;border-radius:2px;background:#182126f5;box-shadow:0 3px 14px #0007,inset 0 1px #d2cba00a;color:#eff1e9;font:.75rem/1.35 'Segoe UI',Tahoma,sans-serif}.ds-dock h2{margin:0 0 .4rem;color:#d6cba9;font-size:.7rem;font-weight:600;line-height:1.25}.ds-dock strong{font-size:.8rem}.ds-dock p{color:#b5c0bf}"
+      "description": "Static frame preview of the integrated station; production adds original portrait pixels, actual health, contextual icons and queue progress.",
+      "html": "<section class=\"ds-station\"><strong>Selection</strong><button>Details <small>I</small></button></section>",
+      "css": ".ds-station{display:grid;gap:12px;width:280px;padding:12px;border:1px solid #475354;border-radius:0;background:#182126;color:#eff1e9;font:13px Arial,sans-serif}.ds-station strong{font-size:14px}.ds-station button{position:relative;width:100px;height:28px;padding:0;border:1px solid #475354;border-radius:0;background:#18262e;color:#eff1e9;font:12px Arial,sans-serif;cursor:pointer}.ds-station small{position:absolute;left:3px;top:2px;font:10px Arial,sans-serif;color:#ddc382}.ds-station button:hover{border-color:#ddc382}.ds-station button:active{background:#3c392d}.ds-station button:focus-visible{outline:none;border:2px solid #eff1e9}"
     },
     {
-      "name": "Narrow panel navigation",
+      "name": "Native contextual navigation",
       "kind": "nav",
-      "description": "Equal-width buttons select one dock on narrow screens.",
-      "html": "<nav class=\"ds-tabs\" aria-label=\"Command panels\"><button aria-pressed=\"false\">Selection</button><button aria-pressed=\"true\">Commands</button><button aria-pressed=\"false\">Structures</button><button aria-pressed=\"false\">Minimap</button></nav>",
-      "css": ".ds-tabs{display:flex;gap:.25rem}.ds-tabs button{flex:1;min-height:1.8rem;padding:.2rem;border:1px solid #81909d;border-radius:3px;background:#182126f5;color:#eff1e9;font:.7rem/1.5 'Segoe UI',Tahoma,sans-serif;cursor:pointer}.ds-tabs button[aria-pressed=true]{color:#ddc382;border-color:#ddc382}.ds-tabs button:hover{background:#354754}.ds-tabs button:active{background:#476071}.ds-tabs button:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}"
+      "description": "Static preview of Commands and Build / train; production switches the contextual grid with B on compact screens and can show both grids on desktop.",
+      "html": "<nav class=\"ds-context\" aria-label=\"Selection actions\"><button aria-pressed=\"true\">Commands</button><button aria-pressed=\"false\"><small>B</small>Build / train</button></nav>",
+      "css": ".ds-context{display:flex;gap:8px}.ds-context button{position:relative;min-width:96px;height:26px;padding:0 8px;border:1px solid #475354;border-radius:0;background:#18262e;color:#eff1e9;font:12px Arial,sans-serif;cursor:pointer}.ds-context button[aria-pressed=true]{background:#3c392d}.ds-context small{position:absolute;top:2px;left:3px;font:10px Arial,sans-serif;color:#ddc382}.ds-context button:hover{border-color:#ddc382}.ds-context button:active{background:#3c392d}.ds-context button:focus-visible{outline:none;border:2px solid #eff1e9}"
     },
     {
-      "name": "Control group field",
-      "kind": "input",
-      "description": "Compact native select accompanying group actions.",
-      "html": "<label class=\"ds-group\">Group <select aria-label=\"Group\"><option>1</option><option>2</option><option>3</option></select></label>",
-      "css": ".ds-group{display:flex;align-items:center;gap:.25rem;color:#eff1e9;font:.65rem/1.35 'Segoe UI',Tahoma,sans-serif}.ds-group select{min-height:1.6rem;padding:.1rem .35rem;border:1px solid #465256;border-radius:2px;background:#182126ed;color:#eff1e9;font:inherit;color-scheme:dark}.ds-group select:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}"
-    },
-    {
-      "name": "Recipe explanation",
+      "name": "Native action description",
       "kind": "custom",
       "refersTo": "recipe-detail",
-      "description": "Readable details above the dock; unavailable cards remain inspectable.",
-      "html": "<div class=\"ds-detail\" role=\"tooltip\">Command Center<br>Primary base structure with its own defensive guns.<br>Builds structures.<br>Unavailable: no authored paid recipe</div>",
-      "css": ".ds-detail{width:min(20rem,calc(100vw - 1rem));padding:.75rem;border:1px solid #a29a7e;background:#172127;color:#eff1e9;box-shadow:0 5px 18px #0009;font:.8rem/1.5 'Segoe UI',Tahoma,sans-serif;white-space:pre-line}"
+      "description": "Content-sized native hover/focus description preview; production uses complete controller-supplied action text, prices, requirements and actual unavailable reasons.",
+      "html": "<div class=\"ds-detail\" role=\"tooltip\">Details (I)</div>",
+      "css": ".ds-detail{width:fit-content;max-width:min(316px,calc(100vw - 48px));padding:12px;border:1px solid #475354;border-radius:0;background:#182126;color:#eff1e9;font:13px/1.4 Arial,sans-serif;white-space:pre-line}"
     },
     {
       "name": "Home action",
@@ -416,21 +394,6 @@
       "css": ".ds-setup-field{display:grid;gap:8px;color:#b5c0bf;font:13px Arial,sans-serif}.ds-setup-field input{height:44px;padding:0 10px;border:1px solid #eff1e9;border-radius:0;background:#18262e;color:#eff1e9;font:16px Arial,sans-serif}.ds-setup-field input:focus-visible{outline:none;border-color:#ddc382;background:#25343b}"
     },
     {
-      "name": "Setup spawn choice",
-      "kind": "button",
-      "description": "Static preview of the native spawn button; production options open in a framed list with 44px rows.",
-      "html": "<button class=\"ds-setup-spawn\" aria-haspopup=\"listbox\">North-west</button>",
-      "css": ".ds-setup-spawn{width:100%;height:44px;padding:0;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:16px Arial,sans-serif;cursor:pointer}.ds-setup-spawn:hover{background:#35434a}.ds-setup-spawn:active{background:#4a4535}.ds-setup-spawn:focus-visible{outline:none;border-width:2px}"
-    },
-    {
-      "name": "Setup primary action",
-      "kind": "button",
-      "refersTo": "setup-action-primary",
-      "description": "Static preview of the native Start action; production validation disables it and dims it to 0.4 alpha.",
-      "html": "<button class=\"ds-setup-start\">Start local match</button>",
-      "css": ".ds-setup-start{width:100%;height:44px;padding:0;border:1px solid #ddc382;border-radius:0;background:#3c392d;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-setup-start:hover:not(:disabled){background:#35434a}.ds-setup-start:active:not(:disabled){background:#4a4535}.ds-setup-start:focus-visible{outline:none;border-width:2px}.ds-setup-start:disabled{opacity:.4;cursor:default}"
-    },
-    {
       "name": "Shared native panel",
       "kind": "custom",
       "description": "Static HTML preview of the shared native Settings/pause/Load/results vocabulary at base scale. Production uses measured Babylon layout, original SVG disclosure marks and synchronized semantic controls; this preview does not implement persistence or the canvas renderer.",
@@ -454,12 +417,13 @@
   ],
   "narrative": {
     "northStar": "Graphite Command Stations",
-    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nSettings, pause actions, Objectives, Current controls and named saves extend the same native graphite vocabulary through a shared content-sized panel. In a match it floats above the dimmed battlefield; the HTML dialog owns modal focus and Escape while its separate canvas leaves the world renderer intact.\n\nLoad and results extend that shared native panel with original match thumbnails, selected-slot details, framed tabs, history plots and complete scrollable tables. Their existing controllers and semantic HTML remain authoritative; the canvas copies display values and invokes the same actions.\n\nThis records the built Home, Skirmish setup, shared native panels, Load, results and normal match HUD. Loading feedback, debug and the recorded HUD retain their HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`, `src/shared/native-panel.ts`, `src/shared/panel-content.ts`, `src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css` and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.",
+    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. The native bottom-left station integrates selection, contextual icon commands, build/train recipes and queue progress beside a circular right minimap. Quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nSettings, pause actions, Objectives, Current controls and named saves extend the same native graphite vocabulary through a shared content-sized panel. In a match it floats above the dimmed battlefield; the HTML dialog owns modal focus and Escape while its separate canvas leaves the world renderer intact.\n\nLoad and results extend that shared native panel with original match thumbnails, selected-slot details, framed tabs, history plots and complete scrollable tables. Their existing controllers and semantic HTML remain authoritative; the canvas copies display values and invokes the same actions.\n\nThis records the built Home, Skirmish setup, shared native panels, Load, results and native normal match HUD. Loading feedback and debug retain HTML/CSS presentation; the match retains synchronized semantic controls and its HTML graphics fallback. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`, `src/shared/native-panel.ts`, `src/shared/panel-content.ts`, `src/features/settings/`, `src/features/in-game-menu/`, `../render/src/scene/battlefield-hud.ts`, `../render/src/scene/battlefield-map.ts`, `src/features/match/native-hud.ts` and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.",
     "keyCharacteristics": [
-      "Battlefield first, with a slim resource strip and bottom command docks.",
-      "Graphite surfaces, restrained brass highlights and tabular counters.",
+      "Battlefield first, with a slim resource strip, integrated station and right circular map.",
+      "Graphite surfaces, restrained brass highlights and compact numeric counters.",
       "Original brick models and original line pictograms.",
-      "Narrow screens expose one dock through explicit panel tabs.",
+      "Narrow screens switch commands/build within the station; the map remains visible.",
+      "Complete action descriptions on hover/focus and content-sized actor Details.",
       "Native Home actions, original vector lettering and an authored model display.",
       "Native setup fields, compact Force rows and an authored terrain preview.",
       "Native content-sized Settings and pause panes over an intact match renderer.",
@@ -474,7 +438,7 @@
       },
       {
         "name": "The Complete Recipe Rule",
-        "body": "Keep every displayed resource amount and build time visible, and make unavailable reasons readable on desktop and mobile.",
+        "body": "Keep complete prices, build times, requirements and unavailable reasons reachable through action hover/focus descriptions.",
         "section": "components"
       }
     ],
@@ -482,8 +446,8 @@
       "Do preserve the owner's original model assets and authored names.",
       "Do use real match state for portraits, counters, availability and feedback.",
       "Do preserve full recipe values and readable unavailable explanations.",
-      "Do retain accessible action names, visible focus and narrow panel switching.",
-      "Do keep native Home, setup and panel controls synchronized with semantic HTML and preserve the graphics fallback.",
+      "Do retain accessible action names, visible focus and contextual command switching.",
+      "Do keep native Home, setup, panel and match controls synchronized with semantic HTML and preserve the graphics fallback.",
       "Do honor reduced motion in the Home model display.",
       "Do use authored terrain, resource positions and selected spawns for the setup preview.",
       "Do size shared panels from measured content and keep modal rendering separate from the match canvas.",

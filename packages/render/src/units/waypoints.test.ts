@@ -4,6 +4,38 @@ import { parseTerrain } from "@open-neo-rts/content";
 import type { SeatSnapshot } from "@open-neo-rts/sim";
 import { createOrderWaypoints } from "./waypoints";
 
+test("a moving order retains its live line mesh and compiled material", () => {
+  const engine = new NullEngine(),
+    scene = new Scene(engine),
+    layer = createOrderWaypoints(scene, parseTerrain(32, 32, {}));
+  const entity: SeatSnapshot["entities"][number] = {
+    handle: "e1",
+    definition: "unit:fixture/soldier",
+    force: 0,
+    x: 1024,
+    y: 1024,
+    facing: 0,
+    health: 100,
+    maxHealth: 100,
+    order: { type: "move", x: 8192, y: 8192 },
+  };
+  const snapshot: SeatSnapshot = { tick: 0, mode: "controlled", entities: [entity] };
+  try {
+    layer.accept(snapshot, ["e1"]);
+    const mesh = scene.meshes[0],
+      material = mesh?.material;
+    expect(mesh).toBeDefined();
+    layer.accept({ ...snapshot, tick: 1, entities: [{ ...entity, x: 1100 }] }, ["e1"]);
+    expect(scene.meshes[0]).toBe(mesh);
+    expect(scene.meshes[0]?.material).toBe(material);
+    expect(mesh?.isDisposed()).toBe(false);
+  } finally {
+    layer.dispose();
+    scene.dispose();
+    engine.dispose();
+  }
+});
+
 test("selected copied queues produce one disposable overlay and never retain hidden target positions", () => {
   const engine = new NullEngine(),
     scene = new Scene(engine);

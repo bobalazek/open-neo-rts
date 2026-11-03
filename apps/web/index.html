@@ -19,8 +19,9 @@
     in a quiet rotating display; native GUI controls start or resume a local match.
     Keyboard/screen-reader semantics survive through synchronized HTML controls.
     Then read resources, select actors, inspect their real state and issue commands.
-    FIRST VIEWPORT: A slim top resource strip; minimap bottom left; selection,
-    icon command card and four-column construction grid along the bottom.
+    FIRST VIEWPORT: A slim icon resource strip; circular minimap bottom right;
+    one bottom-left station combines the selected actor, contextual commands,
+    construction/production icons and queue progress. Keep the battlefield dominant.
     FORM: Owner-requested conventional RTS layout; researched StarCraft II,
     Age of Empires IV and Command & Conquer. Canon overrides seed 2a30a1e2.
     HOME: Graphite navigation, warm metal vector lettering, ivory supporting type,
@@ -41,6 +42,14 @@
     RESULTS: Native tabs, metric controls, copied final-value tables and original
     history plots preserve the actual completed match record. Tables scroll without
     dropping rows. Sampled values, replay export, Rematch and Home remain available.
+    BATTLEFIELD: Babylon GUI owns the visible HUD on the existing world scene.
+    Reuse original pictograms and model thumbnails. Names, health and counts stay
+    compact; complete commands, prices, requirements and stats live in hover/focus
+    descriptions and Details. Only populated control groups appear by default.
+    The circular map contains the whole rotated square map, including its corners.
+    Keyboard and assistive controls retain their existing command controllers.
+    Geometry guards use CSS pixels even when graphics changes render resolution.
+    The menu pins Resume in its header while the remaining actions scroll.
     FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
     -->
     <canvas id="game"></canvas>

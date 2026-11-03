@@ -36,6 +36,7 @@ export interface PanelContent {
     disabled: boolean;
     primary: boolean;
     back: boolean;
+    resume?: boolean;
     detail?: boolean;
     activate: () => void;
   }[];
@@ -287,7 +288,7 @@ export async function createPanelScene(
           const current = content.actions.find((item) => item.id === action.id);
           if (current && !current.disabled) current.activate();
         },
-        action.back ? gui : body,
+        action.back || action.resume ? gui : body,
       ),
     );
     tabs = (content.tabs ?? []).map((action) =>
@@ -443,7 +444,8 @@ export async function createPanelScene(
     let visible = 0;
     actions.forEach((control, i) => {
       control.fontSize = 15 * scale;
-      if (content.actions[i]?.back || content.actions[i]?.detail) return;
+      if (content.actions[i]?.back || content.actions[i]?.resume || content.actions[i]?.detail)
+        return;
       const rowY = y + Math.floor(visible / columns) * 52 * scale;
       place(
         control,
@@ -468,10 +470,26 @@ export async function createPanelScene(
     const frameY = (height - frameHeight) / 2;
     place(frame, x, frameY, frameWidth, frameHeight);
     const back = content.actions.findIndex((action) => action.back);
+    const resume = content.actions.findIndex((action) => action.resume);
+    const resumeSpace = resume >= 0 ? 140 * scale : 0;
     const backSpace = back >= 0 ? 100 * scale : 0;
-    place(title, x + pad + backSpace, frameY + 20 * scale, inner - backSpace, 42 * scale);
+    place(
+      title,
+      x + pad + backSpace,
+      frameY + 20 * scale,
+      inner - backSpace - resumeSpace,
+      42 * scale,
+    );
     title.fontSize = 27 * scale;
     if (back >= 0) place(actions[back]!, x + pad, frameY + 20 * scale, 80 * scale, 42 * scale);
+    if (resume >= 0)
+      place(
+        actions[resume]!,
+        x + pad + inner - 128 * scale,
+        frameY + 20 * scale,
+        128 * scale,
+        42 * scale,
+      );
     status.isVisible = statusHeight > 0;
     place(status, x + pad, frameY + 70 * scale, inner, Math.max(1, statusHeight));
     status.fontSize = 13 * scale;

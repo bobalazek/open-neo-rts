@@ -6,7 +6,7 @@ test("browser Back disposes an unsaved in-match settings preview", async ({ page
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   await menu.getByRole("button", { name: "Settings", exact: true }).press("Enter");
@@ -54,7 +54,7 @@ test("shared device settings preview, cancel, persist and apply live across inte
     .toBe("125%");
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   const tick = await page.locator("#game").getAttribute("data-tick");
@@ -67,16 +67,13 @@ test("shared device settings preview, cancel, persist and apply live across inte
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
   expect(await page.locator("#game").getAttribute("data-tick")).toBe(tick);
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
-  const top = await page.locator(".match-top").boundingBox(),
-    bottom = await page.locator(".match-hud").boundingBox();
-  if (!top || !bottom) throw new Error("HUD layout missing");
-  const centre = (top.y + top.height + bottom.y) / 2;
+  const centre = (await page.locator("#game").boundingBox())!.height / 2;
   await page.mouse.move(620, centre - 25);
   await page.mouse.down();
   await page.mouse.move(660, centre + 25, { steps: 3 });
   await page.mouse.up();
   await expect(page.locator("[data-details]")).toContainText("Command Center");
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Settings", exact: true }).press("Enter");
   await menu.getByLabel("Interface scale", { exact: true }).selectOption("150");
   await menu.getByRole("button", { name: "Apply and save" }).press("Enter");
@@ -90,7 +87,7 @@ test("shared device settings preview, cancel, persist and apply live across inte
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
   page.once("dialog", (dialog) => dialog.accept());
   await expect(menu).not.toBeVisible();
-  await page.getByRole("button", { name: "Leave match", exact: true }).click();
+  await page.getByRole("button", { name: "Leave match", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
 });
 
@@ -107,10 +104,10 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: /Idle builders 2/ }).click();
+  await page.getByRole("button", { name: /Idle builders 2/ }).press("Enter");
   await page
     .locator('[data-definition="core.structure:eastern-collective/industrial-reactor"]')
-    .click();
+    .press("Enter");
   await page.keyboard.press("Escape");
   await expect(canvas).not.toHaveAttribute("data-command-mode", "economy.build");
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
@@ -141,7 +138,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.keyboard.press("Pause");
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
   expect(workers).toBe(1);
@@ -153,7 +150,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
     .toBe(false);
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   expect(workers).toBe(2);
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(menu).toBeVisible();

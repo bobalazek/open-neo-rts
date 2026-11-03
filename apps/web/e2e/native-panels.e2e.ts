@@ -53,7 +53,7 @@ test("native save gallery keeps typed search focused, imports files and opens re
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   const gui = menu.locator(".native-menu-canvas");
   await expect(gui).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
@@ -99,7 +99,7 @@ test("native save gallery keeps typed search focused, imports files and opens re
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   const result = page.getByRole("dialog", { name: "Defeat", exact: true });
   await expect(result.locator("canvas")).toHaveAttribute("data-panel", "results", {
     timeout: 30_000,
@@ -193,7 +193,7 @@ test("native pause canvas saves a match, previews settings and resumes with moda
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const world = page.locator("#game");
   await expect(world).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   const gui = menu.locator(".native-menu-canvas");
   await expect(gui).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });

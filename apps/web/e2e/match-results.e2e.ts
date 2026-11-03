@@ -3,11 +3,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import type { MatchRecord, SeatSnapshot } from "../../../packages/sim/src";
+import { nativeTextPoint, observeNativePaint } from "./native-paint";
 
 test("real paid production reaches the frozen final totals on desktop and narrow layouts", async ({
   page,
 }, info) => {
   test.setTimeout(120_000);
+  await observeNativePaint(page);
   page.on("dialog", (dialog) => dialog.accept());
   await page.addInitScript(() => {
     const OriginalWorker = window.Worker;
@@ -40,9 +42,8 @@ test("real paid production reaches the frozen final totals on desktop and narrow
       }),
   );
   expect(refused).toContain("Finish the normal match");
-  const producer = await page.getByRole("button", { name: /Idle producers 1/ }).boundingBox();
-  if (!producer) throw new Error("Idle producer control missing");
-  await page.mouse.move(producer.x + producer.width / 2, producer.y + producer.height / 2);
+  const producer = await nativeTextPoint(page, ",");
+  await page.mouse.move(producer.x, producer.y);
   await page.mouse.down();
   // A live snapshot between down/up must not replace the label and cancel WebKit's click.
   await page
@@ -51,8 +52,10 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.mouse.up();
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
-  await page.getByRole("button", { name: "Resume", exact: true }).click();
-  await page.locator('[data-definition="core.unit:eastern-collective/field-technician"]').click();
+  await page.getByRole("button", { name: "Resume", exact: true }).press("Enter");
+  await page
+    .locator('[data-definition="core.unit:eastern-collective/field-technician"]')
+    .press("Enter");
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
   await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
     timeout: 30_000,
@@ -80,7 +83,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   });
   expect(live.statistics?.map((row) => row.force)).toEqual([0]);
   expect(live.statistics?.[0]?.details).toBeUndefined();
-  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   const dialog = page.getByRole("dialog", { name: "Defeat", exact: true });
   await expect(dialog).toBeVisible();
   const cells = dialog.getByRole("row", { name: /Your Force Surrendered/ }).getByRole("cell");
@@ -217,10 +220,10 @@ test("a terminal result arriving before a stale surrender resume rejection stays
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.evaluate(() => Reflect.set(window, "raceSurrender", true));
-  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(page.getByRole("dialog", { name: "Defeat", exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Could not start this match. Retry, or return to setup." }),
@@ -242,9 +245,9 @@ test("real surrender ends a paused normal match once, rematch creates a new work
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page).toHaveURL(/\/match$/);
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   const result = page.getByRole("dialog", { name: "Defeat", exact: true });
   await expect(result).toBeVisible();
   await expect(result).toContainText("Team 2 wins");
@@ -263,7 +266,7 @@ test("real surrender ends a paused normal match once, rematch creates a new work
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(canvas).toHaveAttribute("data-entities", "7");
   expect(workers).toBe(2);
-  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(result).toBeVisible();
   await result.getByRole("button", { name: "Home", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/$/);

@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Native battlefield command station](./2026-11-03-native-battlefield-station.md) — Right circular map, integrated selection/commands, icon tooltips and render-scale-safe input.
+
 - [2026-11-03 — Native save galleries and results](./2026-11-03-native-load-and-results.md) — Babylon thumbnails, final tables/history and keyboard scrolling preserve the existing storage and result controllers.
 
 - [2026-11-03 — Canonical remains](./2026-11-03-canonical-remains.md) — Separate inert wrecks/rubble, shared bounded decay and current-sight projections.

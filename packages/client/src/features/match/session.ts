@@ -34,6 +34,7 @@ import type { HudDefinition } from "./hud-model";
 import { actionText, decorateAction, hudIcon } from "./icons";
 import { bindSelectionInput } from "./input";
 import { createMinimap } from "./minimap";
+import { mountNativeMatchHud } from "./native-hud";
 
 /** A screen owns this session immediately, including resources that finish loading after cancellation. */
 export function createNormalSession(
@@ -60,6 +61,7 @@ export function createNormalSession(
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
   let resultScreen: ReturnType<typeof postMatchScreen> | undefined;
   let minimap: ReturnType<typeof createMinimap> | undefined;
+  let nativeHud: ReturnType<typeof mountNativeMatchHud> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
   let resultDefinitions: { id: string; name: string; kind: string }[] = [];
@@ -124,6 +126,7 @@ export function createNormalSession(
     for (const url of replayUrls) URL.revokeObjectURL(url);
     replayUrls.clear();
     resultScreen?.dispose();
+    nativeHud?.dispose();
     match?.dispose();
     presentation?.dispose();
     footprint?.dispose();
@@ -308,7 +311,7 @@ export function createNormalSession(
       renderer.scene.onBeforeRenderObservable.add(() => {
         activePresentation.render(clock.now(performance.now()));
         hud?.frame();
-        minimap?.frame(performance.now());
+        if (minimap?.frame(performance.now())) nativeHud?.frame();
       });
       progress(3);
       match = createOfflineMatch(update, failed);
@@ -441,6 +444,8 @@ export function createNormalSession(
                 : null,
             ),
           fail: failed,
+          present: () => nativeHud?.update(),
+          blocksPointer: (x, y) => nativeHud?.blocksPointer(x, y) ?? false,
         },
         signal.signal,
       );
@@ -481,14 +486,16 @@ export function createNormalSession(
         },
         signal.signal,
       );
+      nativeHud = mountNativeMatchHud(root, canvas, activeRenderer.scene, minimap, signal.signal);
+      activeRenderer.camera.setPointerBlocker((x, y) => nativeHud?.blocksPointer(x, y) ?? false);
       const topBar = root.querySelector<HTMLElement>(".match-top");
       const bottomHud = root.querySelector<HTMLElement>(".match-hud");
       if (topBar && bottomHud) {
         const layout = () => {
           if (!disposed)
             activeRenderer.setViewInsets(
-              topBar.getBoundingClientRect().height,
-              bottomHud.getBoundingClientRect().height,
+              nativeHud ? 0 : topBar.getBoundingClientRect().height,
+              nativeHud ? 0 : bottomHud.getBoundingClientRect().height,
             );
         };
         const sizes = new ResizeObserver(layout);
@@ -540,17 +547,19 @@ export function createNormalSession(
       bindSelectionInput(
         canvas,
         {
-          enabled: () =>
+          enabled: (event) =>
             ready &&
             !disposed &&
             !busy &&
             !menu?.isOpen() &&
             !latest?.snapshot.victory?.result &&
-            !hud?.targeting(),
+            !hud?.targeting() &&
+            !(event && nativeHud?.blocksPointer(event.clientX, event.clientY)),
           selected: activePresentation.selection,
           select: activePresentation.select,
           pick: activePresentation.pick,
           inRectangle: activePresentation.inRectangle,
+          rectangle: (rect) => nativeHud?.box(rect),
         },
         signal.signal,
       );

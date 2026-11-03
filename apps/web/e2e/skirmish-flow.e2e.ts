@@ -72,13 +72,13 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   expect(await page.evaluate(() => Reflect.get(window, "startedVeterancy"))).toBe(false);
   await expect(page.locator("#game")).toHaveAttribute("data-entities", "7");
   await expect(page.getByText("Credits 5000", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   const tick = await page.locator("#game").getAttribute("data-tick");
   await page.screenshot({ path: info.outputPath("normal-match-desktop.png") });
   expect(await page.locator("#game").getAttribute("data-tick")).toBe(tick);
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Leave match" }).click();
+  await page.getByRole("button", { name: "Leave match" }).press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
   await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
   await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
@@ -110,7 +110,7 @@ test("failed worker loading can retry through the same quick-start path", async 
   });
   await expect(page).toHaveURL(/\/match$/);
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Leave match" }).click();
+  await page.getByRole("button", { name: "Leave match" }).press("Enter");
   await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
   await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
 });

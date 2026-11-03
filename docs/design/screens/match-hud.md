@@ -2,6 +2,13 @@
 
 **Route:** `/match` · The in-match screen for every mode: skirmish, multiplayer, campaign, editor playtest, and replays (with the observer variant).
 
+The current normal skirmish uses native Babylon GUI on the battlefield scene.
+One bottom-left station combines selection and contextual commands/recipes; a
+circular minimap sits on the right. Complete descriptions appear on hover or
+keyboard focus, and Details retains full actor state and secondary actions.
+Clipped HTML keeps semantic controls and the existing command handlers. Later
+mode-specific elements below remain design reference, not implemented claims.
+
 ## Layout
 
 ```text
@@ -21,12 +28,13 @@
 │ │ ✔ Tank ready          │                                                    │
 │ │ Bob: going north       │                                                    │
 │ └────────────────────────┘                                                    │
-│ ┌──────────┐ ┌ SELECTION ─────────────────┐ ┌ COMMANDS ─┐ ┌ BUILD ─────────┐  │
-│ │ MINIMAP  │ │ [Panther ×6] [Rifle ×12]    │ │ Q  W  E  R│ │ Base Inf Veh Air│ │
-│ │          │ │ ████████░░ 82%  ★★          │ │ A  S  D  F│ │ [▣][▣][▣][▣]    │ │
-│ │          │ │ Cannon · Heavy armor        │ │ Z  X  C  V│ │ [▣ 40%][▣]      │ │
-│ └──────────┘ └─────────────────────────────┘ └───────────┘ └─────────────────┘  │
-│ [1:8] [2:12] [3:—] … control groups      idle: 👷2 🏭1     [chat: Enter]       │
+│ [1 ×8] [2 ×12]  populated groups · idle builders / producers                  │
+│ ┌ SELECTION + CONTEXTUAL CONTROLS ────────────────────┐     ╭────────────╮  │
+│ │ [portrait] Name/count   Commands | Build / train     │    ╱            ╲ │
+│ │ health                 Q  W  E  R   [recipe icons]  │   │   MINIMAP    │ │
+│ │                        A  S  D  F                  │   │ full rotated │ │
+│ │ Details (I)            Z  X  C  V   queue progress  │    ╲ square map ╱ │
+│ └────────────────────────────────────────────────────┘     ╰────────────╯  │
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -59,6 +67,12 @@
 ## Controls
 
 **Esc priority:** Esc first cancels the current mode (building placement, ability targeting, open chat), then clears the selection, and only then opens the [in-game menu](in-game-menu.md).
+
+Native Details and the group chooser close before targeting or selection is
+canceled. B switches the narrow Commands and Build / train views; I opens
+Details. Available command icons keep their QWER / ASDF / ZXCV positions even
+when unavailable actions are omitted. Only populated groups appear until the
+group chooser is opened; Ctrl-click stores the selection in a group.
 
 - **Mouse:** left-click and box-select; right-click for the context command; double-click selects all visible units of that type; Shift adds to the selection or queues orders.
 - **Orders:** attack-move (A), stop (S), hold (H), patrol (P), guard, scatter, rally point, and formation move (right-drag sets facing and width).

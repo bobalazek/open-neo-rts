@@ -62,6 +62,7 @@ export function createMinimap(
   const pingCamera = document.createElement("button");
   pingCamera.type = "button";
   pingCamera.textContent = text("ui.minimap.ping-camera");
+  decorateAction(pingCamera, "ping");
   const feed = document.createElement("ol");
   feed.className = "match-notices";
   feed.setAttribute("aria-label", text("ui.minimap.feed"));
@@ -161,13 +162,35 @@ export function createMinimap(
     if (drag !== undefined && canvas.hasPointerCapture(drag)) canvas.releasePointerCapture(drag);
     drag = undefined;
   }
+  function navigate(x: number, y: number, button: number, shift: boolean, alt: boolean) {
+    if (signal.aborted || !Number.isFinite(x) || !Number.isFinite(y)) return;
+    const cell = minimapPoint(
+      x,
+      y,
+      { left: 0, top: 0, width: 1, height: 1 },
+      terrain.width,
+      terrain.height,
+    );
+    if (!cell) return;
+    if (alt) {
+      placePing(cell);
+      return;
+    }
+    if (shift) {
+      status.textContent = text("ui.minimap.no-queue");
+      return;
+    }
+    status.textContent = "";
+    if (button === 2) options.order(cell);
+    else if (button === 0) pan(cell);
+  }
   home.addEventListener("click", goHome, { signal });
   alert.addEventListener("click", nextAlert, { signal });
   pingCamera.addEventListener(
     "click",
     () => {
       placePing(options.camera());
-      pingOptions.open = false;
+      if (!root.classList.contains("native-battlefield")) pingOptions.open = false;
       canvas.focus();
     },
     { signal },
@@ -175,7 +198,11 @@ export function createMinimap(
   pingOptions.addEventListener(
     "keydown",
     (event) => {
-      if (event.key === "Escape" && pingOptions.open) {
+      if (
+        event.key === "Escape" &&
+        pingOptions.open &&
+        !root.classList.contains("native-battlefield")
+      ) {
         event.preventDefault();
         event.stopPropagation();
         pingOptions.open = false;
@@ -187,7 +214,11 @@ export function createMinimap(
   window.addEventListener(
     "pointerdown",
     (event) => {
-      if (!pingOptions.contains(event.target as Node)) pingOptions.open = false;
+      if (
+        !root.classList.contains("native-battlefield") &&
+        !pingOptions.contains(event.target as Node)
+      )
+        pingOptions.open = false;
     },
     { signal, capture: true },
   );
@@ -382,6 +413,7 @@ export function createMinimap(
       minimapMarkers(snapshot, definitions, terrain.width, terrain.height, options.force, vision)
         .length,
     );
+    return true;
   }
   signal.addEventListener(
     "abort",
@@ -393,6 +425,9 @@ export function createMinimap(
     { once: true },
   );
   return {
+    canvas,
+    navigate,
+    zoom: options.zoom,
     update(value: SeatSnapshot) {
       snapshot = value;
       notices.update(value);

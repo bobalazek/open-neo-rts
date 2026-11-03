@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { observeNativePaint } from "./native-paint";
 
 test("normal HUD uses real production receipts, selection groups and cancellable placement", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "chromium", "Normal HUD WebGL smoke runs in Chromium");
   test.setTimeout(120_000);
+  await observeNativePaint(page);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -12,44 +14,42 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await page.getByRole("button", { name: /Idle builders 2/ }).click();
+  await expect(canvas).toHaveAttribute("data-hud", "native");
+  await page.getByRole("button", { name: /Idle builders 2/ }).press("Enter");
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
   const layout = await page.evaluate(() => {
-    const top = document.querySelector(".match-top")!.getBoundingClientRect();
-    const hud = document.querySelector(".match-hud")!.getBoundingClientRect();
-    const build = document.querySelector(".hud-build-panel")!;
+    const paint = Reflect.get(window, "nativePaintText") as Map<string, { x: number; y: number }>;
     return {
-      playable: (hud.top - top.bottom) / innerHeight,
-      clippedRecipes: build.scrollHeight - build.clientHeight,
+      playable: ((paint.get("Commands")?.y ?? 0) - (paint.get("5000")?.y ?? 0)) / innerHeight,
     };
   });
   expect(layout.playable).toBeGreaterThan(0.55);
-  expect(layout.clippedRecipes).toBeLessThanOrEqual(1);
   await expect(
     page.locator('[data-definition="core.structure:eastern-collective/command-center"]'),
   ).toBeDisabled();
   await expect(
     page.locator('[data-definition="core.structure:eastern-collective/command-center"]'),
-  ).toHaveAccessibleDescription(/Unavailable: no authored paid recipe/);
+  ).toHaveAccessibleDescription(/Unavailable to build in this match/);
   await page
     .locator('[data-definition="core.structure:eastern-collective/command-center"]')
     .focus();
-  await expect(page.getByRole("tooltip")).toContainText("Unavailable: no authored paid recipe");
+  await expect(page.getByRole("tooltip")).toContainText("Unavailable to build in this match");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("tooltip")).toBeHidden();
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
   await canvas.focus();
   await expect(page.locator('[data-definition*="technology-center"]')).toHaveCount(0);
   await expect(page.locator('[data-definition*="quantum-nexus"]')).toHaveCount(0);
-  await page.getByRole("button", { name: "Set group", exact: true }).click();
+  await page.getByRole("button", { name: "Set group", exact: true }).press("Enter");
   await expect(page.locator("[data-groups] button").first()).toHaveText("1: 1");
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 0");
   await page.keyboard.press("1");
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
   await page
     .locator('[data-definition="core.structure:eastern-collective/industrial-reactor"]')
-    .click();
+    .press("Enter");
   await expect(canvas).toHaveAttribute("data-command-mode", "economy.build");
   await page.keyboard.press("v");
   await expect(page.locator("p[data-mode]")).toContainText("90°");
@@ -60,14 +60,12 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await page.screenshot({ path: info.outputPath("hud-builder-desktop.png") });
   await page
     .locator('[data-definition="core.structure:eastern-collective/industrial-reactor"]')
-    .click();
-  const top = await page.locator(".match-top").boundingBox();
-  const bottom = await page.locator(".match-hud").boundingBox();
-  if (!top || !bottom) throw new Error("Playable area missing");
-  // Preserve the ground offset when HUD rows change the playable view height.
+    .press("Enter");
+  const bounds = await canvas.boundingBox();
+  if (!bounds) throw new Error("Playable area missing");
   const placement = {
-    x: 640 + (bottom.y - top.y - top.height) * 0.15,
-    y: (top.y + top.height + bottom.y) / 2,
+    x: bounds.width / 2 + bounds.height * 0.15,
+    y: bounds.height / 2,
   };
   await page.mouse.move(placement.x, placement.y);
   await page.mouse.click(placement.x, placement.y);
@@ -75,9 +73,9 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await expect(
     page.getByRole("button", { name: "Select Industrial Reactor site", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Cancel site (100%)", exact: true }).click();
+  await page.getByRole("button", { name: "Cancel site (100%)", exact: true }).press("Enter");
   await expect(page.locator("[data-credits]")).toHaveText("Credits 5000");
-  await page.getByRole("button", { name: /Idle producers 1/ }).click();
+  await page.getByRole("button", { name: /Idle producers 1/ }).press("Enter");
   const technician = page.locator(
     '[data-definition="core.unit:eastern-collective/field-technician"]',
   );
@@ -138,14 +136,11 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await expect(page.locator("[data-credits]")).toHaveText("Credits 5000");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole("button", { name: "Leave match" })).toBeVisible();
-  expect(
-    await page
-      .locator(".match-hud")
-      .evaluate((element) => element.scrollWidth <= element.clientWidth),
-  ).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath("hud-mobile.png") });
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Leave match" }).click();
-  await expect(canvas).toBeHidden();
+  await page.getByRole("button", { name: "Leave match" }).press("Enter");
+  await expect(canvas).not.toHaveAttribute("data-session", "ready");
+  await expect(canvas).toHaveAttribute("data-setup", "ready");
   expect(errors).toEqual([]);
 });
