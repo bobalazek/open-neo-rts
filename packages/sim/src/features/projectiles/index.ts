@@ -75,7 +75,7 @@ const supported = (weapon: GameplayWeapon | undefined): weapon is GameplayWeapon
   !!weapon &&
   ["instant", "beam", "bullet", "missile"].includes(weapon.projectile.kind) &&
   weapon.warheads.every((warhead) =>
-    ["damage", "disable", "burn", "slow"].includes(warhead.type),
+    ["damage", "disable", "burn", "slow", "reveal"].includes(warhead.type),
   ) &&
   (["instant", "beam"].includes(weapon.projectile.kind) ||
     ((weapon.projectile.speedSubcellsPerTick ?? 0) > 0 && weapon.projectile.flightTicks !== 0)) &&

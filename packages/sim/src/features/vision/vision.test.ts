@@ -13,7 +13,14 @@ import {
   Transform,
   toDefinition,
 } from "../entities";
-import { CELL_VISION, type FogMode, initializeVision, type VisionGrid } from ".";
+import {
+  AreaReveal,
+  CELL_VISION,
+  type FogMode,
+  initializeVision,
+  MAX_AREA_REVEALS,
+  type VisionGrid,
+} from ".";
 
 const definitions: readonly Definition[] = [
   {
@@ -61,13 +68,33 @@ const definitions: readonly Definition[] = [
 ];
 
 function fixture(
-  options: { map?: MatchMap; fog?: FogMode; shared?: boolean; radius?: number } = {},
+  options: {
+    map?: MatchMap;
+    fog?: FogMode;
+    shared?: boolean;
+    radius?: number;
+    reveal?: boolean;
+  } = {},
 ) {
   const defs = definitions.map((definition, index) =>
     index === 0 && options.radius !== undefined
       ? { ...definition, visionSubcells: options.radius }
       : { ...definition },
   );
+  if (options.reveal)
+    defs[5] = {
+      ...defs[5]!,
+      weapons: [
+        {
+          id: "sensor",
+          targets: ["ground"],
+          rangeSubcells: [0, 8192],
+          reloadTicks: 20,
+          projectile: { kind: "instant" },
+          warheads: [{ type: "reveal", radiusSubcells: 2048, durationTicks: 20, tags: [] }],
+        },
+      ],
+    };
   const kernel = createKernel({ seed: 1, debug: true, map: options.map ?? flatMap(16) });
   register(kernel, entitiesFeature(defs));
   const normal = {
@@ -103,6 +130,91 @@ function fixture(
   };
   return { kernel, vision, spawn };
 }
+
+test("sensor circles publish for their Force/team, ignore LOS blockers, and leave explored terrain", () => {
+  const map = flatMap(16),
+    level = [...map.terrain.level];
+  for (let y = 0; y < 16; y++) level[y * 16 + 6] = 1;
+  const f = fixture({
+    reveal: true,
+    shared: true,
+    map: { ...map, terrain: { ...map.terrain, level } },
+  });
+  f.spawn(3, 5, 5);
+  const enemy = f.spawn(5, 6, 5, 3);
+  expect(f.vision.revealArea(1, 4 * 1024 + 512, 5 * 1024 + 512, 2 * 1024, 1)).toBe(true);
+  expect(f.vision.canSeeCell(1, 6, 5)).toBe(false);
+  step(f.kernel, []);
+  expect(f.vision.canSeeEntity(1, enemy)).toBe(true);
+  expect(f.vision.canSeeEntity(2, enemy)).toBe(true);
+  expect(f.vision.canSeeCell(3, 6, 5)).toBe(false);
+  expect(f.vision.canSeeCell(1, 6, 6)).toBe(false);
+  const grid = f.vision.copyGrid(1),
+    hash = checkpointHash(f.kernel);
+  f.vision.load(f.vision.serialize());
+  expect(f.vision.copyGrid(1)).toEqual(grid);
+  expect(checkpointHash(f.kernel)).toBe(hash);
+  step(f.kernel, []);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+  expect(f.vision.cellState(1, 6, 5)).toBe(CELL_VISION.explored);
+});
+
+test("overlapping sensor fields and ordinary vision expire independently and restore with exact deadlines", () => {
+  const f = fixture({ reveal: true });
+  f.spawn(0, 8, 4);
+  f.vision.revealArea(1, 4 * 1024 + 512, 4 * 1024 + 512, 2 * 1024, 2);
+  f.vision.revealArea(1, 6 * 1024 + 512, 4 * 1024 + 512, 2 * 1024, 4);
+  f.vision.revealArea(1, 4 * 1024 + 512, 4 * 1024 + 512, 2 * 1024, 1);
+  expect(f.kernel.world.query(AreaReveal)).toHaveLength(2);
+  step(f.kernel, []);
+  step(f.kernel, []);
+  const restored = fixture({ reveal: true });
+  restored.kernel.world.load(f.kernel.world.serialize());
+  restored.kernel.tick = f.kernel.tick;
+  restored.vision.load(f.vision.serialize());
+  expect(restored.vision.copyGrid(1)).toEqual(f.vision.copyGrid(1));
+  expect(checkpointHash(restored.kernel)).toBe(checkpointHash(f.kernel));
+  for (let tick = 3; tick <= 6; tick++) {
+    step(f.kernel, []);
+    step(restored.kernel, []);
+    expect(checkpointHash(restored.kernel)).toBe(checkpointHash(f.kernel));
+    expect(restored.vision.copyGrid(1)).toEqual(f.vision.copyGrid(1));
+    expect(f.vision.cellState(1, 2, 4)).toBe(CELL_VISION.explored);
+    expect(f.vision.cellState(1, 5, 4)).toBe(tick < 5 ? CELL_VISION.visible : CELL_VISION.explored);
+    expect(f.vision.cellState(1, 8, 4)).toBe(CELL_VISION.visible);
+    const hash = checkpointHash(f.kernel),
+      grid = f.vision.copyGrid(1);
+    f.vision.load(f.vision.serialize());
+    expect(f.vision.copyGrid(1)).toEqual(grid);
+    expect(checkpointHash(f.kernel)).toBe(hash);
+  }
+});
+
+test("sensor validation and capacity fail closed, refresh at capacity, and expire even with fog off", () => {
+  const f = fixture({ reveal: true, fog: "off" });
+  for (const [force, x, y, radius, duration] of [
+    [99, 512, 512, 1024, 1],
+    [1, -1, 512, 1024, 1],
+    [1, 16384, 512, 1024, 1],
+    [1, 512, 512, 0, 1],
+    [1, 512, 512, 1024, 0],
+    [1, 512, 512, 1.5, 1],
+    [1, 512, 512, 1024, Number.NaN],
+  ] as const)
+    expect(f.vision.revealArea(force, x, y, radius, duration)).toBe(false);
+  expect(fixture().vision.revealArea(1, 512, 512, 1024, 1)).toBe(false);
+  for (let i = 0; i < MAX_AREA_REVEALS; i++)
+    expect(f.vision.revealArea(1, 512 + i, 512, 1024, 1)).toBe(true);
+  expect(f.vision.revealArea(1, 512, 512, 1024, 3)).toBe(true);
+  expect(f.vision.revealArea(1, 1024, 512, 1024, 1)).toBe(false);
+  step(f.kernel, []);
+  step(f.kernel, []);
+  expect(f.kernel.world.query(AreaReveal)).toHaveLength(1);
+  expect(f.vision.revealArea(1, 1024, 512, 1024, 1)).toBe(true);
+  step(f.kernel, []);
+  step(f.kernel, []);
+  expect(f.kernel.world.query(AreaReveal)).toEqual([]);
+});
 
 test("circular vision uses exact integer unit centers, includes the radius boundary and copies grids", () => {
   const { kernel, vision, spawn } = fixture();
