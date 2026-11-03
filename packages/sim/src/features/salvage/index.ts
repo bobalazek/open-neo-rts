@@ -1,6 +1,7 @@
-// Canonical remains after normal combat deaths. Builder salvage follows in phase 2.
+// Canonical remains after normal combat deaths and bounded builder clearance. Phase 2.
 import { defineComponent } from "../../ecs";
 import type { Kernel } from "../../kernel";
+import { clearConstructionOrder } from "../construction/sites";
 import { type Definition, Transform } from "../entities";
 import type { NavigationObject } from "../movement/navigation";
 
@@ -14,7 +15,30 @@ export const Remains = defineComponent("Remains", {
   created: "u32",
   /** Unfinished sites never become valuable salvage. */
   eligible: "u8",
+  materials: "u32",
+  work: "u16",
 });
+
+export const SALVAGE_STATES = [
+  "approaching",
+  "working",
+  "blocked",
+  "grant",
+  "contested",
+  "storage",
+] as const;
+export const SalvageOrder = defineComponent("SalvageOrder", {
+  target: "u32",
+  seat: "u32",
+  state: "u8",
+});
+
+/** Called only after a replacement command has passed validation. */
+export function suspendSalvage(kernel: Kernel, builder: number): void {
+  if (!kernel.remains || !kernel.world.has(builder, SalvageOrder)) return;
+  clearConstructionOrder(kernel, builder);
+  kernel.world.remove(builder, SalvageOrder);
+}
 
 /** No Template, Health or OwnerForce: remains cannot operate, count as survivors or provide vision. */
 export class MatchRemains {
@@ -23,6 +47,7 @@ export class MatchRemains {
     private readonly definitions: readonly Definition[],
   ) {
     kernel.world.register(Remains);
+    kernel.world.register(SalvageOrder);
   }
 
   create(
@@ -47,6 +72,14 @@ export class MatchRemains {
       kind: rubble ? 1 : 0,
       created: this.kernel.tick,
       eligible: site ? 0 : 1,
+      // Provisional ordinary-builder yield; specialists and faction bonuses remain separate content.
+      materials: site
+        ? 0
+        : Math.floor(
+            ((source.construction?.cost.materials ?? 0) +
+              Math.floor((source.construction?.cost.credits ?? 0) / 100)) /
+              4,
+          ),
     });
     world.add(id, Transform, pose);
   }

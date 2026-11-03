@@ -3,6 +3,7 @@ import type { Feature, Kernel } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import { MoveIntent, MovementFailure } from "../movement";
+import { Remains } from "../salvage";
 import { ConstructionSite } from ".";
 import {
   assignBuilderConstruction,
@@ -36,7 +37,9 @@ function workPositions(
   site: number,
 ) {
   const world = kernel.world;
-  const definition = definitions[world.get(site, Template, "definition")] as Definition;
+  const definition = definitions[
+    world.get(site, world.has(site, Template) ? Template : Remains, "definition")
+  ] as Definition;
   const unit = definitions[world.get(builder, Template, "definition")] as Definition;
   const [w = 1, d = 1] = definition.footprint ?? [];
   const rotated = (((world.get(site, Transform, "facing") >>> 14) + 3) & 1) !== 0;
@@ -65,7 +68,7 @@ function workPositions(
   );
 }
 
-/** Shared finite approach policy for construction and paid structure repair. */
+/** Shared finite approach policy for construction, repair and remains clearance. */
 export function approachStructure(
   kernel: Kernel,
   definitions: readonly Definition[],

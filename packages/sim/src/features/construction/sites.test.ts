@@ -18,6 +18,7 @@ import {
 } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
+import { Remains, SalvageOrder } from "../salvage";
 import { ConstructionSite } from ".";
 import { BuilderConstruction, CONSTRUCTION_CLEARANCE_TICKS, ConstructionRequest } from "./sites";
 
@@ -375,6 +376,50 @@ test("friendly clearance uses normal paths, remains free while pending and commi
   expect(sites(kernel)).toHaveLength(1);
   expect(kernel.world.query(ConstructionRequest)).toHaveLength(0);
   expect(kernel.economy?.balance(0)?.credits).toBe(400);
+});
+
+test("automatic friendly site clearance replaces an unselected builder's salvage job", () => {
+  const base = setup();
+  if (!base.normal) throw new Error("Expected normal fixture");
+  const vehicle: Definition = {
+    id: "unit:fixture/vehicle",
+    health: 50,
+    speed: 1024,
+    turnRate: 65536,
+    domain: "tracked",
+    radiusSubcells: 128,
+  };
+  const { kernel, builders } = fixture({
+    ...base,
+    definitions: [...base.definitions, vehicle],
+    normal: { ...base.normal, settings: { ...base.normal.settings, fog: "off" } },
+  });
+  const { world } = kernel,
+    salvager = builders[0]!,
+    selected = builders[1]!;
+  world.set(salvager, Transform, "x", 15 * 1024 + 512);
+  world.set(salvager, Transform, "y", 12 * 1024 + 512);
+  kernel.remains!.create(5, 0, { x: 16 * 1024, y: 12 * 1024, facing: 0 }, false);
+  const remains = world.query(Remains)[0]!;
+  expect(
+    step(kernel, [
+      {
+        tick: kernel.tick,
+        sequence: 0,
+        seat: 1,
+        type: "economy.salvage",
+        payload: { entity: remains, builders: [salvager] },
+      },
+    ])[0]?.result,
+  ).toBe("accepted");
+  expect(world.has(salvager, SalvageOrder)).toBe(true);
+  const work = world.get(remains, Remains, "work");
+  expect(step(kernel, [build(kernel, payload([selected]))])[0]?.result).toBe("accepted");
+  expect(world.has(salvager, SalvageOrder)).toBe(false);
+  for (let i = 0; i < CONSTRUCTION_CLEARANCE_TICKS; i++) step(kernel, []);
+  expect(world.get(remains, Remains, "work")).toBe(work);
+  expect(sites(kernel)).toHaveLength(1);
+  expect(kernel.observe?.(1).constructionRequests).toHaveLength(0);
 });
 
 test("uncontrolled or enemy blockers refuse, and pending timeout/cancel preserve newer orders", () => {

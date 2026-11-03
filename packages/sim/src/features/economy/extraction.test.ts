@@ -31,7 +31,7 @@ import {
 import { MoveIntent, MovementFailure } from "../movement";
 import { ProductionGifts, ProductionItem, ProductionRally } from "../production";
 import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
-import { Remains } from "../salvage";
+import { Remains, SalvageOrder } from "../salvage";
 import { ForceOutcome, ForceStatistics, MatchOutcome } from "../victory";
 import { ForceBank } from "./bank";
 import { Extraction, ResourceNode } from "./extraction";
@@ -317,6 +317,7 @@ test("canonical snapshots include fractional progress and deposit state, with id
     PendingImpact,
     Projectile,
     Remains,
+    SalvageOrder,
     UnitExperience,
     ExperienceYield,
     ForceOutcome,
