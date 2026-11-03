@@ -119,7 +119,9 @@ function movementSystem(kernel: Kernel, definitions: readonly Definition[]): voi
       world.remove(id, MoveIntent);
       continue;
     }
-    const { speed, turnRate } = definitions[world.get(id, Template, "definition")] as Definition;
+    const definition = definitions[world.get(id, Template, "definition")] as Definition;
+    const { turnRate } = definition;
+    const speed = Math.floor((definition.speed * (1000 - (kernel.slowPerMille?.(id) ?? 0))) / 1000);
     const x = world.get(id, Transform, "x");
     const y = world.get(id, Transform, "y");
     const dx = world.get(id, MoveIntent, "x") - x;

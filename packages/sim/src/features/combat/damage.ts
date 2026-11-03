@@ -8,6 +8,7 @@ import { emitCombatEvent } from "../events/combat";
 import { weaponTargets } from ".";
 import { applyBurn } from "./burn";
 import { applyDisable } from "./disable";
+import { applySlow } from "./slow";
 
 export interface DamageImpact {
   readonly source?: number;
@@ -87,7 +88,7 @@ export function applyWarhead(
   impact: DamageImpact,
   friendlyFire: boolean,
 ): void {
-  if (!["damage", "disable", "burn"].includes(warhead.type)) return;
+  if (!["damage", "disable", "burn", "slow"].includes(warhead.type)) return;
   const { world } = kernel;
   const radius = warhead.radiusSubcells ?? 0;
   const targets =
@@ -152,6 +153,10 @@ export function applyWarhead(
         impact.damageBonus ?? 0,
         impact.source ?? 0,
       );
+      continue;
+    }
+    if (warhead.type === "slow") {
+      applySlow(kernel, target, definition, warhead, falloff);
       continue;
     }
     let facing = 1000;

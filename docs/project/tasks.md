@@ -34,7 +34,7 @@ and both save galleries, while retaining native pointer editing and HTML keyboar
 and clipboard ownership. The [selection adapter](./learnings/2026-11-03-native-selection-indices.md)
 isolates the pinned Babylon range representation.
 
-- [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
+- [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn/slow; required reveal/spawn and persistent ground effects remain. [Timed slow](./decisions/2026-11-03-provisional-slow-warheads.md) is implemented without changing the authored roster.
 - [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.
 - [ ] [2-17c · World-marker drag/delete interaction](./phases/2.md#2-17--finish-first-playable-context-orders). PR type: engine; later interaction polish for the delivered Shift queues, which already support waypoint editing/removal in the HUD.
 - [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling after concrete bot fixes; persistent runner is implemented, but capped matches are incomplete and20 full-game outcomes remain unqualified.

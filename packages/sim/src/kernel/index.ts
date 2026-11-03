@@ -126,6 +126,8 @@ export interface Kernel {
   /** Canonical temporary EMP state; absent when the catalog has no disable warheads. */
   disabled?: (entity: number) => boolean;
   burning?: (entity: number) => boolean;
+  /** Current canonical speed reduction, from zero to 1000 per mille. */
+  slowPerMille?: (entity: number) => number;
   /** Presentation-only output from the completed tick; never read by gameplay systems. */
   combatEvents?: CombatEvent[];
   /** Successful producer exits for presentation; never read by gameplay or hashed. */

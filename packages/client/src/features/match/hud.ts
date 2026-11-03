@@ -1451,6 +1451,7 @@ export function createMatchHud(
     if (entity.force !== options.force) lines.push(text("ui.hud.other-force"));
     if (entity.disabled) lines.push(text("ui.hud.emp-disabled"));
     if (entity.burning) lines.push(text("ui.hud.burning"));
+    if (entity.slowed) lines.push(text("ui.hud.slowed"));
     if (entity.veterancy) {
       lines.push(
         text("ui.hud.veterancy", {

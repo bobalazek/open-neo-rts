@@ -111,6 +111,7 @@ export interface PresentedEntity {
   attackTarget?: string;
   disabled?: true;
   burning?: true;
+  slowed?: true;
   productionSurge?: { id: string; until: number; readyAt: number; perMille: number };
 }
 export interface PresentedConstructionRequest {
@@ -341,6 +342,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           health: world.get(id, Health, "current"),
           ...(kernel.disabled?.(id) && { disabled: true }),
           ...(kernel.burning?.(id) && { burning: true }),
+          ...(kernel.slowPerMille?.(id) && { slowed: true }),
           maxHealth: kernel.veterancy?.maxHealth(id, definition.health) ?? definition.health,
           ...(inspectBuilder &&
             kernel.remains &&

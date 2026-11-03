@@ -6,6 +6,7 @@ import { initializeVeterancy } from "./features/abilities/veterancy";
 import { combatFeature } from "./features/combat";
 import { initializeBurn } from "./features/combat/burn";
 import { initializeDisable } from "./features/combat/disable";
+import { initializeSlow } from "./features/combat/slow";
 import {
   constructionFeature,
   constructionWorkFeature,
@@ -55,7 +56,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 53;
+export const SIM_VERSION = 54;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -179,6 +180,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   );
   register(kernel, movementFeature({ ...setup, definitions }));
   if (setup.normal) initializeDisable(kernel, definitions);
+  if (setup.normal) initializeSlow(kernel, definitions);
   if (setup.normal) initializeForcePower(kernel, setup.forces, setup.grants, definitions);
   initializeNormalMatch(kernel, { ...setup, definitions });
   if (setup.normal) initializeUnitModes(kernel, { ...setup, definitions });

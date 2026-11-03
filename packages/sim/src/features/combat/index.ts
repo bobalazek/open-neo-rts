@@ -17,6 +17,7 @@ import { suspendSalvage } from "../salvage";
 export const MAX_SHOT_INTENTS = 4096;
 export { Burning } from "./burn";
 export { Disabled } from "./disable";
+export { Slowed } from "./slow";
 export const AttackOrder = defineComponent("AttackOrder", {
   target: "u32",
   x: "i32",
