@@ -40,6 +40,7 @@ test("registers entities before movement and gives movement the setup grants and
     "unit.move",
     "unit.attackMove",
     "unit.stop",
+    "unit.hold",
   ]);
   expect(kernel.world.query(Template)).toEqual([]);
   step(kernel, [

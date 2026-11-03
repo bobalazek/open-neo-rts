@@ -5,7 +5,7 @@ import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup, toMatchResources } from "../../match";
 import { createProjection } from "../../projection";
 import { ExperienceYield, UnitExperience } from "../abilities";
-import { AttackOrder, ShotIntent, WeaponState } from "../combat";
+import { AttackMoveOrder, AttackOrder, HoldPosition, ShotIntent, WeaponState } from "../combat";
 import {
   BuilderConstruction,
   ConstructionApproach,
@@ -311,6 +311,8 @@ test("canonical snapshots include fractional progress and deposit state, with id
     ProductionRally,
     OreCell,
     AttackOrder,
+    AttackMoveOrder,
+    HoldPosition,
     WeaponState,
     ShotIntent,
     CombatMotion,

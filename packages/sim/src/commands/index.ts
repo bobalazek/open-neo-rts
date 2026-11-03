@@ -75,6 +75,7 @@ export interface Payloads {
   "unit.move": UnitMove;
   "unit.attackMove": UnitMove;
   "unit.stop": UnitStop;
+  "unit.hold": UnitStop;
   "unit.deploy": UnitStop;
   "economy.power": { entity: number; enabled: number };
 }
@@ -168,6 +169,7 @@ const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } 
   "unit.move": { entities: IDS, x: POSITION, y: POSITION },
   "unit.attackMove": { entities: IDS, x: POSITION, y: POSITION },
   "unit.stop": { entities: IDS },
+  "unit.hold": { entities: IDS },
   "unit.deploy": { entities: IDS },
   "economy.power": { entity: ID, enabled: [0, 1] },
 };

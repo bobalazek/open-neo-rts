@@ -1,7 +1,7 @@
 // Seat-permitted copied state. Canonical fog and structure memory live in the vision feature.
 import { arr, int, validate } from "@open-neo-rts/content";
 import { hasGrant, type Scope } from "../commands";
-import { AttackOrder } from "../features/combat";
+import { AttackMoveOrder, AttackOrder, HoldPosition } from "../features/combat";
 import {
   CONSTRUCTION_REFUSALS,
   CONSTRUCTION_WORK_STATES,
@@ -42,6 +42,7 @@ export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
 
 export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
+  holdPosition?: true;
   cargo?: {
     capacity: number;
     firing: boolean;
@@ -270,6 +271,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             },
           }),
           handle,
+          ...(setup.normal && controlled && world.has(id, HoldPosition) && { holdPosition: true }),
           definition: definition.id,
           force,
           x: world.get(id, Transform, "x"),
@@ -374,13 +376,19 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(inspectPower &&
             kernel.extraction?.snapshot(id) && { extraction: kernel.extraction.snapshot(id) }),
           order:
-            (mode === "debug-no-fog" || controlled) && world.has(id, MoveIntent)
+            setup.normal && controlled && world.has(id, AttackMoveOrder)
               ? {
-                  type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",
-                  x: world.get(id, MoveIntent, "x"),
-                  y: world.get(id, MoveIntent, "y"),
+                  type: "attackMove",
+                  x: world.get(id, AttackMoveOrder, "x"),
+                  y: world.get(id, AttackMoveOrder, "y"),
                 }
-              : null,
+              : (mode === "debug-no-fog" || controlled) && world.has(id, MoveIntent)
+                ? {
+                    type: world.get(id, MoveIntent, "attackMove") === 1 ? "attackMove" : "move",
+                    x: world.get(id, MoveIntent, "x"),
+                    y: world.get(id, MoveIntent, "y"),
+                  }
+                : null,
           ...(kernel.power &&
             inspectPower && {
               power: {
