@@ -464,3 +464,73 @@ remaining effects/orders, complete persistence/replay/audio/help/tools and later
 phases active. Large wounded reserves can still consume the normal population
 cap; repair/reintegration is later tuning. Hosted CI billing and local Firefox
 launch remain unavailable; no FPS or full-phase acceptance is claimed.
+
+## Canonical wrecks and rubble, SIM49
+
+`/tmp/neo-canonical-remains`, branch `codex/canonical-remains`, delivers 2-16b1
+under the [recorded provisional contract](./decisions/2026-11-03-canonical-remains.md).
+Actual normal-combat death creates separate inert ECS remains, preserving source
+definition, former Force and final pose. Non-foot units leave nonblocking wrecks;
+structures leave rotated footprint-blocking rubble; infantry and props leave
+nothing. The shared 500-remains cap evicts by oldest creation tick then ID.
+Navigation/placement caches update after destruction/eviction. No resources are
+awarded. Unfinished-site eligibility is retained for the subsequent salvage rule.
+
+Copied public remains use current footprint sight and opaque handles; former
+ownership grants no sight, fog revokes rows/handles, scoped actor authority is
+refused, and worker packets reject malformed/private/duplicate data. Remains have
+no living components, so they cannot keep a Force alive, work, fire, provide
+vision/radius/power or consume living population. They are not ghost structures.
+
+Independent fresh-context review accepted code
+`637783857d309c7df8550a725374c5631b9c29fd`: 183 focused tests passed plus three
+independent probes/297 assertions covering all four exact collision/sight
+rotations, fog/reappearance/projection restore, equal-age ID eviction and no
+resource side effects. `/tmp/neo-remains-reviewer-probe.test.ts` is preserved.
+Repository fix/typecheck/test/build/content checks pass, including 505 sim cases
+and all 11 Turbo test tasks. Nonzero World-only restore retains actual remains
+pose/age/eligibility and identical capped continuation; this is not a full save.
+The new normal component schema changes startup/short-replay goldens to
+`81cb57d463df2b70` / `32292f64b5eb4f19`; debug goldens and catalog identities
+`97ddd2a140545413` / `54a8905a7eee497b` stay unchanged. All three scenario
+headers use SIM49.
+
+Original-catalog evidence is `/tmp/neo-original-remains-proof` with log/script
+of the same name and source companion `/tmp/neo-original-remains-proof-source.txt`.
+On actual Training Grounds with unchanged kits/stats/fog, one permitted external
+order moves the original enemy Supply Truck into the opposing base; actual combat
+kills it at tick 6069 and emits a visible canonical wreck accepted by the worker
+wire validator. Explicit surrender then ends at tick 6070; the complete input
+record reproduces hash `92761ac4714bf9ec` in Bun. Bots are disabled in this fixture;
+there is no state/content injection, natural full-match or rendered-wreck claim.
+
+Next: builder clearance/salvage 2-16b2 and actual on-map remains/picking 2-21b3.
+Until those connected deliveries, rubble already blocks but has no manual clear
+command or persistent renderer. Wreck repair/resurrection and specialist Phoenix
+Initiative behavior are later roster work. Keep all remaining phases active;
+hosted CI billing and local Firefox launch remain unavailable.
+
+## Frozen bot qualification completion and remaining cap
+
+The original SIM46 batch (session 12497) finished all 20 double trials on clean
+`20623ea`: 18 natural outcomes and two reproducible caps, seeds 12 and 20. Exit 1
+correctly reports incomplete qualification. Preserve the entire output/source
+under `/tmp/neo-ai-qualification-sim46-60000-20261103`. Seed 20's old terminal
+hash is `dd07f349c8762049`. The separate SIM48 seed-12 quota repair already
+finished naturally/reproducibly as recorded above.
+
+The same SIM48 runtime is checking seed 20 separately: session 65169, worktree
+`/tmp/neo-bot-seed12-stall` at clean `50a8f8d7991f59d22802feff1ce7d4622157295d`
+(runtime equals reviewed e4de7c2; later commits are docs), directory
+`/tmp/neo-ai-qualification-sim48-seed20-20261103`, log
+`/tmp/neo-ai-qualification-sim48-seed20.log`, source companion
+`/tmp/neo-ai-qualification-sim48-seed20-source.txt`. Both trials capped at
+60000/hash `f837039a18dfb9f9`, reproducibly; the process exited 1 as expected.
+Preserve the source and results. An exact forensic replay is now running on that
+unchanged source: session 44053, script/log `/tmp/neo-ai-stall-sim48-seed20.ts`
+and `.log`, output directory `/tmp/neo-ai-stall-sim48-seed20`. It asserts the
+original tick/hash/outcome before writing actor/bot/observation/movement data and
+primitive World bytes; diagnostics must not change the reproduced hash. Observe
+the same process without restarting it. Inspect those raw artifacts before any
+further bot repair; do not guess the cause. This is historical SIM48 evidence
+while canonical remains advances to SIM49, not current full acceptance.

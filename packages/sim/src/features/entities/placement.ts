@@ -77,6 +77,13 @@ export function checkSpawnPlacement(
         rectangle(found, object.position[0], object.position[1], Math.floor(object.rotation / 90)),
       );
   }
+  for (const object of kernel.remains?.rubbleObjects() ?? []) {
+    const found = definitions.find((d) => d.id === object.definition);
+    if (found)
+      occupied.push(
+        rectangle(found, object.position[0], object.position[1], Math.floor(object.rotation / 90)),
+      );
+  }
   for (const id of kernel.world.query(Template, Transform)) {
     const world = kernel.world;
     const found = definitions[world.get(id, Template, "definition")];

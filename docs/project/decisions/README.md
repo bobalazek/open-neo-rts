@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Canonical remains](./2026-11-03-canonical-remains.md) — Separate inert wrecks/rubble, shared bounded decay and current-sight projections.
+
 - [2026-11-03 — Bot reinforcement quota](./2026-11-03-bot-reinforcement-quota.md) — Combat-ready and queued troops count toward the existing limit; retreat reserves do not prevent reinforcements.
 
 - [2026-11-02 — Local Force notices and explored-cell pings](./2026-11-02-local-force-notices.md) — Bounded offline notices and local annotations use only copied permitted observations.
