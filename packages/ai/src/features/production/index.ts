@@ -34,12 +34,23 @@ function produce(view: PlanningView, producer: PolicyEntity): PolicyCommand | un
         total + (entity.production?.queue.filter((item) => item.definition === id).length ?? 0),
       0,
     );
+  const combatCount =
+    own.filter(
+      (entity) =>
+        definitions.get(entity.definition)?.role === "combat" && !shouldRetreat(view, entity),
+    ).length +
+    own.reduce(
+      (total, entity) =>
+        total +
+        (entity.production?.queue.filter(
+          (item) => definitions.get(item.definition)?.role === "combat",
+        ).length ?? 0),
+      0,
+    );
   const candidates = [
     ...(count(policy.builder) < 2 ? [policy.builder] : []),
     ...(count(policy.truck) < 2 ? [policy.truck] : []),
-    ...(own.filter((entity) => definitions.get(entity.definition)?.role === "combat").length < 24
-      ? [policy.tank, policy.soldier]
-      : []),
+    ...(combatCount < 24 ? [policy.tank, policy.soldier] : []),
   ];
   for (const id of candidates) {
     const definition = definitions.get(id);
