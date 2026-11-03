@@ -14,7 +14,7 @@ interface RawDefinition {
 }
 
 /** Original schema validation precedes both metadata access and sim-unit conversion. */
-export function catalogEntry(raw: unknown, model?: string) {
+export function catalogEntry(raw: unknown, model?: string, wreck?: string) {
   if (typeof raw !== "object" || raw === null || !("id" in raw) || typeof raw.id !== "string")
     throw new Error("Definition ID missing");
   const kind = raw.id.split(":")[0];
@@ -32,15 +32,21 @@ export function catalogEntry(raw: unknown, model?: string) {
     definition: toDefinition({ ...content, id: `core.${content.id}` }),
     movementDomain: content.movement?.domain ?? null,
     model,
+    wreck,
   };
 }
 export type CatalogEntry = ReturnType<typeof catalogEntry>;
 
-export async function resolveEntityModel(entry: CatalogEntry) {
-  if (!entry.model) throw new Error(`Model unavailable: ${entry.name} (${entry.definition.id})`);
+export async function resolveEntityModel(
+  entry: CatalogEntry,
+  variant: "model" | "wreck" = "model",
+) {
+  const url = entry[variant];
+  if (!url)
+    throw new Error(`Model unavailable: ${entry.name} (${entry.definition.id}, ${variant})`);
   let response: Response;
   try {
-    response = await fetch(entry.model);
+    response = await fetch(url);
   } catch {
     throw new Error(`Model unavailable: ${entry.name} (request failed)`);
   }
@@ -50,6 +56,6 @@ export async function resolveEntityModel(entry: CatalogEntry) {
     movementDomain: entry.movementDomain,
     footprint: entry.definition.footprint,
     radiusSubcells: entry.definition.radiusSubcells,
-    foundation: entry.kind === "structure",
+    foundation: entry.kind === "structure" && variant === "model",
   };
 }

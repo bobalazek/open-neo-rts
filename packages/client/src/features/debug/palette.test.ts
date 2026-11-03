@@ -34,6 +34,7 @@ test("node hover and commit use one snap rule for material and oil marker parity
     name: "Fixture extractor",
     movementDomain: null,
     model: undefined,
+    wreck: undefined,
     definition: toDefinition({
       id: "structure:fixture/extractor",
       health: 100,

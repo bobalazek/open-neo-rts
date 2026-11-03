@@ -34,15 +34,18 @@ export default {
           throw new Error(
             `${relative}: ${issues.map((i) => `${i.path}: ${i.message}`).join("; ")}`,
           );
-        const content = raw as { presentation: { model: string; icon?: string } };
-        const model = resolve(dirname(path), content.presentation.model);
-        let url = "undefined";
-        if (await Bun.file(model).exists()) {
-          // LFS pointers are deliberately unavailable art, not model bytes.
-          const magic = await Bun.file(model).slice(0, 4).text();
-          if (magic === "glTF") {
-            url = `model${index}`;
-            imports.push(`import ${url} from ${JSON.stringify(model)};`);
+        const content = raw as { presentation: { model: string; wreck?: string; icon?: string } };
+        const urls = { model: "undefined", wreck: "undefined" };
+        for (const variant of ["model", "wreck"] as const) {
+          const relativeModel = content.presentation[variant];
+          if (!relativeModel) continue;
+          const model = resolve(dirname(path), relativeModel);
+          if (await Bun.file(model).exists()) {
+            // LFS pointers are deliberately unavailable art, not model bytes.
+            if ((await Bun.file(model).slice(0, 4).text()) === "glTF") {
+              urls[variant] = `${variant}${index}`;
+              imports.push(`import ${urls[variant]} from ${JSON.stringify(model)};`);
+            }
           }
         }
         let icon = "undefined";
@@ -53,7 +56,9 @@ export default {
             imports.push(`import ${icon} from ${JSON.stringify(iconPath)};`);
           }
         }
-        entries.push(`{raw:${JSON.stringify(raw)}, model:${url}, icon:${icon}}`);
+        entries.push(
+          `{raw:${JSON.stringify(raw)}, model:${urls.model}, wreck:${urls.wreck}, icon:${icon}}`,
+        );
       }
       return {
         contents: `${imports.join("\n")}\nexport const builtins = [${entries.join(",\n")}];`,

@@ -17,7 +17,7 @@ export function createMatchPresentation(
 ) {
   const fog = createFogPresentation(scene, terrain.width, terrain.height);
   const colors = new Map<number, string>();
-  let live: Presentation, ghosts: Presentation;
+  let live: Presentation, ghosts: Presentation, remains: Presentation;
   let combat: ReturnType<typeof createCombatEffects>;
   let selected: string[] = [];
   let allowed = new Set<string>();
@@ -38,13 +38,18 @@ export function createMatchPresentation(
     combat.setPlaybackRate(rate);
     live = createEntityPresentation(scene, terrain, resolveModel);
     ghosts = createEntityPresentation(scene, terrain, resolveModel, { ghost: true });
+    remains = createEntityPresentation(scene, terrain, resolveModel, { remains: true });
     live.setPlaybackRate(rate);
-    for (const [force, color] of colors) live.setForceColor(force, color);
+    for (const [force, color] of colors) {
+      live.setForceColor(force, color);
+      remains.setForceColor(force, color);
+    }
   }
   function reset() {
     if (disposed) throw new Error("Match presentation is disposed");
     live.dispose();
     ghosts.dispose();
+    remains.dispose();
     combat.dispose();
     fog.reset();
     allowed.clear();
@@ -89,20 +94,33 @@ export function createMatchPresentation(
               })),
       };
       combat.accept(snapshot, nowMs);
-      await Promise.all([live.accept(snapshot, nowMs), ghosts.accept(remembered, nowMs)]);
+      await Promise.all([
+        live.accept(snapshot, nowMs),
+        ghosts.accept(remembered, nowMs),
+        remains.accept(snapshot, nowMs),
+      ]);
     },
     render(nowMs: number) {
       combat.render(nowMs);
       live.render(nowMs);
       ghosts.render(nowMs);
+      remains.render(nowMs);
     },
     select,
     selection: () => [...selected],
-    pick: (x: number, y: number) => live.pick(x, y),
+    pick(x: number, y: number) {
+      const hits = [live.pickHit(x, y), remains.pickHit(x, y)].filter((hit) => hit !== null);
+      hits.sort(
+        (a, b) =>
+          a.distance - b.distance || (a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0),
+      );
+      return hits[0]?.handle ?? null;
+    },
     inRectangle: (left: number, top: number, right: number, bottom: number) =>
       live.inRectangle(left, top, right, bottom),
     setForceColor(force: number, color: string) {
       live.setForceColor(force, color);
+      remains.setForceColor(force, color);
       colors.set(force, color);
     },
     setPlaybackRate(value: number) {
@@ -118,6 +136,7 @@ export function createMatchPresentation(
       select([]);
       live.dispose();
       ghosts.dispose();
+      remains.dispose();
       combat.dispose();
       fog.dispose();
     },
