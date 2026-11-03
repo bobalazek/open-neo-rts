@@ -19,8 +19,11 @@ Every file carries a header: format version, sim version, pack IDs, versions and
 The first [local snapshot implementation](../project/decisions/2026-11-03-first-playable-match-snapshots.md)
 exports a complete canonical capture plus accepted external history. A new worker
 can resume it after checking installed setup, checksums and the reproduced full
-state. This provisional loader replays history; direct state loading is still
-2-33b. [Browser save slots](../project/decisions/2026-11-03-browser-save-slots.md),
+state. [Canonical restoration](../project/decisions/2026-11-03-owned-keyframe-restoration.md)
+now loads the verified state into a fresh host. External imports still replay-verify
+history first; independent feature validators remain 2-33b2. Privately captured
+owned keyframes restore without stepping elapsed ticks and can support replay
+seeking. [Browser save slots](../project/decisions/2026-11-03-browser-save-slots.md),
 menu/load screens, quicksave and rotating autosaves are connected by 2-34. Normal seat updates never
 include the full save. Failed loading leaves the old worker/session untouched.
 

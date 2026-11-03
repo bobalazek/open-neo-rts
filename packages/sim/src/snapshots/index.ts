@@ -21,6 +21,7 @@ import { checkMatchMap, matchMapSchema } from "../match-map";
 import { type RunOptions, replayScenario, scenarioTicks } from "./replay";
 import { strictObject } from "./schema";
 
+export * from "./keyframe";
 export * from "./match-record";
 export * from "./match-snapshot";
 export * from "./trace";

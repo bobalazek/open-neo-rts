@@ -3,8 +3,9 @@ import { addString, createHasher, digest } from "@open-neo-rts/deterministic";
 import { checkpointHash, type Kernel } from "../kernel";
 import { type MatchSetup, SIM_VERSION } from "../match";
 import { parseScenario, SCENARIO_FORMAT, type Scenario } from ".";
+import { restoreCanonicalState } from "./canonical-state";
 import { replayScenario } from "./replay";
-import { strictObject } from "./schema";
+import { canonicalJson as canonical, strictObject } from "./schema";
 
 export const MATCH_SNAPSHOT_FORMAT = 1;
 // First-playable imports are bounded to two hours at 20 ticks/second.
@@ -23,51 +24,6 @@ export interface MatchSnapshot {
   visibility: unknown;
   bots: unknown;
   checksum: string;
-}
-
-/** Sorted plain JSON only, with bounded work before any feature allocates from imported sizes. */
-function canonical(value: unknown): string {
-  let remaining = 8 * 1024 * 1024;
-  let characters = 0;
-  const visit = (input: unknown, depth: number): unknown => {
-    if (--remaining < 0 || depth > 32) throw new Error("Snapshot exceeds JSON limits");
-    if (input === null || typeof input === "boolean") return input;
-    if (typeof input === "number" && Number.isSafeInteger(input)) return input;
-    if (typeof input === "string") {
-      characters += input.length;
-      if (characters > 64 * 1024 * 1024) throw new Error("Snapshot exceeds text limit");
-      return input;
-    }
-    if (typeof input !== "object" || !input) throw new Error("Snapshot requires integer JSON");
-    const array = Array.isArray(input);
-    if (
-      !array &&
-      Object.getPrototypeOf(input) !== Object.prototype &&
-      Object.getPrototypeOf(input) !== null
-    )
-      throw new Error("Snapshot requires plain JSON objects");
-    if (
-      Reflect.ownKeys(input).some(
-        (key) =>
-          typeof key !== "string" ||
-          (!(array && key === "length") &&
-            !Object.getOwnPropertyDescriptor(input, key)?.enumerable) ||
-          !Object.hasOwn(Object.getOwnPropertyDescriptor(input, key) ?? {}, "value"),
-      )
-    )
-      throw new Error("Snapshot requires own data properties");
-    if (array) {
-      if (input.length > remaining || Object.keys(input).length !== input.length)
-        throw new Error("Snapshot requires bounded dense arrays");
-      return input.map((item) => visit(item, depth + 1));
-    }
-    return Object.fromEntries(
-      Object.keys(input)
-        .sort()
-        .map((key) => [key, visit((input as Record<string, unknown>)[key], depth + 1)]),
-    );
-  };
-  return JSON.stringify(visit(value, 0));
 }
 
 function checksum(value: Omit<MatchSnapshot, "checksum">): string {
@@ -183,7 +139,7 @@ export function restoreMatchSnapshot(value: unknown, installedSetup: MatchSetup)
   // Installed gameplay, map, grants and initialization must match; file-supplied content cannot replace them.
   if (canonical(saved.scenario.setup) !== canonical(installedSetup))
     throw new Error("Snapshot setup does not match installed match");
-  // shortcut: imported saves verify their history; replace with complete feature validators before fast seeking.
+  // shortcut: imports still verify history; add complete feature validators before directly accepting unverified bytes.
   const replayed = replayScenario(saved.scenario, saved.tick);
   if (replayed.log.some((entry) => entry.source === "input" && entry.result !== "accepted"))
     throw new Error("Snapshot history contains refused external inputs");
@@ -191,5 +147,8 @@ export function restoreMatchSnapshot(value: unknown, installedSetup: MatchSetup)
   const state = ({ scenario: _scenario, checksum: _checksum, ...rest }: MatchSnapshot) => rest;
   if (canonical(state(saved)) !== canonical(state(verified)))
     throw new Error("Snapshot state does not reproduce its input history");
-  return replayed;
+  const restored = restoreCanonicalState(verified, installedSetup);
+  if (canonical(createMatchSnapshot(restored, installedSetup)) !== canonical(verified))
+    throw new Error("Canonical snapshot state did not restore exactly");
+  return restored;
 }

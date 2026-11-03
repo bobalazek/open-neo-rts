@@ -174,8 +174,10 @@ export class World {
   }
 
   /** Loads `serialize` output into this fresh world, with the same components registered. On error, discard the world. */
-  load(bytes: Uint8Array): void {
+  load(bytes: Uint8Array, maxEntities = MAX_ID): void {
     if (this.nextId !== 1 || this.alive.length > 0) throw new Error("Load into a fresh world");
+    if (!Number.isInteger(maxEntities) || maxEntities < 0 || maxEntities > MAX_ID)
+      throw new RangeError("Invalid ECS snapshot entity limit");
     let offset = 0;
     const take = (n: number): number => {
       if (offset + n > bytes.length) throw new Error("ECS snapshot is truncated");
@@ -190,6 +192,7 @@ export class World {
         `ECS snapshot format version ${version} is not supported; this build reads version ${ECS_FORMAT_VERSION}`,
       );
     const nextId = take(4);
+    if (nextId < 1) throw new Error("Invalid ECS snapshot nextId");
     let schema = "";
     for (let i = take(4); i > 0; i--) schema += String.fromCharCode(take(1));
     if (schema !== this.schema())
@@ -197,7 +200,9 @@ export class World {
         `ECS snapshot components "${schema}" do not match the world's "${this.schema()}"`,
       );
     let previous = 0;
-    for (let i = take(4); i > 0; i--) {
+    const entityCount = take(4);
+    if (entityCount > maxEntities) throw new Error("ECS snapshot exceeds entity limit");
+    for (let i = entityCount; i > 0; i--) {
       const id = take(4);
       if (id <= previous || id >= nextId)
         throw new Error(`ECS snapshot entity ${id} is out of order or not below nextId ${nextId}`);
@@ -207,7 +212,9 @@ export class World {
     this.nextId = nextId;
     for (const storage of this.sortedStorages()) {
       previous = 0;
-      for (let i = take(4); i > 0; i--) {
+      const rows = take(4);
+      if (rows > entityCount) throw new Error("ECS snapshot exceeds component row limit");
+      for (let i = rows; i > 0; i--) {
         const id = take(4);
         if (id <= previous || !this.slots.has(id))
           throw new Error(`ECS snapshot ${storage.component.name} row for entity ${id} is invalid`);
@@ -219,6 +226,19 @@ export class World {
       }
     }
     if (offset !== bytes.length) throw new Error("ECS snapshot has trailing bytes");
+  }
+
+  /** Isolated candidate hosts only: retain registered layouts/owner references, replace all rows. On error discard the host. */
+  replace(bytes: Uint8Array, maxEntities: number): void {
+    this.nextId = 1;
+    this.alive.length = this.freeSlots.length = 0;
+    this.slots.clear();
+    this.usedSlots = 0;
+    for (const storage of this.storages.values()) {
+      storage.has.fill(0);
+      for (const column of storage.columns.values()) column.data.fill(0);
+    }
+    this.load(bytes, maxEntities);
   }
 
   private spawn(id: number): void {

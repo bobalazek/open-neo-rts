@@ -34,7 +34,7 @@ and both save galleries, while retaining native pointer editing and HTML keyboar
 and clipboard ownership. The [selection adapter](./learnings/2026-11-03-native-selection-indices.md)
 isolates the pinned Babylon range representation.
 
-- [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.
+- [ ] [2-33b2 · Independent canonical-byte validators](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; complete per-feature invariants before accepting unverified canonical files directly. [Owned keyframes and verified saves](./decisions/2026-11-03-owned-keyframe-restoration.md) now restore canonical state; external imports retain history verification.
 - [ ] [2-17c · World-marker drag/delete interaction](./phases/2.md#2-17--finish-first-playable-context-orders). PR type: engine; later interaction polish for the delivered Shift queues, which already support waypoint editing/removal in the HUD.
 - [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling at the remaining gameplay integration boundary. The [observed-base search repair](./decisions/2026-11-03-bot-base-perimeter-search.md) completes seed 20 naturally and reproducibly; twenty current-version complete outcomes and the human duration gate remain unqualified.
 - [ ] [2-21b1c · Clipped construction depth passes](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; later visual polish after functional lifecycle work, replacing the current no-shadow policy for partial structures.
