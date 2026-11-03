@@ -856,3 +856,14 @@ audio/input/help/tooling and bot qualification). Direct state loading stays2-33b
 current saves reconstruct history. Save-before-leave remains2-31b, native desktop
 storage/multiplayer saves remain later phases. Hosted CI billing/Firefox/hardware
 FPS and actual human/20-current-version complete matches remain unqualified.
+
+Final protected rerun against4b32597 passes both full production UI journeys in
+2.3minutes: `/tmp/neo-browser-saves-preserved-browsers.log`. These artifacts are
+preserved separately from all targeted reruns. Fresh independent original-content
+validation proves Chromium saved/resumedtick65/`8d915d45f2fa9bb0`, then matched
+uninterruptedtick125/`44e0fac8bb8e2612`; WebKit saved/resumedtick11/
+`e2f93953f30cb02b`, then matched uninterruptedtick71/`08ffb0ec10a62c12`.
+Both fresh files carry core0.1.0 with real per-pack/combined identities and
+Training Grounds map hash`7de934b8f9aa8af9`. Independent verdict: ship within the
+documented functional scope; no remaining proven findings. No fresh performance,
+full seeded qualification or Firefox claim is made.
