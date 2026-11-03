@@ -3,6 +3,7 @@ import type { DebugOverlayOptions, DebugSpawn } from "@open-neo-rts/sim";
 import {
   isDebugSessionExport,
   isMatchRecord,
+  isMatchSnapshot,
   isPlacementDiagnostic,
   isWorkerReply,
   type OfflineSetup,
@@ -84,6 +85,11 @@ export function createOfflineMatch(
     exportMatchRecord: () =>
       request({ type: "export-match-record" }).then((value) => {
         if (!isMatchRecord(value)) throw new Error("Invalid match record export");
+        return value;
+      }),
+    exportMatchSnapshot: () =>
+      request({ type: "export-match-snapshot" }).then((value) => {
+        if (!isMatchSnapshot(value)) throw new Error("Invalid match snapshot export");
         return value;
       }),
     exportSession: () =>
