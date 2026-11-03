@@ -24,6 +24,7 @@ export type { PanelBlock } from "./scene/panel-content";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
 export { createSkirmishScene, type SkirmishField } from "./scene/skirmish";
+export type { TextSelection } from "./scene/text-input";
 export { CELL_SIZE, LEVEL_HEIGHT, PALETTES } from "./terrain";
 export {
   createMapPresentation,

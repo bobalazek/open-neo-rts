@@ -1,5 +1,7 @@
 # Learnings
 
+- [Native and semantic selection use different offsets](./2026-11-03-native-selection-indices.md)
+
 - [Observe short-lived orders at the worker boundary](./2026-11-02-observe-short-lived-orders.md) — A completed minimap order can legitimately disappear before a slow UI assertion starts.
 
 One file per surprise: something that broke, a gotcha, a measurement worth remembering. Append-only; a wrong learning gets a correction entry. One paragraph is enough.

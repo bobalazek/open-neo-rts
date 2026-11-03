@@ -1,6 +1,7 @@
 // Skirmish setup screen. Phase 2.
 import { createSkirmishScene, type SkirmishField } from "@open-neo-rts/render";
 import { text } from "../../shared";
+import { bindNativeTextSelection } from "../../shared/native-text-selection";
 import { loadMap } from "../debug/maps";
 import { readDeviceSettings } from "../settings";
 import {
@@ -32,6 +33,12 @@ export function skirmishScreen(
   const signal = new AbortController();
   let disposed = false;
   let gui: Awaited<ReturnType<typeof createSkirmishScene>> | undefined;
+  const selection = bindNativeTextSelection(
+    root,
+    signal.signal,
+    (input) => input.name,
+    (id, range) => gui?.selection(id, range),
+  );
   const previousAttributes = ["tabindex", "aria-label", "aria-hidden"].map(
     (name) => [name, canvas.getAttribute(name)] as const,
   );
@@ -47,6 +54,7 @@ export function skirmishScreen(
       error: error!.textContent ?? "",
       canStart: !submit!.disabled,
     });
+    selection.sync();
   }
   for (const name of ["yourSpawn", "otherSpawn"])
     (field(name) as HTMLSelectElement).replaceChildren(
@@ -159,7 +167,6 @@ export function skirmishScreen(
     "focusin",
     (event) => {
       const element = event.target;
-      // shortcut: semantic text edits show a focus frame; mirror caret/selection during input polish.
       if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement)
         gui?.focus(element.name);
       else if (element instanceof HTMLButtonElement) gui?.focus(element.dataset.setupAction);

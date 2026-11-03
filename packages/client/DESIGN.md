@@ -77,7 +77,8 @@ information and muted grey carries supporting state.
 
 - **Warm metal** (`accent`): active borders, selected panel tabs and resource icons.
   Home and setup use it for action frames and labels; Home also uses it for the
-  main vector lettering.
+  main vector lettering. Native text fields use it for selection highlights at
+  0.35 opacity.
 - **Warm primary well** (`home-primary`): the current primary Home action, setup Start,
   Settings Apply, pause Resume, selected save rows and selected results tabs.
 
@@ -287,8 +288,9 @@ the text leaves space for that disclosure mark.
   seed and numeric rules; a native Checkbox and its clickable label toggle
   veterancy. Native pointer editing has a caret and selection, a focused fill
   and warm border. Semantic focus uses a thicker native field frame (2px),
-  checkbox frame (3px) or action frame (2px). Semantic text edits do not yet mirror
-  their caret or selection; this limitation is tracked in `../../docs/project/tasks.md`.
+  checkbox frame (3px) or action frame (2px). Semantic keyboard edits mirror their
+  caret and selection into the native field, using the same focused fill and
+  translucent warm-metal highlight. HTML retains keyboard and clipboard ownership.
 - **Setup actions and feedback:** framed native buttons center their labels;
   Start uses the warm primary well. Hover and press reuse Home fills. The existing
   controller owns validation, save/load/defaults and match start. Invalid values
@@ -329,15 +331,17 @@ the text leaves space for that disclosure mark.
   preserving world rendering and save thumbnails. Resume uses the primary fill
   and remains fixed at the header right while the other actions scroll; menu
   actions retain current availability and pending states. The named-save
-  field preserves required/max-length validation and existing save handlers.
+  field mirrors semantic caret and selection while preserving required/max-length
+  validation and existing save handlers.
   Opening Load keeps native panel presentation and uses the same separate canvas.
 - **Load gallery:** original match thumbnails accompany saved names and dates;
   selected rows use the warm primary fill and thicker frame. Rich row focus uses
   an ivory 3px frame. Selected detail shows the original thumbnail, metadata,
   compatibility feedback and actual Load/export/delete actions. Empty and filtered
   lists retain explicit feedback. Search edits preserve the native editor as the
-  list changes. Import, validation, changed-slot checks and restore stay with the
-  existing controller.
+  list changes, including mirrored semantic caret and selection in standalone and
+  in-match galleries. Import, validation, changed-slot checks and restore stay
+  with the existing controller.
 - **Results:** native framed tabs and a metric choice expose the actual completed
   match record. Original SVG history plots retain their legends and accessible
   descriptions through semantic HTML. Final tables and expandable sampled-value
@@ -348,9 +352,10 @@ the text leaves space for that disclosure mark.
 - **Panel semantics and fallback:** semantic labels, controls, status and alerts
   remain authoritative, clipped only after a native frame has drawn. The canvas
   stays outside assistive focus; disposal restores its prior attributes and
-  cancels initialization. Graphics failure leaves HTML visible. Native pointer
-  text editing shows a caret/selection, while semantic text editing mirrors focus
-  but not yet its caret or selection; this remains deferred input polish.
+  cancels initialization. Graphics failure leaves HTML visible. Semantic text
+  editing mirrors native focus, caret and selection while HTML remains the
+  keyboard and clipboard editor. Pointer editing stays native; leaving a semantic
+  field clears its mirrored range.
 - **Selection station:** original model portrait, actual name/count and bounded
   health bar integrated with commands, contextual recipes and the production queue.
   Details opens above it with the actual actor statistics, selection-type controls,
@@ -404,6 +409,9 @@ and unavailable reasons reachable through action hover/focus descriptions.
 - **Don't** add ornamental animation that competes with battlefield activity.
 
 This records implementation evidence rather than test qualification; it does not
-qualify physical touch, assistive technology or hardware FPS. Incumbent palette advisories and one-off
-review previews are not design tokens. Semantic text-entry caret/selection
-mirroring remains deferred input polish rather than a rule for future controls.
+qualify physical touch, physical IME, screen readers, Firefox or hardware FPS.
+Incumbent palette advisories and one-off review previews are not design tokens.
+The current `../render/src/scene/text-input.ts` adapter maps DOM UTF-16 offsets to
+Babylon code-point offsets and isolates private cursor fields because Babylon
+9.33 has no public range setter. That version-specific dependency is an
+implementation limitation, not a design-system requirement.

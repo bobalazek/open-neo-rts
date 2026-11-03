@@ -5,12 +5,12 @@ import { Checkbox } from "@babylonjs/gui/2D/controls/checkbox";
 import { Container } from "@babylonjs/gui/2D/controls/container";
 import { Control } from "@babylonjs/gui/2D/controls/control";
 import { Image } from "@babylonjs/gui/2D/controls/image";
-import { InputText } from "@babylonjs/gui/2D/controls/inputText";
 import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { createEngine, createScene } from ".";
 import { createPanelBlock, type PanelBlock } from "./panel-content";
+import { NativeTextInput, type TextSelection } from "./text-input";
 
 export interface PanelField {
   id: string;
@@ -104,7 +104,7 @@ export async function createPanelScene(
     field: PanelField;
     caption: TextBlock;
     help: TextBlock;
-    input: Button | Checkbox | InputText;
+    input: Button | Checkbox | NativeTextInput;
     chevron?: Image;
   }[] = [];
   let actions: Button[] = [];
@@ -197,7 +197,7 @@ export async function createPanelScene(
       const caption = label(`${field.id} label`, field.label, 15);
       caption.color = "#eff1e9";
       const help = label(`${field.id} help`, field.help, 13);
-      let input: Button | Checkbox | InputText;
+      let input: Button | Checkbox | NativeTextInput;
       let chevron: Image | undefined;
       if (typeof field.value === "boolean") {
         input = new Checkbox(field.id);
@@ -256,7 +256,7 @@ export async function createPanelScene(
         chevron.isHitTestVisible = false;
         input.addControl(chevron);
       } else {
-        input = new InputText(field.id, field.value);
+        input = new NativeTextInput(field.id, field.value);
         input.autoStretchWidth = false;
         input.background = "#10191e";
         input.focusedBackground = "#25343b";
@@ -557,7 +557,7 @@ export async function createPanelScene(
       if (!field) continue;
       widget.input.isEnabled = !field.disabled;
       if (widget.input instanceof Checkbox) widget.input.isChecked = field.value === true;
-      else if (widget.input instanceof InputText) widget.input.text = String(field.value);
+      else if (widget.input instanceof NativeTextInput) widget.input.text = String(field.value);
       else if (widget.input.textBlock)
         widget.input.textBlock.text =
           field.choices?.find((choice) => choice.value === field.value)?.label ??
@@ -593,6 +593,11 @@ export async function createPanelScene(
   return {
     update,
     focus,
+    selection(id?: string, selection?: TextSelection) {
+      for (const { field, input } of widgets)
+        if (input instanceof NativeTextInput)
+          input.mirrorSelection(field.id === id ? selection : undefined);
+    },
     activeField: () => focused,
     scrollTo: (id: string, x: number, y: number) =>
       rich.find((block) => block.id === id)?.scroll(x, y),

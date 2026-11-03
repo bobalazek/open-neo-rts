@@ -1,4 +1,5 @@
 import { createPanelScene, type PanelContent } from "@open-neo-rts/render";
+import { bindNativeTextSelection } from "./native-text-selection";
 import { panelBlocks, saveGallery, visiblePanelElement } from "./panel-content";
 
 /** Keeps existing controllers and semantic controls authoritative while Babylon paints the panel. */
@@ -24,6 +25,12 @@ export function mountNativePanel(
   let revision = 0;
   const identities = new WeakMap<Element, number>();
   let identity = 0;
+  const selection = bindNativeTextSelection(
+    semantics,
+    abort.signal,
+    (input) => input.dataset.nativeField,
+    (id, range) => gui?.selection(id, range),
+  );
   function identify(element: Element) {
     if (!identities.has(element)) identities.set(element, ++identity);
     const key = `panel-node-${identities.get(element)}`;
@@ -180,6 +187,7 @@ export function mountNativePanel(
     if (disposed || !gui) return;
     const content = snapshot();
     gui.update(content);
+    selection.sync();
     const key = `${content.id}:${content.revision}:${content.scale}`;
     if (drawn === key) return;
     drawn = key;
