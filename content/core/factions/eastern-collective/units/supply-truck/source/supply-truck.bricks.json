@@ -282,41 +282,84 @@
           "slot": "team_emissive",
           "studs": false,
           "mirror": true
-        },
+        }
+      ]
+    },
+    {
+      "name": "cargo_bed",
+      "parent": "hull",
+      "at": [0, 2.2, -6.7],
+      "bricks": [
         {
-          "at": [-3.2, 2.2, -6.7],
+          "at": [-3.2, 0, 0],
           "size": [6.4, 1.6, 8.6],
           "slot": "palette",
           "color": "#c08a2e",
           "studs": false
         },
         {
-          "at": [-2.5, 3.8, -5.1],
+          "at": [-2.5, 1.6, 1.6],
           "size": [3, 0.8, 3],
           "slot": "palette",
           "color": "#c08a2e",
           "studs": false
         },
         {
-          "at": [0.3, 3.8, -1.8],
+          "at": [0.3, 1.6, 4.9],
           "size": [2.2, 0.6, 2.4],
           "slot": "palette",
           "color": "#8a4a24",
           "studs": false
         },
         {
-          "at": [-0.4, 3.8, -6],
+          "at": [-0.4, 1.6, 0.7],
           "size": [2, 0.5, 1.6],
           "slot": "palette",
           "color": "#5e4630",
           "studs": false
         },
         {
-          "at": [0.3, 4.4, -3.5],
+          "at": [0.3, 2.2, 3.2],
           "size": [1.4, 0.5, 1.4],
           "slot": "palette",
           "color": "#c08a2e",
           "studs": false
+        }
+      ]
+    },
+    {
+      "name": "collector",
+      "parent": "hull",
+      "at": [0, 1, 5.4],
+      "bricks": [
+        {
+          "at": [-3.3, 0, 0],
+          "size": [0.6, 0.6, 1.6],
+          "slot": "metal",
+          "studs": false,
+          "mirror": true
+        },
+        { "at": [-3.3, -0.3, 1], "size": [6.6, 0.6, 0.5], "slot": "team_dark", "studs": false }
+      ]
+    },
+    {
+      "name": "collector_drum",
+      "parent": "collector",
+      "at": [0, 0, 1.1],
+      "bricks": [
+        {
+          "at": [-3, -0.6, -0.6],
+          "size": [6, 1.2, 1.2],
+          "shape": "cyl-x",
+          "slot": "metal",
+          "studs": false
+        },
+        {
+          "at": [-2.5, 0.4, 0.4],
+          "size": [1, 0.25, 0.25],
+          "slot": "team_dark",
+          "studs": false,
+          "mirror": true
         }
       ]
     },
@@ -629,6 +672,37 @@
             [0.75, [270, 0, 0]],
             [1, [360, 0, 0]]
           ]
+        }
+      ]
+    },
+    "harvest": {
+      "duration": 0.8,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "collector",
+          "translation": [[0, [0, 0, 0]], [0.2, [0, 0, 0.3]], [0.6, [0, 0, 0.3]], [0.8, [0, 0, 0]]]
+        },
+        { "node": "collector", "rotation": [[0, [0, 0, 0]], [0.4, [-16, 0, 0]], [0.8, [0, 0, 0]]] },
+        {
+          "node": "collector_drum",
+          "rotation": [
+            [0, [0, 0, 0]],
+            [0.2, [90, 0, 0]],
+            [0.4, [180, 0, 0]],
+            [0.6, [270, 0, 0]],
+            [0.8, [360, 0, 0]]
+          ]
+        }
+      ]
+    },
+    "unload": {
+      "duration": 2,
+      "loop": true,
+      "tracks": [
+        {
+          "node": "cargo_bed",
+          "rotation": [[0, [0, 0, 0]], [0.35, [-35, 0, 0]], [1.45, [-35, 0, 0]], [2, [0, 0, 0]]]
         }
       ]
     },

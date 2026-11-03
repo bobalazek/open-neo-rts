@@ -22,7 +22,9 @@ contextual icon commands, build/train recipes and queue progress. A circular
 minimap anchors the right. Compact objective, clock/speed and global controls
 occupy separate top regions. Quiet controls support reading resources,
 inspecting real actor state and issuing orders; an empty selection leaves no station.
-There is no decorative animation; minimap activity communicates game events.
+There is no decorative animation; minimap activity and original work poses
+communicate actual game state. Brass silhouettes identify hover and the selected
+truck's current visible ore target.
 
 Home shares graphite steel, warm metal and original assets through native Babylon
 GUI. An original angular vector wordmark introduces an authored Dragon Tank on
@@ -62,6 +64,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Battlefield first, with regional controls, bottom economy and selection, and a right circular map.
 - Graphite surfaces, restrained brass highlights and compact numeric counters.
 - Original brick models and original line pictograms.
+- Visible world silhouettes and original work motion explain current interaction state.
 - Narrow screens switch commands/build within the station; the map remains visible.
 - Complete action descriptions on hover/focus and content-sized actor Details.
 - Native Home actions, original vector lettering and an authored model display.
@@ -251,6 +254,11 @@ frames identify synchronized focus, and warm wells identify armed or selected
 actions. Tooltips and Details sit above the scene without gradients or shadows.
 There is no ornamental motion in the match.
 
+World feedback follows actual depth: a thin warm silhouette groups each actor's
+visible meshes and is occluded by intervening geometry. Hidden or remembered
+objects and silhouettes crossing unseen cells are excluded. This is interaction
+feedback on original geometry, not a panel shadow or a decorative glow.
+
 Home depth comes from the actual lit model, ground, fog and octagonal display
 plinth, with flat GUI rectangles over it. Controls do not use drop shadows or
 hover lift. A warm seam traces the plinth edge.
@@ -400,6 +408,15 @@ the text leaves space for that disclosure mark.
   all numbered groups; badges show population. Hover/focus explains recall, Ctrl
   assign and Ctrl+Shift add. Idle builder and producer helpers retain their period
   and comma shortcuts. Secondary assign/add controls remain in Details.
+- **World interaction:** native Babylon silhouettes group visible meshes into one
+  two-pixel brass outline per actor or resource, retaining per-instance identity.
+  Hover clears on pointer leave or blur; the selected truck's current permitted
+  ore target stays highlighted while present and visible. Modal menus suppress
+  both, and current fog visibility takes precedence over retained interaction.
+- **Work poses:** the original Supply Truck collector and drum show actual mining;
+  its cargo bed follows completed unload work. Pause freezes mining motion and
+  suspended dock work holds the bed pose. Idle restores authored rest. Work on one
+  actor does not move its peer's rig or change either actor's team-color materials.
 - **Match semantics and fallback:** the world scene owns visible Babylon controls;
   semantic HTML keeps accessible names, keyboard command handling and live state.
   Controls are visually clipped only after the native HUD draws. Native activation

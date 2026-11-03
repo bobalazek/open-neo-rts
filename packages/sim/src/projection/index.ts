@@ -80,6 +80,8 @@ export interface PresentedEntity {
   };
   extraction?: ExtractionSnapshot;
   harvesting?: HarvestSnapshot;
+  workAnimation?: "harvest" | "unload";
+  workProgressTicks?: number;
   constructionSite?: true;
   constructionStage?: number;
   construction?: {
@@ -297,7 +299,13 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           : undefined;
         const powerDetails = inspectPower ? kernel.power?.details(id) : undefined;
         const veterancy = kernel.veterancy?.snapshot(id, controlled);
+        const harvesting = setup.normal ? harvestSnapshot(kernel, id, definition) : undefined;
         entities.push({
+          ...(harvesting?.status === "mining" && { workAnimation: "harvest" as const }),
+          ...(harvesting?.status === "unloading" && {
+            workAnimation: "unload" as const,
+            workProgressTicks: harvesting.unloadTicks,
+          }),
           ...(veterancy && { veterancy }),
           ...(surge && { productionSurge: surge }),
           ...(controlled &&
@@ -361,7 +369,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
                 workRemainder: world.get(id, RepairWork, "remainder"),
               },
             }),
-          ...(inspectHarvester && { harvesting: harvestSnapshot(kernel, id, definition) }),
+          ...(inspectHarvester && { harvesting }),
           ...(attackTarget &&
             world.isAlive(attackTarget) &&
             kernel.visibility?.canSeeEntity(seat, attackTarget) && {

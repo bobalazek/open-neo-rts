@@ -115,6 +115,11 @@ export function createMatchPresentation(
     },
     select,
     selection: () => [...selected],
+    hoverHit(x: number, y: number) {
+      const hit = live.pickHit(x, y);
+      return hit ? { ...hit, meshes: live.meshes(hit.handle) } : null;
+    },
+    hoverMeshes: (handle: string) => live.meshes(handle),
     pick(x: number, y: number) {
       const hits = [live.pickHit(x, y), remains.pickHit(x, y)].filter((hit) => hit !== null);
       hits.sort(

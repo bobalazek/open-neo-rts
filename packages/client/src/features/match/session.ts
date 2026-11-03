@@ -33,6 +33,7 @@ import { createMatchHud } from "./hud";
 import type { HudDefinition } from "./hud-model";
 import { actionText, decorateAction, hudIcon } from "./icons";
 import { bindSelectionInput } from "./input";
+import { bindWorldInteraction } from "./interaction";
 import { createMinimap } from "./minimap";
 import { mountNativeMatchHud } from "./native-hud";
 
@@ -62,6 +63,7 @@ export function createNormalSession(
   let resultScreen: ReturnType<typeof postMatchScreen> | undefined;
   let minimap: ReturnType<typeof createMinimap> | undefined;
   let nativeHud: ReturnType<typeof mountNativeMatchHud> | undefined;
+  let interaction: ReturnType<typeof bindWorldInteraction> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
   let resultDefinitions: { id: string; name: string; kind: string }[] = [];
@@ -126,6 +128,7 @@ export function createNormalSession(
     for (const url of replayUrls) URL.revokeObjectURL(url);
     replayUrls.clear();
     resultScreen?.dispose();
+    interaction?.dispose();
     nativeHud?.dispose();
     match?.dispose();
     presentation?.dispose();
@@ -310,6 +313,7 @@ export function createNormalSession(
       const activePresentation = presentation;
       renderer.scene.onBeforeRenderObservable.add(() => {
         activePresentation.render(clock.now(performance.now()));
+        interaction?.frame(performance.now());
         hud?.frame();
         if (minimap?.frame(performance.now())) nativeHud?.frame();
       });
@@ -491,6 +495,18 @@ export function createNormalSession(
         signal.signal,
       );
       nativeHud = mountNativeMatchHud(root, canvas, activeRenderer.scene, minimap, signal.signal);
+      interaction = bindWorldInteraction(
+        canvas,
+        activeRenderer.scene,
+        activePresentation,
+        art,
+        {
+          snapshot: () => latest?.snapshot,
+          enabled: () => ready && !disposed && !menu?.isOpen() && !latest?.snapshot.victory?.result,
+          blocksPointer: (x, y) => nativeHud?.blocksPointer(x, y) ?? false,
+        },
+        signal.signal,
+      );
       activeRenderer.camera.setPointerBlocker((x, y) => nativeHud?.blocksPointer(x, y) ?? false);
       const topBar = root.querySelector<HTMLElement>(".match-top");
       const bottomHud = root.querySelector<HTMLElement>(".match-hud");

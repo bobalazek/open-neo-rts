@@ -24,10 +24,9 @@ The [region pass](./decisions/2026-11-03-battlefield-regions.md) follows the own
 AoE IV reference: economy beside selection, explicit owner/type identity, compact
 global controls and no empty selection panel.
 
-- [ ] World interaction feedback: hover outlines for visible units/structures,
-  a highlighted harvest-command target, and Supply Truck working/unloading
-  animation driven by its actual projected state. Preserve fog and original
-  models/team colors.
+The [world-feedback pass](./decisions/2026-11-03-world-interaction-feedback.md)
+adds visible actor/resource hover silhouettes, selected ore-target feedback and
+original Supply Truck harvesting/unloading animation from actual projected work.
 
 Native text inputs now mirror semantic caret and selection in setup, named saves
 and both save galleries, while retaining native pointer editing and HTML keyboard

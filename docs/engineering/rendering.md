@@ -66,6 +66,31 @@ The terrain client draws only props with `blocks: nothing`. Blocking props and n
 
 The preview plays named animation groups and restores authored node transforms when returning to rest. Replacing or disposing an asset releases its meshes, materials and clips. Requests superseded by another file selection are disposed. This single-model inspection path does not implement the match's thin-instance renderer or mutate simulation state.
 
+### Work and interaction feedback
+
+Normal matches expose visible harvest/unload poses separately from private cargo
+and ore-target coordinates. The Supply Truck's original collector and drum run
+its `harvest` clip while mining; its cargo bed samples `unload` from actual
+completed dock ticks. Suspended dock work holds the bed pose. Other work follows
+the presentation clock, including pause and speed; idle restores authored rest.
+The added collector stays within the existing unit footprint. No harvest rate,
+capacity, collision radius or canonical outcome changes.
+
+Hover and selected harvest-target feedback uses Babylon's installed
+[SelectionOutlineLayer](https://doc.babylonjs.com/features/featuresDeepDive/mesh/selectionOutlineLayer/).
+Each actor's visible meshes form one depth-occluded, brass silhouette with
+per-instance identity. Terrain/resources use an explicit resource-only pick
+predicate; static art remains excluded from ordinary entity selection. Target
+coordinates come from the current permitted economic projection, never inferred
+from a pointer order or another Force's private state.
+
+Only currently visible actors and resource footprints qualify. Remembered
+structures, hidden markers and geometry crossing unseen cells receive no outline:
+the mask bypasses material fog, so checking mesh bounds prevents silhouette leaks.
+Modal menus suppress feedback; pointer leave clears hover, while a selected
+truck's current visible ore target remains highlighted. Session disposal releases
+the layer and its render resources. These controls add no simulation mutation.
+
 Mode-capable assets author a non-looping `deploy` clip from the packed pose at zero to
 the deployed pose at its end. Use separate pivots/channels for this stance, leaving
 idle, movement, aim and recoil on their existing children. The original Dragon Tank

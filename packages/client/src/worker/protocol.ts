@@ -252,13 +252,31 @@ function isHarvestSnapshot(value: unknown): boolean {
   if (
     !isRecord(value) ||
     Object.getPrototypeOf(value) !== Object.prototype ||
-    Reflect.ownKeys(value).length !== 4
+    !exact(
+      value,
+      Object.hasOwn(value, "target")
+        ? ["cargo", "capacity", "status", "unloadTicks", "target"]
+        : ["cargo", "capacity", "status", "unloadTicks"],
+    )
   )
     return false;
   const cargo: unknown = Object.getOwnPropertyDescriptor(value, "cargo")?.value;
   const capacity: unknown = Object.getOwnPropertyDescriptor(value, "capacity")?.value;
   const status: unknown = Object.getOwnPropertyDescriptor(value, "status")?.value;
   const unloadTicks: unknown = Object.getOwnPropertyDescriptor(value, "unloadTicks")?.value;
+  if (Object.hasOwn(value, "target")) {
+    const target: unknown = Object.getOwnPropertyDescriptor(value, "target")?.value;
+    if (
+      (status !== "travel_ore" && status !== "mining") ||
+      !isRecord(target) ||
+      !exact(target, ["x", "y"]) ||
+      !["x", "y"].every((key) => {
+        const coordinate: unknown = Object.getOwnPropertyDescriptor(target, key)?.value;
+        return bounded(coordinate, 524287);
+      })
+    )
+      return false;
+  }
   return (
     typeof cargo === "number" &&
     Number.isInteger(cargo) &&
@@ -948,6 +966,8 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "power",
             "extraction",
             "harvesting",
+            "workAnimation",
+            "workProgressTicks",
             "constructionSite",
             "constructionStage",
             "construction",
@@ -973,6 +993,18 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       !bounded(entity.facing, 0xffff) ||
       !bounded(entity.health, 0xffffffff) ||
       !bounded(entity.maxHealth)
+    )
+      return false;
+    if (
+      entity.workAnimation !== undefined &&
+      entity.workAnimation !== "harvest" &&
+      entity.workAnimation !== "unload"
+    )
+      return false;
+    if (
+      entity.workAnimation === "unload"
+        ? !bounded(entity.workProgressTicks, 40)
+        : entity.workProgressTicks !== undefined
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;

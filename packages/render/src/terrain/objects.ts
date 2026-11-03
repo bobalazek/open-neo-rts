@@ -1,5 +1,5 @@
 // Static map art is separate from selectable, authoritative simulation entities.
-import { type AssetContainer, type Scene, TransformNode } from "@babylonjs/core";
+import { type AbstractMesh, type AssetContainer, type Scene, TransformNode } from "@babylonjs/core";
 import type { TerrainGrid } from "@open-neo-rts/content";
 import { registerModelShadows } from "../scene/shadows";
 import { loadModelContainer } from "../units/model";
@@ -13,6 +13,7 @@ export interface MapDecoration {
 export interface StaticMapInstance extends MapDecoration {
   footprint: readonly number[];
   nodeAnchor?: { x: number; y: number };
+  resourceCell?: { x: number; y: number };
 }
 export interface MapResource {
   kind: string;
@@ -47,6 +48,7 @@ export function resourceInstances(
         position: [cx, cy],
         footprint: field.kind === "materials" ? [2, 2] : [1, 1],
         nodeAnchor: { x: Math.floor(cx) - 1, y: Math.floor(cy) - 1 },
+        resourceCell: { x: Math.floor(cx), y: Math.floor(cy) },
       });
       continue;
     }
@@ -72,6 +74,7 @@ export function resourceInstances(
           definition: "ore-cell",
           position: [x + 0.5, y + 0.5],
           footprint: [1, 1],
+          resourceCell: { x, y },
           rotation: (hash2(identity, hash2(x, y)) % 4) * 90,
         });
       }
@@ -89,12 +92,20 @@ export function createMapPresentation(
 ) {
   const models: AssetContainer[] = [];
   const instances: ReturnType<AssetContainer["instantiateModelsToScene"]>[] = [];
+  const resources: {
+    cell: { x: number; y: number };
+    cells: { x: number; y: number }[];
+    meshes: AbstractMesh[];
+  }[] = [];
+  const meshResources = new Map<AbstractMesh, (typeof resources)[number]>();
   const roots: TransformNode[] = [];
   const nodes: { root: TransformNode; x: number; y: number }[] = [];
   let disposed = false;
   function dispose() {
     if (disposed) return;
     disposed = true;
+    resources.length = 0;
+    meshResources.clear();
     for (const instance of instances) instance.dispose();
     for (const root of roots) root.dispose();
     for (const model of models) model.dispose();
@@ -151,6 +162,21 @@ export function createMapPresentation(
             roots.push(root);
             if (placement.nodeAnchor) nodes.push({ root, ...placement.nodeAnchor });
             for (const node of instance.rootNodes) node.parent = root;
+            if (placement.resourceCell) {
+              const [cx = 0, cy = 0] = placement.position;
+              const [rw = NaN, rh = NaN] = placement.footprint;
+              const cells: { x: number; y: number }[] = [];
+              for (let y = Math.floor(cy - rh / 2); y < Math.ceil(cy + rh / 2); y++)
+                for (let x = Math.floor(cx - rw / 2); x < Math.ceil(cx + rw / 2); x++)
+                  cells.push({ x, y });
+              const resource = {
+                cell: placement.resourceCell,
+                cells,
+                meshes: root.getChildMeshes(),
+              };
+              resources.push(resource);
+              for (const mesh of resource.meshes) meshResources.set(mesh, resource);
+            }
             for (const node of root.getDescendants()) {
               if (node.name.startsWith("stage_") && node.name !== "stage_full")
                 node.setEnabled(false);
@@ -162,6 +188,7 @@ export function createMapPresentation(
             const [x = 0, y = 0] = placement.position;
             root.position.set(x * CELL_SIZE, terrainHeight(terrain, x, y), y * CELL_SIZE);
             root.rotation.y = ((placement.rotation ?? 0) * Math.PI) / 180;
+            for (const mesh of root.getChildMeshes()) mesh.computeWorldMatrix(true);
             registerModelShadows(root);
           }
         } catch (error) {
@@ -179,6 +206,36 @@ export function createMapPresentation(
   return {
     ready,
     dispose,
+    resourceAt(x: number, y: number, visible: (x: number, y: number) => boolean) {
+      return (
+        resources
+          .find(
+            (resource) =>
+              resource.cell.x === x &&
+              resource.cell.y === y &&
+              resource.cells.every((cell) => visible(cell.x, cell.y)),
+          )
+          ?.meshes.filter((mesh) => mesh.isVisible && mesh.isEnabled()) ?? []
+      );
+    },
+    pickResource(x: number, y: number, visible: (x: number, y: number) => boolean) {
+      const hits =
+        scene.multiPick(x, y, (mesh) => {
+          const resource = meshResources.get(mesh);
+          return (
+            !!resource &&
+            mesh.isVisible &&
+            mesh.isEnabled() &&
+            resource.cells.every((cell) => visible(cell.x, cell.y))
+          );
+        }) ?? [];
+      hits.sort((a, b) => a.distance - b.distance);
+      const hit = hits[0];
+      const resource = hit?.pickedMesh && meshResources.get(hit.pickedMesh);
+      return resource && hit
+        ? { meshes: resource.meshes, cells: resource.cells, distance: hit.distance }
+        : null;
+    },
     setOccupiedNodes(positions: readonly { x: number; y: number }[]) {
       const occupied = new Set(positions.map(({ x, y }) => `${x},${y}`));
       for (const node of nodes) node.root.setEnabled(!occupied.has(`${node.x},${node.y}`));

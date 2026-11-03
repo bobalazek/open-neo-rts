@@ -49,6 +49,7 @@ export interface HarvestSnapshot {
   readonly capacity: number;
   readonly status: HarvestStatus;
   readonly unloadTicks: number;
+  readonly target?: { readonly x: number; readonly y: number };
 }
 const status = (kernel: Kernel, id: number): HarvestStatus =>
   HARVEST_STATUSES[kernel.world.get(id, Harvester, "state")] as HarvestStatus;
@@ -88,10 +89,13 @@ export function harvestSnapshot(
   definition: Definition,
 ): HarvestSnapshot | undefined {
   if (!kernel.world.has(id, Harvester) || !definition.harvestCapacity) return;
+  const state = status(kernel, id);
   return {
     cargo: kernel.world.get(id, Harvester, "cargo"),
     capacity: definition.harvestCapacity,
-    status: status(kernel, id),
+    status: state,
+    ...((state === "travel_ore" || state === "mining") &&
+      kernel.world.get(id, Harvester, "cell") !== NO_CELL && { target: target(kernel, id) }),
     unloadTicks: kernel.world.get(id, Harvester, "unloadTicks"),
   };
 }

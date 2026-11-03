@@ -869,6 +869,60 @@ test("permitted event actors play independent authored attack/recoil/death clips
   }
 });
 
+test("original harvester works, unloads and resets without moving another instance; pause freezes work", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("supply-truck"),
+    movementDomain: "wheeled",
+  }));
+  const actor = (workAnimation?: "harvest" | "unload", workProgressTicks?: number) =>
+    entity("truck", {
+      definition: "supply-truck",
+      ...(workAnimation && { workAnimation }),
+      ...(workProgressTicks !== undefined && { workProgressTicks }),
+    });
+  const peer = entity("peer", { definition: "supply-truck", x: 4096 });
+  const part = (handle: string, name: string) => {
+    const node = root(f.scene, handle)
+      .getDescendants()
+      .find((node) => node.name === name);
+    assert(node instanceof TransformNode);
+    return node;
+  };
+  try {
+    await layer.accept(snapshot(0, [actor(), peer]), 0);
+    const rest = part("truck", "collector").position.clone();
+    const cargoRest = part("truck", "cargo_bed").rotationQuaternion?.clone();
+    assert(cargoRest);
+    await layer.accept(snapshot(1, [actor("harvest"), peer]), 0);
+    layer.render(200);
+    expect(part("truck", "collector").position.z).toBeGreaterThan(rest.z);
+    expect(part("peer", "collector").position.z).toBeCloseTo(rest.z);
+    const held = part("truck", "collector").position.z;
+    layer.setPlaybackRate(0);
+    layer.render(5000);
+    expect(part("truck", "collector").position.z).toBeCloseTo(held);
+    layer.setPlaybackRate(1);
+    await layer.accept(snapshot(2, [actor("unload", 2), peer]), 5000);
+    layer.render(5500);
+    expect(part("truck", "cargo_bed").rotationQuaternion).not.toEqual(cargoRest);
+    expect(part("peer", "cargo_bed").rotationQuaternion).toEqual(cargoRest);
+    const heldBed = part("truck", "cargo_bed").rotationQuaternion?.clone();
+    assert(heldBed);
+    layer.render(9000);
+    expect(part("truck", "cargo_bed").rotationQuaternion).toEqual(heldBed);
+    await layer.accept(snapshot(3, [actor("unload", 20), peer]), 9000);
+    layer.render(9050);
+    expect(part("truck", "cargo_bed").rotationQuaternion).not.toEqual(heldBed);
+    await layer.accept(snapshot(4, [actor(), peer]), 9050);
+    expect(part("truck", "collector").position.z).toBeCloseTo(rest.z);
+    expect(part("truck", "cargo_bed").rotationQuaternion).toEqual(cargoRest);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
 test("salvage uses the original builder tool clip and stops it when work pauses", async () => {
   const f = fixture();
   const layer = createEntityPresentation(f.scene, f.terrain, async () => ({

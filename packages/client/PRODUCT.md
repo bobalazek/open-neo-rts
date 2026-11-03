@@ -82,6 +82,13 @@ source.
   Hover and keyboard focus expose complete action descriptions, prices,
   requirements and unavailable reasons. Details exposes actor state and secondary
   controls; narrow layouts place it above the map and economy to preserve controls.
+- World hover outlines use visible unit, structure or resource geometry, with the
+  selected Supply Truck's current ore target remaining highlighted after hover
+  clears. Fog, hidden markers and modal menus revoke feedback; cargo and target
+  coordinates retain their existing economic permissions.
+- Supply Truck mining and unloading use original collector/drum and cargo-bed
+  motion. Work follows projected state, including pause and suspended dock work,
+  and returning to idle restores the authored rest pose.
 - Commands retain their existing hotkeys and stable QWER/ASDF/ZXCV slots. B switches
   the contextual build/train view, I toggles Details, and Escape closes auxiliary
   views. Populated groups appear directly; Groups reveals every group. Idle

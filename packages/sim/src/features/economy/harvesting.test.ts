@@ -277,9 +277,14 @@ test("EMP pauses an existing dock's partial unload and resumes its remaining wor
   f.until(() => f.state() === "unloading");
   f.advance(7);
   expect(f.kernel.world.get(f.id, Harvester, "unloadTicks")).toBe(8);
+  const projection = createProjection(f.setup, 1, "controlled");
+  const pose = () => projection.snapshot(f.kernel).entities.find((entity) => entity.harvesting);
+  expect(pose()?.workAnimation).toBe("unload");
+  expect(pose()?.workProgressTicks).toBe(8);
   f.kernel.world.add(dock, Disabled, { until: f.kernel.tick + 5 });
   f.advance(5);
   expect(f.kernel.world.get(f.id, Harvester, "unloadTicks")).toBe(8);
+  expect(pose()?.workProgressTicks).toBe(8);
   expect(f.kernel.world.get(f.id, Harvester, "dock")).toBe(dock);
   expect(f.cargo()).toBe(10);
   expect(f.kernel.economy?.balance(0)?.credits).toBe(1000);
@@ -507,12 +512,19 @@ test("harvester state is canonical and copied projection exposes cargo only unde
     .snapshot(f.kernel)
     .entities.find((entity) => entity.definition === truck.id);
   expect(visible?.harvesting).toMatchObject({ cargo: 2, capacity: 10 });
+  expect(visible?.harvesting?.target).toBeDefined();
+  expect(visible?.workAnimation).toBe("harvest");
   expect(economic.resolve(visible?.handle)).toBe(f.id);
   Reflect.set(visible?.harvesting as object, "cargo", 999);
   expect(f.cargo()).toBe(2);
   const observed = f.kernel.observe?.(2).entities.find((entity) => entity.harvesting)?.harvesting;
   expect(observed?.cargo).toBe(2);
   if (!observed) throw new Error("Missing permitted harvester observation");
+  const originalTarget = observed.target && { ...observed.target };
+  if (observed.target) Reflect.set(observed.target, "x", 999);
+  expect(
+    f.kernel.observe?.(2).entities.find((entity) => entity.harvesting)?.harvesting?.target,
+  ).toEqual(originalTarget);
   Reflect.set(observed, "cargo", 999);
   expect(
     f.kernel.observe?.(2).entities.find((entity) => entity.harvesting)?.harvesting?.cargo,
@@ -522,6 +534,10 @@ test("harvester state is canonical and copied projection exposes cargo only unde
       .snapshot(f.kernel)
       .entities.find((entity) => entity.definition === truck.id)?.harvesting,
   ).toBeUndefined();
+  const publicTruck = createProjection(f.setup, 3, "controlled")
+    .snapshot(f.kernel)
+    .entities.find((entity) => entity.definition === truck.id);
+  expect(publicTruck?.workAnimation).toBe("harvest");
   expect(createProjection(f.setup, 4, "controlled").snapshot(f.kernel).entities).toEqual([]);
   expect(createProjection(f.setup, 5, "controlled").snapshot(f.kernel).entities).toEqual([]);
 });
