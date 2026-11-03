@@ -487,3 +487,66 @@ test("unfinished structures cannot anchor a retreat after loss of the completed 
     payload: { entities: ["e1"], x: 10 * 1024 + 512, y: 10 * 1024 + 512 },
   });
 });
+
+test("reinforcement quota counts combat-ready troops and all queued combat output, not retreat reserves", () => {
+  for (const row of [
+    { count: 24, health: 100, retreat: false, queued: [], enqueue: false },
+    { count: 24, health: 34, retreat: false, queued: [], enqueue: true },
+    { count: 24, health: 35, retreat: false, queued: [], enqueue: false },
+    { count: 24, health: 54, retreat: true, queued: [], enqueue: true },
+    { count: 24, health: 55, retreat: true, queued: [], enqueue: false },
+    { count: 23, health: 100, retreat: false, queued: [], enqueue: true },
+    { count: 23, health: 100, retreat: false, queued: ["soldier"], enqueue: false },
+    { count: 22, health: 100, retreat: false, queued: ["soldier", "tank"], enqueue: false },
+    { count: 23, health: 100, retreat: false, queued: ["builder"], enqueue: true },
+  ]) {
+    const decide = basicSkirmishProgram({
+      ...policy,
+      buildOrder: [],
+      definitions: [
+        ...policy.definitions.map((definition) =>
+          definition.id === "soldier"
+            ? { ...definition, construction: { cost: { credits: 10 }, buildTicks: 1 } }
+            : definition,
+        ),
+        { id: "tank", role: "combat" },
+        { id: "barracks", role: "production", footprint: [1, 1], produces: ["soldier"] },
+      ],
+    });
+    const troops = Array.from({ length: row.count }, (_, i) => ({
+      ...entity(`e${i + 10}`, "soldier"),
+      health: row.health,
+    }));
+    const memory = initialSkirmishMemory();
+    memory.orders = troops.map((troop) => ({
+      handle: troop.handle,
+      x: 0,
+      y: 0,
+      until: 0,
+      retreat: row.retreat,
+    }));
+    const result = runDecision(
+      decide,
+      observation([
+        entity("e1", "hq"),
+        { ...entity("e2", "barracks"), production: { slots: 2, queue: [] } },
+        {
+          ...entity("e3", "barracks"),
+          production: {
+            slots: 2,
+            queue: row.queued.map((definition, i) => ({ definition, handle: `q${i + 1}` })),
+          },
+        },
+        ...troops,
+      ]),
+      { ...state(), memory },
+      createStream(1, "ai:1"),
+      64,
+    );
+    expect({
+      ...row,
+      enqueue: result.commands.some((c) => c.type === "production.enqueue"),
+    }).toEqual(row);
+    expect(result.used).toBeLessThanOrEqual(64);
+  }
+});

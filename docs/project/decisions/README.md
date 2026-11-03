@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Bot reinforcement quota](./2026-11-03-bot-reinforcement-quota.md) — Combat-ready and queued troops count toward the existing limit; retreat reserves do not prevent reinforcements.
+
 - [2026-11-02 — Local Force notices and explored-cell pings](./2026-11-02-local-force-notices.md) — Bounded offline notices and local annotations use only copied permitted observations.
 
 - [2026-11-02 — First canonical match counters](./2026-11-02-provisional-match-statistics.md) — Actual production, combat and resource totals, with private live observations and frozen public final results.
