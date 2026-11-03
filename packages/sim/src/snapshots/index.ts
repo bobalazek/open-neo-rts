@@ -24,6 +24,7 @@ import { strictObject } from "./schema";
 export * from "./keyframe";
 export * from "./match-record";
 export * from "./match-snapshot";
+export * from "./playback";
 export * from "./trace";
 
 export const SCENARIO_FORMAT = 2;
