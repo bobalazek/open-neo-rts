@@ -45,6 +45,10 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       ...(entity.constructionOrder && { constructionOrder: { ...entity.constructionOrder } }),
       ...(entity.repair && { repair: { ...entity.repair } }),
       ...(entity.repairOrder && { repairOrder: { ...entity.repairOrder } }),
+      ...(entity.queuedOrders && {
+        queuedOrders: entity.queuedOrders.map((order) => ({ ...order })),
+      }),
+      ...(entity.orderFailure && { orderFailure: { ...entity.orderFailure } }),
       ...(entity.salvageOrder && { salvageOrder: { ...entity.salvageOrder } }),
       ...(entity.production && {
         production: {
@@ -100,7 +104,12 @@ function controllerPayload(
             ? "unit.orders"
             : undefined,
       ) ?? -1;
-  if ("item" in payload) payload.item = projection.resolve(payload.item, "production.queue") ?? -1;
+  if ("item" in payload)
+    payload.item =
+      projection.resolve(
+        payload.item,
+        command.type === "production.cancel" ? "production.queue" : undefined,
+      ) ?? -1;
   return payload;
 }
 

@@ -1,6 +1,6 @@
 // Seat-permitted copied state. Canonical fog and structure memory live in the vision feature.
 import { arr, int, validate } from "@open-neo-rts/content";
-import { hasGrant, type Scope } from "../commands";
+import { hasGrant, type QUEUED_ORDER_TYPES, type Rejection, type Scope } from "../commands";
 import { AttackMoveOrder, AttackOrder, HoldPosition } from "../features/combat";
 import {
   CONSTRUCTION_REFUSALS,
@@ -17,6 +17,7 @@ import {
   RepairOrder,
   RepairWork,
 } from "../features/construction/repair";
+import { ORDER_REFUSALS, OrderFailure, QueuedOrder } from "../features/control/orders";
 import {
   type BankSnapshot,
   type ExtractionSnapshot,
@@ -42,6 +43,16 @@ export type { DebugOverlayData, DebugOverlayOptions } from "./debug";
 
 export type ProjectionMode = "controlled" | "debug-no-fog";
 export interface PresentedEntity {
+  queuedOrders?: {
+    handle: string;
+    type: (typeof QUEUED_ORDER_TYPES)[number];
+    x?: number;
+    y?: number;
+    target?: string;
+    definition?: string;
+    reason?: Rejection;
+  }[];
+  orderFailure?: { reason: Rejection; tick: number };
   holdPosition?: true;
   cargo?: {
     capacity: number;
@@ -244,6 +255,34 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         )
           continue;
         const handle = handleOf(id);
+        const queued = kernel.orders
+          ?.rows(id)
+          .filter((row) => kernel.orders?.allowed(seat, row))
+          .map((row) => {
+            const type = kernel.orders!.type(row),
+              target = world.get(row, QueuedOrder, "target");
+            const showTarget =
+              target &&
+              type !== "unit.unload" &&
+              (type === "economy.salvage"
+                ? kernel.remains?.canSee(seat, target)
+                : world.isAlive(target) && kernel.visibility?.canSeeEntity(seat, target));
+            return {
+              handle: handleOf(row),
+              type,
+              ...(["unit.move", "unit.attackMove", "economy.build"].includes(type) && {
+                x: world.get(row, QueuedOrder, "x"),
+                y: world.get(row, QueuedOrder, "y"),
+              }),
+              ...(showTarget && { target: handleOf(target) }),
+              ...(type === "economy.build" && {
+                definition: setup.definitions[world.get(row, QueuedOrder, "definition")]!.id,
+              }),
+              ...(world.get(row, QueuedOrder, "reason") && {
+                reason: ORDER_REFUSALS[world.get(row, QueuedOrder, "reason") - 1]!,
+              }),
+            };
+          });
         const approachSite =
           inspectBuilder && world.has(id, ConstructionApproach)
             ? world.get(id, ConstructionApproach, "site")
@@ -271,6 +310,20 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             },
           }),
           handle,
+          ...(queued?.length && { queuedOrders: queued }),
+          ...(kernel.orders &&
+            world.has(id, OrderFailure) &&
+            permits(
+              force,
+              ["unit.orders", "economy.build", "unit.abilities"][
+                world.get(id, OrderFailure, "scope")
+              ] as Scope,
+            ) && {
+              orderFailure: {
+                reason: ORDER_REFUSALS[world.get(id, OrderFailure, "code") - 1]!,
+                tick: world.get(id, OrderFailure, "tick"),
+              },
+            }),
           ...(setup.normal && controlled && world.has(id, HoldPosition) && { holdPosition: true }),
           definition: definition.id,
           force,
@@ -556,6 +609,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       if (id === undefined || !current?.world.isAlive(id)) return undefined;
       if (mode === "debug-no-fog") return id;
       const { world } = current;
+      if (current.orders && world.has(id, QueuedOrder))
+        return !scope && current.orders.allowed(seat, id) ? id : undefined;
       if (current.remains && world.has(id, Remains))
         return !scope && current.remains.canSee(seat, id) ? id : undefined;
       const request = !!setup.normal && world.has(id, ConstructionRequest);

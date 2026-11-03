@@ -48,6 +48,63 @@ test("remains packets are bounded, strict, unique opaque rows separate from livi
 
 const resources = { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
 
+test("pending order copies are dense, bounded, strict, unique and cannot cite unpublished targets", () => {
+  const row = { handle: "e2", type: "unit.move", x: 1024, y: 2048 };
+  const packet = (queuedOrders: unknown, orderFailure?: unknown, mode = "controlled") => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 10,
+        mode,
+        entities: [
+          {
+            handle: "e1",
+            definition: "unit:fixture/soldier",
+            force: 0,
+            x: 0,
+            y: 0,
+            facing: 0,
+            health: 100,
+            maxHealth: 100,
+            order: null,
+            queuedOrders,
+            ...(orderFailure === undefined ? {} : { orderFailure }),
+          },
+        ],
+      },
+    },
+  });
+  expect(isWorkerReply(packet([row]))).toBe(true);
+  expect(
+    isWorkerReply(
+      packet([{ ...row, type: "economy.build", definition: "structure:fixture/base" }], {
+        reason: "bad_payload",
+        tick: 9,
+      }),
+    ),
+  ).toBe(true);
+  for (const bad of [
+    [],
+    Array(1),
+    Array(33).fill(row),
+    [row, row],
+    [{ ...row, handle: "e1" }],
+    [{ ...row, x: 0.5 }],
+    [{ ...row, type: "unit.harvest" }],
+    [{ ...row, type: "debug.remove" }],
+    [{ ...row, type: "economy.build" }],
+    [{ handle: "e2", type: "unit.attack", target: "e99" }],
+    [{ ...row, target: "e99" }],
+    [{ ...row, reason: "made-up" }],
+    [{ ...row, [Symbol("extra")]: true }],
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet([row], { reason: "bad_payload", tick: 11 }))).toBe(false);
+  expect(isWorkerReply(packet([row], undefined, "debug-no-fog"))).toBe(false);
+});
+
 test("Hold position wire state is a strict normal-match flag", () => {
   const packet = (holdPosition: unknown, mode = "controlled") => ({
     id: 1,

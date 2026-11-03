@@ -32,7 +32,7 @@ export interface DebugRemove {
 }
 
 /** Replaces each unit's orders with a move to (x, y). Units that can't move ignore it. */
-export interface UnitMove {
+export interface UnitMove extends AppendOrder {
   /** 1 to 1,000 entity IDs. */
   entities: number[];
   /** Subcells. */
@@ -42,31 +42,52 @@ export interface UnitMove {
 }
 
 /** Drops each unit's orders. */
-export interface UnitStop {
+export interface UnitStop extends AppendOrder {
   /** 1 to 1,000 entity IDs. */
   entities: number[];
 }
 
 /** Normal, paid site placement by the selected same-Force builders. */
-export interface ConstructionBuild extends DebugSpawn {
+export interface ConstructionBuild extends DebugSpawn, AppendOrder {
   builders: number[];
 }
 
+export interface AppendOrder {
+  append?: number;
+}
+export const QUEUED_ORDER_TYPES = [
+  "unit.move",
+  "unit.attackMove",
+  "unit.attack",
+  "unit.stop",
+  "unit.hold",
+  "unit.harvest",
+  "unit.load",
+  "unit.unload",
+  "unit.deploy",
+  "economy.assistConstruction",
+  "economy.repair",
+  "economy.salvage",
+  "economy.build",
+] as const;
+
 export interface Payloads {
   "commander.activate": { entity: number; ability: string };
-  "unit.load": { entities: number[]; entity: number };
-  "unit.unload": { entity: number };
+  "unit.load": { entities: number[]; entity: number } & AppendOrder;
+  "unit.unload": { entity: number } & AppendOrder;
+  "unit.cancelQueued": { item: number };
+  "unit.editQueued": { item: number; x: number; y: number };
   "match.surrender": { force: number };
   "economy.sell": { entity: number };
-  "economy.repair": { entity: number; builders: number[] };
-  "economy.salvage": { entity: number; builders: number[] };
+  "economy.repair": { entity: number; builders: number[] } & AppendOrder;
+  "economy.salvage": { entity: number; builders: number[] } & AppendOrder;
   "economy.cancelRepair": { entity: number };
   "unit.harvest": UnitStop;
   "production.enqueue": { entity: number; definition: string };
   "production.cancel": { item: number };
   "production.rally": { entity: number; x: number; y: number };
-  "unit.attack": { entities: number[]; entity: number };
-  "economy.assistConstruction": { entity: number; builders: number[] };
+  "unit.attack": { entities: number[]; entity: number } & AppendOrder;
+  "economy.assistConstruction": { entity: number; builders: number[] } & AppendOrder;
   "economy.build": ConstructionBuild;
   "economy.cancelConstruction": { entity: number };
   "debug.spawn": DebugSpawn;
@@ -99,6 +120,8 @@ export type Command = {
 
 /** Every way a command is refused, with its reason. Clients get the code in their ack. */
 export const REJECTIONS = {
+  unload_blocked: "Waiting for clear exits to unload the remaining cargo.",
+  order_queue_full: "A selected unit already has 32 pending orders.",
   transport_full: "The transport's cargo and boarding reservations fill its capacity.",
   cooldown: "This ability is still cooling down.",
   immobile: "Pack up this deployed unit before moving it.",
@@ -130,49 +153,52 @@ const IDS: Field = { each: ID, max: MAX_ORDER_ENTITIES };
 const POSITION: Field = [0, MAP_SUBCELLS - 1];
 const SPAWNABLE = /^([a-z0-9-]+\.)?(unit|structure|prop):[a-z0-9-]+(\/[a-z0-9-]+)?$/;
 
-const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Payloads[T]]: Field } } = {
-  "commander.activate": { entity: ID, ability: /^[a-z0-9]+(-[a-z0-9]+)*$/ },
-  "unit.load": { entities: IDS, entity: ID },
-  "unit.unload": { entity: ID },
-  "match.surrender": { force: ID },
-  "economy.sell": { entity: ID },
-  "economy.repair": { entity: ID, builders: IDS },
-  "economy.salvage": { entity: ID, builders: IDS },
-  "economy.cancelRepair": { entity: ID },
-  "unit.harvest": { entities: IDS },
-  "production.enqueue": {
-    entity: ID,
-    definition: /^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
-  },
-  "production.cancel": { item: ID },
-  "production.rally": { entity: ID, x: POSITION, y: POSITION },
-  "unit.attack": { entities: IDS, entity: ID },
-  "economy.assistConstruction": { entity: ID, builders: IDS },
-  "economy.build": {
-    definition: /^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
-    force: ID,
-    builders: IDS,
-    x: POSITION,
-    y: POSITION,
-    facing: [0, 0xffff],
-  },
-  "economy.cancelConstruction": { entity: ID },
-  "debug.spawn": {
-    definition: SPAWNABLE,
-    force: ID,
-    x: POSITION,
-    y: POSITION,
-    facing: [0, 0xffff],
-  },
-  "debug.setHealth": { entity: ID, health: [0, INT32_MAX] },
-  "debug.remove": { entity: ID },
-  "unit.move": { entities: IDS, x: POSITION, y: POSITION },
-  "unit.attackMove": { entities: IDS, x: POSITION, y: POSITION },
-  "unit.stop": { entities: IDS },
-  "unit.hold": { entities: IDS },
-  "unit.deploy": { entities: IDS },
-  "economy.power": { entity: ID, enabled: [0, 1] },
-};
+const PAYLOAD_FIELDS: { [T in CommandType]: { [K in keyof Omit<Payloads[T], "append">]: Field } } =
+  {
+    "commander.activate": { entity: ID, ability: /^[a-z0-9]+(-[a-z0-9]+)*$/ },
+    "unit.load": { entities: IDS, entity: ID },
+    "unit.unload": { entity: ID },
+    "unit.cancelQueued": { item: ID },
+    "unit.editQueued": { item: ID, x: POSITION, y: POSITION },
+    "match.surrender": { force: ID },
+    "economy.sell": { entity: ID },
+    "economy.repair": { entity: ID, builders: IDS },
+    "economy.salvage": { entity: ID, builders: IDS },
+    "economy.cancelRepair": { entity: ID },
+    "unit.harvest": { entities: IDS },
+    "production.enqueue": {
+      entity: ID,
+      definition: /^([a-z0-9-]+\.)?unit:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
+    },
+    "production.cancel": { item: ID },
+    "production.rally": { entity: ID, x: POSITION, y: POSITION },
+    "unit.attack": { entities: IDS, entity: ID },
+    "economy.assistConstruction": { entity: ID, builders: IDS },
+    "economy.build": {
+      definition: /^([a-z0-9-]+\.)?structure:[a-z0-9-]+(\/[a-z0-9-]+)?$/,
+      force: ID,
+      builders: IDS,
+      x: POSITION,
+      y: POSITION,
+      facing: [0, 0xffff],
+    },
+    "economy.cancelConstruction": { entity: ID },
+    "debug.spawn": {
+      definition: SPAWNABLE,
+      force: ID,
+      x: POSITION,
+      y: POSITION,
+      facing: [0, 0xffff],
+    },
+    "debug.setHealth": { entity: ID, health: [0, INT32_MAX] },
+    "debug.remove": { entity: ID },
+    "unit.move": { entities: IDS, x: POSITION, y: POSITION },
+    "unit.attackMove": { entities: IDS, x: POSITION, y: POSITION },
+    "unit.stop": { entities: IDS },
+    "unit.hold": { entities: IDS },
+    "unit.deploy": { entities: IDS },
+    "economy.power": { entity: ID, enabled: [0, 1] },
+  };
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -198,7 +224,13 @@ function rejection(input: unknown, debug: boolean): Rejection | undefined {
   if (!Object.hasOwn(PAYLOAD_FIELDS, type)) return "unknown_type";
   if (type.startsWith("debug.") && !debug) return "debug_only";
   const fields = Object.entries(PAYLOAD_FIELDS[type as CommandType]);
-  if (Object.keys(payload).length !== fields.length) return "bad_payload";
+  const append = Object.hasOwn(payload, "append");
+  if (
+    append &&
+    (!QUEUED_ORDER_TYPES.some((order) => order === type) || !matches(payload.append, [0, 1]))
+  )
+    return "bad_payload";
+  if (Object.keys(payload).length !== fields.length + Number(append)) return "bad_payload";
   if (!fields.every(([k, f]) => Object.hasOwn(payload, k) && matches(payload[k], f)))
     return "bad_payload";
   return undefined;

@@ -49,8 +49,10 @@ Hold position is an order, not a stance, so it can sit in a queue.
 
 The first-playable [combat-order slice](../project/decisions/2026-11-03-first-playable-combat-orders.md)
 implements visible-target pursuit, minimum-range backing, attack-move engagement
-and H/Hold. Shift queues and the remaining context actions are tracked separately
-by 2-17b; the full queue/stance model above remains the target behavior.
+and H/Hold. The [Shift/context slice](../project/decisions/2026-11-03-first-playable-order-queues.md)
+adds bounded queues, visible selected waypoints, HUD waypoint editing/removal,
+builder assistance/repair and producer rally context actions. Direct world-marker
+drag/delete remains 2-17c; the full stance model above remains target behavior.
 
 ## Automatic behaviour
 

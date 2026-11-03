@@ -99,11 +99,12 @@ export function movementFeature(match: {
       ],
     },
     handlers: {
-      "unit.move": (kernel, { seat, payload: { entities, x, y } }) =>
-        order(kernel, seat, entities, { x, y }),
-      "unit.attackMove": (kernel, { seat, payload: { entities, x, y } }) =>
-        order(kernel, seat, entities, { x, y }, 1),
-      "unit.stop": (kernel, { seat, payload: { entities } }) => order(kernel, seat, entities),
+      "unit.move": (kernel, { seat, payload: { entities, x, y, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities, { x, y }),
+      "unit.attackMove": (kernel, { seat, payload: { entities, x, y, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities, { x, y }, 1),
+      "unit.stop": (kernel, { seat, payload: { entities, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities),
       "unit.hold": (kernel, { seat, payload: { entities } }) =>
         match.normal ? order(kernel, seat, entities, undefined, 0, true) : "bad_payload",
     },
