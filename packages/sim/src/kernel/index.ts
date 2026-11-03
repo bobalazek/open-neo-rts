@@ -27,6 +27,7 @@ import type { ForceBanks, ForceExtraction, ForcePower } from "../features/econom
 import type { UnitTransports } from "../features/entities/transport";
 import type { CombatEvent } from "../features/events/combat";
 import type { TerrainMovement } from "../features/movement/terrain-movement";
+import type { MatchRemains } from "../features/salvage";
 import type { MatchStatistics, MatchVictory } from "../features/victory";
 import type { TerrainVision, VisibilityMemory } from "../features/vision";
 import { copyMatchMap, type MatchMap } from "../match-map";
@@ -113,6 +114,7 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  remains?: MatchRemains;
   transport?: UnitTransports;
   unitModes?: UnitModes;
   productionSurges?: ProductionSurges;

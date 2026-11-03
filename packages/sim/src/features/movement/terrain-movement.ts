@@ -103,7 +103,7 @@ export class TerrainMovement {
       found.radiusSubcells === undefined
     )
       throw new Error("Ground movement requires original domain and radius");
-    const objects: NavigationObject[] = [];
+    const objects: NavigationObject[] = this.kernel.remains?.rubbleObjects() ?? [];
     for (const id of this.kernel.world.query(Template, Transform)) {
       const object = this.definitions[this.definitionOf(id)] as Definition;
       if (object.id.split(":")[0]?.split(".").at(-1) === "unit") continue;
@@ -164,7 +164,7 @@ export class TerrainMovement {
         world.get(id, Transform, "y"),
         world.get(id, Transform, "facing"),
       ]);
-    const signature = JSON.stringify(occupied);
+    const signature = JSON.stringify([occupied, this.kernel.remains?.rubbleObjects() ?? []]);
     if (signature === this.occupancy) return;
     this.occupancy = signature;
     this.profiles.clear();

@@ -38,6 +38,7 @@ import { movementFeature } from "./features/movement";
 import { TerrainMovement } from "./features/movement/terrain-movement";
 import { productionFeature } from "./features/production";
 import { initializeProjectiles } from "./features/projectiles";
+import { MatchRemains } from "./features/salvage";
 import { initializeStatistics, initializeVictory } from "./features/victory";
 import { initializeVisibilityMemory, initializeVision } from "./features/vision";
 import { createKernel, type Kernel, register } from "./kernel";
@@ -52,7 +53,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 48;
+export const SIM_VERSION = 49;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -189,6 +190,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) register(kernel, constructionWorkFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, structureRepairFeature({ ...setup, definitions }));
   if (setup.normal) register(kernel, combatFeature({ ...setup, definitions }));
+  if (setup.normal) kernel.remains = new MatchRemains(kernel, definitions);
   if (setup.normal) initializeProjectiles(kernel, { ...setup, definitions });
   if (setup.normal) initializeBurn(kernel, definitions);
   if (setup.normal && setup.normal.settings.veterancy !== false)

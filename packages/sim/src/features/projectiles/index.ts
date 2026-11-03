@@ -7,6 +7,7 @@ import { combatPoint } from "../../physics/fire-line";
 import { type Contact, type Fraction, traceProjectile } from "../../physics/trace";
 import { AttackOrder, clearAttackOrder, ShotIntent, WeaponState } from "../combat";
 import { applyWarhead, type DamageImpact } from "../combat/damage";
+import { ConstructionSite } from "../construction";
 import { Health, OwnerForce, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
@@ -573,6 +574,16 @@ export function initializeProjectiles(
                 (definitions[world.get(id, Template, "definition")]?.health ?? 0) > 0,
             );
           for (const id of dead) {
+            const definition = world.get(id, Template, "definition");
+            const force = world.get(id, OwnerForce, "force");
+            const site = !!kernel.remains && world.has(id, ConstructionSite);
+            const pose = world.has(id, Transform)
+              ? {
+                  x: world.get(id, Transform, "x"),
+                  y: world.get(id, Transform, "y"),
+                  facing: world.get(id, Transform, "facing"),
+                }
+              : undefined;
             if (world.has(id, Transform))
               emitCombatEvent(kernel, {
                 type: "death",
@@ -592,6 +603,7 @@ export function initializeProjectiles(
               if (world.get(pending, PendingImpact, "direct") === id)
                 world.set(pending, PendingImpact, "direct", 0);
             world.destroy(id);
+            if (pose) kernel.remains?.create(definition, force, pose, site);
           }
           if (dead.length) kernel.movement?.refreshOccupancy();
         },

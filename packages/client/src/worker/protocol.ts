@@ -17,6 +17,7 @@ import {
   HARVEST_STATUSES,
   MAX_COMBAT_EVENTS,
   MAX_PRODUCTION_EXITS,
+  MAX_REMAINS,
   PRODUCTION_STATUSES,
   SIM_VERSION,
   STAT_COUNTERS,
@@ -762,6 +763,38 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     }
   }
   const entityHandles = new Set();
+  if (snapshot.remains !== undefined) {
+    const remains = snapshot.remains;
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(remains) ||
+      Object.getPrototypeOf(remains) !== Array.prototype ||
+      remains.length > MAX_REMAINS ||
+      Reflect.ownKeys(remains).length !== remains.length + 1
+    )
+      return false;
+    for (const row of remains) {
+      if (
+        !isRecord(row) ||
+        !exact(row, ["handle", "definition", "kind", "force", "x", "y", "facing"]) ||
+        typeof row.handle !== "string" ||
+        !/^e[1-9][0-9]*$/.test(row.handle) ||
+        !bounded(Number(row.handle.slice(1)), 0xfffffffe) ||
+        entityHandles.has(row.handle) ||
+        typeof row.definition !== "string" ||
+        !/^([a-z0-9-]+\.)?(unit|structure):[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(row.definition) ||
+        (row.kind !== "wreck" && row.kind !== "rubble") ||
+        (row.kind === "wreck"
+          ? !row.definition.includes("unit:")
+          : !row.definition.includes("structure:")) ||
+        !bounded(row.force) ||
+        !point(row) ||
+        !bounded(row.facing, 0xffff)
+      )
+        return false;
+      entityHandles.add(row.handle);
+    }
+  }
   return [...snapshot.entities].every((entity: unknown) => {
     if (
       !isRecord(entity) ||
