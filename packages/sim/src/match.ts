@@ -19,6 +19,7 @@ import {
   type NormalMatchSetup,
   normalMatchIdentity,
 } from "./features/control/normal-match";
+import { initializeOrderQueues } from "./features/control/orders";
 import {
   initializeExtraction,
   initializeForceBanks,
@@ -54,7 +55,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 50;
+export const SIM_VERSION = 52;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -202,6 +203,7 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeVision(kernel, { ...setup, definitions });
   if (setup.normal) initializeVisibilityMemory(kernel, { ...setup, definitions });
   initializeVictory(kernel, { ...setup, definitions });
+  if (setup.normal) initializeOrderQueues(kernel, { ...setup, definitions });
   initializeObservations(kernel, { ...setup, definitions });
   initializeBotSeats(kernel, { ...setup, definitions });
   return kernel;

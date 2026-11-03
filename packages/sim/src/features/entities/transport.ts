@@ -211,6 +211,7 @@ export class UnitTransports {
     world.add(id, Transform, { ...point, facing });
     world.add(id, CombatMotion, point);
     if (damaged) {
+      this.kernel.orders?.clear(id);
       this.kernel.veterancy?.damaged(id);
       const previous = world.get(id, Health, "current");
       const remaining = Math.max(1, Math.floor(previous / 2));

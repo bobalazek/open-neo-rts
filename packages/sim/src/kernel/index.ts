@@ -114,6 +114,7 @@ export interface LogEntry {
 
 /** One match's, test's or replay's simulation. Kernels share no state. */
 export interface Kernel {
+  orders?: import("../features/control/orders").UnitOrders;
   remains?: MatchRemains;
   transport?: UnitTransports;
   unitModes?: UnitModes;

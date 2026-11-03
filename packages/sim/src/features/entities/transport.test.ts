@@ -8,6 +8,7 @@ import { AttackOrder, WeaponState } from "../combat";
 import { initializeBurn } from "../combat/burn";
 import { applyWarhead } from "../combat/damage";
 import { Disabled } from "../combat/disable";
+import { ORDER_REFUSALS, QueuedOrder } from "../control/orders";
 import { MoveIntent, MovementFailure } from "../movement";
 import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
 import { ForceStatistics } from "../victory/statistics";
@@ -108,6 +109,106 @@ function fixture(configure?: (definitions: Definition[]) => void, fog: "off" | "
     step(kernel, [{ type, payload, seat, tick: kernel.tick, sequence: 0 }])[0]!.result;
   return { setup, kernel, world, apc, infantry, command };
 }
+
+test("queued partial unload waits for all exits before following movement starts", () => {
+  const f = fixture(),
+    { world, kernel, apc, infantry } = f;
+  const passenger = spawnEntity(kernel, 1, f.setup.definitions[1]!, {
+    definition: f.setup.definitions[1]!.id,
+    force: 0,
+    x: 13 * 1024 + 512,
+    y: 12 * 1024 + 512,
+    facing: 0,
+  });
+  for (const id of [apc, infantry]) {
+    world.set(id, Transform, "x", (id === apc ? 12 : 13) * 1024 + 512);
+    world.set(id, Transform, "y", 12 * 1024 + 512);
+  }
+  expect(f.command("unit.load", { entity: apc, entities: [infantry, passenger] })).toBe("accepted");
+  expect(world.query(Cargo)).toHaveLength(2);
+  const blockers: number[] = [];
+  for (let y = -4; y <= 4; y++)
+    for (let x = -4; x <= 4; x++) {
+      if ((!x && !y) || (!x && y === 1)) continue;
+      blockers.push(
+        spawnEntity(kernel, 1, f.setup.definitions[1]!, {
+          definition: f.setup.definitions[1]!.id,
+          force: 1,
+          x: (12 + x) * 1024 + 512,
+          y: (12 + y) * 1024 + 512,
+          facing: 0,
+        }),
+      );
+    }
+  step(kernel, [
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 0,
+      type: "unit.unload",
+      payload: { entity: apc, append: 1 },
+    },
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 1,
+      type: "unit.move",
+      payload: { entities: [apc], x: 25 * 1024 + 512, y: 12 * 1024 + 512, append: 1 },
+    },
+  ]);
+  expect(world.query(Cargo)).toHaveLength(1);
+  expect(kernel.orders!.rows(apc)).toHaveLength(2);
+  expect(ORDER_REFUSALS[world.get(kernel.orders!.rows(apc)[0]!, QueuedOrder, "reason") - 1]).toBe(
+    "unload_blocked",
+  );
+  expect(world.has(apc, MoveIntent)).toBe(false);
+  step(kernel, []);
+  expect(kernel.orders!.rows(apc)).toHaveLength(2);
+  expect(world.query(Cargo)).toHaveLength(1);
+  expect(world.has(apc, MoveIntent)).toBe(false);
+  for (const blocker of blockers) world.destroy(blocker);
+  step(kernel, []);
+  step(kernel, []);
+  expect(world.query(Cargo)).toHaveLength(0);
+  expect(world.has(apc, MoveIntent)).toBe(true);
+});
+
+test("queued passenger movement survives ordinary unloading but is cleared by emergency ejection", () => {
+  for (const emergency of [false, true]) {
+    const f = fixture(),
+      { world, kernel, apc, infantry } = f;
+    world.set(apc, Transform, "x", 12 * 1024 + 512);
+    world.set(apc, Transform, "y", 12 * 1024 + 512);
+    world.set(infantry, Transform, "x", 13 * 1024 + 512);
+    world.set(infantry, Transform, "y", 12 * 1024 + 512);
+    step(kernel, [
+      {
+        tick: kernel.tick,
+        seat: 1,
+        sequence: 0,
+        type: "unit.load",
+        payload: { entities: [infantry], entity: apc, append: 1 },
+      },
+      {
+        tick: kernel.tick,
+        seat: 1,
+        sequence: 1,
+        type: "unit.move",
+        payload: { entities: [infantry], x: 20 * 1024 + 512, y: 12 * 1024 + 512, append: 1 },
+      },
+    ]);
+    step(kernel, []);
+    expect(world.has(infantry, Cargo)).toBe(true);
+    expect(kernel.orders!.rows(infantry)).toHaveLength(1);
+    if (emergency) {
+      world.set(apc, Health, "current", 0);
+      step(kernel, []);
+    } else expect(f.command("unit.unload", { entity: apc })).toBe("accepted");
+    expect(world.has(infantry, Cargo)).toBe(false);
+    expect(kernel.orders!.rows(infantry)).toHaveLength(0);
+    expect(world.has(infantry, MoveIntent)).toBe(!emergency);
+  }
+});
 
 test("boarding reserves capacity atomically, preserves identity and removes spatial presence", () => {
   const f = fixture(),
@@ -403,6 +504,47 @@ function bunkerFixture(
   }
   return { ...f, enemy, position };
 }
+
+test("mixed attack ignores a packed unarmed carrier without erasing its newly queued move", () => {
+  const f = bunkerFixture(),
+    { world, kernel, apc, infantry, enemy } = f;
+  f.command("unit.load", { entity: apc, entities: [infantry] });
+  f.command("unit.deploy", { entities: [apc] });
+  f.command("unit.attack", { entities: [apc], entity: enemy });
+  step(kernel, []);
+  step(kernel, []);
+  const armed = spawnEntity(kernel, 1, f.setup.definitions[1]!, {
+    definition: f.setup.definitions[1]!.id,
+    force: 0,
+    x: 13 * 1024 + 512,
+    y: 14 * 1024 + 512,
+    facing: 0,
+  });
+  let pending = -1;
+  kernel.systems.ingest.push(() => {
+    pending = kernel.orders!.rows(apc).length;
+  });
+  const result = step(kernel, [
+    { tick: kernel.tick, seat: 1, sequence: 0, type: "unit.deploy", payload: { entities: [apc] } },
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 1,
+      type: "unit.move",
+      payload: { entities: [apc], x: 20 * 1024 + 512, y: 12 * 1024 + 512, append: 1 },
+    },
+    {
+      tick: kernel.tick,
+      seat: 1,
+      sequence: 2,
+      type: "unit.attack",
+      payload: { entities: [apc, armed], entity: enemy },
+    },
+  ]);
+  expect(result.map((row) => row.result)).toEqual(["accepted", "accepted", "accepted"]);
+  expect(pending).toBe(1);
+  expect(world.has(apc, MoveIntent)).toBe(true);
+});
 
 test("deployed cargo uses its own range/damage and keeps reload across pack and unload", () => {
   const { kernel, world, apc, infantry, enemy, command, position } = bunkerFixture();

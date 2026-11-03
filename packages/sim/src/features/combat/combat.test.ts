@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import type { Command, Payloads } from "../../commands";
 import { checkpointHash, createKernel, register, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
@@ -17,8 +18,10 @@ import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent, movementFeature } from "../movement";
 import { initializeVision } from "../vision";
 import {
+  AttackMoveOrder,
   AttackOrder,
   combatFeature,
+  HoldPosition,
   MAX_SHOT_INTENTS,
   ShotIntent,
   WeaponState,
@@ -62,6 +65,15 @@ const hq: Definition = {
   footprint: [2, 2],
   visionSubcells: 1024,
 };
+function order<T extends keyof Payloads>(
+  f: ReturnType<typeof fixture>,
+  type: T,
+  payload: Payloads[T],
+  seat = 1,
+) {
+  return step(f.kernel, [{ tick: f.kernel.tick, seat, sequence: 0, type, payload } as Command])[0]
+    ?.result;
+}
 function fixture(
   options: {
     weapon?: GameplayWeapon;
@@ -70,6 +82,7 @@ function fixture(
     fog?: "off" | "standard";
     turnRate?: number;
     harvester?: boolean;
+    barrier?: boolean;
   } = {},
 ) {
   const attacker: Definition = {
@@ -108,6 +121,14 @@ function fixture(
   const setup: MatchSetup = {
     map: {
       ...flatMap(48),
+      ...(options.barrier && {
+        terrain: {
+          ...flatMap(48).terrain,
+          water: Array.from({ length: 48 * 48 }, (_, cell) =>
+            cell % 48 === 24 ? 2 : cell % 48 === 23 || cell % 48 === 25 ? 1 : 0,
+          ),
+        },
+      }),
       ...(options.harvester && {
         resources: [
           {
@@ -120,7 +141,7 @@ function fixture(
       }),
       spawns: [
         { id: "west", position: [8 * 1024, 8 * 1024], facing: 16384 },
-        { id: "east", position: [38 * 1024, 8 * 1024], facing: 16384 },
+        { id: "east", position: [(options.barrier ? 12 : 38) * 1024, 8 * 1024], facing: 16384 },
       ],
     },
     seed: 7,
@@ -196,6 +217,133 @@ function fixture(
     ])[0]?.result;
   return { kernel, setup, definitions, actor, spawn, advance, shots, state, attack };
 }
+
+test("explicit attacks pursue a visible target and stop as soon as a legal shot is possible", () => {
+  const f = fixture(),
+    target = f.spawn(3, 1, 29, 20);
+  const start = f.kernel.world.get(f.actor, Transform, "x");
+  expect(f.attack(target)).toBe("accepted");
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBeGreaterThan(start);
+  for (let i = 0; i < 40 && !f.shots().length; i++) f.advance();
+  expect(f.shots().length).toBeGreaterThan(0);
+  const stopped = f.kernel.world.get(f.actor, Transform, "x");
+  f.advance(10);
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBe(stopped);
+  expect(f.kernel.world.has(f.actor, MoveIntent)).toBe(false);
+  expect(f.kernel.world.get(target, Transform, "x") - stopped).toBeLessThanOrEqual(5 * 1024);
+});
+
+test("a minimum-range weapon backs into its firing band instead of driving closer", () => {
+  const f = fixture({ weapon: { ...gun, rangeSubcells: [2 * 1024, 5 * 1024] } });
+  const target = f.spawn(3, 1, 21, 20),
+    start = f.kernel.world.get(f.actor, Transform, "x");
+  expect(f.attack(target)).toBe("accepted");
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBeLessThan(start);
+  for (let i = 0; i < 30 && !f.shots().length; i++) f.advance();
+  expect(f.shots().length).toBeGreaterThan(0);
+  const distance =
+    f.kernel.world.get(target, Transform, "x") - f.kernel.world.get(f.actor, Transform, "x");
+  expect(distance).toBeGreaterThanOrEqual(2 * 1024);
+  expect(distance).toBeLessThanOrEqual(5 * 1024);
+});
+
+test("lost vision cancels pursuit rather than continuing toward a hidden target's last position", () => {
+  const f = fixture({ fog: "standard", weapon: { ...gun, rangeSubcells: [0, 2 * 1024] } });
+  const target = f.spawn(3, 1, 25, 20);
+  f.kernel.vision?.update();
+  expect(f.attack(target)).toBe("accepted");
+  const stopped = f.kernel.world.get(f.actor, Transform, "x");
+  f.kernel.world.set(target, Transform, "x", 40 * 1024 + 512);
+  f.advance();
+  expect(f.kernel.world.has(f.actor, AttackOrder)).toBe(false);
+  expect(f.kernel.world.has(f.actor, MoveIntent)).toBe(false);
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBe(stopped);
+});
+
+test("attack-move engages in range, retains its projected destination, then resumes after target loss", () => {
+  const f = fixture(),
+    target = f.spawn(3, 1, 22, 20);
+  const start = f.kernel.world.get(f.actor, Transform, "x"),
+    x = 28 * 1024 + 512,
+    y = 20 * 1024 + 512;
+  expect(order(f, "unit.attackMove", { entities: [f.actor], x, y })).toBe("accepted");
+  expect(f.kernel.world.has(f.actor, AttackMoveOrder)).toBe(true);
+  expect(f.kernel.world.has(f.actor, MoveIntent)).toBe(false);
+  f.advance(10);
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBe(start);
+  expect(
+    createProjection(f.setup, 1, "controlled")
+      .snapshot(f.kernel)
+      .entities.find((row) => row.order)?.order,
+  ).toEqual({ type: "attackMove", x, y });
+  f.kernel.world.destroy(target);
+  f.advance(40);
+  expect(f.kernel.world.get(f.actor, Transform, "x")).toBe(x);
+  expect(f.kernel.world.has(f.actor, AttackMoveOrder)).toBe(false);
+  const moving = fixture();
+  moving.spawn(3, 1, 22, 20);
+  order(moving, "unit.move", { entities: [moving.actor], x, y });
+  expect(moving.kernel.world.get(moving.actor, Transform, "x")).toBeGreaterThan(start);
+});
+
+test("unreachable attack and attack-move goals use finite navigation without automatically resubmitting", () => {
+  for (const explicit of [true, false]) {
+    const f = fixture({ barrier: true, weapon: { ...gun, rangeSubcells: [0, 2 * 1024] } });
+    const target = f.spawn(3, 1, 29, 20),
+      movement = f.kernel.movement!;
+    const route = movement.order.bind(movement);
+    let calls = 0;
+    movement.order = (actor, point) => {
+      calls++;
+      route(actor, point);
+    };
+    if (explicit) f.attack(target);
+    else
+      order(f, "unit.attackMove", { entities: [f.actor], x: 29 * 1024 + 512, y: 20 * 1024 + 512 });
+    f.advance(150);
+    expect(calls).toBe(1);
+    expect(f.kernel.world.has(f.actor, MoveIntent)).toBe(false);
+    expect(f.kernel.world.get(f.actor, Transform, "x")).toBeLessThan(24 * 1024);
+  }
+});
+
+test("Hold position cancels work/movement, fires in range, stays put and is private to unit controllers", () => {
+  const f = fixture(),
+    target = f.spawn(3, 1, 22, 20),
+    world = f.kernel.world;
+  order(f, "unit.attackMove", { entities: [f.actor], x: 30 * 1024, y: 20 * 1024 });
+  expect(order(f, "unit.hold", { entities: [f.actor] })).toBe("accepted");
+  expect(world.has(f.actor, AttackMoveOrder)).toBe(false);
+  const x = world.get(f.actor, Transform, "x");
+  f.advance(2);
+  expect(f.shots()).toHaveLength(1);
+  world.set(target, Transform, "x", 32 * 1024 + 512);
+  f.advance(20);
+  expect(world.get(f.actor, Transform, "x")).toBe(x);
+  expect(order(f, "unit.stop", { entities: [f.actor] }, 3)).toBe("no_grant");
+  expect(world.has(f.actor, HoldPosition)).toBe(true);
+  const view = createProjection(f.setup, 1, "controlled").snapshot(f.kernel);
+  expect(view.entities.some((row) => row.holdPosition)).toBe(true);
+  expect(
+    createProjection(f.setup, 3, "controlled")
+      .snapshot(f.kernel)
+      .entities.some((row) => row.holdPosition),
+  ).toBe(false);
+  order(f, "unit.move", { entities: [f.actor], x: 21 * 1024 + 512, y: 20 * 1024 + 512 });
+  expect(world.has(f.actor, HoldPosition)).toBe(false);
+  expect(world.get(f.actor, Transform, "x")).toBeGreaterThan(x);
+});
+
+test("mixed Hold selections ignore structures and retain their valid explicit attack lock", () => {
+  const f = fixture(),
+    target = f.spawn(3, 1, 22, 20),
+    defense = f.spawn(9, 0, 20, 19);
+  expect(f.attack(target, 1, [defense])).toBe("accepted");
+  expect(order(f, "unit.hold", { entities: [f.actor, defense] })).toBe("accepted");
+  expect(f.kernel.world.has(f.actor, HoldPosition)).toBe(true);
+  expect(f.kernel.world.has(defense, HoldPosition)).toBe(false);
+  expect(f.kernel.world.get(defense, AttackOrder, "target")).toBe(target);
+});
 
 test("range endpoints are inclusive and legal domain checks include ground structures without admitting air/naval targets", () => {
   const f = fixture({ weapon: { ...gun, rangeSubcells: [2 * 1024, 5 * 1024] } });

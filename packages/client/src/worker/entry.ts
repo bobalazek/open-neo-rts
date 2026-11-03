@@ -175,6 +175,7 @@ port.onmessage = ({ data }) => {
             type === "unit.move" ||
             type === "unit.attackMove" ||
             type === "unit.stop" ||
+            type === "unit.hold" ||
             type === "unit.harvest" ||
             type === "unit.attack"
           ) {
@@ -210,7 +211,11 @@ port.onmessage = ({ data }) => {
             type === "production.rally"
           )
             fields.entity = projection.resolve(fields.entity) ?? -1;
-          else if (type === "production.cancel")
+          else if (
+            type === "production.cancel" ||
+            type === "unit.cancelQueued" ||
+            type === "unit.editQueued"
+          )
             fields.item = projection.resolve(fields.item) ?? -1;
         }
         const command = { tick: kernel.tick, seat, sequence: sequence++, type, payload };

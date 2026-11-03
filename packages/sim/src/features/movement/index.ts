@@ -5,7 +5,7 @@ import { type Grant, hasGrant, type Rejection } from "../../commands";
 import { defineComponent, type World } from "../../ecs";
 import type { Feature, Kernel } from "../../kernel";
 import type { MatchMap } from "../../match-map";
-import { clearAttackOrder } from "../combat";
+import { AttackMoveOrder, clearAttackOrder, HoldPosition } from "../combat";
 import { BuilderConstruction, clearConstructionOrder } from "../construction";
 import { suspendRepair } from "../construction/repair";
 import type { NormalMatchSetup } from "../control";
@@ -46,11 +46,16 @@ export function movementFeature(match: {
     entities: readonly number[],
     target?: { x: number; y: number },
     attackMove = 0,
+    hold = false,
   ): Rejection | undefined {
     const { world, tick } = kernel;
     // Units may have died since the order was issued; IDs are never reused, so skip them.
     const ids = entities.filter(
-      (id) => world.isAlive(id) && world.has(id, Template) && world.has(id, Transform),
+      (id) =>
+        world.isAlive(id) &&
+        world.has(id, Template) &&
+        world.has(id, Transform) &&
+        (!hold || !!definitions[world.get(id, Template, "definition")]?.domain),
     );
     const force = (id: number) => world.get(id, OwnerForce, "force");
     if (!ids.every((id) => hasGrant(grants, seat, force(id), "unit.orders", tick)))
@@ -72,7 +77,10 @@ export function movementFeature(match: {
         if (kernel.movement) kernel.movement.order(id, target);
         else world.add(id, MoveIntent, target);
         if (world.has(id, MoveIntent)) world.set(id, MoveIntent, "attackMove", attackMove);
+        if (match.normal && attackMove) world.add(id, AttackMoveOrder, target);
       }
+      if (match.normal && hold && definitions[world.get(id, Template, "definition")]?.domain)
+        world.add(id, HoldPosition);
     }
   }
 
@@ -91,11 +99,14 @@ export function movementFeature(match: {
       ],
     },
     handlers: {
-      "unit.move": (kernel, { seat, payload: { entities, x, y } }) =>
-        order(kernel, seat, entities, { x, y }),
-      "unit.attackMove": (kernel, { seat, payload: { entities, x, y } }) =>
-        order(kernel, seat, entities, { x, y }, 1),
-      "unit.stop": (kernel, { seat, payload: { entities } }) => order(kernel, seat, entities),
+      "unit.move": (kernel, { seat, payload: { entities, x, y, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities, { x, y }),
+      "unit.attackMove": (kernel, { seat, payload: { entities, x, y, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities, { x, y }, 1),
+      "unit.stop": (kernel, { seat, payload: { entities, append } }) =>
+        append === 1 && !match.normal ? "bad_payload" : order(kernel, seat, entities),
+      "unit.hold": (kernel, { seat, payload: { entities } }) =>
+        match.normal ? order(kernel, seat, entities, undefined, 0, true) : "bad_payload",
     },
   };
 }

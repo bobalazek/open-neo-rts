@@ -2,6 +2,7 @@ import {
   createCombatEffects,
   createEntityPresentation,
   createFogPresentation,
+  createOrderWaypoints,
 } from "@open-neo-rts/render";
 import type { SeatSnapshot } from "@open-neo-rts/sim";
 
@@ -16,6 +17,8 @@ export function createMatchPresentation(
   onSelectionChanged: (handles: readonly string[]) => void = () => {},
 ) {
   const fog = createFogPresentation(scene, terrain.width, terrain.height);
+  const waypoints = createOrderWaypoints(scene, terrain);
+  let latest: SeatSnapshot | undefined;
   const colors = new Map<number, string>();
   let live: Presentation, ghosts: Presentation, remains: Presentation;
   let combat: ReturnType<typeof createCombatEffects>;
@@ -31,6 +34,7 @@ export function createMatchPresentation(
       selected.length !== next.length || selected.some((handle, i) => handle !== next[i]);
     selected = next;
     live.select(selected);
+    waypoints.accept(latest, selected);
     if (changed) onSelectionChanged([...selected]);
   };
   function owners() {
@@ -52,6 +56,8 @@ export function createMatchPresentation(
     remains.dispose();
     combat.dispose();
     fog.reset();
+    latest = undefined;
+    waypoints.accept(undefined, []);
     allowed.clear();
     owners();
     select([]);
@@ -66,6 +72,7 @@ export function createMatchPresentation(
       if ((group !== undefined && next !== group) || (tick !== undefined && snapshot.tick < tick))
         reset();
       fog.accept(snapshot);
+      latest = snapshot;
       group = next;
       tick = snapshot.tick;
       allowed = new Set(snapshot.entities.map((entity) => entity.handle));
@@ -139,6 +146,7 @@ export function createMatchPresentation(
       remains.dispose();
       combat.dispose();
       fog.dispose();
+      waypoints.dispose();
     },
   };
 }
