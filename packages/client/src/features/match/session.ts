@@ -58,7 +58,7 @@ export function createNormalSession(
   let latest: OfflineState | undefined;
   let hud: ReturnType<typeof createMatchHud> | undefined;
   let footprint: ReturnType<typeof createPlacementOverlay> | undefined;
-  let resultScreen: HTMLDialogElement | undefined;
+  let resultScreen: ReturnType<typeof postMatchScreen> | undefined;
   let minimap: ReturnType<typeof createMinimap> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let preferences = readDeviceSettings();
@@ -123,7 +123,7 @@ export function createNormalSession(
     signal.abort();
     for (const url of replayUrls) URL.revokeObjectURL(url);
     replayUrls.clear();
-    resultScreen?.remove();
+    resultScreen?.dispose();
     match?.dispose();
     presentation?.dispose();
     footprint?.dispose();

@@ -4,11 +4,13 @@ import { Button } from "@babylonjs/gui/2D/controls/button";
 import { Checkbox } from "@babylonjs/gui/2D/controls/checkbox";
 import { Container } from "@babylonjs/gui/2D/controls/container";
 import { Control } from "@babylonjs/gui/2D/controls/control";
+import { Image } from "@babylonjs/gui/2D/controls/image";
 import { InputText } from "@babylonjs/gui/2D/controls/inputText";
 import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { createEngine, createScene } from ".";
+import { createPanelBlock, type PanelBlock } from "./panel-content";
 
 export interface PanelField {
   id: string;
@@ -20,6 +22,8 @@ export interface PanelField {
 }
 export interface PanelContent {
   id: string;
+  revision?: string;
+  fieldRevision?: string;
   title: string;
   text: string;
   status: string;
@@ -32,13 +36,17 @@ export interface PanelContent {
     disabled: boolean;
     primary: boolean;
     back: boolean;
+    detail?: boolean;
     activate: () => void;
   }[];
+  tabs?: PanelContent["actions"];
+  blocks?: readonly PanelBlock[];
+  gallery?: { items: readonly PanelBlock[]; detail: readonly PanelBlock[] };
   change: (id: string, value: string | boolean) => void;
   submit: () => void;
 }
 
-/** The two settings entry points and pause-menu pages share one scene-owned widget panel. */
+/** Menu pages share a scene-owned widget panel and copied controller display values. */
 export async function createPanelScene(
   canvas: HTMLCanvasElement,
   initial: PanelContent,
@@ -96,8 +104,14 @@ export async function createPanelScene(
     caption: TextBlock;
     help: TextBlock;
     input: Button | Checkbox | InputText;
+    chevron?: Image;
   }[] = [];
   let actions: Button[] = [];
+  let tabs: Button[] = [];
+  let rich: ReturnType<typeof createPanelBlock>[] = [];
+  let mainBlocks: typeof rich = [],
+    galleryItems: typeof rich = [],
+    detailBlocks: typeof rich = [];
   let paragraph: TextBlock | undefined;
   let popup: Rectangle | undefined;
   let syncing = false;
@@ -169,17 +183,21 @@ export async function createPanelScene(
         (control.topInPixels + control.heightInPixels - scroll.heightInPixels + 12) / range,
       );
   }
-  function build() {
+  function build(keepFields: boolean) {
     closeChoices();
     for (const control of actions) control.dispose();
-    for (const control of [...body.children]) control.dispose();
-    widgets = [];
+    const preserved = new Set<Control>(
+      keepFields ? widgets.flatMap((widget) => [widget.caption, widget.help, widget.input]) : [],
+    );
+    for (const control of [...body.children]) if (!preserved.has(control)) control.dispose();
+    if (!keepFields) widgets = [];
     paragraph = content.text ? label("panel text", content.text, 15) : undefined;
-    for (const field of content.fields) {
+    for (const field of keepFields ? [] : content.fields) {
       const caption = label(`${field.id} label`, field.label, 15);
       caption.color = "#eff1e9";
       const help = label(`${field.id} help`, field.help, 13);
       let input: Button | Checkbox | InputText;
+      let chevron: Image | undefined;
       if (typeof field.value === "boolean") {
         input = new Checkbox(field.id);
         input.background = "#10191e";
@@ -228,6 +246,14 @@ export async function createPanelScene(
           });
           reveal(popup);
         });
+        chevron = new Image(
+          `${field.id} disclosure`,
+          `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path d="m1 1 5 5 5-5" fill="none" stroke="#ddc382" stroke-width="1.5"/></svg>')}`,
+        );
+        chevron.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        chevron.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        chevron.isHitTestVisible = false;
+        input.addControl(chevron);
       } else {
         input = new InputText(field.id, field.value);
         input.autoStretchWidth = false;
@@ -250,7 +276,7 @@ export async function createPanelScene(
         body.addControl(input);
       }
       input.tabIndex = -1;
-      widgets.push({ field, caption, help, input });
+      widgets.push({ field, caption, help, input, chevron });
     }
     actions = content.actions.map((action) =>
       button(
@@ -264,6 +290,21 @@ export async function createPanelScene(
         action.back ? gui : body,
       ),
     );
+    tabs = (content.tabs ?? []).map((action) =>
+      button(action.id, action.label, () => {
+        content.tabs?.find((tab) => tab.id === action.id)?.activate();
+      }),
+    );
+    const makeBlocks = (blocks: readonly PanelBlock[]) =>
+      blocks.map((block) =>
+        createPanelBlock(body, block, textHeight, (id) => {
+          focused = id;
+        }),
+      );
+    mainBlocks = makeBlocks(content.blocks ?? []);
+    galleryItems = makeBlocks(content.gallery?.items ?? []);
+    detailBlocks = makeBlocks(content.gallery?.detail ?? []);
+    rich = [...mainBlocks, ...galleryItems, ...detailBlocks];
     scroll.verticalBar.value = 0;
     layout();
   }
@@ -293,7 +334,11 @@ export async function createPanelScene(
       height = canvas.clientHeight;
     const scale = Math.min(content.scale, Math.max(0.85, width / 390));
     const inset = width < 600 ? 12 : 24;
-    const frameWidth = Math.min(width - inset * 2, (content.id === "settings" ? 920 : 720) * scale);
+    const frameWidth = Math.min(
+      width - inset * 2,
+      (content.gallery || content.id === "results" ? 1240 : content.id === "settings" ? 920 : 720) *
+        scale,
+    );
     const x = (width - frameWidth) / 2;
     const pad = width < 600 ? 16 : 28;
     const inner = frameWidth - pad * 2 - 12;
@@ -301,12 +346,27 @@ export async function createPanelScene(
     const columnWidth = (inner - (columns - 1) * 24 * scale) / columns;
     body.widthInPixels = inner;
     let y = 0;
+    if (tabs.length) {
+      const tabColumns = Math.min(tabs.length, Math.max(1, Math.floor(inner / (130 * scale))));
+      const tabWidth = (inner - (tabColumns - 1) * 8 * scale) / tabColumns;
+      tabs.forEach((tab, i) => {
+        tab.fontSize = 14 * scale;
+        place(
+          tab,
+          (i % tabColumns) * (tabWidth + 8 * scale),
+          Math.floor(i / tabColumns) * 52 * scale,
+          tabWidth,
+          44 * scale,
+        );
+      });
+      y = Math.ceil(tabs.length / tabColumns) * 52 * scale + 12 * scale;
+    }
     if (paragraph) {
       paragraph.fontSize = 15 * scale;
       paragraph.text = content.text;
       const paragraphHeight = textHeight(content.text, inner, 15 * scale);
-      place(paragraph, 0, 0, inner, paragraphHeight);
-      y =
+      place(paragraph, 0, y, inner, paragraphHeight);
+      y +=
         paragraphHeight +
         (widgets.length || content.actions.some((action) => !action.back) ? 16 * scale : 0);
     }
@@ -333,6 +393,15 @@ export async function createPanelScene(
           (check ? 26 : 44) * scale,
         );
         widget.input.fontSize = 16 * scale;
+        if (widget.chevron && widget.input instanceof Button) {
+          widget.chevron.widthInPixels = 12 * scale;
+          widget.chevron.heightInPixels = 8 * scale;
+          widget.chevron.leftInPixels = -16 * scale;
+          if (widget.input.textBlock) {
+            widget.input.textBlock.paddingLeftInPixels = 12 * scale;
+            widget.input.textBlock.paddingRightInPixels = 32 * scale;
+          }
+        }
         widget.help.isVisible = helpHeight > 0;
         place(widget.help, columnX, y + helpTop + 8 * scale, columnWidth, Math.max(1, helpHeight));
         widget.help.fontSize = 13 * scale;
@@ -340,10 +409,41 @@ export async function createPanelScene(
       });
       y += rowHeight + 24 * scale;
     }
+    const layoutBlocks = (blocks: typeof rich, x: number, top: number, blockWidth: number) => {
+      let end = top;
+      for (const block of blocks) {
+        const blockHeight = block.layout(blockWidth, scale);
+        place(block.root, x, end, blockWidth, blockHeight);
+        end += blockHeight + 16 * scale;
+      }
+      return end;
+    };
+    y = layoutBlocks(mainBlocks, 0, y, inner);
+    let detailY = y;
+    const galleryWide = !!content.gallery && inner >= 760 * scale;
+    const galleryWidth = galleryWide ? (inner - 32 * scale) / 2 : inner;
+    const detailX = galleryWide ? galleryWidth + 32 * scale : 0;
+    if (content.gallery) {
+      const listEnd = layoutBlocks(galleryItems, 0, y, galleryWidth);
+      detailY = layoutBlocks(
+        detailBlocks,
+        detailX,
+        galleryWide ? y : listEnd + 16 * scale,
+        galleryWidth,
+      );
+      y = Math.max(listEnd, detailY);
+    }
+    actions.forEach((control, i) => {
+      if (!content.actions[i]?.detail) return;
+      control.fontSize = 15 * scale;
+      place(control, detailX, detailY, galleryWidth, 44 * scale);
+      detailY += 52 * scale;
+    });
+    y = Math.max(y, detailY);
     let visible = 0;
     actions.forEach((control, i) => {
       control.fontSize = 15 * scale;
-      if (content.actions[i]?.back) return;
+      if (content.actions[i]?.back || content.actions[i]?.detail) return;
       const rowY = y + Math.floor(visible / columns) * 52 * scale;
       place(
         control,
@@ -361,7 +461,10 @@ export async function createPanelScene(
     const errorHeight = textHeight(content.error, inner, 13 * scale);
     const headerHeight = 82 * scale + (statusHeight ? 8 * scale + statusHeight : 0);
     const footerHeight = 20 * scale + (errorHeight ? 16 * scale + errorHeight : 0);
-    const frameHeight = Math.min(height - inset * 2, headerHeight + contentHeight + footerHeight);
+    const frameHeight =
+      content.gallery || content.id === "results"
+        ? height - inset * 2
+        : Math.min(height - inset * 2, headerHeight + contentHeight + footerHeight);
     const frameY = (height - frameHeight) / 2;
     place(frame, x, frameY, frameWidth, frameHeight);
     const back = content.actions.findIndex((action) => action.back);
@@ -388,10 +491,13 @@ export async function createPanelScene(
       Math.max(1, errorHeight),
     );
     error.fontSize = 13 * scale;
-    if (focused) focus(focused);
+    if (focused) highlight(focused);
   }
   function focus(id?: string) {
     gui.focusedControl = null;
+    highlight(id);
+  }
+  function highlight(id?: string) {
     focused = id;
     for (const widget of widgets) {
       widget.input.thickness = widget.field.id === id ? 2 : 1;
@@ -401,20 +507,28 @@ export async function createPanelScene(
         reveal(widget.field.help && span + 12 < scroll.heightInPixels ? widget.help : widget.input);
       }
     }
-    for (const control of actions) {
+    for (const control of [...actions, ...tabs]) {
       control.thickness = control.name === id ? 2 : 1;
       if (control.name === id) reveal(control);
     }
+    for (const block of rich) block.focus(block.id === id);
+    const block = rich.find((block) => block.id === id);
+    if (block) reveal(block.root);
   }
   function update(next: PanelContent) {
-    const rebuild = content.id !== next.id || actions.length === 0;
+    const keepFields =
+      content.id === next.id &&
+      content.fieldRevision === next.fieldRevision &&
+      widgets.length === next.fields.length;
+    const rebuild =
+      content.id !== next.id || content.revision !== next.revision || actions.length === 0;
     const resize =
       content.scale !== next.scale ||
       content.status !== next.status ||
       content.error !== next.error ||
       content.text !== next.text;
     content = next;
-    if (rebuild) build();
+    if (rebuild) build(keepFields);
     else if (resize) layout();
     title.text = content.title;
     status.text = content.status;
@@ -438,6 +552,16 @@ export async function createPanelScene(
       control.alpha = action?.disabled ? 0.4 : 1;
       control.background = action?.primary ? "#3c392d" : "#18262e";
     });
+    tabs.forEach((control, i) => {
+      control.background = content.tabs?.[i]?.primary ? "#3c392d" : "#18262e";
+      control.isEnabled = !content.tabs?.[i]?.disabled;
+    });
+    for (const block of [
+      ...(content.blocks ?? []),
+      ...(content.gallery?.items ?? []),
+      ...(content.gallery?.detail ?? []),
+    ])
+      rich.find((widget) => widget.id === block.id)?.update(block);
   }
   const resize = () => {
     engine.resize();
@@ -452,6 +576,10 @@ export async function createPanelScene(
     update,
     focus,
     activeField: () => focused,
+    scrollTo: (id: string, x: number, y: number) =>
+      rich.find((block) => block.id === id)?.scroll(x, y),
+    scrollKey: (id: string, key: string) =>
+      rich.find((block) => block.id === id)?.scrollKey(key) ?? false,
     closeChoices: () => {
       const open = !!popup;
       closeChoices();

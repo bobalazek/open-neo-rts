@@ -194,11 +194,15 @@ export function startApp(canvas: HTMLCanvasElement) {
       const settings = settingsScreen(root, applyInterfaceScale, () => navigate("/"), canvas);
       disposeScreen = settings.cancel;
     } else if (location.pathname === "/load") {
-      disposeScreen = loadGameScreen(root, {
-        load: (save) => begin(save.config, save),
-        back: () => navigate("/"),
-        start: () => start(defaultSkirmish()),
-      });
+      disposeScreen = loadGameScreen(
+        root,
+        {
+          load: (save) => begin(save.config, save),
+          back: () => navigate("/"),
+          start: () => start(defaultSkirmish()),
+        },
+        canvas,
+      );
     } else if (location.pathname === "/skirmish")
       disposeScreen = skirmishScreen(root, canvas, config, start, () => navigate("/"), notice);
     else if (location.pathname === "/match") {

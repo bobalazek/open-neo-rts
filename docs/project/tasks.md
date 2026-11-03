@@ -14,9 +14,11 @@ The owner now prioritizes the UI pass. Home uses [native Babylon GUI](./decision
 
 [Settings and pause panels](./decisions/2026-11-03-native-settings-and-pause.md) now
 share native presentation while retaining their real preference and modal
-controllers. Load-gallery, results, debug and HUD conversion remain UI work.
+controllers. [Save galleries and results](./decisions/2026-11-03-native-load-and-results.md)
+also use native thumbnails, tables and history views. Loading feedback, debug
+and HUD conversion remain UI work.
 
-- [ ] Native setup input polish: mirror the caret and selection while the semantic HTML field handles keyboard editing; the native pointer editor already shows both.
+- [ ] Native text input polish: mirror the caret and selection while the semantic HTML field handles keyboard editing in setup, named saves and gallery search; the native pointer editor already shows both.
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.

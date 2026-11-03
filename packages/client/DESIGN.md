@@ -1,7 +1,7 @@
 ---
 
 name: Open Neo RTS native menus and match HUD
-description: Native Home, setup and game panels with a battlefield-first HTML HUD in graphite steel and warm metal.
+description: Native Home, setup, game panels, Load and results with a battlefield-first HTML HUD in graphite steel and warm metal.
 colors: { panel: "#182126", surface: "#10171b", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
 typography: { body: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.75rem", lineHeight: 1.35 }, title: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.8rem", fontWeight: 600 }, label: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.7rem", fontWeight: 600, lineHeight: 1.25 }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
 rounded: { control: "2px", home-control: "0px" }
@@ -34,16 +34,21 @@ the same native graphite vocabulary through a shared content-sized panel.
 In a match it floats above the dimmed battlefield; the HTML dialog owns modal
 focus and Escape while its separate canvas leaves the world renderer intact.
 
-This records the built Home, Skirmish setup, shared native panels and normal
-match HUD. The Load gallery, results and debug retain their HTML presentation
-outside this system's current scope. The recorded HUD also retains its HTML/CSS
-presentation. The direction
+Load and results extend that shared native panel with original match thumbnails,
+selected-slot details, framed tabs, history plots and complete scrollable tables.
+Their existing controllers and semantic HTML remain authoritative; the canvas
+copies display values and invokes the same actions.
+
+This records the built Home, Skirmish setup, shared native panels, Load, results
+and normal match HUD. Loading feedback, debug and the recorded HUD retain their
+HTML/CSS presentation. The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
 evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`,
-`../render/src/scene/panel.ts`, `src/shared/native-panel.ts`,
+`../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`,
+`src/shared/native-panel.ts`, `src/shared/panel-content.ts`,
 `src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css`
-and `src/features/match/`.
+and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.
 
 **Key Characteristics:**
 
@@ -54,6 +59,8 @@ and `src/features/match/`.
 - Native Home actions, original vector lettering and an authored model display.
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
+- Native save galleries with original match thumbnails and selected-slot details.
+- Native results with original plots and complete scrollable match records.
 
 ## Colors
 
@@ -66,7 +73,7 @@ information and muted grey carries supporting state.
   Home and setup use it for action frames and labels; Home also uses it for the
   main vector lettering.
 - **Warm primary well** (`home-primary`): the current primary Home action, setup Start,
-  Settings Apply and pause Resume.
+  Settings Apply, pause Resume, selected save rows and selected results tabs.
 
 ### Secondary
 
@@ -78,7 +85,7 @@ information and muted grey carries supporting state.
 
 - **Graphite panel** (`panel`): dock surfaces, with near-opaque variants over terrain.
 - **Deep steel** (`surface`): resource strip and recessed control backgrounds.
-- **Ivory ink** (`ink`): names and primary readouts.
+- **Ivory ink** (`ink`): names, primary readouts and focused rich save-row/table frames.
 - **Cool grey** (`muted`): selection details and secondary feedback.
 - **Steel seam** (`hud-line`): panel frames and separators.
 - **Home shade** (`home-shade`): the translucent Home navigation field and opaque setup background.
@@ -115,7 +122,7 @@ Setup scales the page title, field captions and text, faction labels, action
 labels and notes with its bounded UI scale. Section headings, Force names, map
 name and checkbox label retain their base font sizes.
 
-Shared Settings and pause panels render in Arial. Paragraphs, captions and help
+Shared Settings, pause, Load and results panels render in Arial. Paragraphs, captions and help
 explicitly set Arial; titles, notices, buttons and InputText inherit Babylon's
 current default rather than declaring a separate family. Their base ramp is a bold title
 (27px), text fields (16px), body/captions/actions (15px) and help/status/error
@@ -125,6 +132,12 @@ current default rather than declaring a separate family. Their base ramp is a bo
 not a minimum readable-size recommendation. Wrapped paragraphs, captions, help
 and notices use canvas text measurement at the matching Arial size, reserving
 1.4 times font size per measured line, including explicit line breaks.
+
+Rich content uses the same scaled Arial family: section headings (20px base),
+paragraphs (14px), save names (15px), save dates (12px), table titles (16px) and
+table cells/image captions (13px). Table headers use bold warm metal; body cells
+use ivory. These dense record roles do not establish a new display face or a
+minimum size for future surfaces.
 
 ## Layout
 
@@ -167,8 +180,9 @@ wide and a two-by-two grid otherwise, with 44px scaled heights. Focused fields,
 spawn options and the veterancy checkbox scroll into view. The square map preview
 is bounded by its column width and 340px times scale.
 
-Shared panels center a frame capped at 920px times scale for Settings or 720px
-times scale for other panes. Viewport edge insets are 12px below 600px width and
+Shared panels center a frame capped at 1240px times scale for Load/results,
+920px times scale for Settings or 720px times scale for other panes.
+Viewport edge insets are 12px below 600px width and
 24px otherwise; inner padding is 16px or 28px at the same threshold. Content
 uses two columns when its inner width reaches 650px times scale, otherwise one,
 with a 24px scaled column gap. Inputs and actions are 44px scaled tall;
@@ -182,6 +196,18 @@ reserves 82px scaled plus an 8px scaled gap and measured status only when presen
 the footer reserves 20px scaled plus a 16px scaled gap and measured error only
 when present. Action rows use a 52px scaled pitch. Focus reveals its control and
 help when the combined span fits the scroll region.
+
+Load and results fill the available height within those edge insets. The Load
+gallery uses equal list/detail columns with a 32px scaled gap when its inner
+width reaches 760px times scale. Otherwise the selected detail follows the list.
+Detail actions follow the selected record in its column. Native search and filter
+fields retain their identity when rows rebuild, preserving the search editor.
+
+Results tabs wrap into as many columns as fit a 130px scaled base width, with
+44px scaled buttons and 52px scaled row pitch. Rich blocks have 16px scaled gaps.
+Images preserve their source aspect ratio. Each table has its own horizontal and
+vertical scroll region, capped at 340px times scale; wrapped rows keep every cell
+and sampled row. The outer body also scrolls, revealing a focused row or region.
 
 ## Elevation & Depth
 
@@ -209,8 +235,10 @@ the frame at rest. Angular vector lettering and the eight-sided plinth carry
 the Home silhouette.
 Setup shares square native controls. Small circular spawn markers use an ivory
 frame around the matching Force color; the terrain preview stays square.
-Settings and pause panels retain square rectangles, thin steel outer frames
-and warm control frames. Text fields use the opaque Home shade at rest.
+Settings, pause, Load and results panels retain square rectangles, thin steel
+outer frames and warm control frames. Text fields use the opaque Home shade at rest.
+Shared native choice fields include an original SVG line chevron at the right;
+the text leaves space for that disclosure mark.
 
 ## Components
 
@@ -259,11 +287,12 @@ and warm control frames. Text fields use the opaque Home shade at rest.
   action name. Hover and armed states use the warm border and lighter surface;
   unavailable commands dim. Preserve the inherited visible focus outline.
 - **Shared native panel:** Settings from Home and the match, pause actions,
-  Objectives, Current controls and named saves reuse one native renderer.
+  Objectives, Current controls, named saves, Load and results reuse one native renderer.
   Framed actions use Home's ordinary/primary/hover/pressed fills; disabled actions
   dim to 0.4 alpha. Inputs, selects and checkboxes share semantic values and
   existing handlers. Keyboard focus thickens the corresponding frame to 2px.
-  Native selects open framed 44px option rows; Escape closes the list first.
+  Native selects show an original SVG disclosure chevron and open framed 44px
+  option rows; Escape closes the list first.
   Current controls preserves the complete existing help copy, with height derived
   from actual wrapping rather than an estimated character count.
 - **Settings preview and feedback:** quality, UI scale, camera speed, edge scroll
@@ -275,7 +304,21 @@ and warm control frames. Text fields use the opaque Home shade at rest.
   preserving world rendering and save thumbnails. Resume uses the primary fill;
   menu actions retain current availability and pending states. The named-save
   field preserves required/max-length validation and existing save handlers.
-  The Load gallery stays HTML and removes native panel presentation while open.
+  Opening Load keeps native panel presentation and uses the same separate canvas.
+- **Load gallery:** original match thumbnails accompany saved names and dates;
+  selected rows use the warm primary fill and thicker frame. Rich row focus uses
+  an ivory 3px frame. Selected detail shows the original thumbnail, metadata,
+  compatibility feedback and actual Load/export/delete actions. Empty and filtered
+  lists retain explicit feedback. Search edits preserve the native editor as the
+  list changes. Import, validation, changed-slot checks and restore stay with the
+  existing controller.
+- **Results:** native framed tabs and a metric choice expose the actual completed
+  match record. Original SVG history plots retain their legends and accessible
+  descriptions through semantic HTML. Final tables and expandable sampled-value
+  tables copy every row. Ivory 2px borders identify focused table regions; pointer
+  scrolling and arrows, Page Up/Down, Home/End preserve access to the full record.
+  Replay export, Rematch and Home invoke existing handlers; pending replay feedback
+  and errors remain visible.
 - **Panel semantics and fallback:** semantic labels, controls, status and alerts
   remain authoritative, clipped only after a native frame has drawn. The canvas
   stays outside assistive focus; disposal restores its prior attributes and
@@ -310,28 +353,16 @@ time visible, and make unavailable reasons readable on desktop and mobile.
 - **Do** honor reduced motion in the Home model display.
 - **Do** use authored terrain, resource positions and selected spawns for the setup preview.
 - **Do** size shared panels from measured content and keep modal rendering separate from the match canvas.
+- **Do** preserve original save thumbnails, plot descriptions and every result-table row through responsive scrolling.
 
 ### Don't:
 
-- **Don't** promote legacy Load gallery, results or debug styling into the recorded native surfaces or match HUD.
+- **Don't** promote fallback HTML shell or debug styling into the recorded native surfaces or match HUD.
 - **Don't** substitute borrowed artwork or text glyphs for original model and SVG assets.
 - **Don't** add ornamental animation that competes with battlefield activity.
 
-Evidence: the five captures in `/tmp/neo-rts-hud-captures/` cover desktop, wide
-desktop, mobile and desktop/mobile unavailable explanations. The scoped visual
-review passed after recipe clipping and explanation legibility were resolved;
-this is not a broad accessibility certification.
-Earlier Home evidence included the review desktop/mobile captures and the final
-`/tmp/neo-menu-landscape.png`; those review paths now contain setup captures. The one
-mechanical detector pass (`/tmp/neo-menu-detector.json`) reported 39 incumbent
-shell palette advisories; those legacy colors are not Home palette tokens.
-Earlier setup evidence used the repository-root `.impeccable/review/` captures,
-`/tmp/neo-setup-mobile-rules.png` and `/tmp/neo-setup-landscape.png`; the review
-paths are reused by later passes. Final shared-panel evidence is
-`/tmp/neo-settings-desktop.png`, `/tmp/neo-settings-mobile.png`,
-`/tmp/neo-menu-overlay-desktop.png` and `/tmp/neo-settings-overlay-mobile.png`.
-The panel pass's one mechanical detector run reported 37 incumbent CSS palette
-advisories; these are not new panel tokens. Visual review identified excess
-compact reservations and stale product/design records; measured rows and
-content-sized notices/frame plus this documentation address those findings.
-The known semantic caret/selection gap remains tracked as input polish.
+Independent runtime, Chromium and WebKit review covered native Load and results.
+This records the implemented system; it does not qualify physical touch,
+assistive technology or hardware FPS. Incumbent palette advisories and one-off
+review previews are not design tokens. Semantic text-entry caret/selection
+mirroring remains deferred input polish rather than a rule for future controls.

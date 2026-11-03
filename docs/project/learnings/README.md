@@ -10,6 +10,8 @@ File names: `YYYY-MM-DD-short-slug.md`. Add one line to the index for each.
 
 Newest first.
 
+- [2026-11-03 — Repaint native tabs after key dispatch](./2026-11-03-native-keyboard-repaint.md) — Capturing-key microtasks can read the previous tab; verify painted native content after the target handler.
+
 - [2026-11-03 — Preserve unchanged live button labels](./2026-11-03-live-button-labels.md) — Replacing text between pointer events can cancel WebKit clicks.
 
 - [2026-11-02 — Asset readiness and immediate picking](./2026-11-02-model-pick-readiness.md) — Commit posed live geometry at picking even before the next scene frame.
