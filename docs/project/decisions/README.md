@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Native save galleries and results](./2026-11-03-native-load-and-results.md) — Babylon thumbnails, final tables/history and keyboard scrolling preserve the existing storage and result controllers.
+
 - [2026-11-03 — Canonical remains](./2026-11-03-canonical-remains.md) — Separate inert wrecks/rubble, shared bounded decay and current-sight projections.
 
 - [2026-11-03 — Bot reinforcement quota](./2026-11-03-bot-reinforcement-quota.md) — Combat-ready and queued troops count toward the existing limit; retreat reserves do not prevent reinforcements.

@@ -89,7 +89,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await expect(cells.nth(4)).toHaveText("0 / 450 / 0");
   await expect(cells.nth(5)).toHaveText("0 / 0 / 0");
   const downloaded = page.waitForEvent("download");
-  await dialog.getByRole("button", { name: "Save replay", exact: true }).click();
+  await dialog.getByRole("button", { name: "Save replay", exact: true }).press("Enter");
   const download = await downloaded;
   const path = info.outputPath("match-replay.json");
   await download.saveAs(path);
@@ -123,7 +123,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
     ticks: record.tick,
   });
   writeFileSync(info.outputPath("detailed-statistics.json"), JSON.stringify(snapshot.statistics));
-  await dialog.getByRole("tab", { name: "Economy", exact: true }).click();
+  await dialog.getByRole("tab", { name: "Economy", exact: true }).press("Enter");
   await expect(dialog.getByRole("img", { name: "Credits stock", exact: true })).toBeVisible();
   await dialog
     .getByRole("combobox", { name: "History metric", exact: true })
@@ -131,7 +131,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await dialog
     .getByRole("tabpanel", { name: "Economy", exact: true })
     .getByText("Show sampled values", { exact: true })
-    .click();
+    .press("Enter");
   await expect(dialog.getByRole("region", { name: "Credits gathered", exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath("economy-history.png") });
   await dialog
@@ -140,7 +140,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await dialog
     .getByRole("tabpanel", { name: "Economy", exact: true })
     .getByText("Show sampled values", { exact: true })
-    .click();
+    .press("Enter");
   await expect(
     dialog
       .getByRole("region", { name: "Industrial capacity income / minute", exact: true })
@@ -148,7 +148,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
       .getByRole("cell")
       .last(),
   ).toHaveText("2");
-  await dialog.getByRole("tab", { name: "Military", exact: true }).click();
+  await dialog.getByRole("tab", { name: "Military", exact: true }).press("Enter");
   await expect(
     dialog
       .getByRole("row")
@@ -157,7 +157,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
       .getByRole("cell")
       .nth(1),
   ).toHaveText("1");
-  await dialog.getByRole("tab", { name: "Orders / APM", exact: true }).click();
+  await dialog.getByRole("tab", { name: "Orders / APM", exact: true }).press("Enter");
   await expect(
     dialog.getByRole("row").filter({ hasText: "Player seat 1" }).getByRole("cell").nth(1),
   ).toHaveText("2");
@@ -173,7 +173,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(dialog.getByRole("region", { name: "Final Force totals" })).toBeVisible();
   await page.screenshot({ path: info.outputPath("match-totals-mobile.png") });
-  await dialog.getByRole("tab", { name: "Economy", exact: true }).click();
+  await dialog.getByRole("tab", { name: "Economy", exact: true }).press("Enter");
   await page.screenshot({ path: info.outputPath("history-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
@@ -258,17 +258,18 @@ test("real surrender ends a paused normal match once, rematch creates a new work
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: info.outputPath("match-result-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-  await result.getByRole("button", { name: "Rematch", exact: true }).click();
+  await result.getByRole("button", { name: "Rematch", exact: true }).press("Enter");
+  await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 60_000 });
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
-  await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(canvas).toHaveAttribute("data-entities", "7");
   expect(workers).toBe(2);
   await page.getByRole("button", { name: "Surrender", exact: true }).click();
   await expect(result).toBeVisible();
-  await result.getByRole("button", { name: "Home", exact: true }).click();
+  await result.getByRole("button", { name: "Home", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: "Open Neo RTS" })).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(canvas).toBeHidden();
+  await expect(canvas).not.toHaveAttribute("data-session", "ready");
+  await expect(canvas).toHaveAttribute("data-menu", "ready");
   expect(errors).toEqual([]);
 });

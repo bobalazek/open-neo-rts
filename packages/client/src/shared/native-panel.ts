@@ -1,4 +1,5 @@
 import { createPanelScene, type PanelContent } from "@open-neo-rts/render";
+import { panelBlocks, saveGallery, visiblePanelElement } from "./panel-content";
 
 /** Keeps existing controllers and semantic controls authoritative while Babylon paints the panel. */
 export function mountNativePanel(
@@ -21,18 +22,29 @@ export function mountNativePanel(
   let disposed = false;
   let drawn = "";
   let revision = 0;
+  const identities = new WeakMap<Element, number>();
+  let identity = 0;
+  function identify(element: Element) {
+    if (!identities.has(element)) identities.set(element, ++identity);
+    const key = `panel-node-${identities.get(element)}`;
+    if (element instanceof HTMLElement) element.dataset.nativeBlock = key;
+    return key;
+  }
   function controls() {
     return [
-      ...semantics.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>(
-        "input,select,button",
-      ),
-    ];
+      ...semantics.querySelectorAll<HTMLElement>('input,select,button,summary,[tabindex="0"]'),
+    ].filter(visiblePanelElement);
   }
   function snapshot(): PanelContent {
-    const fields = [
+    const allFields = [
       ...semantics.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input,select"),
-    ];
-    const buttons = [...semantics.querySelectorAll<HTMLButtonElement>("button")];
+    ].filter(visiblePanelElement);
+    const fields = allFields.filter(
+      (control) => !(control instanceof HTMLInputElement && control.type === "file"),
+    );
+    const buttons = [...semantics.querySelectorAll<HTMLButtonElement>("button")].filter(
+      visiblePanelElement,
+    );
     const label = (control: HTMLInputElement | HTMLSelectElement) =>
       control.getAttribute("aria-label") ??
       [...(control.labels?.[0]?.childNodes ?? [])]
@@ -44,7 +56,36 @@ export function mountNativePanel(
       control.dataset.nativeField = control.name || `native-field-${i}`;
     });
     buttons.forEach((control, i) => {
-      control.dataset.nativeAction = `native-action-${i}`;
+      control.dataset.nativeAction = control.classList.contains("save-row")
+        ? identify(control)
+        : `native-action-${i}`;
+    });
+    const gallery = saveGallery(
+      semantics,
+      (element) => element.dataset.nativeAction ?? identify(element),
+    );
+    const activePanel = semantics.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])');
+    const result = !!semantics.querySelector("[data-result-summary]");
+    const rich = result
+      ? panelBlocks(activePanel ?? semantics, identify)
+      : { blocks: [], nodes: [] };
+    if (activePanel && rich.blocks[0]) activePanel.dataset.nativeBlock = rich.blocks[0].id;
+    const action = (control: HTMLButtonElement) => ({
+      id: control.dataset.nativeAction!,
+      label: control.textContent ?? "",
+      primary:
+        control.classList.contains("primary") ||
+        control.hasAttribute("data-resume") ||
+        control.getAttribute("aria-selected") === "true",
+      back: control.hasAttribute("data-back"),
+      detail: !!control.closest("[data-save-detail]"),
+      disabled:
+        control.disabled ||
+        (control.type === "submit" && !!control.form && !control.form.checkValidity()),
+      activate: () => {
+        control.focus({ preventScroll: true });
+        control.click();
+      },
     });
     const notices = (role: string) =>
       [...semantics.querySelectorAll(`[role="${role}"]`)]
@@ -53,12 +94,25 @@ export function mountNativePanel(
         .join(" · ");
     return {
       id: options.id(),
+      revision:
+        [...fields, ...buttons, ...(gallery?.nodes ?? []), ...rich.nodes].map(identify).join(",") +
+        [...semantics.querySelectorAll("details")]
+          .filter(visiblePanelElement)
+          .map((node) => node.open)
+          .join(","),
+      fieldRevision: fields.map(identify).join(","),
       title: options.title(),
-      text: [...semantics.querySelectorAll("p:not([role])")]
-        .map((node) => node.textContent?.trim())
+      text:
+        gallery || result
+          ? ""
+          : [...semantics.querySelectorAll("p:not([role])")]
+              .filter(visiblePanelElement)
+              .map((node) => node.textContent?.trim())
+              .filter(Boolean)
+              .join("\n\n"),
+      status: [semantics.querySelector("[data-result-summary]")?.textContent, notices("status")]
         .filter(Boolean)
-        .join("\n\n"),
-      status: notices("status"),
+        .join(" · "),
       error: notices("alert"),
       scale: (Number.parseFloat(document.documentElement.style.fontSize) || 100) / 100,
       fields: fields.map((control) => ({
@@ -77,19 +131,27 @@ export function mountNativePanel(
           })),
         }),
       })),
-      actions: buttons.map((control) => ({
-        id: control.dataset.nativeAction!,
-        label: control.textContent ?? "",
-        primary: control.classList.contains("primary") || control.hasAttribute("data-resume"),
-        back: control.hasAttribute("data-back"),
-        disabled:
-          control.disabled ||
-          (control.type === "submit" && !!control.form && !control.form.checkValidity()),
-        activate: () => {
-          control.focus({ preventScroll: true });
-          control.click();
-        },
-      })),
+      tabs: buttons.filter((control) => control.getAttribute("role") === "tab").map(action),
+      blocks: rich.blocks,
+      ...(gallery && { gallery: { items: gallery.items, detail: gallery.detail } }),
+      actions: [
+        ...buttons
+          .filter(
+            (control) =>
+              !control.classList.contains("save-row") && control.getAttribute("role") !== "tab",
+          )
+          .map(action),
+        ...allFields
+          .filter((control) => control instanceof HTMLInputElement && control.type === "file")
+          .map((control) => ({
+            id: identify(control),
+            label: label(control),
+            primary: false,
+            back: false,
+            disabled: control.disabled,
+            activate: () => control.click(),
+          })),
+      ],
       change: (id, value) => {
         const control = fields.find((control) => control.dataset.nativeField === id);
         if (!control || control.disabled) return;
@@ -117,7 +179,7 @@ export function mountNativePanel(
     if (disposed || !gui) return;
     const content = snapshot();
     gui.update(content);
-    const key = `${content.id}:${content.scale}`;
+    const key = `${content.id}:${content.revision}:${content.scale}`;
     if (drawn === key) return;
     drawn = key;
     const ticket = ++revision;
@@ -128,8 +190,10 @@ export function mountNativePanel(
       canvas.style.removeProperty("visibility");
       canvas.dataset.panel = content.id;
       const active = document.activeElement;
-      if (active instanceof HTMLElement)
-        gui?.focus(active.dataset.nativeField ?? active.dataset.nativeAction);
+      if (active instanceof HTMLElement && semantics.contains(active))
+        gui?.focus(
+          active.dataset.nativeField ?? active.dataset.nativeAction ?? active.dataset.nativeBlock,
+        );
     });
   }
   semantics.addEventListener(
@@ -137,7 +201,11 @@ export function mountNativePanel(
     (event) => {
       const control = event.target;
       if (control instanceof HTMLElement)
-        gui?.focus(control.dataset.nativeField ?? control.dataset.nativeAction);
+        gui?.focus(
+          control.dataset.nativeField ??
+            control.dataset.nativeAction ??
+            control.dataset.nativeBlock,
+        );
     },
     { signal: abort.signal },
   );
@@ -145,6 +213,37 @@ export function mountNativePanel(
   semantics.addEventListener("input", update, { signal: abort.signal });
   semantics.addEventListener("click", update, { signal: abort.signal });
   semantics.addEventListener("submit", update, { signal: abort.signal });
+  semantics.addEventListener("toggle", update, { capture: true, signal: abort.signal });
+  semantics.addEventListener(
+    "keydown",
+    (event) => {
+      const region = event.target;
+      if (
+        shell.classList.contains("native-panel") &&
+        region instanceof HTMLElement &&
+        region.matches('[role="region"]') &&
+        region.dataset.nativeBlock &&
+        gui?.scrollKey(region.dataset.nativeBlock, event.key)
+      )
+        event.preventDefault();
+      // Native tab handlers may stop bubbling; read their result after dispatch completes.
+      requestAnimationFrame(update);
+    },
+    { capture: true, signal: abort.signal },
+  );
+  semantics.addEventListener(
+    "scroll",
+    (event) => {
+      const region = event.target;
+      if (!(region instanceof HTMLElement) || !region.dataset.nativeBlock) return;
+      gui?.scrollTo(
+        region.dataset.nativeBlock,
+        region.scrollLeft / Math.max(1, region.scrollWidth - region.clientWidth),
+        region.scrollTop / Math.max(1, region.scrollHeight - region.clientHeight),
+      );
+    },
+    { capture: true, signal: abort.signal },
+  );
   window.addEventListener(
     "keydown",
     (event) => {
@@ -158,9 +257,14 @@ export function mountNativePanel(
         event.stopImmediatePropagation();
       }
       if (event.key !== "Tab" || document.activeElement !== canvas) return;
-      const enabled = controls().filter((control) => !control.disabled);
+      const enabled = controls().filter(
+        (control) => control.tabIndex >= 0 && !("disabled" in control && control.disabled),
+      );
       const index = enabled.findIndex(
-        (control) => control.dataset.nativeField === gui?.activeField(),
+        (control) =>
+          (control.dataset.nativeField ??
+            control.dataset.nativeAction ??
+            control.dataset.nativeBlock) === gui?.activeField(),
       );
       const next = enabled[index + (event.shiftKey ? -1 : 1)];
       if (next) {

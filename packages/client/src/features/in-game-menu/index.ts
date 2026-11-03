@@ -47,11 +47,6 @@ export function createInGameMenu(
   const focus = () => dialog.querySelector<HTMLButtonElement>("button")?.focus();
   function present() {
     if (!dialog.open || disposed) return;
-    if (pane === "load") {
-      native?.dispose();
-      native = undefined;
-      return;
-    }
     if (!native)
       native = mountNativePanel(dialog, semantics, nativeCanvas, {
         id: () => pane,
@@ -147,6 +142,7 @@ export function createInGameMenu(
         pane = "load";
         cleanupPane = loadGameScreen(body!, {
           load: options.load!,
+          update: present,
           back: () => {
             menu();
             focus();

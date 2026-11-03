@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T10:01:04+00:00",
+  "generatedAt": "2026-11-03T10:51:51.786416Z",
   "title": "Design System: Open Neo RTS native menus and match HUD",
   "extensions": {
     "colorMeta": {
@@ -292,6 +292,10 @@
       {
         "name": "panel-two-columns",
         "value": "inner content width >= 650px × effective panel scale"
+      },
+      {
+        "name": "gallery-two-columns",
+        "value": "inner content width >= 760px × effective panel scale"
       }
     ],
     "typographyMeta": {
@@ -333,7 +337,7 @@
       },
       "panel-field": {
         "displayName": "Shared panel field",
-        "purpose": "16px base native input/select text; family inherits Babylon’s current default. Named-save semantic editing mirrors focus, with caret/selection mirroring deferred."
+        "purpose": "16px base native input/choice text; family inherits Babylon’s current default. Native editors survive save-list updates; semantic text editing mirrors focus, with caret/selection mirroring deferred."
       },
       "panel-help": {
         "displayName": "Shared panel supporting text",
@@ -429,14 +433,28 @@
     {
       "name": "Shared native panel",
       "kind": "custom",
-      "description": "Static HTML preview of the native Settings/pause vocabulary at base scale. Production uses measured Babylon layout and synchronized semantic controls; this preview does not implement the modal, persistence or canvas renderer.",
-      "html": "<section class=\"ds-panel\"><h2>Settings</h2><label class=\"ds-panel-field\">Graphics quality<select><option>Medium</option></select><small>Changes lighting, shadows, effects and resolution in the current scene.</small></label><label class=\"ds-panel-check\"><input type=\"checkbox\" checked> Edge scrolling</label><div class=\"ds-panel-actions\"><button>Defaults</button><button class=\"ds-panel-primary\">Apply</button></div></section>",
-      "css": ".ds-panel{padding:28px;border:1px solid #475354;border-radius:0;background:#182126;color:#eff1e9;font:15px Arial,sans-serif}.ds-panel h2{margin:0 0 20px;font-size:27px;font-weight:700}.ds-panel-field{display:grid;gap:8px}.ds-panel-field select{height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:16px Arial,sans-serif}.ds-panel-field small{color:#b5c0bf;font-size:13px;line-height:1.4}.ds-panel-check{display:flex;align-items:center;gap:16px;min-height:44px;margin-top:24px}.ds-panel-check input{width:26px;height:26px;accent-color:#ddc382}.ds-panel-actions{display:flex;gap:24px;margin-top:24px}.ds-panel-actions button{flex:1;height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-panel-actions .ds-panel-primary{background:#3c392d}.ds-panel-actions button:hover{background:#35434a}.ds-panel-actions button:active{background:#4a4535}.ds-panel-actions button:focus-visible,.ds-panel-field select:focus-visible,.ds-panel-check input:focus-visible{outline:2px solid #ddc382;outline-offset:0}.ds-panel-actions button:disabled{opacity:.4;cursor:default}"
+      "description": "Static HTML preview of the shared native Settings/pause/Load/results vocabulary at base scale. Production uses measured Babylon layout, original SVG disclosure marks and synchronized semantic controls; this preview does not implement persistence or the canvas renderer.",
+      "html": "<section class=\"ds-panel\"><h2>Settings</h2><label class=\"ds-panel-field\">Graphics quality<button class=\"ds-panel-choice\" aria-haspopup=\"listbox\">Medium<svg viewBox=\"0 0 12 8\" width=\"12\" height=\"8\" aria-hidden=\"true\"><path d=\"m1 1 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></svg></button><small>Changes lighting, shadows, effects and resolution in the current scene.</small></label><label class=\"ds-panel-check\"><input type=\"checkbox\" checked> Edge scrolling</label><div class=\"ds-panel-actions\"><button>Defaults</button><button class=\"ds-panel-primary\">Apply</button></div></section>",
+      "css": ".ds-panel{padding:28px;border:1px solid #475354;border-radius:0;background:#182126;color:#eff1e9;font:15px Arial,sans-serif}.ds-panel h2{margin:0 0 20px;font-size:27px;font-weight:700}.ds-panel-field{display:grid;gap:8px}.ds-panel-choice{position:relative;padding:0 32px 0 12px;cursor:pointer;height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:16px Arial,sans-serif}.ds-panel-field small{color:#b5c0bf;font-size:13px;line-height:1.4}.ds-panel-check{display:flex;align-items:center;gap:16px;min-height:44px;margin-top:24px}.ds-panel-check input{width:26px;height:26px;accent-color:#ddc382}.ds-panel-actions{display:flex;gap:24px;margin-top:24px}.ds-panel-actions button{flex:1;height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-panel-actions .ds-panel-primary{background:#3c392d}.ds-panel-actions button:hover{background:#35434a}.ds-panel-actions button:active{background:#4a4535}.ds-panel-actions button:focus-visible,.ds-panel-choice:focus-visible,.ds-panel-check input:focus-visible{outline:2px solid #ddc382;outline-offset:0}.ds-panel-actions button:disabled{opacity:.4;cursor:default}.ds-panel-choice svg{position:absolute;right:16px;top:50%;transform:translateY(-50%)}.ds-panel-choice:hover{background:#35434a}.ds-panel-choice:active{background:#4a4535}"
+    },
+    {
+      "name": "Native save row",
+      "kind": "button",
+      "description": "Static preview of a selected native save row. Production displays the actual original match thumbnail; this text-only snippet reserves its image well without fabricating a match image. Focus uses the rich-row ivory frame.",
+      "html": "<button class=\"ds-save\" aria-pressed=\"true\"><span class=\"ds-save-image\" aria-hidden=\"true\"></span><span><strong>Selected save</strong><small>Saved date</small></span></button>",
+      "css": ".ds-save{display:flex;align-items:center;gap:24px;width:100%;min-height:80px;padding:8px 12px;border:2px solid #ddc382;border-radius:0;background:#3c392d;text-align:left;color:#eff1e9;font:15px Arial,sans-serif;cursor:pointer}.ds-save-image{display:block;width:112px;height:64px;background:#10191e;flex-shrink:0}.ds-save strong{font-weight:400}.ds-save small{display:block;margin-top:8px;color:#b5c0bf;font-size:12px}.ds-save:hover:not(:disabled){opacity:.9}.ds-save:active:not(:disabled){transform:scale(.95)}.ds-save:focus-visible{outline:none;border:3px solid #eff1e9}.ds-save:disabled{cursor:default}"
+    },
+    {
+      "name": "Native result table region",
+      "kind": "custom",
+      "description": "Static preview of the native complete-record table vocabulary and ivory region focus. Production copies every actual final/sample row into independently scrollable Babylon table regions; the snippet contains no invented match values.",
+      "html": "<section class=\"ds-record\"><h3>Match totals</h3><div class=\"ds-record-scroll\" role=\"region\" aria-label=\"Match totals\" tabindex=\"0\"><table><thead><tr><th>Force</th><th>Outcome</th></tr></thead><tbody></tbody></table></div></section>",
+      "css": ".ds-record{padding:16px;background:#182126;color:#eff1e9;font:13px Arial,sans-serif}.ds-record h3{margin:0 0 8px;font-size:16px;font-weight:400}.ds-record-scroll{overflow:auto;max-height:340px;border:1px solid #475354;scrollbar-color:#ddc382 #10191e}.ds-record-scroll:focus-visible{outline:none;border:2px solid #eff1e9}.ds-record table{min-width:100%;border-collapse:collapse}.ds-record th,.ds-record td{min-width:112px;padding:6px 8px;text-align:left;vertical-align:top}.ds-record th{color:#ddc382;font-weight:700}"
     }
   ],
   "narrative": {
     "northStar": "Graphite Command Stations",
-    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nSettings, pause actions, Objectives, Current controls and named saves extend the same native graphite vocabulary through a shared content-sized panel. In a match it floats above the dimmed battlefield; the HTML dialog owns modal focus and Escape while its separate canvas leaves the world renderer intact.\n\nThis records the built Home, Skirmish setup, shared native panels and normal match HUD. The Load gallery, results and debug retain their HTML presentation outside this system's current scope. The recorded HUD also retains its HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `../render/src/scene/panel.ts`, `src/shared/native-panel.ts`, `src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css` and `src/features/match/`.",
+    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nSettings, pause actions, Objectives, Current controls and named saves extend the same native graphite vocabulary through a shared content-sized panel. In a match it floats above the dimmed battlefield; the HTML dialog owns modal focus and Escape while its separate canvas leaves the world renderer intact.\n\nLoad and results extend that shared native panel with original match thumbnails, selected-slot details, framed tabs, history plots and complete scrollable tables. Their existing controllers and semantic HTML remain authoritative; the canvas copies display values and invokes the same actions.\n\nThis records the built Home, Skirmish setup, shared native panels, Load, results and normal match HUD. Loading feedback, debug and the recorded HUD retain their HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`, `src/shared/native-panel.ts`, `src/shared/panel-content.ts`, `src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css` and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.",
     "keyCharacteristics": [
       "Battlefield first, with a slim resource strip and bottom command docks.",
       "Graphite surfaces, restrained brass highlights and tabular counters.",
@@ -444,7 +462,9 @@
       "Narrow screens expose one dock through explicit panel tabs.",
       "Native Home actions, original vector lettering and an authored model display.",
       "Native setup fields, compact Force rows and an authored terrain preview.",
-      "Native content-sized Settings and pause panes over an intact match renderer."
+      "Native content-sized Settings and pause panes over an intact match renderer.",
+      "Native save galleries with original match thumbnails and selected-slot details.",
+      "Native results with original plots and complete scrollable match records."
     ],
     "rules": [
       {
@@ -466,10 +486,11 @@
       "Do keep native Home, setup and panel controls synchronized with semantic HTML and preserve the graphics fallback.",
       "Do honor reduced motion in the Home model display.",
       "Do use authored terrain, resource positions and selected spawns for the setup preview.",
-      "Do size shared panels from measured content and keep modal rendering separate from the match canvas."
+      "Do size shared panels from measured content and keep modal rendering separate from the match canvas.",
+      "Do preserve original save thumbnails, plot descriptions and every result-table row through responsive scrolling."
     ],
     "donts": [
-      "Don't promote legacy Load gallery, results or debug styling into the recorded native surfaces or match HUD.",
+      "Don't promote fallback HTML shell or debug styling into the recorded native surfaces or match HUD.",
       "Don't substitute borrowed artwork or text glyphs for original model and SVG assets.",
       "Don't add ornamental animation that competes with battlefield activity."
     ]

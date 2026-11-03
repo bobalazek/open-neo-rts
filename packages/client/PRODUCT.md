@@ -39,7 +39,8 @@ source.
 - Preserve accessible names, keyboard controls and narrow-screen operation.
 - The owner prefers native Babylon GUI for game presentation. Home, Skirmish
   setup, device Settings and the pause menu's actions, Objectives, Current controls
-  and named-save panes use it. The Load gallery, results, debug and match HUD
+  and named-save panes use it. Standalone and in-match Load galleries and match
+  results also use native Babylon GUI. Loading feedback, debug and match HUD
   retain HTML/CSS presentation during the staged conversion.
 - Native Home and setup preserve semantic HTML controls and usable graphics
   fallbacks. Setup keeps validation feedback and actions visible while content
@@ -59,5 +60,16 @@ source.
 - Semantic text entry in setup and named saves retains the deferred native
   caret/selection-mirroring polish; focus frames remain synchronized. This does
   not claim screen-reader or physical-device qualification.
+- Load shows original match thumbnails, selected-slot metadata and actions;
+  desktop columns stack and scroll on narrow screens. Search keeps its native
+  editor while rows change. Existing import validation, compatibility checks,
+  changed-slot protection and restore handlers remain authoritative.
+- Results keep native tabs, metric selection, original history plots and every
+  final and sampled table row. Tables support pointer and keyboard scrolling;
+  replay export, Rematch and Home invoke their existing handlers. HTML retains
+  semantics, modal ownership and the usable graphics fallback for both surfaces.
+- Native pointer text entry includes a caret. Semantic text entry in Load shares
+  the deferred caret/selection-mirroring polish; synchronized focus remains visible.
+  Browser review does not qualify physical touch, assistive technology or hardware FPS.
 - The owner delegates routine choices; implement coherent defaults and review
   the running result instead of interrupting for repeated design approvals.

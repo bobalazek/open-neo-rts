@@ -150,16 +150,16 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     .toBeGreaterThan(manual.match.tick + 3);
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
-  await menu.locator(".save-row").filter({ hasText: "Before the push" }).click();
+  await menu.locator(".save-row").filter({ hasText: "Before the push" }).press("Enter");
   const download = page.waitForEvent("download");
-  await menu.getByRole("button", { name: "Export save", exact: true }).click();
+  await menu.getByRole("button", { name: "Export save", exact: true }).press("Enter");
   await (await download).saveAs(info.outputPath("portable-save.json"));
   const previousCanvas = await page.locator("#game").elementHandle();
   const previousTick = await page.locator("#game").getAttribute("data-tick");
   await page.evaluate(() => Reflect.set(window, "holdSavedLoad", true));
-  await menu.getByRole("button", { name: "Load selected game", exact: true }).click();
+  await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
   await expect
-    .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")))
+    .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);
   await page.getByRole("button", { name: "Cancel loading", exact: true }).click();
   await expect(menu.locator("[data-save-error]")).toContainText("current match was kept");
@@ -197,7 +197,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
       timeout: 30000,
     })
     .toBe(2);
-  await menu.getByRole("button", { name: "Load selected game", exact: true }).click();
+  await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(manual.match.tick), {
     timeout: 60_000,
   });
@@ -220,13 +220,13 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await page.screenshot({ path: info.outputPath("saved-match.png") });
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
-  await menu.locator(".save-row").filter({ hasText: "Resumed proof" }).click();
+  await menu.locator(".save-row").filter({ hasText: "Resumed proof" }).press("Enter");
   await replaceStored(page, { ...resumed, createdAt: resumed.createdAt + 1 });
-  await menu.getByRole("button", { name: "Load selected game", exact: true }).click();
+  await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
   await expect(menu.locator("[data-save-error]")).toContainText("slot changed");
   await replaceStored(page, { ...resumed, createdAt: resumed.createdAt + 2 });
   page.once("dialog", (dialog) => dialog.accept());
-  await menu.getByRole("button", { name: "Delete save", exact: true }).click();
+  await menu.getByRole("button", { name: "Delete save", exact: true }).press("Enter");
   await expect(menu.locator("[data-save-error]")).toContainText("slot changed");
   expect((await saves(page)).find((save) => save.id === resumed.id)?.createdAt).toBe(
     resumed.createdAt + 2,
@@ -240,7 +240,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await replaceStored(page, incompatible);
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
-  await menu.locator(".save-row").filter({ hasText: "Old game version" }).click();
+  await menu.locator(".save-row").filter({ hasText: "Old game version" }).press("Enter");
   await expect(
     menu.getByRole("button", { name: "Load selected game", exact: true }),
   ).toBeDisabled();
@@ -249,20 +249,20 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await page.screenshot({ path: info.outputPath("load-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   page.once("dialog", (dialog) => dialog.accept());
-  await menu.getByRole("button", { name: "Delete save", exact: true }).click();
+  await menu.getByRole("button", { name: "Delete save", exact: true }).press("Enter");
   await expect
     .poll(async () => (await saves(page)).some((save) => save.id === incompatible.id))
     .toBe(false);
   expect(errors).toEqual([]);
   await page.setViewportSize({ width: 1280, height: 720 });
-  await menu.locator(".save-row").filter({ hasText: "Resumed proof" }).click();
+  await menu.locator(".save-row").filter({ hasText: "Resumed proof" }).press("Enter");
   await page.evaluate(() => {
     Reflect.set(window, "holdSavedLoad", true);
     Reflect.set(window, "savedLoadBlocked", false);
   });
-  await menu.getByRole("button", { name: "Load selected game", exact: true }).click();
+  await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
   await expect
-    .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")))
+    .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);
   await page.getByRole("button", { name: "Cancel loading", exact: true }).click();
   await expect(menu.locator("[data-save-error]")).toContainText("current match was kept");
@@ -281,7 +281,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect(page).toHaveURL(/\/load$/);
   await page.getByLabel("Search saves", { exact: true }).fill("does not exist");
   await expect(page.locator("[data-save-list]")).toHaveText("No saves match this search.");
-  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await page.getByRole("button", { name: "Continue latest save", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(manual.match.tick));

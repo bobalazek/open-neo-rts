@@ -301,7 +301,8 @@
   height: 100dvh;
   pointer-events: auto;
 }
-.match-menu.native-panel {
+.match-menu.native-panel,
+.match-result.native-panel {
   position: fixed;
   inset: 0;
   margin: 0;
@@ -314,7 +315,8 @@
   border: 0;
   background: transparent;
 }
-.match-menu.native-panel::backdrop {
+.match-menu.native-panel::backdrop,
+.match-result.native-panel::backdrop {
   background: transparent;
 }
 .home-screen h1 {

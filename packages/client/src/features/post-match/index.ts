@@ -1,6 +1,7 @@
 // Canonical result summary and local rematch navigation. Phase 2.
 import type { ForceStatisticsSnapshot, VictorySnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
+import { mountNativePanel } from "../../shared/native-panel";
 import { mountDetailedStatistics } from "./statistics";
 
 const columns = [
@@ -88,7 +89,8 @@ export function postMatchScreen(
   const dialog = document.createElement("dialog");
   dialog.className = "match-result";
   dialog.setAttribute("aria-labelledby", "match-result-title");
-  dialog.innerHTML = `<p class="eyebrow">${text("ui.result.title")}</p><h1 id="match-result-title"></h1><p data-result-summary></p><table><thead><tr><th scope="col">${text("ui.result.force")}</th><th scope="col">${text("ui.result.outcome")}</th></tr></thead><tbody></tbody></table><div class="setup-actions"><button type="button" class="primary" data-rematch>${text("ui.result.rematch")}</button><button type="button" data-home>${text("ui.result.home")}</button></div>`;
+  dialog.innerHTML = `<h1 id="match-result-title"></h1><p data-result-summary></p><table><thead><tr><th scope="col">${text("ui.result.force")}</th><th scope="col">${text("ui.result.outcome")}</th></tr></thead><tbody></tbody></table><div class="setup-actions"><button type="button" class="primary" data-rematch>${text("ui.result.rematch")}</button><button type="button" data-home>${text("ui.result.home")}</button></div>`;
+  let native: ReturnType<typeof mountNativePanel> | undefined;
   const table = dialog.querySelector("table")!;
   const scroll = document.createElement("div");
   scroll.className = "result-totals";
@@ -151,6 +153,7 @@ export function postMatchScreen(
       button.disabled = true;
       status.setAttribute("role", "status");
       status.textContent = text("ui.result.preparing-replay");
+      native?.update();
       try {
         await saveReplay();
         if (dialog.isConnected) status.textContent = text("ui.result.replay-download");
@@ -161,10 +164,28 @@ export function postMatchScreen(
         }
       } finally {
         button.disabled = false;
+        native?.update();
       }
     });
   }
+  const canvas = document.createElement("canvas");
+  canvas.className = "native-menu-canvas native-result-canvas";
+  canvas.hidden = true;
+  const semantics = document.createElement("div");
+  semantics.append(...dialog.childNodes);
+  dialog.append(canvas, semantics);
   root.append(dialog);
   dialog.showModal();
-  return dialog;
+  native = mountNativePanel(dialog, semantics, canvas, {
+    id: () => "results",
+    title: () => result.title,
+    modal: true,
+  });
+  return {
+    dialog,
+    dispose() {
+      native?.dispose();
+      dialog.remove();
+    },
+  };
 }

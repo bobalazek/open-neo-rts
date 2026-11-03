@@ -42,6 +42,117 @@ async function clickNative(page: Page, text: string) {
   await draw(page);
 }
 
+test("native save gallery keeps typed search focused, imports files and opens result tabs", async ({
+  page,
+}, info) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  const gui = menu.locator(".native-menu-canvas");
+  await expect(gui).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await clickNative(page, "Save game");
+  await menu.getByLabel("Save name", { exact: true }).fill("Native gallery proof");
+  await clickNative(page, "Save game");
+  await expect(menu.locator("[data-saved]")).toHaveText("Game saved in this browser.");
+  await clickNative(page, "Back");
+  await clickNative(page, "Load game");
+  await expect(gui).toHaveAttribute("data-panel", "load");
+  await clickNative(page, "Native gallery proof");
+  await expect(menu.locator("[data-save-detail] h2")).toHaveText("Native gallery proof");
+  const search = await page.evaluate(
+    () => Reflect.get(window, "nativeDrawnText").get("Search saves") as { x: number; y: number },
+  );
+  await page.mouse.click(search.x, search.y + 42);
+  await page.keyboard.type("Native gallery proof", { delay: 25 });
+  await expect(menu.getByLabel("Search saves", { exact: true })).toHaveValue(
+    "Native gallery proof",
+  );
+  await expect(menu.locator(".save-row")).toHaveCount(1);
+  await page.keyboard.type(" missing", { delay: 25 });
+  await expect(menu.locator("[data-save-list]")).toHaveText("No saves match this search.");
+  await page.keyboard.press("ControlOrMeta+A");
+  await page.keyboard.press("Backspace");
+  await expect(menu.getByLabel("Search saves", { exact: true })).toHaveValue("");
+  await expect(menu.locator(".save-row")).toHaveCount(2);
+  await clickNative(page, "Native gallery proof");
+  await page.screenshot({ path: info.outputPath("native-load-desktop.png") });
+  const chooser = page.waitForEvent("filechooser");
+  await menu.getByLabel("Import saved game", { exact: true }).focus();
+  await draw(page);
+  await clickNative(page, "Import saved game");
+  await (await chooser).setFiles({
+    name: "invalid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{}"),
+  });
+  await expect(menu.locator("[data-save-error]")).not.toBeEmpty();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await draw(page);
+  await page.screenshot({ path: info.outputPath("native-load-mobile.png") });
+  await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
+  await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole("button", { name: "Surrender", exact: true }).click();
+  const result = page.getByRole("dialog", { name: "Defeat", exact: true });
+  await expect(result.locator("canvas")).toHaveAttribute("data-panel", "results", {
+    timeout: 30_000,
+  });
+  await clickNative(page, "Economy");
+  await expect(result.getByRole("tab", { name: "Economy", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  const metric = await page.evaluate(
+    () => Reflect.get(window, "nativeDrawnText").get("History metric") as { x: number; y: number },
+  );
+  await page.mouse.click(metric.x, metric.y + 42);
+  await draw(page);
+  await clickNative(page, "Credits gathered");
+  await expect(result.getByRole("combobox", { name: "History metric", exact: true })).toHaveValue(
+    "creditsGathered",
+  );
+  const economy = result.getByRole("tabpanel", { name: "Economy", exact: true });
+  await economy.locator("summary").focus();
+  await draw(page);
+  await clickNative(page, "Show sampled values");
+  await expect(economy.locator("details")).toHaveAttribute("open", "");
+  await page.screenshot({ path: info.outputPath("native-results-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await result.getByRole("tab", { name: "Economy", exact: true }).focus();
+  await page.evaluate(() => Reflect.get(window, "nativeDrawnText").clear());
+  await page.keyboard.press("Home");
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "nativeDrawnText").has("Outcome")))
+    .toBe(true);
+  const totals = result.getByRole("region", { name: "Final Force totals", exact: true });
+  await totals.focus();
+  await draw(page);
+  const before = await page.evaluate(
+    () => Reflect.get(window, "nativeDrawnText").get("Your Force").x as number,
+  );
+  await page.keyboard.press("ArrowRight");
+  await expect
+    .poll(() =>
+      page.evaluate(() => Reflect.get(window, "nativeDrawnText").get("Your Force").x as number),
+    )
+    .toBeLessThan(before);
+  await page.keyboard.press("ArrowLeft");
+  await draw(page);
+  await page.screenshot({ path: info.outputPath("native-results-mobile.png") });
+  await result.getByRole("button", { name: "Home", exact: true }).focus();
+  await draw(page);
+  await clickNative(page, "Home");
+  await expect(page).toHaveURL(/\/$/);
+  expect(errors).toEqual([]);
+});
+
 test("native settings pointer controls save preferences and Back cancels reset preview", async ({
   page,
 }) => {

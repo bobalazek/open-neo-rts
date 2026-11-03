@@ -1,5 +1,6 @@
 import { content } from "virtual:normal-catalog";
 import { text } from "../../shared";
+import { mountNativePanel } from "../../shared/native-panel";
 import { createOfflineMatch } from "../../worker";
 import { loadMap } from "../debug/maps";
 import { map, normalSkirmish } from "../skirmish/setup";
@@ -45,7 +46,9 @@ export function loadGameScreen(
     load: (save: SavedGame) => Promise<void>;
     back: () => void;
     start?: () => void;
+    update?: () => void;
   },
+  canvas?: HTMLCanvasElement,
 ) {
   const abort = new AbortController();
   const urls = new Set<string>();
@@ -53,6 +56,7 @@ export function loadGameScreen(
     busy = false,
     rows: unknown[] = [],
     selected: string | undefined;
+  let native: ReturnType<typeof mountNativePanel> | undefined;
   root.innerHTML = `<section class="saves-screen"><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.saves.title")}</h1><div class="save-filters"><label>${text("ui.saves.filter")}<select data-save-filter><option value="all">${text("ui.saves.all")}</option><option value="manual">${text("ui.saves.manual")}</option><option value="quick">${text("ui.saves.quick")}</option><option value="auto">${text("ui.saves.auto")}</option></select></label><label>${text("ui.saves.search")}<input type="search" maxlength="96" data-save-search></label></div><div class="save-layout"><div data-save-list role="group" aria-label="${text("ui.saves.title")}"></div><aside data-save-detail></aside></div><p role="status" data-save-status></p><p role="alert" data-save-error></p><label>${text("ui.saves.import")}<input type="file" accept="application/json,.json" data-save-import></label><button type="button" data-save-start hidden>${text("ui.home.quick-start")}</button></section>`;
   const query = <T extends Element>(selector: string) => {
     const found = root.querySelector<T>(selector);
@@ -82,6 +86,8 @@ export function loadGameScreen(
       HTMLButtonElement | HTMLInputElement | HTMLSelectElement
     >("button,input,select"))
       control.disabled = busy || control.hasAttribute("data-unavailable");
+    native?.update();
+    options.update?.();
   }
   async function run(action: () => Promise<void>) {
     if (disposed || busy) return;
@@ -253,10 +259,17 @@ export function loadGameScreen(
       file.value = "";
     });
   });
+  if (canvas)
+    native = mountNativePanel(root, root.querySelector<HTMLElement>(".saves-screen")!, canvas, {
+      id: () => "load",
+      title: () => text("ui.saves.title"),
+      modal: false,
+    });
   void run(refresh);
   return () => {
     disposed = true;
     abort.abort();
+    native?.dispose();
     for (const url of urls) URL.revokeObjectURL(url);
     urls.clear();
   };
