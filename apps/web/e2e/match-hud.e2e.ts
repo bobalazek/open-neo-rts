@@ -14,9 +14,31 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: /Idle builders 2/ }).click();
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
+  const layout = await page.evaluate(() => {
+    const top = document.querySelector(".match-top")!.getBoundingClientRect();
+    const hud = document.querySelector(".match-hud")!.getBoundingClientRect();
+    const build = document.querySelector(".hud-build-panel")!;
+    return {
+      playable: (hud.top - top.bottom) / innerHeight,
+      clippedRecipes: build.scrollHeight - build.clientHeight,
+    };
+  });
+  expect(layout.playable).toBeGreaterThan(0.55);
+  expect(layout.clippedRecipes).toBeLessThanOrEqual(1);
   await expect(
     page.locator('[data-definition="core.structure:eastern-collective/command-center"]'),
   ).toBeDisabled();
+  await expect(
+    page.locator('[data-definition="core.structure:eastern-collective/command-center"]'),
+  ).toHaveAccessibleDescription(/Unavailable: no authored paid recipe/);
+  await page
+    .locator('[data-definition="core.structure:eastern-collective/command-center"]')
+    .focus();
+  await expect(page.getByRole("tooltip")).toContainText("Unavailable: no authored paid recipe");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip")).toBeHidden();
+  await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
+  await canvas.focus();
   await expect(page.locator('[data-definition*="technology-center"]')).toHaveCount(0);
   await expect(page.locator('[data-definition*="quantum-nexus"]')).toHaveCount(0);
   await page.getByRole("button", { name: "Set group", exact: true }).click();

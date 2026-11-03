@@ -154,9 +154,19 @@ test("local minimap pings refuse shroud and support keyboard placement and Space
   await expect(page.locator(".hud-minimap [role=status]")).toHaveText(
     "Explore this location before placing a ping.",
   );
+  const refusedAt = Number(await page.locator("#game").getAttribute("data-tick"));
+  await page.waitForFunction(
+    (tick) => Number(document.querySelector("#game")?.getAttribute("data-tick")) >= tick + 3,
+    refusedAt,
+  );
+  await expect(page.locator(".hud-minimap [role=status]")).toHaveCSS("clip-path", "none");
   await expect(page.locator(".match-notices li")).toHaveCount(0);
+  await page.locator(".minimap-pings summary").click();
+  await minimap.click({ position: { x: 15, y: 5 }, modifiers: ["Alt"] });
+  await expect(page.locator(".minimap-pings")).not.toHaveAttribute("open");
   await minimap.focus();
   await page.keyboard.press("Home");
+  await page.locator(".minimap-pings summary").click();
   await page
     .getByLabel("Local ping type (Alt-click minimap)", { exact: true })
     .selectOption("danger");

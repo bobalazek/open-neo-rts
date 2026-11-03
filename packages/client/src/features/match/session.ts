@@ -31,6 +31,7 @@ import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
 import { createMatchHud } from "./hud";
 import type { HudDefinition } from "./hud-model";
+import { actionText, decorateAction, hudIcon } from "./icons";
 import { bindSelectionInput } from "./input";
 import { createMinimap } from "./minimap";
 
@@ -141,7 +142,9 @@ export function createNormalSession(
   };
   const label = (selector: string, value: string) => {
     const element = root.querySelector(selector);
-    if (element) setText(element, value);
+    if (element instanceof HTMLButtonElement && element.classList.contains("hud-action"))
+      actionText(element, value);
+    else if (element) setText(element.querySelector("[data-stat-text]") ?? element, value);
   };
   const update = (state: OfflineState) => {
     if (disposed) return;
@@ -187,6 +190,7 @@ export function createNormalSession(
       }),
     );
     label("[data-pause]", text(state.paused ? "ui.match.resume" : "ui.match.pause"));
+    root.querySelector("[data-pause]")?.setAttribute("aria-pressed", String(state.paused));
     label("[data-speed]", text("ui.menu.current-speed", { speed: state.speed }));
     menu?.update();
     hud?.update(state);
@@ -323,6 +327,29 @@ export function createNormalSession(
       root.innerHTML = `<section class="match-top" aria-label="${text("ui.match.title")}"><strong>${map.name}</strong><span data-credits></span><span data-materials></span><span data-industrial></span><span data-salvage></span><span data-power></span><span data-population></span><span data-time></span><span data-speed></span><button type="button" data-pause>${text("ui.match.pause")}</button><button type="button" data-menu>${text("ui.menu.title")}</button><button type="button" data-leave>${text("ui.match.leave")}</button></section>`;
       const activeMatch = match,
         activeRenderer = renderer;
+      for (const [attribute, icon] of [
+        ["credits", "credits"],
+        ["materials", "materials"],
+        ["power", "power"],
+        ["population", "population"],
+        ["time", "clock"],
+        ["speed", "surge"],
+      ] as const) {
+        const element = root.querySelector(`[data-${attribute}]`);
+        if (!element) continue;
+        const value = document.createElement("span");
+        value.dataset.statText = "";
+        element.append(hudIcon(icon), value);
+        element.classList.add("hud-stat");
+      }
+      for (const [attribute, icon] of [
+        ["pause", "pause"],
+        ["menu", "menu"],
+        ["leave", "exit"],
+      ] as const) {
+        const button = root.querySelector<HTMLButtonElement>(`[data-${attribute}]`);
+        if (button) decorateAction(button, icon);
+      }
       const saveNotice = document.createElement("span");
       saveNotice.setAttribute("role", "status");
       saveNotice.setAttribute("data-save-notice", "");
@@ -350,6 +377,7 @@ export function createNormalSession(
       const surrender = document.createElement("button");
       surrender.type = "button";
       surrender.textContent = text("ui.result.surrender");
+      decorateAction(surrender, "surrender");
       root.querySelector(".match-top")?.append(surrender);
       const surrenderMatch = async (): Promise<boolean> => {
         if (
@@ -368,7 +396,7 @@ export function createNormalSession(
           const result = await activeMatch.command("match.surrender", { force: 0 });
           if (disposed) return false;
           if (result !== "accepted" && !latest?.snapshot.victory?.result) {
-            surrender.textContent = text("ui.result.surrender-refused");
+            actionText(surrender, text("ui.result.surrender-refused"));
             surrender.disabled = false;
           }
           return result === "accepted" || !!latest?.snapshot.victory?.result;
