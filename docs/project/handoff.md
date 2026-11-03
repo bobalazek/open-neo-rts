@@ -524,8 +524,13 @@ The same SIM48 runtime is checking seed 20 separately: session 65169, worktree
 (runtime equals reviewed e4de7c2; later commits are docs), directory
 `/tmp/neo-ai-qualification-sim48-seed20-20261103`, log
 `/tmp/neo-ai-qualification-sim48-seed20.log`, source companion
-`/tmp/neo-ai-qualification-sim48-seed20-source.txt`. First trial still capped at
-60000/hash `f837039a18dfb9f9`; repeat is running. Preserve the same process,
-source and first result. A new raw-state diagnosis remains before any further bot
-repair; do not guess the cause or restart old batches. This is historical SIM48
-evidence while canonical remains advances to SIM49, not current full acceptance.
+`/tmp/neo-ai-qualification-sim48-seed20-source.txt`. Both trials capped at
+60000/hash `f837039a18dfb9f9`, reproducibly; the process exited 1 as expected.
+Preserve the source and results. An exact forensic replay is now running on that
+unchanged source: session 44053, script/log `/tmp/neo-ai-stall-sim48-seed20.ts`
+and `.log`, output directory `/tmp/neo-ai-stall-sim48-seed20`. It asserts the
+original tick/hash/outcome before writing actor/bot/observation/movement data and
+primitive World bytes; diagnostics must not change the reproduced hash. Observe
+the same process without restarting it. Inspect those raw artifacts before any
+further bot repair; do not guess the cause. This is historical SIM48 evidence
+while canonical remains advances to SIM49, not current full acceptance.
