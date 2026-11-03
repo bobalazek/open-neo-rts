@@ -6,6 +6,7 @@ import type { MatchSetup } from "../../match";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import { perimeterPoint } from "../entities/perimeter";
+import { populationFits } from "../entities/population";
 import { emitProductionExit } from "../events";
 
 export const PRODUCTION_QUEUE_LIMIT = 5;
@@ -122,24 +123,8 @@ export function productionFeature(
       .filter((id) => kernel.world.get(id, ProductionItem, "producer") === producer);
   const status = (kernel: Kernel, id: number, value: (typeof PRODUCTION_STATUSES)[number]) =>
     kernel.world.set(id, ProductionItem, "status", PRODUCTION_STATUSES.indexOf(value));
-  const populationFits = (kernel: Kernel, force: number, unit: Definition) => {
-    let population = 0;
-    const cap = setup.normal?.settings.popCap ?? 0;
-    for (const id of kernel.world.query(Template, OwnerForce, Health)) {
-      const definition = definitionOf(kernel, id);
-      if (
-        definition &&
-        kind(definition) === "unit" &&
-        live(kernel, id) &&
-        kernel.world.get(id, OwnerForce, "force") === force
-      ) {
-        if (definition.pop === undefined) return false;
-        population += definition.pop;
-        if (population > cap) return false;
-      }
-    }
-    return population + (unit.pop as number) <= cap;
-  };
+  const fitsPopulation = (kernel: Kernel, force: number, unit: Definition) =>
+    populationFits(kernel, definitions, force, unit, setup.normal?.settings.popCap ?? 0);
   const prerequisites = (kernel: Kernel, force: number, unit: Definition) =>
     (unit.requires ?? []).every((required) =>
       kernel.world
@@ -194,7 +179,7 @@ export function productionFeature(
     }
     const world = kernel.world,
       force = world.get(id, ProductionItem, "force");
-    if (!populationFits(kernel, force, unit)) {
+    if (!fitsPopulation(kernel, force, unit)) {
       status(kernel, id, "population");
       return;
     }
@@ -273,7 +258,7 @@ export function productionFeature(
         status(kernel, id, "requirements");
         continue;
       }
-      if (!populationFits(kernel, force, unit)) {
+      if (!fitsPopulation(kernel, force, unit)) {
         status(kernel, id, "population");
         continue;
       }
@@ -340,7 +325,7 @@ export function productionFeature(
         );
         if (id === undefined) continue;
         const unit = definitions[world.get(id, ProductionItem, "definition")] as Definition;
-        if (!populationFits(kernel, force, unit)) {
+        if (!fitsPopulation(kernel, force, unit)) {
           status(kernel, id, "population");
           continue;
         }

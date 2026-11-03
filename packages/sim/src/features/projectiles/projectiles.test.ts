@@ -20,6 +20,7 @@ import {
   type Definition,
   entitiesFeature,
   Health,
+  OwnerForce,
   spawnEntity,
   Template,
   Transform,
@@ -76,25 +77,34 @@ function fixture(
     targetTurnRate?: number;
     targetDomain?: Definition["domain"];
     shallow?: boolean;
+    extraDefinitions?: readonly Definition[];
+    popCap?: number;
   } = {},
 ) {
   const weapon = options.weapon ?? gun;
-  const definitions: Definition[] = [
-    hq,
-    { ...unit, id: "unit:flight/worker", role: "builder" },
-    { ...unit, id: "unit:flight/shooter", weapons: [weapon] },
-    {
-      ...unit,
-      health: options.health ?? 1000,
-      speed: options.targetSpeed ?? unit.speed,
-      turnRate: options.targetTurnRate ?? unit.turnRate,
-      armor: options.armor ?? "infantry",
-      domain: options.targetDomain ?? unit.domain,
-      ...(options.resistance && { resistPerMille: options.resistance }),
-    },
-    { ...hq, id: "structure:flight/blocker", footprint: [1, 1] },
-    { ...unit, id: "unit:flight/aircraft", domain: "air", armor: "aircraft" },
-  ];
+  const definitions: Definition[] = (
+    [
+      hq,
+      { ...unit, id: "unit:flight/worker", role: "builder" },
+      { ...unit, id: "unit:flight/shooter", weapons: [weapon] },
+      {
+        ...unit,
+        health: options.health ?? 1000,
+        speed: options.targetSpeed ?? unit.speed,
+        turnRate: options.targetTurnRate ?? unit.turnRate,
+        armor: options.armor ?? "infantry",
+        domain: options.targetDomain ?? unit.domain,
+        ...(options.resistance && { resistPerMille: options.resistance }),
+      },
+      { ...hq, id: "structure:flight/blocker", footprint: [1, 1] },
+      { ...unit, id: "unit:flight/aircraft", domain: "air", armor: "aircraft" },
+      ...(options.extraDefinitions ?? []),
+    ] satisfies Definition[]
+  ).map((definition) =>
+    options.extraDefinitions && definition.id.startsWith("unit:")
+      ? { pop: 1, ...definition }
+      : definition,
+  );
   const map = flatMap(48),
     level = [...map.terrain.level];
   if (options.raised)
@@ -128,7 +138,7 @@ function fixture(
       mapSupport: { start: "faction", players: { min: 2, max: 2 } },
       settings: {
         startingCredits: 1000,
-        popCap: 500,
+        popCap: options.popCap ?? 500,
         structureCap: 400,
         fog: options.fog ?? "off",
         friendlyFire: options.friendlyFire ?? true,
@@ -198,6 +208,146 @@ const sensor: GameplayWeapon = {
   projectile: { kind: "instant" },
   warheads: [{ type: "reveal", radiusSubcells: 2 * 1024, durationTicks: 20, tags: [] }],
 };
+
+const payload: Definition = { ...unit, id: "unit:flight/payload", pop: 2, speed: 0 };
+const spawner: GameplayWeapon = {
+  ...gun,
+  projectile: { kind: "instant" },
+  warheads: [
+    { type: "damage", amount: 10, tags: [] },
+    { type: "spawn", unit: payload.id, count: 3, tags: [] },
+  ],
+};
+const payloads = (kernel: import("../../kernel").Kernel) =>
+  kernel.world.query(Template).filter((id) => kernel.world.get(id, Template, "definition") === 6);
+
+test("mixed spawn rounds use firing ownership, nearest legal cells, current blockers and once-only statistics", () => {
+  const f = fixture({ weapon: spawner, extraDefinitions: [payload] });
+  f.spawn(4, 0, 23, 20);
+  f.fire();
+  expect(f.hp()).toBe(990);
+  const spawned = payloads(f.kernel);
+  expect(spawned).toHaveLength(3);
+  expect(
+    spawned.map((id) => [
+      f.kernel.world.get(id, Transform, "x"),
+      f.kernel.world.get(id, Transform, "y"),
+    ]),
+  ).toEqual(
+    [
+      [24, 19],
+      [24, 21],
+      [25, 20],
+    ].map(([x, y]) => [x! * 1024 + 512, y! * 1024 + 512]),
+  );
+  for (const id of spawned) {
+    expect(f.kernel.world.get(id, OwnerForce, "force")).toBe(0);
+    expect(f.kernel.world.get(id, Health, "current")).toBe(payload.health);
+    expect(f.kernel.world.get(id, Transform, "facing")).toBe(0);
+  }
+  const stats = f.kernel.world
+    .query(ForceStatistics)
+    .find((id) => f.kernel.world.get(id, ForceStatistics, "force") === 0)!;
+  expect(f.kernel.world.get(stats, ForceStatistics, "unitsBuilt")).toBe(3);
+  f.advance(8);
+  expect(payloads(f.kernel)).toEqual(spawned);
+  expect(f.kernel.world.get(stats, ForceStatistics, "unitsBuilt")).toBe(3);
+});
+
+test("spawn limits obey shared population rules including zero-pop payloads and occupied local cells", () => {
+  const f = fixture({ weapon: spawner, extraDefinitions: [{ ...payload, pop: 30 }], popCap: 50 });
+  f.fire(); // one starting builder + shooter, leaving room for only one thirty-pop payload
+  expect(payloads(f.kernel)).toHaveLength(1);
+  const zero = fixture({ weapon: spawner, extraDefinitions: [{ ...payload, pop: 0 }], popCap: 50 });
+  for (let i = 0; i < 48; i++) zero.spawn(1, 0, 12 + (i % 8), 28 + Math.floor(i / 8));
+  zero.fire();
+  expect(payloads(zero.kernel)).toHaveLength(3);
+  const blocked = fixture({ weapon: spawner, extraDefinitions: [payload] });
+  for (let y = 16; y <= 24; y++) for (let x = 20; x <= 28; x++) blocked.spawn(4, 0, x, y);
+  blocked.fire();
+  expect(payloads(blocked.kernel)).toEqual([]);
+  expect(blocked.kernel.world.query(PendingImpact)).toEqual([]);
+});
+
+test("delayed spawn survives shooter death, rejects defeated ownership and respects ground domains", () => {
+  const delayed = { ...spawner, warheads: [{ ...spawner.warheads[1]!, delayTicks: 3 }] };
+  const f = fixture({ weapon: delayed, extraDefinitions: [payload] });
+  f.fire();
+  f.kernel.world.destroy(f.actor);
+  f.advance(2);
+  expect(payloads(f.kernel)).toEqual([]);
+  f.advance();
+  expect(payloads(f.kernel)).toHaveLength(3);
+  const defeated = fixture({ weapon: delayed, extraDefinitions: [payload] });
+  defeated.fire();
+  for (const id of defeated.kernel.world.query(Template, OwnerForce))
+    if (defeated.kernel.world.get(id, OwnerForce, "force") === 0) defeated.kernel.world.destroy(id);
+  // The result ends the match before the pending payload. Its removal cannot resurrect the Force.
+  defeated.advance(5);
+  applyWarhead(
+    defeated.kernel,
+    defeated.definitions,
+    spawner,
+    spawner.warheads[1]!,
+    {
+      force: 0,
+      direct: 0,
+      x: 24 * 1024,
+      y: 20 * 1024,
+      fromX: 0,
+      fromY: 0,
+      air: false,
+      maxLevel: 0,
+    },
+    true,
+    500,
+  );
+  expect(payloads(defeated.kernel)).toEqual([]);
+  const water = fixture({
+    weapon: spawner,
+    extraDefinitions: [{ ...payload, domain: "tracked" }],
+    shallow: true,
+  });
+  water.fire();
+  expect(payloads(water.kernel)).toEqual([]);
+  const wading = fixture({
+    weapon: spawner,
+    extraDefinitions: [{ ...payload, domain: "wheeled" }],
+    shallow: true,
+  });
+  wading.fire();
+  expect(payloads(wading.kernel)).toHaveLength(3);
+});
+
+test("spawn references validate before a match starts; omitted unit is inert and omitted count means one", () => {
+  const base = fixture({ weapon: spawner, extraDefinitions: [payload] }).setup;
+  for (const reference of ["unit:flight/missing", hq.id]) {
+    const setup = {
+      ...base,
+      definitions: base.definitions.map((definition, index) =>
+        index === 2
+          ? {
+              ...definition,
+              weapons: [{ ...spawner, warheads: [{ type: "spawn", unit: reference, tags: [] }] }],
+            }
+          : definition,
+      ),
+    };
+    expect(() => createMatch(setup)).toThrow();
+  }
+  const absent = fixture({
+    weapon: { ...spawner, warheads: [{ type: "spawn", tags: [] }] },
+    extraDefinitions: [payload],
+  });
+  absent.fire();
+  expect(payloads(absent.kernel)).toEqual([]);
+  const single = fixture({
+    weapon: { ...spawner, warheads: [{ type: "spawn", unit: payload.id, tags: [] }] },
+    extraDefinitions: [payload],
+  });
+  single.fire();
+  expect(payloads(single.kernel)).toHaveLength(1);
+});
 
 test("delayed mixed sensor rounds reveal their impact after shooter and direct victim die", () => {
   const f = fixture({
@@ -664,9 +814,14 @@ for (const [weapon, status] of [
   [flame, "burning"],
   [slow, "slowed"],
   [sensor, "revealed"],
+  [spawner, "spawned"],
 ] as const)
   test(`timed ${status} combat from starting kits replays canonical state and the final hash`, () => {
-    const base = fixture({ weapon, targetDomain: "tracked" }).setup;
+    const base = fixture({
+      weapon,
+      targetDomain: "tracked",
+      ...(status === "spawned" && { extraDefinitions: [payload] }),
+    }).setup;
     const setup: MatchSetup = {
       ...base,
       definitions: base.definitions.map((definition, index) =>
@@ -719,14 +874,22 @@ for (const [weapon, status] of [
             ? kernel.burning?.(target) === true
             : status === "slowed"
               ? !!kernel.slowPerMille?.(target)
-              : kernel.world.query(AreaReveal).length > 0;
-      if ((status === "slowed" || status === "revealed") && kernel.tick === 100) {
+              : status === "revealed"
+                ? kernel.world.query(AreaReveal).length > 0
+                : payloads(kernel).length > 0;
+      if (
+        (status === "slowed" || status === "revealed" || status === "spawned") &&
+        kernel.tick === 100
+      ) {
         if (status === "slowed") {
           expect(kernel.slowPerMille?.(target)).toBeGreaterThan(0);
           expect(checkpointHash(kernel)).toBe("4373496c276f116c");
-        } else {
+        } else if (status === "revealed") {
           expect(kernel.world.query(AreaReveal)).not.toEqual([]);
           expect(checkpointHash(kernel)).toBe("eecbfe6741791c31");
+        } else {
+          expect(payloads(kernel)).not.toEqual([]);
+          expect(checkpointHash(kernel)).toBe("b89a555cae666f71");
         }
         const restored = restoreMatchSnapshot(createMatchSnapshot(kernel, setup), setup);
         expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
