@@ -17,7 +17,7 @@ import {
 } from "../../../packages/sim/src";
 import { flatMap } from "../../../packages/sim/src/testing/maps";
 
-function combatSnapshots() {
+function combatSnapshots(ground = false) {
   const hq: Definition = {
     id: "structure:proof/headquarters",
     role: "headquarters",
@@ -35,6 +35,7 @@ function combatSnapshots() {
     turnRate: 65536,
     domain: "foot",
     radiusSubcells: 128,
+    ...(ground && { visionSubcells: 6 * 1024 }),
   };
   const source = toDefinition(soldier);
   const actor: Definition = {
@@ -48,11 +49,26 @@ function combatSnapshots() {
         rangeSubcells: [0, 5 * 1024],
         reloadTicks: 1000,
         projectile: { kind: "bullet", speedSubcellsPerTick: 1024 },
-        warheads: [{ type: "damage", amount: 10, tags: [] }],
+        warheads: ground
+          ? [
+              {
+                type: "burn",
+                amountPerSecond: 5,
+                durationTicks: 20,
+                radiusSubcells: 2 * 1024,
+                tags: ["fire"],
+              },
+            ]
+          : [{ type: "damage", amount: 10, tags: [] }],
       },
     ],
   };
-  const victim: Definition = { ...source, id: "unit:proof/victim", health: 10, weapons: [] };
+  const victim: Definition = {
+    ...source,
+    id: "unit:proof/victim",
+    health: ground ? 100 : 10,
+    weapons: [],
+  };
   const map = flatMap(32);
   const setup: MatchSetup = {
     seed: 1,
@@ -78,7 +94,7 @@ function combatSnapshots() {
         startingCredits: 1000,
         popCap: 100,
         structureCap: 100,
-        fog: "off",
+        fog: ground ? "standard" : "off",
         highGroundMissPerMille: 0,
       },
       forces: [0, 1].map((index) => ({
@@ -119,7 +135,16 @@ function combatSnapshots() {
     };
   };
   const snapshots = [take()];
-  for (let tick = 0; tick < 6; tick++) {
+  for (let tick = 0; tick < (ground ? 30 : 6); tick++) {
+    if (ground && tick === 7) kernel.world.destroy(shooter);
+    if (ground && tick === 9)
+      spawnEntity(kernel, 1, worker, {
+        definition: worker.id,
+        force: 0,
+        x: 15 * 1024 + 512,
+        y: 16 * 1024 + 512,
+        facing: 0,
+      });
     step(kernel, []);
     snapshots.push(take());
   }
@@ -207,6 +232,42 @@ test("real projected combat events play original clips and disposable flight, im
     const settled = await page.evaluate(() => Reflect.get(window, "combatProof").state());
     expect(settled.effects).toEqual([]);
     expect(settled.actors).toHaveLength(1);
+    const ground = combatSnapshots(true);
+    expect(ground[6]?.groundFire?.cells.some(Boolean)).toBe(true);
+    expect(ground[8]?.groundFire?.cells.some(Boolean)).toBe(false);
+    expect(ground[10]?.groundFire?.cells.some(Boolean)).toBe(true);
+    expect(ground[30]?.groundFire?.cells.some(Boolean)).toBe(false);
+    await page.evaluate(() => Reflect.get(window, "combatProof").reset());
+    const sendGround = (index: number, time: number) =>
+      page.evaluate(
+        async ({ snapshot, time }) => {
+          await Reflect.get(window, "combatProof").accept(snapshot, time);
+        },
+        { snapshot: ground[index], time },
+      );
+    await sendGround(6, 5000);
+    const fire = await page.evaluate(() => Reflect.get(window, "combatProof").state().groundFire);
+    expect(fire.visible).toBe(true);
+    expect(fire.count).toBeGreaterThan(0);
+    await page.screenshot({ path: info.outputPath("burning-ground.png") });
+    await page.evaluate(() => Reflect.get(window, "combatProof").pause());
+    await page.evaluate(() => Reflect.get(window, "combatProof").render(6000));
+    expect(
+      await page.evaluate(() => Reflect.get(window, "combatProof").state().groundFire),
+    ).toEqual(fire);
+    await page.evaluate(() => Reflect.get(window, "combatProof").resume());
+    await sendGround(8, 6100);
+    expect(
+      (await page.evaluate(() => Reflect.get(window, "combatProof").state().groundFire)).visible,
+    ).toBe(false);
+    await sendGround(10, 6200);
+    expect(
+      (await page.evaluate(() => Reflect.get(window, "combatProof").state().groundFire)).count,
+    ).toBeGreaterThan(0);
+    await sendGround(30, 7200);
+    expect(
+      (await page.evaluate(() => Reflect.get(window, "combatProof").state().groundFire)).visible,
+    ).toBe(false);
     expect(errors).toEqual([]);
   } finally {
     await page.evaluate(() => Reflect.get(window, "combatProof")?.dispose());

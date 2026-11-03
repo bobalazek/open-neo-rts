@@ -530,6 +530,34 @@ test("burning status and beam events pass the strict wire without exposing a rat
   ).toBe(true);
 });
 
+test("ground fire grids contain only currently visible bits and reject private or malformed payloads", () => {
+  const cells = new Uint8Array(4);
+  cells[0] = 1;
+  const fog = [{ group: 0, width: 2, height: 2, cells: new Uint8Array([2, 1, 0, 2]) }];
+  const reply = (groundFire: unknown, currentFog: unknown = fog) => {
+    const packet = powerReply(undefined, []);
+    return {
+      ...packet,
+      state: {
+        ...packet.state,
+        snapshot: { ...packet.state.snapshot, fog: currentFog, ghosts: [], groundFire },
+      },
+    };
+  };
+  const grid = { width: 2, height: 2, cells };
+  expect(isWorkerReply(reply(grid))).toBe(true);
+  expect(isWorkerReply(reply({ ...grid, cells: new Uint8Array(4) }, []))).toBe(true);
+  for (const bad of [
+    { ...grid, until: 20 },
+    { ...grid, width: 3 },
+    { ...grid, cells: [1, 0, 0, 0] },
+    { ...grid, cells: new Uint8Array([2, 0, 0, 0]) },
+    { ...grid, cells: new Uint8Array([0, 1, 0, 0]) },
+  ])
+    expect(isWorkerReply(reply(bad))).toBe(false);
+  expect(isWorkerReply(reply(grid, []))).toBe(false);
+});
+
 test("worker replies strictly validate private harvester cargo, status and unload work", () => {
   const harvesting = { cargo: 10, capacity: 500, status: "mining", unloadTicks: 0 };
   const packet = (value: unknown, mode = "controlled") =>

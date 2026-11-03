@@ -105,55 +105,17 @@ export function applyWarhead(
     return;
   }
   if (!["damage", "disable", "burn", "slow"].includes(warhead.type)) return;
+  if (warhead.type === "burn" && (warhead.radiusSubcells ?? 0) > 0)
+    kernel.groundFire?.ignite(weapon, warhead, impact, friendlyFire);
   const { world } = kernel;
-  const radius = warhead.radiusSubcells ?? 0;
-  const targets =
-    radius > 0
-      ? world.query(Template, Transform, OwnerForce, Health)
-      : world.isAlive(impact.direct)
-        ? [impact.direct]
-        : [];
-  for (const target of targets) {
-    if (
-      !world.has(target, Health) ||
-      !world.has(target, Template) ||
-      !world.has(target, Transform) ||
-      !world.has(target, OwnerForce) ||
-      world.get(target, Health, "current") === 0
-    )
-      continue;
-    const definition = definitions[world.get(target, Template, "definition")];
-    if (
-      !definition ||
-      !weaponTargets(weapon, definition) ||
-      (definition.domain === "air") !== impact.air
-    )
-      continue;
-    const current = combatPoint(kernel, definitions, target),
-      previous = impact.geometry?.motion.get(target),
-      centre =
-        previous && impact.geometry && !definition.footprint
-          ? pointAt(previous, current, impact.geometry.at)
-          : current,
-      terrain = kernel.map?.terrain;
-    if (
-      terrain &&
-      (terrain.level[Math.floor(centre.y / 1024) * terrain.width + Math.floor(centre.x / 1024)] ??
-        0) > impact.maxLevel
-    )
-      continue;
-    const force = world.get(target, OwnerForce, "force");
-    const allied =
-      force === impact.force ||
-      kernel.vision?.groupForForce(force) === kernel.vision?.groupForForce(impact.force);
-    if (allied && (radius === 0 || !(warhead.friendlyFire ?? friendlyFire))) continue;
-    const range = radius > 0 ? distance(kernel, definitions, target, impact, radius, centre) : 0;
-    if (range === undefined) continue;
-    const rings = warhead.falloffPerMille ?? [1000];
-    const falloff =
-      radius > 0
-        ? (rings[Math.min(rings.length - 1, Math.floor((range * rings.length) / radius))] ?? 1000)
-        : 1000;
+  for (const { target, definition, force, falloff, centre } of warheadVictims(
+    kernel,
+    definitions,
+    weapon,
+    warhead,
+    impact,
+    friendlyFire,
+  )) {
     if (warhead.type === "disable") {
       applyDisable(kernel, target, definition, warhead, falloff);
       continue;
@@ -209,5 +171,67 @@ export function applyWarhead(
     );
     const point = combatPoint(kernel, definitions, target);
     emitCombatEvent(kernel, { type: "damage", ...point, force, amount, entity: target });
+  }
+}
+
+/** Shared exact impact eligibility for initial hits and later occupants of persistent fields. */
+export function* warheadVictims(
+  kernel: Kernel,
+  definitions: readonly Definition[],
+  weapon: GameplayWeapon,
+  warhead: GameplayWarhead,
+  impact: DamageImpact,
+  friendlyFire: boolean,
+) {
+  const { world } = kernel;
+  const radius = warhead.radiusSubcells ?? 0;
+  const targets =
+    radius > 0
+      ? world.query(Template, Transform, OwnerForce, Health)
+      : world.isAlive(impact.direct)
+        ? [impact.direct]
+        : [];
+  for (const target of targets) {
+    if (
+      !world.has(target, Health) ||
+      !world.has(target, Template) ||
+      !world.has(target, Transform) ||
+      !world.has(target, OwnerForce) ||
+      world.get(target, Health, "current") === 0
+    )
+      continue;
+    const definition = definitions[world.get(target, Template, "definition")];
+    if (
+      !definition ||
+      !weaponTargets(weapon, definition) ||
+      (definition.domain === "air") !== impact.air
+    )
+      continue;
+    const current = combatPoint(kernel, definitions, target),
+      previous = impact.geometry?.motion.get(target),
+      centre =
+        previous && impact.geometry && !definition.footprint
+          ? pointAt(previous, current, impact.geometry.at)
+          : current,
+      terrain = kernel.map?.terrain;
+    if (
+      terrain &&
+      (terrain.level[Math.floor(centre.y / 1024) * terrain.width + Math.floor(centre.x / 1024)] ??
+        0) > impact.maxLevel
+    )
+      continue;
+    const force = world.get(target, OwnerForce, "force");
+    const allied =
+      force === impact.force ||
+      kernel.vision?.groupForForce(force) === kernel.vision?.groupForForce(impact.force);
+    if (allied && (radius === 0 || !(warhead.friendlyFire ?? friendlyFire))) continue;
+    const range = radius > 0 ? distance(kernel, definitions, target, impact, radius, centre) : 0;
+    if (range === undefined) continue;
+    const rings = warhead.falloffPerMille ?? [1000];
+    const falloff =
+      radius > 0
+        ? (rings[Math.min(rings.length - 1, Math.floor((range * rings.length) / radius))] ?? 1000)
+        : 1000;
+    yield { target, definition, force, falloff, centre };
   }
 }

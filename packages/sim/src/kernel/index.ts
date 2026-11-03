@@ -126,6 +126,7 @@ export interface Kernel {
   /** Canonical temporary EMP state; absent when the catalog has no disable warheads. */
   disabled?: (entity: number) => boolean;
   burning?: (entity: number) => boolean;
+  groundFire?: import("../features/combat/ground-fire").GroundFireFields;
   /** Current canonical speed reduction, from zero to 1000 per mille. */
   slowPerMille?: (entity: number) => number;
   /** Presentation-only output from the completed tick; never read by gameplay systems. */
