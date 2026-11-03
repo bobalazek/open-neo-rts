@@ -33,8 +33,8 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   await page.getByLabel("Your spawn").selectOption("north-west");
   await page.getByLabel("Seed", { exact: true }).fill("42");
   await expect(page.getByLabel("Unit veterancy")).toBeChecked();
-  await page.getByLabel("Unit veterancy").uncheck();
-  await page.getByRole("button", { name: "Save setup" }).click();
+  await page.getByLabel("Unit veterancy").press("Space");
+  await page.getByRole("button", { name: "Save setup" }).press("Enter");
   await expect(page.getByRole("status")).toHaveText("Setup saved in this browser.");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("main").evaluate((element) => {
@@ -42,10 +42,10 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   });
   await page.screenshot({ path: info.outputPath("setup-mobile.png"), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-  await page.getByLabel("Unit veterancy").scrollIntoViewIfNeeded();
+  await page.getByLabel("Unit veterancy").focus();
   await page.screenshot({ path: info.outputPath("veterancy-rule-mobile.png") });
   await page.reload();
-  await page.getByRole("button", { name: "Load saved setup" }).click();
+  await page.getByRole("button", { name: "Load saved setup" }).press("Enter");
   await expect(page.getByLabel("Seed", { exact: true })).toHaveValue("42");
   await expect(page.getByLabel("Unit veterancy")).not.toBeChecked();
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -57,13 +57,13 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
     await delayed;
     await route.continue();
   });
-  await page.getByRole("button", { name: "Start local match" }).click();
+  await page.getByRole("button", { name: "Start local match" }).press("Enter");
   await expect(page.getByRole("heading", { name: "Loading local match" })).toBeVisible();
   await page.getByRole("button", { name: "Cancel loading" }).click();
   release();
   await page.unrouteAll({ behavior: "wait" });
   await expect(page.getByRole("heading", { name: "Skirmish", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Start local match" }).click();
+  await page.getByRole("button", { name: "Start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
@@ -80,7 +80,8 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match" }).click();
   await expect(page).toHaveURL(/\/skirmish$/);
-  await expect(page.locator("#game")).toBeHidden();
+  await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
+  await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
   await page.goBack();
   await expect(page).toHaveURL(/\/skirmish$/);
   await expect(page.getByRole("status")).toHaveText(
@@ -110,5 +111,6 @@ test("failed worker loading can retry through the same quick-start path", async 
   await expect(page).toHaveURL(/\/match$/);
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Leave match" }).click();
-  await expect(page.locator("#game")).toBeHidden();
+  await expect(page.locator("#game")).not.toHaveAttribute("data-session", "ready");
+  await expect(page.locator("#game")).toHaveAttribute("data-setup", "ready");
 });

@@ -200,10 +200,17 @@ export function startApp(canvas: HTMLCanvasElement) {
         start: () => start(defaultSkirmish()),
       });
     } else if (location.pathname === "/skirmish")
-      skirmishScreen(root, config, start, () => navigate("/"), notice);
+      disposeScreen = skirmishScreen(root, canvas, config, start, () => navigate("/"), notice);
     else if (location.pathname === "/match") {
       history.replaceState(null, "", "/skirmish");
-      skirmishScreen(root, config, start, () => navigate("/"), text("ui.skirmish.no-session"));
+      disposeScreen = skirmishScreen(
+        root,
+        canvas,
+        config,
+        start,
+        () => navigate("/"),
+        text("ui.skirmish.no-session"),
+      );
     } else {
       const home = homeScreen(
         root,

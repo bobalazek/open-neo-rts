@@ -17,6 +17,9 @@ match is an Eastern Collective mirror on Training Grounds against a basic bot.
 The client consumes permitted worker observations and emits validated commands;
 presentation never changes simulation state. Existing selection, construction,
 production, orders, minimap, saves and match-result behavior must survive UI work.
+Skirmish setup retains the existing validator, saved setup format and normal
+match path. Its native fields and semantic form share values; the map preview
+uses authored Training Grounds terrain, resources and selected spawn coordinates.
 Online play and the complete three-faction game remain later roadmap phases.
 See `../../docs/project/roadmap.md` and `../../docs/design/screens/match-hud.md`.
 
@@ -34,7 +37,15 @@ source.
 - The battlefield remains visible while the player commands units.
 - Show the selected actors' actual state and context-appropriate controls.
 - Preserve accessible names, keyboard controls and narrow-screen operation.
-- The owner prefers native Babylon GUI for game presentation. Home uses it;
-  other screens retain their existing implementation during the staged conversion.
+- The owner prefers native Babylon GUI for game presentation. Home and Skirmish
+  setup use it; settings, load, results, debug and the match HUD retain their
+  existing presentation during the staged conversion.
+- Native Home and setup preserve semantic HTML controls and usable graphics
+  fallbacks. Setup keeps validation feedback and actions visible while content
+  scrolls; focused fields and the checkbox scroll into view. Leaving setup
+  cancels graphics initialization and restores the canvas attributes.
+- Native pointer text editing shows a caret and selection. Semantic setup text
+  editing currently shows the native focus frame without mirrored caret or
+  selection; the remaining polish is recorded in `../../docs/project/tasks.md`.
 - The owner delegates routine choices; implement coherent defaults and review
   the running result instead of interrupting for repeated design approvals.

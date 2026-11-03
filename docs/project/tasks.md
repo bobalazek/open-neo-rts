@@ -10,7 +10,9 @@ The [phase-1a exit](./phases/1a.md#exit-criteria) is met: PR #46 passed Bun and 
 
 The owner [authorized gameplay before performance acceptance](./decisions/2026-11-02-gameplay-before-performance.md) and [delegated provisional implementation choices](./decisions/2026-11-02-provisional-implementation-autonomy.md). Phase 1b remains unfinished; its FPS/native-key work is deferred. Choose coherent defaults, record them and keep building; human tasks are later tuning/review work rather than repeated approval stops.
 
-The owner now prioritizes the UI pass. Home uses [native Babylon GUI](./decisions/2026-11-03-native-menu.md), an original vector wordmark and an authored model display. Continue the native presentation through skirmish setup and the game screens while preserving their existing functional flows and keyboard/assistive access.
+The owner now prioritizes the UI pass. Home uses [native Babylon GUI](./decisions/2026-11-03-native-menu.md), an original vector wordmark and an authored model display. [Skirmish setup](./decisions/2026-11-03-native-skirmish-setup.md) now uses native fields/actions and the authored map preview while preserving its validator and shared normal match path. Continue through the remaining game screens with keyboard/assistive access intact.
+
+- [ ] Native setup input polish: mirror the caret and selection while the semantic HTML field handles keyboard editing; the native pointer editor already shows both.
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.

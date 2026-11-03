@@ -32,7 +32,7 @@ test("native Home canvas buttons, keyboard submenu and resize keep navigation wo
   await expect(page.getByRole("button", { name: "Skirmish setup", exact: true })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);
-  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-menu", "ready", { timeout: 30_000 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   expect(errors).toEqual([]);

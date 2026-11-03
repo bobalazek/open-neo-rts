@@ -13,16 +13,29 @@ import {
 } from "@babylonjs/core";
 
 // ponytail: imports the whole of @babylonjs/core; switch to deep imports if bundle size matters.
-export async function createEngine(canvas: HTMLCanvasElement): Promise<AbstractEngine> {
-  if (await WebGPUEngine.IsSupportedAsync) {
+export async function createEngine(
+  canvas: HTMLCanvasElement,
+  signal?: AbortSignal,
+): Promise<AbstractEngine> {
+  signal?.throwIfAborted();
+  const gpuSupported = await WebGPUEngine.IsSupportedAsync;
+  signal?.throwIfAborted();
+  if (gpuSupported) {
     const engine = new WebGPUEngine(canvas, { antialias: true });
+    const abort = () => engine.dispose();
+    signal?.addEventListener("abort", abort, { once: true });
     try {
       await engine.initAsync();
+      signal?.throwIfAborted();
       return engine;
     } catch {
       engine.dispose();
+      signal?.throwIfAborted();
+    } finally {
+      signal?.removeEventListener("abort", abort);
     }
   }
+  signal?.throwIfAborted();
   return new Engine(canvas, true);
 }
 

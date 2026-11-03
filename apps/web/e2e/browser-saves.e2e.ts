@@ -272,7 +272,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   );
   await expect(page).toHaveURL(/\/skirmish$/);
   await expect(page.getByRole("status")).toContainText("Simulation worker failed");
-  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Back", exact: true }).press("Enter");
   await expect(
     page.getByRole("button", { name: "Continue latest save", exact: true }),
   ).toBeVisible();

@@ -4,6 +4,14 @@
 
 A local match against bots. It's the same layout as the multiplayer [lobby](lobby.md), minus room code, chat and ready states, so players learn one setup screen.
 
+The current Eastern Collective mirror uses native Babylon GUI with compact Force
+rows, actual Training Grounds terrain/resource preview and selected-spawn markers.
+It preserves the existing setup validator, saved setup format and normal worker
+start path. Narrow screens scroll the content with feedback and actions fixed at
+the bottom; keyboard focus brings the corresponding native control into view.
+Semantic HTML retains assistive editing and becomes visible if graphics cannot
+initialize. The broader faction/team/map choices below remain future work.
+
 ```text
 ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
 │ ◂ Back                                    SKIRMISH                                            │
