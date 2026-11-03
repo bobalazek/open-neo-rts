@@ -447,13 +447,14 @@ comparison, no-completed-base fallback and budgets 1/2/64. Normal/debug goldens
 remain unchanged; SIM48 and all three scenario headers identify changed bot
 outcomes. Catalog identities remain `97ddd2a140545413` / `54a8905a7eee497b`.
 
-A single-seed double trial runs on that clean committed code: exec session
+A single-seed double trial finished on that clean committed code: exec session
 65430, `/tmp/neo-ai-qualification-sim48-seed12-20261103`, log
 `/tmp/neo-ai-qualification-sim48-seed12.log`, source companion
-`/tmp/neo-ai-qualification-sim48-seed12-source.txt`. First trial ended naturally
-at tick 23333/hash `d1ed481e228a0254`, winner 1; repeat verification is pending.
+`/tmp/neo-ai-qualification-sim48-seed12-source.txt`. Both trials ended naturally
+at tick 23333/hash `d1ed481e228a0254`, winner 1; full repeat verification passed
+(19.44 game minutes). The terminal process exited zero.
 This is not a complete current-version 20-match qualification or human exit.
-Do not mutate runtime sources in that worktree while the trial is running.
+Preserve that source and the completed evidence.
 The separate frozen SIM46 batch remains session 12497 on clean `20623ea`;
 19 results currently show 18 natural outcomes and the one seed-12 cap, all
 reproducible. Preserve its existing process/source/evidence unchanged.
