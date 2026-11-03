@@ -27,7 +27,7 @@ export async function start(canvas: HTMLCanvasElement) {
   });
   presentation.setForceColor(0, "#d8443a");
   return {
-    backend: renderer.engine.getClassName(),
+    backend: renderer.engine.isWebGPU ? "webgpu" : "webgl",
     async accept(snapshot: SeatSnapshot) {
       const rows = snapshot.entities.filter(
         (row) => row.force === 0 && row.definition.endsWith("/industrial-reactor"),
