@@ -1,6 +1,7 @@
 import { sortCommands } from "../commands";
 import { checkpointHash, type Kernel, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
+import { createReplayProjection } from "../projection";
 import { createMatchKeyframe, type MatchKeyframe } from "./keyframe";
 import { parseMatchRecord } from "./match-record";
 import { MAX_SNAPSHOT_TICK } from "./match-snapshot";
@@ -27,6 +28,7 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
     settled = false;
   let failure: unknown;
   const frames: MatchKeyframe[] = [createMatchKeyframe(kernel, setup)];
+  const views = new Map<number | "all", ReturnType<typeof createReplayProjection>>();
 
   function checkBudget(maxTicks: number) {
     if (!Number.isInteger(maxTicks) || maxTicks < 1 || maxTicks > 1000)
@@ -65,6 +67,18 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
       if (!verified || !settled) throw new Error("Replay verification or seek is unfinished");
       return kernel;
     },
+    /** Explicit terminal-replay permission; ordinary live workers never receive this API. */
+    snapshot(vision: number | "all", reset = false) {
+      if (failure) throw failure;
+      if (!verified || !settled) throw new Error("Replay verification or seek is unfinished");
+      if (reset) views.clear();
+      let view = views.get(vision);
+      if (!view) {
+        view = createReplayProjection(setup, vision);
+        views.set(vision, view);
+      }
+      return view.snapshot(kernel);
+    },
     /** Returns true only after all accepted inputs reproduce the exact declared terminal result. */
     prepare(maxTicks = 20): boolean {
       checkBudget(maxTicks);
@@ -90,8 +104,9 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
         throw new RangeError(`Replay target must be an integer from 0 to ${record.tick}`);
       try {
         const frame = frames[Math.floor(target / REPLAY_KEYFRAME_INTERVAL)]!;
-        if (kernel.tick > target || kernel.tick < frame.tick) {
+        if (kernel.tick > target || (kernel.tick < frame.tick && target - kernel.tick > maxTicks)) {
           kernel = frame.restore(setup);
+          views.clear();
           // First command whose tick has not run in the restored host.
           let low = 0,
             high = commands.length;

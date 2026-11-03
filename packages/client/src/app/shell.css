@@ -303,6 +303,27 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.native-replay .replay-controls,
+.native-replay .match-hud {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.replay-controls {
+  pointer-events: auto;
+  max-width: 38rem;
+  padding: 1rem;
+  background: #182126;
+}
+.replay-controls nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
 .native-menu-canvas {
   background: transparent;
   position: fixed;

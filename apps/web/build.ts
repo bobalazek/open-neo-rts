@@ -1,5 +1,12 @@
 const results = await Promise.all([
   Bun.build({
+    entrypoints: ["../../packages/client/src/worker/replay-entry.ts"],
+    outdir: "./dist",
+    target: "browser",
+    minify: true,
+    naming: "replay-worker.js",
+  }),
+  Bun.build({
     entrypoints: ["./index.html"],
     outdir: "./dist",
     target: "browser",

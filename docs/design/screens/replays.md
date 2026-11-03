@@ -1,5 +1,12 @@
 # Replays and replay viewer
 
+The [current local implementation](../../project/decisions/2026-11-03-native-replay-viewer.md)
+supports the authored Eastern Collective mirror: native library actions and
+metadata, verified container/legacy imports, read-only playback/speed/seek,
+All/player fog, actual resources/production and free-camera/right-hand circular
+map navigation. The complete target below also includes portable keyframes,
+recorded cameras, event markers, analytics and live spectating, which remain work.
+
 ## Replay browser
 
 **Route:** `/replays` · **From:** Home, post-match

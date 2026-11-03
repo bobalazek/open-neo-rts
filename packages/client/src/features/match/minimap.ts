@@ -28,6 +28,7 @@ export function createMinimap(
     camera: () => MapPoint;
     order: (point: MapPoint) => void;
     armAttackMove: () => void;
+    readOnly?: boolean;
   },
   signal: AbortSignal,
 ) {
@@ -76,6 +77,12 @@ export function createMinimap(
   pingToggle.prepend(hudIcon("rally"));
   pingOptions.append(pingToggle, ping, pingCamera);
   controls.append(pingOptions);
+  if (options.readOnly) {
+    alert.hidden = true;
+    pingOptions.hidden = true;
+    feed.hidden = true;
+    status.hidden = true;
+  }
   panel.append(controls, status);
   root.querySelector(".hud-panels")?.prepend(panel);
   root.querySelector(".match-hud")?.append(feed);
@@ -172,6 +179,10 @@ export function createMinimap(
       terrain.height,
     );
     if (!cell) return;
+    if (options.readOnly) {
+      if (button === 0) pan(cell);
+      return;
+    }
     if (alt) {
       placePing(cell);
       return;
@@ -284,7 +295,7 @@ export function createMinimap(
     if (event.code === "Home") {
       event.preventDefault();
       goHome();
-    } else if (event.code === "Space") {
+    } else if (event.code === "Space" && !options.readOnly) {
       event.preventDefault();
       nextAlert();
     } else if (event.currentTarget === canvas) {
@@ -302,7 +313,7 @@ export function createMinimap(
           y: Math.max(0, Math.min(terrain.height - 1, current.y + (direction[1] ?? 0))),
         });
       }
-      if (event.code === "KeyA") {
+      if (event.code === "KeyA" && !options.readOnly) {
         event.preventDefault();
         options.armAttackMove();
       }
@@ -430,6 +441,7 @@ export function createMinimap(
     zoom: options.zoom,
     update(value: SeatSnapshot) {
       snapshot = value;
+      if (options.readOnly) return;
       notices.update(value);
       refreshFeed();
       home.disabled = !ownBase(value, definitions, options.force);

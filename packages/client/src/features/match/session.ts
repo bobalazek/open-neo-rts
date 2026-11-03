@@ -25,6 +25,8 @@ import {
   saveThumbnail,
 } from "../load-game";
 import { postMatchScreen } from "../post-match";
+import { savedReplay } from "../replays/files";
+import { replayStore } from "../replays/storage";
 import { applyInterfaceScale, type DeviceSettings, readDeviceSettings } from "../settings";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
@@ -47,7 +49,11 @@ export function createNormalSession(
   leave: () => void,
   rematch: () => void,
   home: () => void,
-  persistence?: { saved?: SavedGame; load: (save: SavedGame) => Promise<void> },
+  persistence?: {
+    saved?: SavedGame;
+    load: (save: SavedGame) => Promise<void>;
+    replay?: (id: string) => void;
+  },
 ) {
   const signal = new AbortController();
   let disposed = false,
@@ -230,6 +236,16 @@ export function createNormalSession(
           }, 1000);
         },
         resultDefinitions,
+        persistence?.replay
+          ? async () => {
+              if (!match || disposed || !state.snapshot.victory?.result) return;
+              const record = await match.exportMatchRecord();
+              if (disposed) return;
+              const file = savedReplay(record, config, state.snapshot.victory.result.winner);
+              await replayStore.write(file);
+              if (!disposed) persistence.replay?.(file.id);
+            }
+          : undefined,
       );
     }
   };

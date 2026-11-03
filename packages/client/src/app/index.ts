@@ -11,6 +11,8 @@ import {
 } from "../features/load-game";
 import { homeScreen } from "../features/main-menu";
 import { createNormalSession } from "../features/match/session";
+import { replayLibrary } from "../features/replays";
+import { replayViewer } from "../features/replays/viewer";
 import { applyInterfaceScale, readDeviceSettings, settingsScreen } from "../features/settings";
 import { skirmishScreen } from "../features/skirmish";
 import { defaultSkirmish, type SkirmishSetup } from "../features/skirmish/setup";
@@ -159,7 +161,11 @@ export function startApp(canvas: HTMLCanvasElement) {
       () => navigate("/skirmish"),
       () => start(config),
       () => navigate("/"),
-      { ...(saved && { saved }), load: (save) => begin(save.config, save) },
+      {
+        ...(saved && { saved }),
+        load: (save) => begin(save.config, save),
+        replay: (id) => navigate(`/replay/${id}`),
+      },
     );
     try {
       await Promise.race([candidate.ready, cancelled]);
@@ -227,7 +233,18 @@ export function startApp(canvas: HTMLCanvasElement) {
     }
   }
   function show(notice = "") {
-    if (location.pathname === "/settings") {
+    if (location.pathname === "/replays") {
+      disposeScreen = replayLibrary(
+        root,
+        canvas,
+        (id) => navigate(`/replay/${id}`),
+        () => navigate("/"),
+      );
+    } else if (location.pathname.startsWith("/replay/")) {
+      disposeScreen = replayViewer(root, canvas, location.pathname.slice(8), () =>
+        navigate("/replays"),
+      );
+    } else if (location.pathname === "/settings") {
       const settings = settingsScreen(root, applyInterfaceScale, () => navigate("/"), canvas);
       disposeScreen = settings.cancel;
     } else if (location.pathname === "/load") {
@@ -305,7 +322,15 @@ export function startApp(canvas: HTMLCanvasElement) {
       if (event.code === "Escape" && loading) {
         event.preventDefault();
         dismissLoading?.();
-      } else if (event.code === "Escape" && !session && location.pathname !== "/") navigate("/");
+      } else if (
+        event.code === "Escape" &&
+        !event.defaultPrevented &&
+        !session &&
+        location.pathname !== "/" &&
+        location.pathname !== "/replays" &&
+        !location.pathname.startsWith("/replay/")
+      )
+        navigate("/");
     },
     { signal: signal.signal },
   );

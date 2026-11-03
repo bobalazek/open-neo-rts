@@ -38,11 +38,13 @@ export function projectCombatEvents(
   seat: number,
   handleOf: (round: number) => string,
   actorHandle: (entity: number, type: CombatEventType) => string | undefined,
+  replayAll = false,
 ): PresentedCombatEvent[] {
   const owned = kernel.visibility?.forcesForSeat(seat) ?? [];
   return (kernel.combatEvents ?? [])
     .filter(
       (event) =>
+        replayAll ||
         canObserveEventSource(kernel, seat, {
           x: Math.floor(event.x / 1024),
           y: Math.floor(event.y / 1024),
