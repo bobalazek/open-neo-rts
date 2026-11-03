@@ -16,6 +16,7 @@ import {
   recipeLock,
   selectedEntities,
 } from "./hud-model";
+import { actionText, decorateAction, type HudIcon, hudIcon } from "./icons";
 
 type Point = { x: number; y: number };
 type Mode = (
@@ -49,6 +50,8 @@ type Options = {
   paused: () => boolean;
   fail: (error: unknown) => void;
 };
+
+let hudIdentity = 0;
 
 /** Normal command panels consume permitted copies only; every mutation travels through the worker. */
 export function createMatchHud(
@@ -104,7 +107,7 @@ export function createMatchHud(
   const section = document.createElement("section");
   section.className = "match-hud";
   section.setAttribute("aria-label", text("ui.hud.title"));
-  section.innerHTML = `<div class="hud-feedback"><p data-mode role="status" aria-live="polite"></p><p data-result role="status" aria-live="polite"></p><div data-requests></div></div><nav class="hud-panel-tabs" aria-label="${text("ui.hud.panels")}" data-panel-tabs></nav><div class="hud-panels"><section class="hud-selection"><h2>${text("ui.hud.selection")}</h2><p data-summary></p><div data-types class="hud-types"></div><div data-details></div></section><section class="hud-command-panel"><h2>${text("ui.hud.commands")}</h2><div class="hud-command-grid" data-commands></div></section><section class="hud-build-panel"><h2 data-build-title>${text("ui.hud.build")}</h2><ol class="hud-queue" data-queue></ol><div class="hud-catalog" data-catalog></div><p data-advice></p></section></div><div class="hud-groups"><span>${text("ui.hud.groups")}</span><div data-groups></div><label>${text("ui.hud.group")}<select data-group-index>${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((n) => `<option>${n}</option>`).join("")}</select></label><button type="button" data-set-group>${text("ui.hud.set-group")}</button><button type="button" data-add-group>${text("ui.hud.add-group")}</button><button type="button" data-idle-builder></button><button type="button" data-idle-producer></button></div>`;
+  section.innerHTML = `<div class="hud-feedback"><p data-mode role="status" aria-live="polite"></p><p data-result role="status" aria-live="polite"></p><div data-requests></div></div><nav class="hud-panel-tabs" aria-label="${text("ui.hud.panels")}" data-panel-tabs></nav><div class="hud-panels"><section class="hud-selection"><header><h2>${text("ui.hud.selection")}</h2><p data-summary></p></header><div class="hud-selection-profile"><img data-portrait alt="" hidden/><div><div data-types class="hud-types"></div><progress data-health max="100" value="0" aria-label="${text("ui.hud.health-bar")}" hidden></progress></div></div><div data-details tabindex="0"></div></section><section class="hud-command-panel"><h2>${text("ui.hud.commands")}</h2><div class="hud-command-grid" data-commands></div></section><section class="hud-build-panel"><h2 data-build-title>${text("ui.hud.build")}</h2><ol class="hud-queue" data-queue></ol><div class="hud-catalog" data-catalog></div><p data-advice class="hud-help"></p></section></div><div class="hud-groups"><span>${text("ui.hud.groups")}</span><div data-groups></div><label>${text("ui.hud.group")}<select data-group-index>${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((n) => `<option>${n}</option>`).join("")}</select></label><button type="button" data-set-group>${text("ui.hud.set-group")}</button><button type="button" data-add-group>${text("ui.hud.add-group")}</button><button type="button" data-idle-builder></button><button type="button" data-idle-producer></button></div>`;
   root.append(section);
   const get = <T extends HTMLElement = HTMLElement>(selector: string) => {
     const element = section.querySelector<T>(selector);
@@ -118,6 +121,31 @@ export function createMatchHud(
     queue = get("[data-queue]"),
     advice = get("[data-advice]");
   const sites = document.createElement("div");
+  const recipeInfo = document.createElement("div");
+  recipeInfo.className = "hud-recipe-info";
+  recipeInfo.id = `match-recipe-info-${++hudIdentity}`;
+  recipeInfo.setAttribute("role", "tooltip");
+  recipeInfo.hidden = true;
+  section.append(recipeInfo);
+  let inspectedRecipe: HTMLButtonElement | undefined;
+  function inspectRecipe(item: HTMLButtonElement) {
+    inspectedRecipe = item;
+    setText(recipeInfo, item.dataset.recipeInfo ?? "");
+    recipeInfo.style.left = `${Math.max(8, Math.min(innerWidth - 328, get(".hud-build-panel").getBoundingClientRect().left))}px`;
+    recipeInfo.style.bottom = `${innerHeight - get(".hud-build-panel").getBoundingClientRect().top + 8}px`;
+    recipeInfo.hidden = false;
+  }
+  function closeRecipe() {
+    recipeInfo.hidden = true;
+    inspectedRecipe = undefined;
+  }
+  window.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (inspectedRecipe && !inspectedRecipe.contains(event.target as Node)) closeRecipe();
+    },
+    { signal },
+  );
   sites.className = "hud-sites";
   sites.setAttribute("aria-label", text("ui.hud.sites"));
   menu.before(sites);
@@ -267,6 +295,23 @@ export function createMatchHud(
   const commandButtons = labels.map((label, i) =>
     button(`${keys[i]} · ${text(label)}`, () => activate(i), get("[data-commands]")),
   );
+  const commandIcons = [
+    "move",
+    "attack",
+    "harvest",
+    "rally",
+    "assault",
+    "stop",
+    "build",
+    "repair",
+    "cancel",
+    "power",
+    "sell",
+    "rotate",
+  ] as const;
+  commandButtons.forEach((button, index) => {
+    decorateAction(button, commandIcons[index]!, keys[index]);
+  });
   const deployButton = button(
     text("ui.hud.deploy-toggle"),
     () => {
@@ -333,6 +378,17 @@ export function createMatchHud(
     get(".hud-command-panel"),
   );
   unloadButton.dataset.unload = "";
+  for (const [button, icon, key] of [
+    [salvageButton, "salvage", ""],
+    [holdButton, "hold", "H"],
+    [loadButton, "load", ""],
+    [unloadButton, "unload", "U"],
+    [deployButton, "deploy", ""],
+    [surgeButton, "surge", ""],
+  ] as const) {
+    decorateAction(button, icon, key);
+    get("[data-commands]").append(button);
+  }
   function activate(index: number) {
     if (commandButtons[index]?.disabled) return;
     const selectedUnits = units(),
@@ -785,6 +841,7 @@ export function createMatchHud(
     const selectedUnits = units(),
       selectedBuilders = builders();
     const queuedOwner = own()[0];
+    orderPanel.hidden = !queuedOwner?.queuedOrders?.length && !queuedOwner?.orderFailure;
     const orderKey = JSON.stringify([
       queuedOwner?.handle,
       queuedOwner?.queuedOrders,
@@ -849,6 +906,17 @@ export function createMatchHud(
     );
     const definition = structure && definitions.get(structure.definition)?.gameplay;
     summary.textContent = text("ui.match.selection", { count: selected.length });
+    const portrait = get<HTMLImageElement>("[data-portrait]");
+    const portraitUrl = selected[0] && definitions.get(selected[0].definition)?.icon;
+    portrait.hidden = !portraitUrl;
+    if (portraitUrl && portrait.getAttribute("src") !== portraitUrl) portrait.src = portraitUrl;
+    const health = get<HTMLProgressElement>("[data-health]");
+    health.hidden = !selected.length;
+    health.max = Math.max(
+      1,
+      selected.reduce((sum, entity) => sum + entity.maxHealth, 0),
+    );
+    health.value = selected.reduce((sum, entity) => sum + entity.health, 0);
     const nextSelectionKey = JSON.stringify(
       selected.map((entity) => [entity.handle, entity.definition]),
     );
@@ -883,7 +951,7 @@ export function createMatchHud(
       definitions
         .get(surgeProvider.definition)
         ?.gameplay.abilities.find((ability) => ability.id === surge?.id)?.name;
-    setText(surgeButton, surgeName ?? text("ui.hud.surge"));
+    actionText(surgeButton, surgeName ?? text("ui.hud.surge"));
     const surgeBank = snapshot.banks?.find((bank) => bank.force === options.force)?.resources;
     const funded =
       !surgeBank ||
@@ -981,12 +1049,12 @@ export function createMatchHud(
       );
     });
     if (commandButtons[6])
-      setText(
+      actionText(
         commandButtons[6],
         `D · ${text(!selectedBuilders.length && deployments.length ? "ui.hud.deploy-toggle" : "ui.hud.assist")}`,
       );
     if (commandButtons[9])
-      setText(
+      actionText(
         commandButtons[9],
         `X · ${text(structure?.power?.enabled ? "ui.hud.power-off" : "ui.hud.power-on")}`,
       );
@@ -1029,6 +1097,7 @@ export function createMatchHud(
       selectedBuilders.map((entity) => entity.handle),
     ]);
     if (nextMenuKey !== menuKey) {
+      closeRecipe();
       menuKey = nextMenuKey;
       menu.replaceChildren();
       for (const id of choices) {
@@ -1037,6 +1106,10 @@ export function createMatchHud(
         const item = button(
           entry.name,
           () => {
+            if (item.getAttribute("aria-disabled") === "true") {
+              inspectRecipe(item);
+              return;
+            }
             if (producing && structure)
               void issue("production.enqueue", { entity: structure.handle, definition: id });
             else
@@ -1050,6 +1123,33 @@ export function createMatchHud(
           menu,
         );
         item.dataset.definition = id;
+        item.setAttribute("aria-label", entry.name);
+        const explanation = document.createElement("span");
+        explanation.hidden = true;
+        explanation.dataset.recipeDescription = "";
+        explanation.id = `${recipeInfo.id}-${menu.childElementCount}`;
+        item.setAttribute("aria-describedby", explanation.id);
+        item.addEventListener("pointerenter", () => inspectRecipe(item), { signal });
+        item.addEventListener(
+          "pointerleave",
+          () => {
+            if (document.activeElement !== item) closeRecipe();
+          },
+          { signal },
+        );
+        item.addEventListener("focus", () => inspectRecipe(item), { signal });
+        item.addEventListener("blur", closeRecipe, { signal });
+        item.addEventListener(
+          "keydown",
+          (event) => {
+            if (event.key === "Escape" && !recipeInfo.hidden) {
+              event.preventDefault();
+              event.stopPropagation();
+              closeRecipe();
+            }
+          },
+          { signal },
+        );
         item.className = "hud-recipe";
         if (entry.icon) {
           const image = document.createElement("img");
@@ -1059,7 +1159,29 @@ export function createMatchHud(
           image.height = 40;
           item.prepend(image);
         }
-        item.append(document.createElement("small"));
+        const price = document.createElement("small");
+        price.setAttribute("aria-hidden", "true");
+        const recipe = entry.gameplay.construction;
+        if (recipe) {
+          const resourceIcons: Record<string, HudIcon> = {
+            credits: "credits",
+            materials: "materials",
+            "industrial-capacity": "surge",
+            "salvage-points": "salvage",
+          };
+          for (const [resource, amount] of Object.entries(recipe.cost)) {
+            const token = document.createElement("span");
+            token.append(hudIcon(resourceIcons[resource] ?? "materials"), String(amount));
+            price.append(token);
+          }
+          const time = document.createElement("span");
+          time.append(
+            hudIcon("clock"),
+            text("ui.hud.seconds", { seconds: recipe.buildTicks / 20 }),
+          );
+          price.append(time);
+        } else price.textContent = "—";
+        item.append(price, explanation);
       }
       if (!choices.length) menu.textContent = text("ui.hud.no-build-selection");
     }
@@ -1080,11 +1202,17 @@ export function createMatchHud(
               : !funds
                 ? text(producing ? "ui.hud.wait-funds" : "ui.hud.no-funds")
                 : "";
-      item.title = `${entry.description}\n${recipeText(entry.gameplay)}\n${reason}`;
-      item.disabled = disabled || !!lock || full || (!producing && !funds);
-      const cost = item.querySelector("small");
       const recipe = recipeText(entry.gameplay);
-      if (cost) setText(cost, `${recipe}${reason && reason !== recipe ? ` · ${reason}` : ""}`);
+      item.title = `${entry.description}\n${recipe}${reason && reason !== recipe ? `\n${reason}` : ""}`;
+      // Keep unavailable recipes focusable so keyboard/touch players can inspect the reason.
+      item.setAttribute(
+        "aria-disabled",
+        String(disabled || !!lock || full || (!producing && !funds)),
+      );
+      item.dataset.recipeInfo = `${entry.name}\n${item.title}`;
+      const explanation = item.querySelector("[data-recipe-description]");
+      if (explanation) setText(explanation, item.dataset.recipeInfo);
+      if (inspectedRecipe === item) setText(recipeInfo, item.dataset.recipeInfo);
     }
     const nextAdviceKey = JSON.stringify([producing, definition?.id, structure?.production?.rally]);
     if (nextAdviceKey !== adviceKey) {

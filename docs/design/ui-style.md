@@ -19,6 +19,15 @@ How the interface looks so every screen, icon and marker is consistent. Screen l
 
 Zones never overlap. Dialogs and the in-game menu sit above the HUD with a dimmed backdrop. Tooltips sit above everything.
 
+The current [battlefield-first HUD](../project/decisions/2026-11-03-battlefield-hud.md)
+uses a slim resource strip and framed graphite docks, with warm metal command
+pictograms and original model thumbnails. The selected actors' actual health is
+shown with a portrait and aggregate health bar. Prices and durations stay visible
+on recipe tiles; hover, focus or tapping an unavailable recipe shows its complete
+description and refusal reason. Disabled recipes use `aria-disabled` and block
+activation while retaining focus for inspection. Pings expand from the minimap
+toolbar. Narrow views show one dock at a time through the existing panel tabs.
+
 ## Icons
 
 Every unit, structure, ability, upgrade and command has an icon, and they follow one style:

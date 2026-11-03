@@ -28,6 +28,8 @@ One file per non-obvious decision. Append-only: once written, an entry isn't edi
 
 ## Index
 
+- [2026-11-03 — A battlefield-first match HUD](./2026-11-03-battlefield-hud.md) — Compact RTS command stations with original portraits, numeric recipe costs and accessible explanations.
+
 - [2026-11-03 — Coherent delivery batches and consolidated history](./2026-11-03-coherent-delivery-batches.md) — Task-sized PRs, small related batches and one squash commit per reviewed PR; original main history retained in a local backup.
 
 - [2026-11-02 — First defeat resolution](./2026-11-02-provisional-defeat-resolution.md) — Existing elimination predicates, unanimous scoped surrender and bounded terminal replay.

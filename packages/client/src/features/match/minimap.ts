@@ -3,6 +3,7 @@ import { PALETTES } from "@open-neo-rts/render";
 import type { GameplayDefinition, SeatSnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
 import { createMatchNotices, type NoticeKind, PING_KINDS } from "./alerts";
+import { decorateAction, hudIcon } from "./icons";
 import {
   type MapPoint,
   minimapMarkers,
@@ -45,6 +46,8 @@ export function createMinimap(
   home.type = alert.type = "button";
   home.textContent = text("ui.minimap.home");
   alert.textContent = text("ui.minimap.alert");
+  decorateAction(home, "rally", "Home");
+  decorateAction(alert, "attack", "Space");
   alert.disabled = true;
   alert.title = text("ui.minimap.no-alerts");
   controls.append(home, alert);
@@ -65,7 +68,14 @@ export function createMinimap(
   const status = document.createElement("p");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  panel.append(controls, ping, pingCamera, status);
+  const pingOptions = document.createElement("details");
+  pingOptions.className = "minimap-pings";
+  const pingToggle = document.createElement("summary");
+  pingToggle.textContent = text("ui.minimap.pings");
+  pingToggle.prepend(hudIcon("rally"));
+  pingOptions.append(pingToggle, ping, pingCamera);
+  controls.append(pingOptions);
+  panel.append(controls, status);
   root.querySelector(".hud-panels")?.prepend(panel);
   root.querySelector(".match-hud")?.append(feed);
   const canvasContext = canvas.getContext("2d");
@@ -115,6 +125,7 @@ export function createMinimap(
     alert.title = entries.length ? text("ui.minimap.alert") : text("ui.minimap.no-alerts");
     const ids = entries.map((entry) => entry.id).join(",");
     if (ids === feedIds) return;
+    delete status.dataset.feedback;
     feedIds = ids;
     feed.replaceChildren(
       ...entries.map((entry) => {
@@ -144,6 +155,7 @@ export function createMinimap(
       refreshFeed();
       status.textContent = text("ui.minimap.local-ping");
     } else status.textContent = text("ui.minimap.ping-unexplored");
+    status.dataset.feedback = "";
   }
   function cancelDrag() {
     if (drag !== undefined && canvas.hasPointerCapture(drag)) canvas.releasePointerCapture(drag);
@@ -151,7 +163,34 @@ export function createMinimap(
   }
   home.addEventListener("click", goHome, { signal });
   alert.addEventListener("click", nextAlert, { signal });
-  pingCamera.addEventListener("click", () => placePing(options.camera()), { signal });
+  pingCamera.addEventListener(
+    "click",
+    () => {
+      placePing(options.camera());
+      pingOptions.open = false;
+      canvas.focus();
+    },
+    { signal },
+  );
+  pingOptions.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Escape" && pingOptions.open) {
+        event.preventDefault();
+        event.stopPropagation();
+        pingOptions.open = false;
+        pingToggle.focus();
+      }
+    },
+    { signal },
+  );
+  window.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (!pingOptions.contains(event.target as Node)) pingOptions.open = false;
+    },
+    { signal, capture: true },
+  );
   canvas.addEventListener(
     "pointerdown",
     (event) => {

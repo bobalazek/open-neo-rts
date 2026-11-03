@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T08:05:04Z",
+  "title": "Design System: Open Neo RTS match HUD",
+  "extensions": {
+    "colorMeta": {
+      "panel": {
+        "role": "neutral",
+        "displayName": "Graphite panel",
+        "tonalRamp": [
+          "oklch(15% 0.016 230)",
+          "oklch(26% 0.016 230)",
+          "oklch(38% 0.016 230)",
+          "oklch(49% 0.016 230)",
+          "oklch(61% 0.016 230)",
+          "oklch(72% 0.016 230)",
+          "oklch(84% 0.016 230)",
+          "oklch(95% 0.016 230)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Deep steel",
+        "tonalRamp": [
+          "oklch(15% 0.014 230)",
+          "oklch(26% 0.014 230)",
+          "oklch(38% 0.014 230)",
+          "oklch(49% 0.014 230)",
+          "oklch(61% 0.014 230)",
+          "oklch(72% 0.014 230)",
+          "oklch(84% 0.014 230)",
+          "oklch(95% 0.014 230)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ivory ink",
+        "tonalRamp": [
+          "oklch(15% 0.01 120)",
+          "oklch(26% 0.01 120)",
+          "oklch(38% 0.01 120)",
+          "oklch(49% 0.01 120)",
+          "oklch(61% 0.01 120)",
+          "oklch(72% 0.01 120)",
+          "oklch(84% 0.01 120)",
+          "oklch(95% 0.01 120)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Cool grey",
+        "tonalRamp": [
+          "oklch(15% 0.014 190)",
+          "oklch(26% 0.014 190)",
+          "oklch(38% 0.014 190)",
+          "oklch(49% 0.014 190)",
+          "oklch(61% 0.014 190)",
+          "oklch(72% 0.014 190)",
+          "oklch(84% 0.014 190)",
+          "oklch(95% 0.014 190)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Warm metal",
+        "tonalRamp": [
+          "oklch(15% 0.08 88)",
+          "oklch(26% 0.08 88)",
+          "oklch(38% 0.08 88)",
+          "oklch(49% 0.08 88)",
+          "oklch(61% 0.08 88)",
+          "oklch(72% 0.08 88)",
+          "oklch(84% 0.08 88)",
+          "oklch(95% 0.08 88)"
+        ]
+      },
+      "hud-line": {
+        "role": "neutral",
+        "displayName": "Steel seam",
+        "tonalRamp": [
+          "oklch(15% 0.015 190)",
+          "oklch(26% 0.015 190)",
+          "oklch(38% 0.015 190)",
+          "oklch(49% 0.015 190)",
+          "oklch(61% 0.015 190)",
+          "oklch(72% 0.015 190)",
+          "oklch(84% 0.015 190)",
+          "oklch(95% 0.015 190)"
+        ]
+      }
+    },
+    "shadows": [
+      {
+        "name": "resource-strip",
+        "value": "0 3px 12px #0005",
+        "purpose": "Separate the top strip from terrain."
+      },
+      {
+        "name": "dock",
+        "value": "0 3px 14px #0007, inset 0 1px #d2cba00a",
+        "purpose": "Frame command stations above terrain."
+      },
+      {
+        "name": "recipe-detail",
+        "value": "0 5px 18px #0009",
+        "purpose": "Lift readable recipe explanations above the dock."
+      }
+    ],
+    "breakpoints": [
+      { "name": "compact-desktop", "value": "1100px" },
+      { "name": "panel-switching", "value": "850px" },
+      { "name": "six-column-commands", "value": "480px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Command button",
+      "kind": "button",
+      "refersTo": "command-button",
+      "description": "Original line pictogram with a corner hotkey; inherited focus stays visible.",
+      "html": "<button class=\"ds-command\" aria-label=\"Q · Move\"><span>Q</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
+      "css": ".ds-command{position:relative;display:grid;place-items:center;width:3rem;min-height:2.4rem;padding:0;border:1px solid #536164;border-radius:2px;background:linear-gradient(#293438,#1a2428);color:#e5d7b1;cursor:pointer}.ds-command svg{width:1.4rem;height:1.4rem}.ds-command span{position:absolute;top:.15rem;left:.2rem;font: .55rem/1 'Segoe UI',Tahoma,sans-serif;color:#d9e0da}.ds-command:hover:not(:disabled),.ds-command[aria-pressed=true]{border-color:#ddc382;background:#394147;color:#fff0ba}.ds-command:active:not(:disabled){background:#476071}.ds-command:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}.ds-command:disabled{color:#9ba5a5;opacity:.38;cursor:default}"
+    },
+    {
+      "name": "Dock panel",
+      "kind": "card",
+      "refersTo": "dock-panel",
+      "description": "Thin steel frame and subdued title around match information.",
+      "html": "<section class=\"ds-dock\"><h2>Selection</h2><strong>Field Technician × 1</strong><p>Field Technician: 100/100 HP · Armor: infantry</p></section>",
+      "css": ".ds-dock{padding:.55rem;border:1px solid #475354;border-top-color:#92917a;border-radius:2px;background:#182126f5;box-shadow:0 3px 14px #0007,inset 0 1px #d2cba00a;color:#eff1e9;font:.75rem/1.35 'Segoe UI',Tahoma,sans-serif}.ds-dock h2{margin:0 0 .4rem;color:#d6cba9;font-size:.7rem;font-weight:600;line-height:1.25}.ds-dock strong{font-size:.8rem}.ds-dock p{color:#b5c0bf}"
+    },
+    {
+      "name": "Narrow panel navigation",
+      "kind": "nav",
+      "description": "Equal-width buttons select one dock on narrow screens.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Command panels\"><button aria-pressed=\"false\">Selection</button><button aria-pressed=\"true\">Commands</button><button aria-pressed=\"false\">Structures</button><button aria-pressed=\"false\">Minimap</button></nav>",
+      "css": ".ds-tabs{display:flex;gap:.25rem}.ds-tabs button{flex:1;min-height:1.8rem;padding:.2rem;border:1px solid #81909d;border-radius:3px;background:#182126f5;color:#eff1e9;font:.7rem/1.5 'Segoe UI',Tahoma,sans-serif;cursor:pointer}.ds-tabs button[aria-pressed=true]{color:#ddc382;border-color:#ddc382}.ds-tabs button:hover{background:#354754}.ds-tabs button:active{background:#476071}.ds-tabs button:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}"
+    },
+    {
+      "name": "Control group field",
+      "kind": "input",
+      "description": "Compact native select accompanying group actions.",
+      "html": "<label class=\"ds-group\">Group <select aria-label=\"Group\"><option>1</option><option>2</option><option>3</option></select></label>",
+      "css": ".ds-group{display:flex;align-items:center;gap:.25rem;color:#eff1e9;font:.65rem/1.35 'Segoe UI',Tahoma,sans-serif}.ds-group select{min-height:1.6rem;padding:.1rem .35rem;border:1px solid #465256;border-radius:2px;background:#182126ed;color:#eff1e9;font:inherit;color-scheme:dark}.ds-group select:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}"
+    },
+    {
+      "name": "Recipe explanation",
+      "kind": "custom",
+      "refersTo": "recipe-detail",
+      "description": "Readable details above the dock; unavailable cards remain inspectable.",
+      "html": "<div class=\"ds-detail\" role=\"tooltip\">Command Center<br>Primary base structure with its own defensive guns.<br>Builds structures.<br>Unavailable: no authored paid recipe</div>",
+      "css": ".ds-detail{width:min(20rem,calc(100vw - 1rem));padding:.75rem;border:1px solid #a29a7e;background:#172127;color:#eff1e9;box-shadow:0 5px 18px #0009;font:.8rem/1.5 'Segoe UI',Tahoma,sans-serif;white-space:pre-line}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Graphite Command Stations",
+    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.",
+    "keyCharacteristics": [
+      "Battlefield first, with a slim resource strip and bottom command docks.",
+      "Graphite surfaces, restrained brass highlights and tabular counters.",
+      "Original brick models and original line pictograms.",
+      "Narrow screens expose one dock through explicit panel tabs."
+    ],
+    "rules": [
+      {
+        "name": "The Battlefield Rule",
+        "body": "Keep persistent controls at the viewport edges and leave the central canvas available for play.",
+        "section": "layout"
+      },
+      {
+        "name": "The Complete Recipe Rule",
+        "body": "Keep every displayed resource amount and build time visible, and make unavailable reasons readable on desktop and mobile.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do preserve the owner's original model assets and authored names.",
+      "Do use real match state for portraits, counters, availability and feedback.",
+      "Do preserve full recipe values and readable unavailable explanations.",
+      "Do retain accessible action names, visible focus and narrow panel switching."
+    ],
+    "donts": [
+      "Don't promote legacy Home, setup, results or debug styling into this HUD.",
+      "Don't substitute borrowed artwork or text glyphs for original model and SVG assets.",
+      "Don't add ornamental animation that competes with battlefield activity."
+    ]
+  }
+}
