@@ -120,6 +120,7 @@ export interface SeatSnapshot {
   fog?: VisionGrid[];
   ghosts?: PresentedGhost[];
   combatEvents?: PresentedCombatEvent[];
+  productionExits?: string[];
   /** Static node origins discovered through permitted canonical exploration; no stock/claims. */
   resourceNodes?: { kind: "materials" | "oil"; x: number; y: number }[];
 }
@@ -449,6 +450,10 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         ...(setup.normal && { constructionRequests }),
         ...(setup.normal &&
           mode === "controlled" && {
+            productionExits: [...(kernel.productionExits ?? [])]
+              .filter((id) => published.has(id))
+              .sort((a, b) => a - b)
+              .map((id) => handles.get(id)!),
             combatEvents: projectCombatEvents(
               kernel,
               seat,

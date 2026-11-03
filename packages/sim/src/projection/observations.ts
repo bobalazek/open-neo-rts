@@ -5,7 +5,7 @@ import { createProjection, type SeatSnapshot } from ".";
 /** Each bot receives its own copy; changing it cannot change the next observation or simulation. */
 function copy(snapshot: SeatSnapshot): SeatSnapshot {
   // Combat events and their opaque allocator are cosmetic, not restored gameplay inputs.
-  const { combatEvents: _combatEvents, ...gameplay } = snapshot;
+  const { combatEvents: _combatEvents, productionExits: _productionExits, ...gameplay } = snapshot;
   return {
     ...gameplay,
     ...(snapshot.statistics && {

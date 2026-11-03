@@ -6,6 +6,7 @@ import { parseMatchRecord, type SeatSnapshot, verifyMatchRecord } from "../../..
 import type { start as startConstructionProof } from "./construction-proof";
 import type { start } from "./deploy-fixture";
 import type { start as startDeploymentProof } from "./deployment-proof";
+import type { start as startDoorProof } from "./door-proof";
 
 declare global {
   interface Window {
@@ -13,6 +14,8 @@ declare global {
     deploymentProof: Awaited<ReturnType<typeof startDeploymentProof>>;
     constructionProof: Awaited<ReturnType<typeof startConstructionProof>>;
     constructionSnapshots: SeatSnapshot[];
+    doorProof: Awaited<ReturnType<typeof startDoorProof>>;
+    doorSnapshots: SeatSnapshot[];
   }
 }
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -214,25 +217,52 @@ test("paid original infantry earn industrial capacity and activate the authored 
     { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
   ];
   const errors: string[] = [];
+  const renderFixture = execFileSync(
+    "bun",
+    ["build", "apps/web/e2e/door-proof.ts", "--target=browser"],
+    { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
+  );
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   await page.route("http://industrial-surge.test/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path === "/barracks-complex.glb")
+      return route.fulfill({
+        contentType: "model/gltf-binary",
+        body: readFileSync(
+          `${root}/content/core/factions/eastern-collective/structures/barracks-complex/barracks-complex.glb`,
+        ),
+      });
     return route.fulfill({
       contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
       body:
         path === "/fixture.js"
           ? fixture
-          : path === "/sim-worker.js"
-            ? worker
-            : '<!doctype html><title>Industrial production</title><canvas tabindex="0"></canvas>',
+          : path === "/renderer.js"
+            ? renderFixture
+            : path === "/sim-worker.js"
+              ? worker
+              : '<!doctype html><title>Industrial production</title><canvas tabindex="0"></canvas>',
     });
   });
   await page.goto("http://industrial-surge.test/");
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.evaluate(async (setup) => {
     const moduleUrl = "/fixture.js";
     const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
     window.deployFixture = await start(setup);
     window.deployFixture.select(["core.structure:eastern-collective/command-center"]);
+    window.doorSnapshots = [];
+    const canvas = document.querySelector("canvas")!;
+    canvas.width = 960;
+    canvas.height = 640;
+    canvas.style.width = "960px";
+    canvas.style.height = "640px";
+    const rendererUrl = "/renderer.js";
+    const { start: render } = (await import(rendererUrl)) as typeof import("./door-proof");
+    window.doorProof = await render(canvas);
   }, candidate);
   try {
     const surge = page.locator("[data-surge]");
@@ -276,12 +306,18 @@ test("paid original infantry earn industrial capacity and activate the authored 
           .state()!
           .snapshot.entities.filter((row) => row.force === 0 && row.definition === infantry);
       const receipts: unknown[] = [];
+      window.doorSnapshots.push(structuredClone(f.state()!.snapshot));
       for (let tick = 0; tick < 1800 && units().length < 20; tick++) {
         if (receipts.length < 20 && (producer()?.production?.queue.length ?? 5) < 5)
           receipts.push(
             await f.command("production.enqueue", { entity: handle, definition: infantry }),
           );
         else await f.step(1);
+        if (
+          window.doorSnapshots.length === 1 &&
+          f.state()!.snapshot.productionExits?.includes(handle)
+        )
+          window.doorSnapshots.push(structuredClone(f.state()!.snapshot));
       }
       f.select(["core.structure:eastern-collective/command-center"]);
       return {
@@ -292,6 +328,27 @@ test("paid original infantry earn industrial capacity and activate the authored 
         bank: f.state()!.snapshot.banks?.find((row) => row.force === 0)?.resources,
         handle,
       };
+    });
+    const door = await page.evaluate(async () => {
+      const proof = window.doorProof;
+      const before = await proof.accept(window.doorSnapshots[0]!, 0);
+      const packet = window.doorSnapshots[1]!;
+      if (!packet) throw new Error("No actual producer exit observed");
+      await proof.accept(packet, 50);
+      return { before, exits: packet.productionExits };
+    });
+    await page.evaluate(() => window.doorProof.render(500));
+    await page.locator("canvas").screenshot({ path: info.outputPath("door-opening.png") });
+    const open = await page.evaluate(() => window.doorProof.render(1400));
+    await page.locator("canvas").screenshot({ path: info.outputPath("door-open.png") });
+    const closed = await page.evaluate(() => window.doorProof.render(3000));
+    await page.locator("canvas").screenshot({ path: info.outputPath("door-closed.png") });
+    expect(door.exits).toHaveLength(1);
+    expect(open[0]!.left).toBeGreaterThan(door.before[0]!.left + 1);
+    expect(closed[0]!.left).toBeCloseTo(door.before[0]!.left);
+    await info.attach("door-renderer-backend", {
+      body: await page.evaluate(() => window.doorProof.backend),
+      contentType: "text/plain",
     });
     expect(earned.built).toBe("accepted");
     expect(earned.rally).toBe("accepted");
@@ -358,6 +415,7 @@ test("paid original infantry earn industrial capacity and activate the authored 
     expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
     expect(errors).toEqual([]);
   } finally {
+    await page.evaluate(() => window.doorProof?.dispose());
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });

@@ -97,13 +97,18 @@ export function createModelPlayback(
   );
   let active: AnimationGroup | undefined;
   const deployment = groups.find((group) => group.name === "deploy");
-  if (deployment) {
-    // Brick exports hold every unused channel at rest; reserve only moving deployment channels.
-    const channels = deployment.targetedAnimations.filter(({ animation }) => {
-      const keys = animation.getKeys();
-      const first = JSON.stringify(keys[0]?.value);
-      return keys.some((key) => JSON.stringify(key.value) !== first);
-    });
+  const doors = groups.filter((group) => group.name === "open" || group.name === "close");
+  const overlays = new Set([...(deployment ? [deployment] : []), ...doors]);
+  for (const family of [deployment ? [deployment] : [], doors]) {
+    if (!family.length) continue;
+    // Brick exports hold unused channels at rest; reserve only the moving overlay channels.
+    const channels = family.flatMap((group) =>
+      group.targetedAnimations.filter(({ animation }) => {
+        const keys = animation.getKeys();
+        const first = JSON.stringify(keys[0]?.value);
+        return keys.some((key) => JSON.stringify(key.value) !== first);
+      }),
+    );
     for (const group of groups)
       for (const channel of [...group.targetedAnimations]) {
         const stance = channels.some(
@@ -111,7 +116,7 @@ export function createModelPlayback(
             target === channel.target &&
             animation.targetProperty === channel.animation.targetProperty,
         );
-        if (group === deployment ? !stance : stance)
+        if (family.includes(group) ? !stance : stance)
           group.removeTargetedAnimation(channel.animation);
       }
   }
@@ -143,10 +148,17 @@ export function createModelPlayback(
       if (!deployment.isStarted) deployment.start(false, 0);
       sample(deployment, elapsedMs);
     },
+    door(name: "open" | "close", elapsedMs: number) {
+      const group = doors.find((candidate) => candidate.name === name);
+      if (!group?.targetedAnimations.length) return;
+      for (const other of doors) if (other !== group && other.isStarted) other.stop();
+      if (!group.isStarted) group.start(false, 0);
+      sample(group, elapsedMs);
+    },
     clips: groups.map((group) => group.name),
     setRate(rate: number) {
       for (const group of groups)
-        group.speedRatio = group === deployment && active !== group ? 0 : rate;
+        group.speedRatio = overlays.has(group) && active !== group ? 0 : rate;
     },
     play(name: string): void {
       const group = groups.find((g) => g.name === name);
