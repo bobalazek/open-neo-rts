@@ -12,6 +12,7 @@ import {
 import type { TerrainGrid } from "@open-neo-rts/content";
 import type { PresentedCombatEvent, SeatSnapshot } from "@open-neo-rts/sim";
 import { CELL_SIZE, terrainHeight } from "../terrain";
+import { createGroundFirePresentation } from "./ground-fire";
 
 export const MAX_COMBAT_EFFECTS = 512;
 interface Effect {
@@ -41,6 +42,7 @@ export function eventVisible(snapshot: SeatSnapshot, x: number, y: number): bool
 }
 
 export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
+  const groundFire = createGroundFirePresentation(scene, terrain);
   const effects = new Set<Effect>();
   const rounds = new Map<string, Effect>();
   let template: Mesh | undefined;
@@ -187,6 +189,7 @@ export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
     if (disposed) return;
     const delta = rate ? Math.max(0, nowMs - frameAt) : 0;
     frameAt = nowMs;
+    groundFire.render(delta);
     for (const effect of effects) {
       effect.elapsed += delta;
       if (effect.elapsed >= effect.duration) {
@@ -217,6 +220,7 @@ export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
       render(nowMs);
       interval = tick < 0 ? 50 : (next.tick - tick) * 50;
       tick = next.tick;
+      groundFire.accept(next);
       receivedAt = nowMs;
       // Retain only copied public fog cells, never a mutable caller-owned snapshot.
       snapshot = {
@@ -274,6 +278,7 @@ export function createCombatEffects(scene: Scene, terrain: TerrainGrid) {
     },
     dispose() {
       disposed = true;
+      groundFire.dispose();
       for (const effect of effects) remove(effect);
       template?.dispose();
       material?.dispose();

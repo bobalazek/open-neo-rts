@@ -729,6 +729,35 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
   }
+  if (snapshot.groundFire !== undefined) {
+    const grid = snapshot.groundFire;
+    if (
+      snapshot.mode !== "controlled" ||
+      !isRecord(grid) ||
+      !exact(grid, ["width", "height", "cells"]) ||
+      !bounded(grid.width, 512) ||
+      !grid.width ||
+      !bounded(grid.height, 512) ||
+      !grid.height ||
+      !(grid.cells instanceof Uint8Array) ||
+      Object.getPrototypeOf(grid.cells) !== Uint8Array.prototype ||
+      grid.cells.length !== Number(grid.width) * Number(grid.height) ||
+      Reflect.ownKeys(grid.cells).length !== grid.cells.length ||
+      !grid.cells.every((cell) => cell <= 1) ||
+      !Array.isArray(snapshot.fog) ||
+      snapshot.fog.some(
+        (fog) => !isRecord(fog) || fog.width !== grid.width || fog.height !== grid.height,
+      ) ||
+      !grid.cells.every(
+        (cell, index) =>
+          !cell ||
+          (snapshot.fog as import("@open-neo-rts/sim").VisionGrid[]).some(
+            (fog) => fog.cells[index] === 2,
+          ),
+      )
+    )
+      return false;
+  }
   if (snapshot.productionExits !== undefined) {
     const exits = snapshot.productionExits;
     if (

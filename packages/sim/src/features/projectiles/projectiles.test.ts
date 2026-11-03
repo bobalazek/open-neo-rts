@@ -14,6 +14,7 @@ import { AttackOrder, combatFeature, ShotIntent, WeaponState } from "../combat";
 import { Burning } from "../combat/burn";
 import { applyWarhead, warheadDamage } from "../combat/damage";
 import { Disabled } from "../combat/disable";
+import { GroundFire } from "../combat/ground-fire";
 import { Slowed } from "../combat/slow";
 import { BuilderConstruction, ConstructionSite } from "../construction";
 import {
@@ -609,6 +610,92 @@ const flame: GameplayWeapon = {
   ],
 };
 
+const groundFlame: GameplayWeapon = {
+  ...flame,
+  warheads: [
+    { type: "burn", amountPerSecond: 5, durationTicks: 60, radiusSubcells: 1024, tags: ["fire"] },
+  ],
+};
+
+test("burning ground ignites later arrivals without multiplying DPS, retains fractional work and survives source death", () => {
+  const f = fixture({ weapon: groundFlame, friendlyFire: false });
+  f.fire();
+  expect(f.kernel.world.query(GroundFire)).toHaveLength(1);
+  f.kernel.world.set(f.target, Transform, "x", 30 * 1024 + 512);
+  const entrant = f.spawn(3, 1, 24, 20),
+    ally = f.spawn(3, 0, 24, 20);
+  f.kernel.world.destroy(f.actor);
+  f.advance(39);
+  expect(f.hp()).toBe(990);
+  expect(f.hp(entrant)).toBe(991);
+  expect(f.hp(ally)).toBe(1000);
+  f.advance(20);
+  expect(f.hp()).toBe(985);
+  expect(f.hp(entrant)).toBe(986);
+  const late = f.spawn(3, 1, 24, 20);
+  f.advance(5);
+  expect(f.hp(late)).toBe(1000);
+  expect(f.kernel.world.query(GroundFire)).toEqual([]);
+  expect(f.kernel.burning?.(entrant)).toBe(false);
+});
+
+test("overlapping ground patches share strongest burn, refresh one source, and preserve immunity", () => {
+  const f = fixture({ weapon: { ...groundFlame, reloadTicks: 1 } });
+  f.fire();
+  f.spawn(2, 0, 21, 20);
+  f.advance(39);
+  expect(f.kernel.world.query(GroundFire)).toHaveLength(2);
+  expect(f.hp()).toBe(990);
+  for (const id of f.kernel.world.query(GroundFire))
+    expect(f.kernel.world.get(id, GroundFire, "until")).toBe(99);
+  const immune = fixture({ weapon: groundFlame, resistance: { fire: 0 } });
+  immune.fire();
+  immune.advance(20);
+  expect(immune.hp()).toBe(1000);
+  expect(immune.kernel.burning?.(immune.target)).toBe(false);
+});
+
+test("persistent fire projection discloses only visible cells, with no source, rate or timer", () => {
+  const f = fixture({ weapon: groundFlame, fog: "standard" });
+  const scout = f.spawn(1, 0, 23, 20);
+  f.advance();
+  expect(f.kernel.world.query(GroundFire)).toHaveLength(1);
+  const view = createProjection(f.setup, 1, "controlled");
+  const grid = view.snapshot(f.kernel).groundFire!;
+  expect(grid.cells.some(Boolean)).toBe(true);
+  expect(Object.keys(grid)).toEqual(["width", "height", "cells"]);
+  for (const [index, cell] of grid.cells.entries())
+    if (cell)
+      expect(
+        f.kernel.vision?.canSeeCell(0, index % grid.width, Math.floor(index / grid.width)),
+      ).toBe(true);
+  grid.cells.fill(1);
+  f.kernel.world.destroy(scout);
+  f.advance();
+  const hidden = view.snapshot(f.kernel).groundFire!;
+  expect(hidden.cells.some(Boolean)).toBe(false);
+  expect(
+    createProjection(f.setup, 3, "controlled").snapshot(f.kernel).groundFire?.cells.some(Boolean),
+  ).toBe(false);
+});
+
+test("ground fire projection includes exact circle-to-cell tangency in all four directions", () => {
+  const f = fixture({ weapon: groundFlame });
+  f.fire();
+  const field = f.kernel.world.query(GroundFire)[0]!;
+  f.kernel.world.set(field, GroundFire, "x", 24 * 1024);
+  f.kernel.world.set(field, GroundFire, "y", 20 * 1024);
+  const grid = createProjection(f.setup, 1, "controlled").snapshot(f.kernel).groundFire!;
+  for (const [x, y] of [
+    [22, 19],
+    [25, 19],
+    [23, 18],
+    [23, 21],
+  ])
+    expect(grid.cells[y! * grid.width + x!]).toBe(1);
+  expect(grid.cells[18 * grid.width + 22]).toBe(0);
+});
+
 test("beam impacts apply once and a three-second burn delivers exact fractional DPS through its last tick", () => {
   const f = fixture({ weapon: flame });
   f.fire();
@@ -815,6 +902,7 @@ for (const [weapon, status] of [
   [slow, "slowed"],
   [sensor, "revealed"],
   [spawner, "spawned"],
+  [groundFlame, "ground"],
 ] as const)
   test(`timed ${status} combat from starting kits replays canonical state and the final hash`, () => {
     const base = fixture({
@@ -876,9 +964,14 @@ for (const [weapon, status] of [
               ? !!kernel.slowPerMille?.(target)
               : status === "revealed"
                 ? kernel.world.query(AreaReveal).length > 0
-                : payloads(kernel).length > 0;
+                : status === "spawned"
+                  ? payloads(kernel).length > 0
+                  : kernel.world.query(GroundFire).length > 0;
       if (
-        (status === "slowed" || status === "revealed" || status === "spawned") &&
+        (status === "slowed" ||
+          status === "revealed" ||
+          status === "spawned" ||
+          status === "ground") &&
         kernel.tick === 100
       ) {
         if (status === "slowed") {
@@ -887,9 +980,12 @@ for (const [weapon, status] of [
         } else if (status === "revealed") {
           expect(kernel.world.query(AreaReveal)).not.toEqual([]);
           expect(checkpointHash(kernel)).toBe("eecbfe6741791c31");
-        } else {
+        } else if (status === "spawned") {
           expect(payloads(kernel)).not.toEqual([]);
           expect(checkpointHash(kernel)).toBe("b89a555cae666f71");
+        } else {
+          expect(kernel.world.query(GroundFire)).not.toEqual([]);
+          expect(checkpointHash(kernel)).toBe("a9bc9cd030bd293a");
         }
         const restored = restoreMatchSnapshot(createMatchSnapshot(kernel, setup), setup);
         expect(checkpointHash(restored)).toBe(checkpointHash(kernel));

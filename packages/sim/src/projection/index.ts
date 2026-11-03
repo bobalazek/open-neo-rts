@@ -125,6 +125,7 @@ export interface PresentedConstructionRequest {
   reason?: (typeof CONSTRUCTION_REFUSALS)[number];
 }
 export interface SeatSnapshot {
+  groundFire?: import("../features/combat/ground-fire").GroundFireGrid;
   remains?: PresentedRemains[];
   statistics?: ForceStatisticsSnapshot[];
   victory?: VictorySnapshot;
@@ -586,6 +587,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           }),
         ...(mode === "controlled" &&
           kernel.visibility && {
+            ...(kernel.groundFire && { groundFire: kernel.groundFire.project(seat) }),
             fog,
             ghosts,
             resourceNodes: [

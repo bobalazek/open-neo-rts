@@ -10,6 +10,44 @@ const snapshot = (tick: number, combatEvents: SeatSnapshot["combatEvents"] = [])
   entities: [],
   combatEvents,
 });
+
+test("ground flames instance visible cells, freeze while paused, revoke fog and dispose their resources", () => {
+  const engine = new NullEngine(),
+    scene = new Scene(engine);
+  const layer = createCombatEffects(scene, parseTerrain(8, 8, {}));
+  const fire = new Uint8Array(64);
+  fire[9] = fire[11] = 1;
+  const visible = new Uint8Array(64);
+  visible[9] = 2;
+  const frame = (tick: number, fog = visible): SeatSnapshot => ({
+    ...snapshot(tick),
+    groundFire: { width: 8, height: 8, cells: fire },
+    fog: [{ group: 0, width: 8, height: 8, cells: fog }],
+  });
+  try {
+    layer.accept(frame(0), 0);
+    const mesh = scene.getMeshByName("burning ground") as import("@babylonjs/core").Mesh;
+    expect(mesh.thinInstanceCount).toBe(1);
+    expect(mesh.isPickable).toBe(false);
+    const before = Array.from(mesh.thinInstanceGetWorldMatrices()[0]!.asArray());
+    layer.render(80);
+    expect(Array.from(mesh.thinInstanceGetWorldMatrices()[0]!.asArray())).not.toEqual(before);
+    layer.setPlaybackRate(0);
+    const paused = Array.from(mesh.thinInstanceGetWorldMatrices()[0]!.asArray());
+    fire.fill(0); // copied presentation cells remain stable while caller data changes
+    layer.render(1000);
+    expect(Array.from(mesh.thinInstanceGetWorldMatrices()[0]!.asArray())).toEqual(paused);
+    layer.accept(frame(1, new Uint8Array(64)), 1000);
+    expect(mesh.isVisible).toBe(false);
+    expect(mesh.thinInstanceCount).toBe(0);
+  } finally {
+    layer.dispose();
+    expect(scene.meshes).toHaveLength(0);
+    expect(scene.materials).toHaveLength(0);
+    scene.dispose();
+    engine.dispose();
+  }
+});
 test("projected rounds own separate pN handles, deduplicate ticks, stop at impacts and never extrapolate an absent round", () => {
   const engine = new NullEngine(),
     scene = new Scene(engine);

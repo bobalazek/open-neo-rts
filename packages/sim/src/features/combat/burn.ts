@@ -5,6 +5,7 @@ import { type Definition, Health, OwnerForce, Template, Transform } from "../ent
 import type { GameplayWarhead } from "../entities/weapons";
 import { emitCombatEvent } from "../events/combat";
 import { warheadDamage } from "./damage";
+import { GroundFireFields } from "./ground-fire";
 
 export const Burning = defineComponent("Burning", {
   source: "u32",
@@ -25,6 +26,16 @@ export function initializeBurn(kernel: Kernel, definitions: readonly Definition[
   )
     return;
   const { world } = kernel;
+  if (
+    definitions.some((definition) =>
+      definition.weapons?.some((weapon) =>
+        weapon.warheads.some(
+          (warhead) => warhead.type === "burn" && (warhead.radiusSubcells ?? 0) > 0,
+        ),
+      ),
+    )
+  )
+    kernel.groundFire = new GroundFireFields(kernel, definitions);
   kernel.burning = (entity) =>
     world.isAlive(entity) &&
     world.has(entity, Burning) &&

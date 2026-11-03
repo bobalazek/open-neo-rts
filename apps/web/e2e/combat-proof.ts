@@ -38,8 +38,23 @@ const proof = {
   resume() {
     presentation.setPlaybackRate(1);
   },
+  reset() {
+    presentation.reset();
+  },
   state() {
+    const fire = renderer.scene.getMeshByName("burning ground") as {
+      isVisible: boolean;
+      thinInstanceCount: number;
+      thinInstanceGetWorldMatrices(): { asArray(): ArrayLike<number> }[];
+    } | null;
     return {
+      groundFire: {
+        visible: fire?.isVisible ?? false,
+        count: fire?.thinInstanceCount ?? 0,
+        matrix: fire?.thinInstanceCount
+          ? Array.from(fire.thinInstanceGetWorldMatrices()[0]!.asArray())
+          : [],
+      },
       effects: renderer.scene.meshes
         .filter((mesh) => mesh.name.startsWith("combat ") && mesh.isVisible)
         .map((mesh) => mesh.name),
