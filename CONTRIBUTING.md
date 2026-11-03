@@ -1,6 +1,6 @@
 # Contributing to open-neo-rts
 
-Thanks for helping. The project is early: most of what exists is design docs in [docs/](docs/README.md), and the first code milestone is a deterministic headless simulation. Discussion, design feedback and coherent feature PRs are all welcome.
+Thanks for helping. The project has an early playable browser skirmish and deterministic simulation, with substantial roadmap work still ahead. See [README.md](README.md) for the current scope and [docs/](docs/README.md) for the design. Discussion, design feedback and coherent feature PRs are all welcome.
 
 ## Setup
 
@@ -31,7 +31,7 @@ The repo layout is described in [docs/engineering/architecture.md](docs/engineer
 
 Develop related work in coherent batches. Use focused checks while implementing; run the full relevant checks once at the batch end. CI checks merged `main` and cancels superseded runs, rather than running the same suite on every small PR. A batch is finished when its final CI run passes.
 
-For model checks, run `bun run dev` and open `/debug?models=1`. Choose a GLB to inspect team colours and animation clips; the file stays in the browser. The normal `/` route shows terrain.
+For model checks, run `bun run dev` and open `/debug?models=1`. Choose a GLB to inspect team colours and animation clips; the file stays in the browser. The normal `/` route opens Home; Quick start starts a local skirmish against the basic bot. Terrain inspection is at `/debug?terrain=1`.
 
 ## What to read first
 
