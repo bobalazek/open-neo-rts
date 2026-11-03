@@ -1,6 +1,6 @@
-## Type
+## Primary type
 
-<!-- Exactly one. See docs/contributing/pull-requests.md -->
+<!-- Choose one primary type. Include evidence for every affected type in the feature batch; see docs/contributing/pull-requests.md. -->
 
 - [ ] Engine
 - [ ] New unit

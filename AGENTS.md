@@ -18,7 +18,7 @@ Rules for coding agents (Claude Code, Codex, etc.) working in this repo. Humans:
 6. **Outcome changes** to the sim require updating golden hashes and bumping the simulation version.
 7. **Feature folders.** Code is split by feature; components live with the feature that owns them. Every folder in the [documented layout](docs/engineering/architecture.md#3-monorepo-layout) already exists, with an `index.ts` stating its purpose and phase (the layout lists the exceptions); fill those, and don't invent new top-level folders without updating that layout. Apps stay thin: logic goes in packages.
 8. **Phase scope.** Build only what the current phase lists in [roadmap.md](docs/project/roadmap.md#what-each-phase-builds), and pick work from [tasks.md](docs/project/tasks.md). The other docs describe the whole game; they are reference, not a to-do list.
-9. **One task, one PR.** Each task becomes one branch and one pull request of one type ([pull-requests.md](docs/contributing/pull-requests.md)); the PR removes the task from `tasks.md`. Pending decisions live in [human-tasks.md](docs/project/human-tasks.md): never decide them silently.
+9. **Task-sized PRs, fewer commits.** Default to one substantial task per branch and pull request; small related tasks may share a PR ([pull-requests.md](docs/contributing/pull-requests.md)). Keep implementation, necessary content, fixes, checks and docs together; remove completed tasks from `tasks.md`. Squash to one reviewed commit when merging. Pending decisions live in [human-tasks.md](docs/project/human-tasks.md); follow the accepted [provisional implementation autonomy](docs/project/decisions/2026-11-02-provisional-implementation-autonomy.md) and record assumptions.
 
 ## Working with the owner
 
@@ -30,7 +30,7 @@ These come from explicit, sometimes strong, feedback.
 - **Ask before running bulk scripts** that generate or rewrite many files. Hand edits and project CLI checks are fine.
 - **Co-locate.** One folder per unit or structure, with weapons, abilities, research and English text inline. Engine vocabulary (roles, armour classes, resources, settings) is code, not content.
 - **Keep it tidy:** no speculative concepts, no stale references, no unexplained jargon. Show folder structures as tree diagrams, not tables.
-- **Commit and push only when asked.** Conventional Commits, no attribution lines.
+- **Commit and push only when asked.** Conventional Commits, no attribution lines. Prefer larger coherent commits over per-file, per-model, WIP or evidence-only commits; fold related follow-up fixes into the unpublished batch. Run full relevant checks at batch boundaries, with focused checks for concrete failures.
 
 ## Gotchas
 

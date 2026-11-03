@@ -1,13 +1,13 @@
 # Pull requests
 
-Every change reaches `main` through a pull request of exactly **one type**. The type decides the branch prefix, the commit scope, the label, what CI runs, and what the reviewer checks ([review-checklists.md](review-checklists.md)). Tasks in [tasks.md](../project/tasks.md) say which type they are.
+Default to one substantial task per pull request; small related tasks may share a PR. Choose one **primary type** and keep the implementation, required content, fixes, checks and docs together. The primary type decides the branch prefix, commit scope and label; apply the checks and review requirements for every affected type ([review-checklists.md](review-checklists.md)). Tasks in [tasks.md](../project/tasks.md) suggest their primary type.
 
 ## From task to merge
 
-1. Pick one task from [tasks.md](../project/tasks.md). Work that isn't listed starts as an issue; work waiting on a decision stays in [human-tasks.md](../project/human-tasks.md).
+1. Pick one task from [tasks.md](../project/tasks.md), grouping small related tasks when useful. Unlisted work starts as an issue. Record provisional choices under the accepted [implementation autonomy](../project/decisions/2026-11-02-provisional-implementation-autonomy.md); pending owner review stays in [human-tasks.md](../project/human-tasks.md).
 2. Branch from `main` with the type's prefix (below).
-3. Run `bun run fix`, `typecheck` and `test`, plus `bun neo validate` for content.
-4. Open the PR with the template. In the same PR, remove the task's line from `tasks.md`, add any follow-up tasks it uncovered, and update the docs it changes.
+3. Use focused checks while implementing; run `bun run fix`, `typecheck` and `test` at the batch boundary, plus `bun neo validate` for content. Fold unpublished WIP and related fix-up commits into feature-sized commits before publishing.
+4. Open the PR with the template. In the same PR, remove completed tasks from `tasks.md`, add any follow-up tasks it uncovered, and update the docs it changes.
 5. Merge when CI is green and a reviewer approves ([Merging](#merging)).
 
 ## Types
@@ -26,7 +26,7 @@ Every change reaches `main` through a pull request of exactly **one type**. The 
 | **Tooling**       | CLI, CI, validators, build config                                                    | `chore/…`                            | `chore(cli): add balance-report command`                 | `tooling`           |
 | **Docs**          | Only docs                                                                            | `docs/…`                             | `docs: explain wonder race`                              | `docs`              |
 
-A PR that mixes types is split. The one exception: a new unit's PR may include the balance numbers it needs.
+Split unrelated work. Supporting content, balance, art, tooling and docs needed by the same feature stay in the batch, with evidence for each affected type. Related models may ship together; a separate PR per model is not required.
 
 ## What each type must include
 
