@@ -6,10 +6,12 @@ import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 /** One batched overlay, built only from selected actors' already-permitted order copies. */
 export function createOrderWaypoints(scene: Scene, terrain: TerrainGrid) {
   let mesh: LinesMesh | undefined,
-    key = "";
+    key = "",
+    topology = "";
   const clear = () => {
     mesh?.dispose(false, true);
     mesh = undefined;
+    topology = "";
   };
   return {
     accept(snapshot: SeatSnapshot | undefined, selection: readonly string[]) {
@@ -42,8 +44,10 @@ export function createOrderWaypoints(scene: Scene, terrain: TerrainGrid) {
       const next = JSON.stringify(paths);
       if (next === key) return;
       key = next;
-      clear();
-      if (!paths.length) return;
+      if (!paths.length) {
+        clear();
+        return;
+      }
       const position = ({ x, y }: { x: number; y: number }) => {
         const cx = x / 1024,
           cy = y / 1024;
@@ -53,7 +57,25 @@ export function createOrderWaypoints(scene: Scene, terrain: TerrainGrid) {
           cy * CELL_SIZE,
         );
       };
-      const lines = paths.map((path) => path.map(position));
+      const lines = paths.map((path) =>
+        path.flatMap((point, index) => {
+          const previous = path[index - 1];
+          if (!previous) return [position(point)];
+          const steps = Math.max(
+            1,
+            Math.ceil(
+              Math.max(Math.abs(point.x - previous.x), Math.abs(point.y - previous.y)) / 512,
+            ),
+          );
+          return Array.from({ length: steps }, (_, sample) => {
+            const t = (sample + 1) / steps;
+            return position({
+              x: previous.x + (point.x - previous.x) * t,
+              y: previous.y + (point.y - previous.y) * t,
+            });
+          });
+        }),
+      );
       for (const path of paths)
         for (const point of path.slice(1)) {
           const at = position(point),
@@ -61,7 +83,20 @@ export function createOrderWaypoints(scene: Scene, terrain: TerrainGrid) {
           lines.push([at.add(new Vector3(-size, 0, 0)), at.add(new Vector3(size, 0, 0))]);
           lines.push([at.add(new Vector3(0, 0, -size)), at.add(new Vector3(0, 0, size))]);
         }
-      mesh = MeshBuilder.CreateLineSystem("selected order waypoints", { lines }, scene);
+      const shape = lines.map((line) => line.length).join(",");
+      if (mesh && shape === topology) {
+        MeshBuilder.CreateLineSystem("selected order waypoints", { lines, instance: mesh }, scene);
+        return;
+      }
+      const previous = mesh;
+      // Keep the compiled line material when route topology changes; moving endpoints never replace it.
+      mesh = MeshBuilder.CreateLineSystem(
+        "selected order waypoints",
+        { lines, updatable: true, material: previous?.material ?? undefined },
+        scene,
+      );
+      previous?.dispose(false, false, true);
+      topology = shape;
       mesh.color = new Color3(0.25, 0.85, 1);
       mesh.isPickable = false;
       mesh.renderingGroupId = 1;

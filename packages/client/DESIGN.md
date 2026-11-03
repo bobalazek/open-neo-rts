@@ -1,12 +1,12 @@
 ---
 
 name: Open Neo RTS native menus and match HUD
-description: Native Home, setup, game panels, Load and results with a battlefield-first HTML HUD in graphite steel and warm metal.
-colors: { panel: "#182126", surface: "#10171b", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
-typography: { body: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.75rem", lineHeight: 1.35 }, title: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.8rem", fontWeight: 600 }, label: { fontFamily: '"Segoe UI", Tahoma, sans-serif', fontSize: "0.7rem", fontWeight: 600, lineHeight: 1.25 }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
-rounded: { control: "2px", home-control: "0px" }
-spacing: { tight: "0.25rem", dock: "0.5rem", home-action-gap: "8px", home-action-inset: "18px" }
-components: { command-button: { textColor: "#e5d7b1", rounded: "{rounded.control}", padding: "0", height: "2.4rem" }, command-button-hover: { backgroundColor: "#394147", textColor: "#fff0ba" }, dock-panel: { backgroundColor: "#182126f5", rounded: "{rounded.control}", padding: "0.55rem" }, recipe-detail: { backgroundColor: "#172127", textColor: "{colors.ink}", padding: "0.75rem" }, home-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-hover: { backgroundColor: "{colors.home-hover}" }, home-button-active: { backgroundColor: "{colors.home-pressed}" }, setup-input: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.setup-field}", height: "44px" }, setup-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, setup-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, panel-input: { backgroundColor: "{colors.home-shade}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.panel-field}", height: "44px" }, panel-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" }, panel-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" } }
+description: Native Home, setup, game panels, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
+colors: { panel: "#182126", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
+typography: { body: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, title: { fontFamily: "Arial, sans-serif", fontSize: "14px", fontWeight: 700 }, label: { fontFamily: "Arial, sans-serif", fontSize: "12px" }, hotkey: { fontFamily: "Arial, sans-serif", fontSize: "10px" }, count: { fontFamily: "Arial, sans-serif", fontSize: "11px" }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
+rounded: { control: "0px", home-control: "0px" }
+spacing: { command-gap: "5px", station-inset: "12px", home-action-gap: "8px", home-action-inset: "18px" }
+components: { command-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.control}", padding: "0", height: "36px", width: "36px" }, command-button-active: { backgroundColor: "{colors.home-primary}" }, dock-panel: { backgroundColor: "{colors.panel}", rounded: "{rounded.control}" }, recipe-detail: { backgroundColor: "{colors.panel}", textColor: "{colors.ink}", padding: "12px", typography: "{typography.body}" }, home-button: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.home-action}" }, home-button-hover: { backgroundColor: "{colors.home-hover}" }, home-button-active: { backgroundColor: "{colors.home-pressed}" }, setup-input: { backgroundColor: "{colors.home-control}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.setup-field}", height: "44px" }, setup-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, setup-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", typography: "{typography.setup-action}", height: "44px" }, panel-input: { backgroundColor: "{colors.home-shade}", textColor: "{colors.ink}", rounded: "{rounded.home-control}", typography: "{typography.panel-field}", height: "44px" }, panel-action: { backgroundColor: "{colors.home-control}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" }, panel-action-primary: { backgroundColor: "{colors.home-primary}", textColor: "{colors.accent}", rounded: "{rounded.home-control}", height: "44px" } }
 ---
 
 # Design System: Open Neo RTS native menus and match HUD
@@ -16,8 +16,10 @@ components: { command-button: { textColor: "#e5d7b1", rounded: "{rounded.control
 **Creative North Star: "Graphite Command Stations"**
 
 The normal match uses thin steel frames, warm metal command pictograms and
-original model portraits around a dominant battlefield. Dense, quiet controls
-support reading resources, inspecting real actor state and issuing orders.
+original model portraits around a dominant battlefield. The native bottom-left
+station integrates selection, contextual icon commands,
+build/train recipes and queue progress beside a circular right minimap. Quiet
+controls support reading resources, inspecting real actor state and issuing orders.
 There is no decorative animation; minimap activity communicates game events.
 
 Home shares graphite steel, warm metal and original assets through native Babylon
@@ -40,22 +42,26 @@ Their existing controllers and semantic HTML remain authoritative; the canvas
 copies display values and invokes the same actions.
 
 This records the built Home, Skirmish setup, shared native panels, Load, results
-and normal match HUD. Loading feedback, debug and the recorded HUD retain their
-HTML/CSS presentation. The direction
+and native normal match HUD. Loading feedback and debug retain HTML/CSS
+presentation; the match retains synchronized semantic controls and its HTML
+graphics fallback. The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
 evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`,
 `../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`,
 `src/shared/native-panel.ts`, `src/shared/panel-content.ts`,
-`src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css`
+`src/features/settings/`, `src/features/in-game-menu/`,
+`../render/src/scene/battlefield-hud.ts`, `../render/src/scene/battlefield-map.ts`,
+`src/features/match/native-hud.ts`
 and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`.
 
 **Key Characteristics:**
 
-- Battlefield first, with a slim resource strip and bottom command docks.
-- Graphite surfaces, restrained brass highlights and tabular counters.
+- Battlefield first, with a slim resource strip, integrated station and right circular map.
+- Graphite surfaces, restrained brass highlights and compact numeric counters.
 - Original brick models and original line pictograms.
-- Narrow screens expose one dock through explicit panel tabs.
+- Narrow screens switch commands/build within the station; the map remains visible.
+- Complete action descriptions on hover/focus and content-sized actor Details.
 - Native Home actions, original vector lettering and an authored model display.
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
@@ -83,8 +89,7 @@ information and muted grey carries supporting state.
 
 ### Neutral
 
-- **Graphite panel** (`panel`): dock surfaces, with near-opaque variants over terrain.
-- **Deep steel** (`surface`): resource strip and recessed control backgrounds.
+- **Graphite panel** (`panel`): opaque resource strip, station, tooltip and Details frames.
 - **Ivory ink** (`ink`): names, primary readouts and focused rich save-row/table frames.
 - **Cool grey** (`muted`): selection details and secondary feedback.
 - **Steel seam** (`hud-line`): panel frames and separators.
@@ -102,12 +107,16 @@ Sidecar tonal ramps are synthesized preview aids, not additional runtime colors.
 
 ## Typography
 
-The match uses the established Segoe UI/Tahoma sans-serif stack. There is no
-display-type role in this HUD. Compact body copy, slightly stronger actor names
-and small panel labels provide hierarchy; counters use tabular numerals.
-Recipe explanations use a larger body treatment with generous line spacing.
-Tiny hotkey legends and existing recipe-name text are incidental constraints,
-not a recommended minimum size for new information.
+The native match HUD explicitly uses Arial, matching the native menus. There is
+no display-type role in the HUD. Actor names are bold and scale from the title
+role; tooltip, Details, feedback and command-mode text use the body role. Resource
+readouts, health and text-only action labels use the label role. Corner hotkeys
+and count badges use the smaller hotkey and count roles; these dense annotations
+do not establish a minimum readable size for future explanatory text. Hover/focus
+descriptions measure wrapping at 1.4 times body size per line. Station dimensions
+and actor-name type use the effective match scale; most compact readout and
+annotation sizes remain fixed. The match scale is
+`min(device UI scale, max(0.85, viewport width / 900))`.
 
 Home uses Arial/sans-serif for readable supporting type and native actions. The
 frontmatter records base sizes; the renderer multiplies them by its bounded UI
@@ -141,16 +150,25 @@ minimum size for future surfaces.
 
 ## Layout
 
-On desktop, the bottom grid holds minimap, flexible selection, command card and
-construction catalog. Selection absorbs spare width rather than enlarging the
-commands. Command and construction grids use four columns. Control groups sit
-immediately above the docks; notices and contextual feedback float above them.
+The native match uses a full-width resource strip, a bottom-left selection and
+command station, and a circular minimap at the right. The station combines the
+portrait, actual actor name/count, bounded health bar, commands, contextual
+build/train icons and queue progress. Commands keep four stable keyboard columns
+(QWER / ASDF / ZXCV); recipes fill the available width. Desktop shows commands
+and available recipes together, rather than splitting them across independent docks.
 
-At the existing medium breakpoint the docks tighten. At the narrow breakpoint,
-four panel buttons switch the visible dock, the resource strip wraps and group
-controls scroll horizontally. Commands use eight columns, reducing to six on
-the smallest layout; construction retains four. Dock content can scroll while
-the battlefield remains visible. Breakpoint values live in the sidecar.
+Below 940px viewport width, the station spans the width minus two edge insets;
+Commands and Build / train switch its contextual grid. The minimap moves above
+the station at the right and shrinks from a 216px to 144px base diameter. Below
+650px, resources wrap into at most three columns and reserve another row for top
+actions. Main station and map dimensions follow the effective match scale.
+
+Details fits its actual text and secondary actions, scrolls at its height cap,
+and stays between the resource strip and station. Hover/focus descriptions are
+content-sized and constrained to viewport edges. Idle helpers and populated
+control groups sit above the station; Groups reveals every group. Temporary
+feedback sits below resources, and a bounded notice list sits above the station.
+Pointer-blocking regions use CSS pixels even when graphics resolution changes.
 
 Home uses a full-viewport scene with a near-opaque left navigation field on desktop
 and a lighter full-width field below its narrow breakpoint (alpha 0.96 and 0.18,
@@ -189,8 +207,9 @@ with a 24px scaled column gap. Inputs and actions are 44px scaled tall;
 checkboxes are 26px scaled beside a caption at least 44px scaled tall.
 
 Rows use the taller actual label/control/help stack and a 24px scaled gap.
-Empty help has no reserved block. The body and actions scroll together; Back,
-title, status and errors remain outside that region. Frame height fits measured
+Empty help has no reserved block. The body and ordinary actions scroll together;
+Back, Resume, title, status and errors remain outside that region. Pause Resume occupies a
+fixed primary action at the header right. Frame height fits measured
 content until it reaches viewport height minus both edge insets. The header
 reserves 82px scaled plus an 8px scaled gap and measured status only when present;
 the footer reserves 20px scaled plus a 16px scaled gap and measured error only
@@ -211,10 +230,11 @@ and sampled row. The outer body also scrolls, revealing a focused row or region.
 
 ## Elevation & Depth
 
-Thin borders, a lighter top seam, subtle vertical control gradients and shallow
-black shadows separate the stations from terrain. Recipe explanations and ping
-options rise above the dock with stronger shadows. The exact shadows are in the
-sidecar; there is no decorative lift or ornamental motion in the match.
+The native match HUD is flat: opaque graphite frames and thin steel seams
+separate information from terrain. Warm borders identify hover, ivory thicker
+frames identify synchronized focus, and warm wells identify armed or selected
+actions. Tooltips and Details sit above the scene without gradients or shadows.
+There is no ornamental motion in the match.
 
 Home depth comes from the actual lit model, ground, fog and octagonal display
 plinth, with flat GUI rectangles over it. Controls do not use drop shadows or
@@ -227,8 +247,10 @@ Modal depth comes from the transparent separate canvas and its dark shade
 
 ## Shapes
 
-Small squared corners and single-pixel frames define the HUD. Portraits are
-contained within dark rectangular wells; the minimap stays square and pixelated.
+Square corners and single-pixel frames define the native HUD. Portraits keep
+their original proportions; the minimap uses a circular brass frame. Its full
+pixelated square terrain is rotated by 45 degrees and inscribed within the circle,
+so every corner remains visible and reachable. Focus thickens the map frame in ivory.
 Original SVG pictograms use consistent rounded line caps and joins.
 Home controls have square corners and thin warm frames; secondary actions omit
 the frame at rest. Angular vector lettering and the eight-sided plinth carry
@@ -283,9 +305,12 @@ the text leaves space for that disclosure mark.
   return on disposal. Leaving setup cancels engine initialization and disposes its
   scene. These mechanisms preserve access without claiming screen-reader or
   physical-device qualification.
-- **Command buttons:** centered line pictograms, a corner hotkey and an accessible
-  action name. Hover and armed states use the warm border and lighter surface;
-  unavailable commands dim. Preserve the inherited visible focus outline.
+- **Command buttons:** centered original line pictograms or model thumbnails, a
+  corner hotkey and optional count/progress. Hover warms the frame; armed commands
+  use the primary well. Synchronized focus thickens the ivory frame to 2px.
+  Unavailable actions dim to 0.45 alpha and retain explanations; activation keeps
+  validation in the existing controller. B switches build/train; I toggles Details.
+  Those local shortcuts are visible from initial widget creation.
 - **Shared native panel:** Settings from Home and the match, pause actions,
   Objectives, Current controls, named saves, Load and results reuse one native renderer.
   Framed actions use Home's ordinary/primary/hover/pressed fills; disabled actions
@@ -301,8 +326,9 @@ the text leaves space for that disclosure mark.
   Status is warm metal, errors light coral; empty notices reserve no extra block.
 - **Pause dialog and named saves:** the HTML dialog owns modal focus, Escape and
   the existing pause/resume workflow. Its canvas is separate from the match canvas,
-  preserving world rendering and save thumbnails. Resume uses the primary fill;
-  menu actions retain current availability and pending states. The named-save
+  preserving world rendering and save thumbnails. Resume uses the primary fill
+  and remains fixed at the header right while the other actions scroll; menu
+  actions retain current availability and pending states. The named-save
   field preserves required/max-length validation and existing save handlers.
   Opening Load keeps native panel presentation and uses the same separate canvas.
 - **Load gallery:** original match thumbnails accompany saved names and dates;
@@ -325,21 +351,37 @@ the text leaves space for that disclosure mark.
   cancels initialization. Graphics failure leaves HTML visible. Native pointer
   text editing shows a caret/selection, while semantic text editing mirrors focus
   but not yet its caret or selection; this remains deferred input polish.
-- **Selection station:** original model portrait, actual name/count, health bar
-  and permitted actor details. Health bars remain bounded rather than stretching
-  across the entire flexible panel.
-- **Construction cards:** original model thumbnail, authored name, resource costs
-  and time. Costs wrap as complete units and time occupies its own row. Cards
-  remain inspectable when unavailable; explanations appear on hover, focus or
-  activation and include the actual reason. Escape dismisses the explanation.
-- **Narrow panel navigation:** equal-width text buttons; the active panel has a
-  warm border and text. Retain explicit names for selection, commands,
-  construction/production and minimap.
-- **Minimap and groups:** square terrain view, compact icon controls, a framed
-  ping popover and dense text/select controls. Feedback appears above the dock.
+- **Selection station:** original model portrait, actual name/count and bounded
+  health bar integrated with commands, contextual recipes and the production queue.
+  Details opens above it with the actual actor statistics, selection-type controls,
+  orders, construction/request controls and secondary group controls. It fits
+  measured content up to its height cap and then scrolls. Escape closes Details
+  and the expanded group view before handing control back to the battlefield.
+- **Recipes and action descriptions:** original thumbnails keep the station terse.
+  Hover or synchronized keyboard focus shows complete authored names, resource
+  prices, build time, requirements and actual unavailable reasons. Disabled recipe
+  activation leaves the explanation readable; player-facing reasons avoid internal
+  content-authoring vocabulary. Focusing a hidden recipe switches its station view.
+- **Context navigation:** Commands and Build / train use square framed controls
+  and the primary well for the selected view. Desktop can show both grids; compact
+  views show the selected grid while retaining selection, queue and map.
+- **Minimap:** the circular frame contains the complete rotated square map and a
+  north indicator. Permitted minimap pixels come from the existing controller.
+  Navigation, drag, orders, pings and zoom retain their existing handlers; point
+  mapping reverses rotation and rejects the circle's non-map corners. Map actions
+  sit immediately below the circle.
+- **Groups and helpers:** only populated groups appear by default. Groups reveals
+  all numbered groups; badges show population. Hover/focus explains recall, Ctrl
+  assign and Ctrl+Shift add. Idle builder and producer helpers retain their period
+  and comma shortcuts. Secondary assign/add controls remain in Details.
+- **Match semantics and fallback:** the world scene owns visible Babylon controls;
+  semantic HTML keeps accessible names, keyboard command handling and live state.
+  Controls are visually clipped only after the native HUD draws. Native activation
+  invokes existing controller actions; keyboard focus opens the matching native
+  view and description. Disposal restores the HTML presentation.
 
-**The Complete Recipe Rule.** Keep every displayed resource amount and build
-time visible, and make unavailable reasons readable on desktop and mobile.
+**The Complete Recipe Rule.** Keep complete prices, build times, requirements
+and unavailable reasons reachable through action hover/focus descriptions.
 
 ## Do's and Don'ts
 
@@ -348,8 +390,8 @@ time visible, and make unavailable reasons readable on desktop and mobile.
 - **Do** preserve the owner's original model assets and authored names.
 - **Do** use real match state for portraits, counters, availability and feedback.
 - **Do** preserve full recipe values and readable unavailable explanations.
-- **Do** retain accessible action names, visible focus and narrow panel switching.
-- **Do** keep native Home, setup and panel controls synchronized with semantic HTML and preserve the graphics fallback.
+- **Do** retain accessible action names, visible focus and contextual command switching.
+- **Do** keep native Home, setup, panel and match controls synchronized with semantic HTML and preserve the graphics fallback.
 - **Do** honor reduced motion in the Home model display.
 - **Do** use authored terrain, resource positions and selected spawns for the setup preview.
 - **Do** size shared panels from measured content and keep modal rendering separate from the match canvas.
@@ -361,8 +403,7 @@ time visible, and make unavailable reasons readable on desktop and mobile.
 - **Don't** substitute borrowed artwork or text glyphs for original model and SVG assets.
 - **Don't** add ornamental animation that competes with battlefield activity.
 
-Independent runtime, Chromium and WebKit review covered native Load and results.
-This records the implemented system; it does not qualify physical touch,
-assistive technology or hardware FPS. Incumbent palette advisories and one-off
+This records implementation evidence rather than test qualification; it does not
+qualify physical touch, assistive technology or hardware FPS. Incumbent palette advisories and one-off
 review previews are not design tokens. Semantic text-entry caret/selection
 mirroring remains deferred input polish rather than a rule for future controls.

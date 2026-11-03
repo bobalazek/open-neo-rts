@@ -6,11 +6,12 @@ const DRAG_THRESHOLD = 5;
 export function bindSelectionInput(
   canvas: HTMLCanvasElement,
   options: {
-    enabled: () => boolean;
+    enabled: (event?: PointerEvent) => boolean;
     selected: () => readonly string[];
     select: (handles: readonly string[]) => void;
     pick: (x: number, y: number) => string | null;
     inRectangle: (left: number, top: number, right: number, bottom: number) => string[];
+    rectangle?: (rect: { x: number; y: number; width: number; height: number } | null) => void;
   },
   signal: AbortSignal,
 ) {
@@ -23,6 +24,7 @@ export function bindSelectionInput(
     const captured = drag;
     drag = undefined;
     rectangle.hidden = true;
+    options.rectangle?.(null);
     if (captured && canvas.hasPointerCapture(captured.id))
       canvas.releasePointerCapture(captured.id);
     return captured !== undefined;
@@ -44,7 +46,7 @@ export function bindSelectionInput(
   canvas.addEventListener(
     "pointerdown",
     (event) => {
-      if (event.button !== 0 || !options.enabled()) return;
+      if (event.button !== 0 || !options.enabled(event)) return;
       event.preventDefault();
       canvas.focus({ preventScroll: true });
       drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
@@ -59,6 +61,20 @@ export function bindSelectionInput(
       const { bounds, left, top, right, bottom } = region(event.clientX, event.clientY);
       rectangle.hidden =
         Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD;
+      if (options.rectangle) {
+        options.rectangle(
+          rectangle.hidden
+            ? null
+            : {
+                x: bounds.left + left,
+                y: bounds.top + top,
+                width: right - left,
+                height: bottom - top,
+              },
+        );
+        rectangle.hidden = true;
+        return;
+      }
       Object.assign(rectangle.style, {
         left: `${bounds.left + left}px`,
         top: `${bounds.top + top}px`,
@@ -75,7 +91,7 @@ export function bindSelectionInput(
       const { bounds, left, top, right, bottom } = region(event.clientX, event.clientY);
       const isBox = Math.hypot(event.clientX - drag.x, event.clientY - drag.y) >= DRAG_THRESHOLD;
       if (
-        options.enabled() &&
+        options.enabled(event) &&
         event.clientX >= bounds.left &&
         event.clientX <= bounds.right &&
         event.clientY >= bounds.top &&

@@ -40,8 +40,9 @@ source.
 - The owner prefers native Babylon GUI for game presentation. Home, Skirmish
   setup, device Settings and the pause menu's actions, Objectives, Current controls
   and named-save panes use it. Standalone and in-match Load galleries and match
-  results also use native Babylon GUI. Loading feedback, debug and match HUD
-  retain HTML/CSS presentation during the staged conversion.
+  results also use native Babylon GUI. The match HUD now uses Babylon GUI on
+  the world scene, with HTML retaining semantics, command controllers and a usable
+  graphics fallback. Loading feedback and debug retain HTML/CSS presentation.
 - Native Home and setup preserve semantic HTML controls and usable graphics
   fallbacks. Setup keeps validation feedback and actions visible while content
   scrolls; focused fields and the checkbox scroll into view. Leaving setup
@@ -71,5 +72,18 @@ source.
 - Native pointer text entry includes a caret. Semantic text entry in Load shares
   the deferred caret/selection-mirroring polish; synchronized focus remains visible.
   Browser review does not qualify physical touch, assistive technology or hardware FPS.
+- The match places a circular minimap at the right and one integrated selection
+  station at the bottom left. Original command pictograms and model thumbnails
+  keep persistent copy sparse. Hover and keyboard focus expose complete action
+  descriptions, prices, requirements and unavailable reasons; Details exposes
+  actor state and secondary controls above the station.
+- Commands retain their existing hotkeys and stable QWER/ASDF/ZXCV slots. B switches
+  the contextual build/train view, I toggles Details, and Escape closes auxiliary
+  views. Populated groups appear directly; Groups reveals every group. Idle
+  builder/producer helpers and existing group assign/add/recall controls remain.
+- The whole rotated square map fits within the circular minimap, including all
+  corner cells. Existing navigation, orders, pings, zoom and keyboard controls
+  keep their command handlers. Pause keeps Resume fixed in the header while the
+  remaining actions scroll.
 - The owner delegates routine choices; implement coherent defaults and review
   the running result instead of interrupting for repeated design approvals.

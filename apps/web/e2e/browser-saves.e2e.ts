@@ -92,7 +92,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect
     .poll(async () => (await saves(page)).filter((save) => save.kind === "auto").length)
     .toBe(1);
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   let menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
@@ -148,7 +148,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect
     .poll(async () => Number(await page.locator("#game").getAttribute("data-tick")))
     .toBeGreaterThan(manual.match.tick + 3);
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Before the push" }).press("Enter");
   const download = page.waitForEvent("download");
@@ -205,7 +205,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     .poll(() => previousCanvas!.evaluate((canvas) => canvas.isConnected), { timeout: 60000 })
     .toBe(false);
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Match menu", exact: true }).click();
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await menu.getByLabel("Save name", { exact: true }).fill("Resumed proof");

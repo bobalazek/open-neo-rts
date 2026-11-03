@@ -78,6 +78,7 @@ export function mountNativePanel(
         control.hasAttribute("data-resume") ||
         control.getAttribute("aria-selected") === "true",
       back: control.hasAttribute("data-back"),
+      resume: control.hasAttribute("data-resume"),
       detail: !!control.closest("[data-save-detail]"),
       disabled:
         control.disabled ||

@@ -49,6 +49,8 @@ type Options = {
   preview: (cells: readonly Point[] | null) => void;
   paused: () => boolean;
   fail: (error: unknown) => void;
+  present?: () => void;
+  blocksPointer?: (x: number, y: number) => boolean;
 };
 
 let hudIdentity = 0;
@@ -202,6 +204,7 @@ export function createMatchHud(
     button.setAttribute("aria-pressed", String(tabs[i] === "commands"));
   });
   function feedback(key: Parameters<typeof text>[0], values?: Record<string, string | number>) {
+    resultLabel.dataset.feedbackKey = key;
     resultLabel.textContent = text(key, values);
   }
   function cancel() {
@@ -633,7 +636,8 @@ export function createMatchHud(
   canvas.addEventListener(
     "click",
     (event) => {
-      if (mode && event.button === 0) target(event.clientX, event.clientY);
+      if (mode && event.button === 0 && !options.blocksPointer?.(event.clientX, event.clientY))
+        target(event.clientX, event.clientY);
     },
     { signal },
   );
@@ -641,7 +645,7 @@ export function createMatchHud(
   canvas.addEventListener(
     "pointerdown",
     (event) => {
-      if (event.button === 2)
+      if (event.button === 2 && !options.blocksPointer?.(event.clientX, event.clientY))
         right = { id: event.pointerId, x: event.clientX, y: event.clientY, dragged: false };
     },
     { signal },
@@ -649,7 +653,9 @@ export function createMatchHud(
   canvas.addEventListener(
     "pointermove",
     (event) => {
-      pointer = { x: event.clientX, y: event.clientY };
+      pointer = options.blocksPointer?.(event.clientX, event.clientY)
+        ? undefined
+        : { x: event.clientX, y: event.clientY };
       if (
         right?.id === event.pointerId &&
         Math.hypot(event.clientX - right.x, event.clientY - right.y) > 5
@@ -666,6 +672,7 @@ export function createMatchHud(
       right = undefined;
       if (
         !down ||
+        options.blocksPointer?.(event.clientX, event.clientY) ||
         down.id !== event.pointerId ||
         event.button !== 2 ||
         down.dragged ||
@@ -886,6 +893,7 @@ export function createMatchHud(
       }
     }
     holdButton.disabled = busy || options.paused() || !selectedUnits.length;
+    holdButton.dataset.available = String(selectedUnits.length > 0);
     holdButton.setAttribute(
       "aria-pressed",
       String(selectedUnits.length > 0 && selectedUnits.every((entity) => entity.holdPosition)),
@@ -1027,6 +1035,7 @@ export function createMatchHud(
       mode?.type === "economy.build",
     ];
     commandButtons.forEach((button, index) => {
+      button.dataset.available = String(!!eligible[index]);
       button.disabled = disabled || !eligible[index];
       button.title = options.paused()
         ? text("ui.hud.resume-first")
@@ -1248,14 +1257,19 @@ export function createMatchHud(
     for (const [index, item] of items.entries()) {
       const li = queue.children[index];
       if (!li) continue;
+      const completed = item.totalTicks
+        ? Math.floor(((item.completedTicks + item.remainder / 1000) * 100) / item.totalTicks)
+        : 100;
+      if (li instanceof HTMLElement) {
+        li.dataset.definition = item.definition;
+        li.dataset.progress = String(completed);
+      }
       const span = li.querySelector("span");
       if (span)
         span.textContent = text("ui.hud.queue-item", {
           name: name(item.definition),
           slot: item.slot ?? text("ui.hud.waiting"),
-          progress: item.totalTicks
-            ? Math.floor(((item.completedTicks + item.remainder / 1000) * 100) / item.totalTicks)
-            : 100,
+          progress: completed,
           state: workState(item.state),
           gift: item.gift ? text("ui.hud.included") : "",
         });
@@ -1272,6 +1286,7 @@ export function createMatchHud(
     groupButtons.forEach((button, i) => {
       const group = i === 9 ? 0 : i + 1;
       setText(button, `${group}: ${groups.get(group).length}`);
+      button.dataset.count = String(groups.get(group).length);
       button.disabled = groups.get(group).length === 0;
       button.title = text("ui.hud.select-group", { group });
     });
@@ -1295,11 +1310,15 @@ export function createMatchHud(
       .reduce((sum, entity) => sum + (definitions.get(entity.definition)?.gameplay.pop ?? 0), 0);
     const populationLabel = root.querySelector("[data-population]");
     if (populationLabel)
-      populationLabel.textContent = text("ui.hud.population", {
-        value: population,
-        cap: options.populationCap,
-      });
+      setText(
+        populationLabel.querySelector("[data-stat-text]") ?? populationLabel,
+        text("ui.hud.population", {
+          value: population,
+          cap: options.populationCap,
+        }),
+      );
     renderRequests();
+    options.present?.();
   }
   let requestKey = "";
   let siteKey = "";

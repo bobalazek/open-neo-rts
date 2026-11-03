@@ -46,6 +46,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   let drag: { id: number; button: number; x: number; y: number; moved: boolean } | null = null;
   let selecting = false;
   let enabled = true;
+  let blocksPointer: (x: number, y: number) => boolean = () => false;
   let panSpeed = 1,
     edgeScroll = true,
     reducedMotion = false;
@@ -94,7 +95,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "pointerdown",
     (e) => {
-      if (!enabled) return;
+      if (!enabled || blocksPointer(e.clientX, e.clientY)) return;
       if (e.button === 0) selecting = true;
       if (e.button !== 1 && e.button !== 2) return;
       e.preventDefault();
@@ -107,6 +108,10 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     "pointermove",
     (e) => {
       if (!enabled) return;
+      if (blocksPointer(e.clientX, e.clientY)) {
+        pointer = null;
+        return;
+      }
       pointer = { x: e.offsetX, y: e.offsetY };
       if (!drag) return;
       const dx = e.clientX - drag.x;
@@ -143,7 +148,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   canvas.addEventListener(
     "wheel",
     (e) => {
-      if (!enabled) return;
+      if (!enabled || blocksPointer(e.clientX, e.clientY)) return;
       e.preventDefault();
       goal = clamp(goal * Math.exp(e.deltaY * ZOOM_STEP), MIN_DISTANCE, MAX_DISTANCE);
     },
@@ -177,6 +182,9 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     camera.beta = PITCH_NEAR + (PITCH_FAR - PITCH_NEAR) * t;
   });
   return Object.assign(camera, {
+    setPointerBlocker(blocker: (x: number, y: number) => boolean) {
+      blocksPointer = blocker;
+    },
     setInputEnabled(value: boolean) {
       enabled = value;
       keys.clear();

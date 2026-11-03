@@ -293,6 +293,16 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.native-battlefield .match-top,
+.native-battlefield .match-hud {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .native-menu-canvas {
   background: transparent;
   position: fixed;
@@ -1196,4 +1206,23 @@ canvas[data-command-mode] {
 .hud-recipe small span:last-child {
   flex-basis: 100%;
   justify-content: center;
+}
+
+/* The native station owns presentation; keep every source panel in the semantic tree. */
+.native-battlefield .match-hud .hud-panels > section {
+  display: block;
+}
+.native-battlefield [data-panel-tabs] {
+  display: none;
+}
+.native-battlefield .minimap-pings > summary {
+  display: none;
+}
+.native-battlefield .hud-groups label,
+.native-battlefield .hud-groups > button {
+  display: inline-block;
+}
+#game[data-hud="native"]:focus-visible {
+  outline: 1px solid #ddc382;
+  outline-offset: -1px;
 }
