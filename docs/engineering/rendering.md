@@ -20,6 +20,15 @@ controls. The menu owns and disposes its engine, scene, GUI, asset request and
 resize listener. A full camera viewport keeps GUI pixels aligned with input;
 camera screen offsets frame the model without shrinking the fullscreen controls.
 
+Loading uses the shared native panel on an independent dialog canvas while the
+candidate match owns its own renderer. Semantic `<progress>` values supply the
+native brass bar; no timer estimates or per-player readiness are inferred. The
+dialog and scene dispose on completion, cancel, timeout or navigation, and the
+failure screen reuses the normal panel with actual errors and Retry/Back. HTML
+stays usable when native graphics cannot initialize. Focus returns after modal
+inertness clears; a failed/canceled saved load retains its existing world and
+restores its initiating control after re-enabling it.
+
 ## Terrain inspection
 
 The terrain view at `/` or `/debug` loads the selected built-in map's authored dimensions and `.r8` layers. The Map picker links to `?map=core.map:sandbox-flat` and the other sandbox maps or Training Grounds. Layer downloads, lengths and terrain values are checked before rendering; a failed map keeps the picker available with an error. The renderer receives a parsed grid and owns no content loading or simulation state. Its returned `dispose()` releases the scene, engine, render loop and resize handler.

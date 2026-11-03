@@ -161,8 +161,9 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);
-  await page.getByRole("button", { name: "Cancel loading", exact: true }).click();
+  await page.getByRole("button", { name: "Cancel loading", exact: true }).press("Enter");
   await expect(menu.locator("[data-save-error]")).toContainText("current match was kept");
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeFocused();
   expect(
     await previousCanvas!.evaluate((canvas) => canvas.isConnected && canvas.id === "game"),
   ).toBe(true);
@@ -264,7 +265,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
     .toBe(true);
-  await page.getByRole("button", { name: "Cancel loading", exact: true }).click();
+  await page.getByRole("button", { name: "Cancel loading", exact: true }).press("Enter");
   await expect(menu.locator("[data-save-error]")).toContainText("current match was kept");
   await page.evaluate(() => Reflect.set(window, "holdSavedLoad", false));
   await page.evaluate(() =>

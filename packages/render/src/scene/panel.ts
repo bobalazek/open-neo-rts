@@ -28,6 +28,7 @@ export interface PanelContent {
   text: string;
   status: string;
   error: string;
+  progress?: { value: number; max: number };
   scale: number;
   fields: readonly PanelField[];
   actions: readonly {
@@ -114,6 +115,8 @@ export async function createPanelScene(
     galleryItems: typeof rich = [],
     detailBlocks: typeof rich = [];
   let paragraph: TextBlock | undefined;
+  let progress: Rectangle | undefined;
+  let progressFill: Rectangle | undefined;
   let popup: Rectangle | undefined;
   let syncing = false;
   let focused: string | undefined;
@@ -193,6 +196,22 @@ export async function createPanelScene(
     for (const control of [...body.children]) if (!preserved.has(control)) control.dispose();
     if (!keepFields) widgets = [];
     paragraph = content.text ? label("panel text", content.text, 15) : undefined;
+    progress = undefined;
+    progressFill = undefined;
+    if (content.progress) {
+      progress = new Rectangle("panel progress");
+      progress.background = "#10191e";
+      progress.color = "#475354";
+      progress.thickness = 1;
+      progress.isHitTestVisible = false;
+      body.addControl(progress);
+      progressFill = new Rectangle("panel progress fill");
+      progressFill.background = "#ddc382";
+      progressFill.thickness = 0;
+      progressFill.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+      progressFill.isHitTestVisible = false;
+      progress.addControl(progressFill);
+    }
     for (const field of keepFields ? [] : content.fields) {
       const caption = label(`${field.id} label`, field.label, 15);
       caption.color = "#eff1e9";
@@ -371,6 +390,11 @@ export async function createPanelScene(
         paragraphHeight +
         (widgets.length || content.actions.some((action) => !action.back) ? 16 * scale : 0);
     }
+    if (progress && progressFill && content.progress) {
+      place(progress, 0, y, inner, 12 * scale);
+      progressFill.width = Math.min(1, Math.max(0, content.progress.value / content.progress.max));
+      y += 36 * scale;
+    }
     for (let start = 0; start < widgets.length; start += columns) {
       let rowHeight = 0;
       widgets.slice(start, start + columns).forEach((widget, column) => {
@@ -539,11 +563,16 @@ export async function createPanelScene(
       content.fieldRevision === next.fieldRevision &&
       widgets.length === next.fields.length;
     const rebuild =
-      content.id !== next.id || content.revision !== next.revision || actions.length === 0;
+      content.id !== next.id ||
+      content.revision !== next.revision ||
+      !!content.progress !== !!next.progress ||
+      actions.length === 0;
     const resize =
       content.scale !== next.scale ||
       content.status !== next.status ||
       content.error !== next.error ||
+      content.progress?.value !== next.progress?.value ||
+      content.progress?.max !== next.progress?.max ||
       content.text !== next.text;
     content = next;
     if (rebuild) build(keepFields);

@@ -42,7 +42,8 @@ source.
   and named-save panes use it. Standalone and in-match Load galleries and match
   results also use native Babylon GUI. The match HUD now uses Babylon GUI on
   the world scene, with HTML retaining semantics, command controllers and a usable
-  graphics fallback. Loading feedback and debug retain HTML/CSS presentation.
+  graphics fallback. Match loading and loading failures also use the shared native
+  panel; debug retains HTML/CSS presentation.
 - Native Home and setup preserve semantic HTML controls and usable graphics
   fallbacks. Setup keeps validation feedback and actions visible while content
   scrolls; focused fields and the checkbox scroll into view. Leaving setup
@@ -68,6 +69,14 @@ source.
   final and sampled table row. Tables support pointer and keyboard scrolling;
   replay export, Rematch and Home invoke their existing handlers. HTML retains
   semantics, modal ownership and the usable graphics fallback for both surfaces.
+- Loading presents the existing five initialization stages and actual progress,
+  with Cancel using the same dismissal as Escape. A separate dialog and canvas
+  keep feedback intact while the world initializes or redraws its root. Failure
+  exposes the actual alert with Retry and Back; native graphics failure leaves
+  semantic HTML usable. Focus returns only after the loading modal clears and
+  only while the same navigation generation remains current. Loading a save from
+  a match preserves the old world on failure or cancellation and restores focus
+  to the initiating Load control.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual

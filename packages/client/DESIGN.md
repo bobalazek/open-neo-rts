@@ -1,7 +1,7 @@
 ---
 
 name: Open Neo RTS native menus and match HUD
-description: Native Home, setup, game panels, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
+description: Native Home, setup, game panels, loading, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
 colors: { panel: "#182126", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
 typography: { body: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, title: { fontFamily: "Arial, sans-serif", fontSize: "13px", fontWeight: 700 }, label: { fontFamily: "Arial, sans-serif", fontSize: "12px" }, hotkey: { fontFamily: "Arial, sans-serif", fontSize: "10px" }, count: { fontFamily: "Arial, sans-serif", fontSize: "11px" }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
 rounded: { control: "0px", home-control: "0px" }
@@ -45,15 +45,22 @@ selected-slot details, framed tabs, history plots and complete scrollable tables
 Their existing controllers and semantic HTML remain authoritative; the canvas
 copies display values and invokes the same actions.
 
-This records the built Home, Skirmish setup, shared native panels, Load, results
-and native normal match HUD. Loading feedback and debug retain HTML/CSS
-presentation; the match retains synchronized semantic controls and its HTML
-graphics fallback. The direction
+Loading and failure use the same content-sized graphite panel. Warm stage text
+and a warm-metal fill show actual initialization progress; a framed Cancel action
+remains available. Failure shows the actual coral alert with primary Retry and
+ordinary Back actions. The loading dialog owns a separate native canvas so the
+initializing world cannot remove its feedback by redrawing the application root.
+
+This records the built Home, Skirmish setup, shared native panels, loading, Load,
+results and native normal match HUD. Debug retains HTML/CSS presentation; native
+surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
+The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
 evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`,
 `../render/src/scene/panel.ts`, `../render/src/scene/panel-content.ts`,
 `src/shared/native-panel.ts`, `src/shared/panel-content.ts`,
+`src/app/index.ts`,
 `src/features/settings/`, `src/features/in-game-menu/`,
 `../render/src/scene/battlefield-hud.ts`, `../render/src/scene/battlefield-map.ts`,
 `src/features/match/native-hud.ts`
@@ -72,6 +79,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native content-sized Settings and pause panes over an intact match renderer.
 - Native save galleries with original match thumbnails and selected-slot details.
 - Native results with original plots and complete scrollable match records.
+- Native loading with actual stage progress, cancellation and explicit recovery.
 
 ## Colors
 
@@ -137,7 +145,7 @@ Setup scales the page title, field captions and text, faction labels, action
 labels and notes with its bounded UI scale. Section headings, Force names, map
 name and checkbox label retain their base font sizes.
 
-Shared Settings, pause, Load and results panels render in Arial. Paragraphs, captions and help
+Shared Settings, pause, loading, Load and results panels render in Arial. Paragraphs, captions and help
 explicitly set Arial; titles, notices, buttons and InputText inherit Babylon's
 current default rather than declaring a separate family. Their base ramp is a bold title
 (27px), text fields (16px), body/captions/actions (15px) and help/status/error
@@ -246,6 +254,11 @@ Images preserve their source aspect ratio. Each table has its own horizontal and
 vertical scroll region, capped at 340px times scale; wrapped rows keep every cell
 and sampled row. The outer body also scrolls, revealing a focused row or region.
 
+Loading and failure use the compact shared-panel width cap and measured content
+height. The progress track spans the inner width at 12px times scale, with its
+fill anchored left. Cancel shares the ordinary action grid; Retry and Back sit
+side by side when two columns fit and stack in narrow views.
+
 ## Elevation & Depth
 
 The native match HUD is flat: opaque graphite frames and thin steel seams
@@ -338,7 +351,7 @@ the text leaves space for that disclosure mark.
   at most two characters draw as badges; full Home/Space shortcut names remain
   in hover/focus descriptions instead of crowding compact icons.
 - **Shared native panel:** Settings from Home and the match, pause actions,
-  Objectives, Current controls, named saves, Load and results reuse one native renderer.
+  Objectives, Current controls, named saves, loading, Load and results reuse one native renderer.
   Framed actions use Home's ordinary/primary/hover/pressed fills; disabled actions
   dim to 0.4 alpha. Inputs, selects and checkboxes share semantic values and
   existing handlers. Keyboard focus thickens the corresponding frame to 2px.
@@ -373,6 +386,17 @@ the text leaves space for that disclosure mark.
   scrolling and arrows, Page Up/Down, Home/End preserve access to the full record.
   Replay export, Rematch and Home invoke existing handlers; pending replay feedback
   and errors remain visible.
+- **Loading and recovery:** the semantic progress element supplies its actual
+  value and maximum (5) to the native panel. The existing content, map, renderer,
+  worker and models stages drive status and fill; no estimated percentage or
+  decorative motion supplements them. The track uses the existing dark well and
+  steel seam with a warm-metal fill. Cancel and the dialog's Escape dismissal use
+  the same handler. A separate dialog canvas survives world-root redraws and
+  releases only after completion, cancellation or failure. Failure retains the
+  actual semantic alert, primary Retry and ordinary Back. After the modal closes,
+  generation-guarded focus moves to the ready match canvas or failure heading.
+  Failed or cancelled in-match save loading preserves the old world and restores
+  the initiating Load control's focus after its pending state clears.
 - **Panel semantics and fallback:** semantic labels, controls, status and alerts
   remain authoritative, clipped only after a native frame has drawn. The canvas
   stays outside assistive focus; disposal restores its prior attributes and
@@ -426,6 +450,10 @@ the text leaves space for that disclosure mark.
 **The Complete Recipe Rule.** Keep complete prices, build times, requirements
 and unavailable reasons reachable through action hover/focus descriptions.
 
+**The Actual Progress Rule.** Draw progress from the semantic value and maximum;
+keep stage status, cancellation and actual failure recovery available throughout
+initialization.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -439,6 +467,7 @@ and unavailable reasons reachable through action hover/focus descriptions.
 - **Do** use authored terrain, resource positions and selected spawns for the setup preview.
 - **Do** size shared panels from measured content and keep modal rendering separate from the match canvas.
 - **Do** preserve original save thumbnails, plot descriptions and every result-table row through responsive scrolling.
+- **Do** keep loading feedback independent of world redraws and retain real progress, cancellation and failure recovery in semantic HTML.
 
 ### Don't:
 

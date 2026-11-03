@@ -49,6 +49,7 @@
   "ui.skirmish.content-error": "Core content could not be loaded. Check the installation and retry.",
   "ui.skirmish.no-session": "There is no active match. Start a new local match below.",
   "ui.loading.title": "Loading local match",
+  "ui.loading.error-title": "Match loading failed",
   "ui.loading.content": "Validating core content and setup…",
   "ui.loading.map": "Loading Training Grounds…",
   "ui.loading.renderer": "Preparing the terrain renderer…",

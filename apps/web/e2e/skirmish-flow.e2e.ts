@@ -59,7 +59,7 @@ test("Home and saved skirmish setup start one real normal match after cancelled 
   });
   await page.getByRole("button", { name: "Start local match" }).press("Enter");
   await expect(page.getByRole("heading", { name: "Loading local match" })).toBeVisible();
-  await page.getByRole("button", { name: "Cancel loading" }).click();
+  await page.getByRole("button", { name: "Cancel loading" }).press("Enter");
   release();
   await page.unrouteAll({ behavior: "wait" });
   await expect(page.getByRole("heading", { name: "Skirmish", exact: true })).toBeVisible();
@@ -100,11 +100,11 @@ test("failed worker loading can retry through the same quick-start path", async 
   );
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
-  await expect(
-    page.getByRole("heading", { name: "Could not start this match. Retry, or return to setup." }),
-  ).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Match loading failed" })).toBeVisible({
+    timeout: 60_000,
+  });
   await page.unroute("**/sim-worker.js");
-  await page.getByRole("button", { name: "Retry loading" }).click();
+  await page.getByRole("button", { name: "Retry loading" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });

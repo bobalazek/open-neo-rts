@@ -17,8 +17,9 @@ share native presentation while retaining their real preference and modal
 controllers. [Save galleries and results](./decisions/2026-11-03-native-load-and-results.md)
 also use native thumbnails, tables and history views. The
 [battlefield station](./decisions/2026-11-03-native-battlefield-station.md) now uses
-native contextual controls and a right-hand circular minimap. Loading feedback
-and debug conversion remain UI work.
+native contextual controls and a right-hand circular minimap. [Loading and
+failure feedback](./decisions/2026-11-03-native-loading.md) now use the same native
+panel with actual stage progress, cancellation and retry. Debug conversion remains UI work.
 
 The [region pass](./decisions/2026-11-03-battlefield-regions.md) follows the owner's
 AoE IV reference: economy beside selection, explicit owner/type identity, compact
