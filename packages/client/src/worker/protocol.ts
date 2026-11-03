@@ -407,6 +407,7 @@ function isGhosts(value: unknown, fog: unknown, tick: number, entities: unknown[
         "maxHealth",
         "seen",
         ...(ghost.constructionSite === undefined ? [] : ["constructionSite"]),
+        ...(ghost.constructionStage === undefined ? [] : ["constructionStage"]),
       ]) ||
       typeof ghost.handle !== "string" ||
       !/^g[1-9][0-9]*$/.test(ghost.handle) ||
@@ -425,7 +426,9 @@ function isGhosts(value: unknown, fog: unknown, tick: number, entities: unknown[
       Number(ghost.x) % 1024 !== 0 ||
       Number(ghost.y) % 1024 !== 0 ||
       Number(ghost.facing) % 0x4000 !== 0 ||
-      (ghost.constructionSite !== undefined && ghost.constructionSite !== true)
+      (ghost.constructionSite !== undefined && ghost.constructionSite !== true) ||
+      (ghost.constructionStage !== undefined &&
+        (ghost.constructionSite !== true || !bounded(ghost.constructionStage, 100)))
     )
       return false;
     const grid = fog.find((entry) => isRecord(entry) && entry.group === ghost.group);
@@ -762,6 +765,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "extraction",
             "harvesting",
             "constructionSite",
+            "constructionStage",
             "construction",
             "constructionOrder",
             "production",
@@ -784,6 +788,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (
+      entity.constructionStage !== undefined &&
+      (entity.constructionSite !== true || !bounded(entity.constructionStage, 100))
+    )
+      return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
     if (entity.veterancy !== undefined) {

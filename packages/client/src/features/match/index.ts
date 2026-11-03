@@ -82,6 +82,10 @@ export function createMatchPresentation(
                 health: ghost.health,
                 maxHealth: ghost.maxHealth,
                 order: null,
+                ...(ghost.constructionSite && {
+                  constructionSite: true,
+                  constructionStage: ghost.constructionStage,
+                }),
               })),
       };
       combat.accept(snapshot, nowMs);

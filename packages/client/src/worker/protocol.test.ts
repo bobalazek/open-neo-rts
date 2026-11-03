@@ -476,6 +476,10 @@ test("worker replies validate construction markers and private clearance/refusal
 test("worker replies validate real construction progress and builder work state", () => {
   const progress = { completedTicks: 2, quarter: 3, totalTicks: 100, buildersWorking: 2 };
   const site = { ...entity, constructionSite: true, construction: progress };
+  expect(isWorkerReply(powerReply([power], [{ ...site, constructionStage: 2 }]))).toBe(true);
+  for (const constructionStage of [-1, 101, 0.5, NaN, null, "2"])
+    expect(isWorkerReply(powerReply([power], [{ ...site, constructionStage }]))).toBe(false);
+  expect(isWorkerReply(powerReply([power], [{ ...entity, constructionStage: 2 }]))).toBe(false);
   for (const state of [["working"], ["blocked"], null, 1])
     expect(
       isWorkerReply(powerReply([power], [{ ...entity, constructionOrder: { site: "e2", state } }])),

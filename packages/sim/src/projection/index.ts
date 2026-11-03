@@ -9,6 +9,7 @@ import {
   ConstructionProgress,
   ConstructionRequest,
   ConstructionSite,
+  constructionStage,
 } from "../features/construction";
 import {
   REPAIR_STATES,
@@ -67,6 +68,7 @@ export interface PresentedEntity {
   extraction?: ExtractionSnapshot;
   harvesting?: HarvestSnapshot;
   constructionSite?: true;
+  constructionStage?: number;
   construction?: {
     completedTicks: number;
     quarter: number;
@@ -134,6 +136,7 @@ export interface PresentedGhost {
   maxHealth: number;
   seen: number;
   constructionSite?: true;
+  constructionStage?: number;
 }
 
 /** Trusted host save state only: these authoritative IDs never enter seat snapshots. */
@@ -286,7 +289,10 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             kernel.visibility?.canSeeEntity(seat, attackTarget) && {
               attackTarget: handleOf(attackTarget),
             }),
-          ...(site && { constructionSite: true }),
+          ...(site && {
+            constructionSite: true,
+            constructionStage: constructionStage(kernel, id, definition),
+          }),
           ...(inspectProduction && {
             production: {
               slots: definition.productionSlots ?? 1,
@@ -416,7 +422,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             health: record.health,
             maxHealth: definition.health,
             seen: record.seen,
-            ...(record.site && { constructionSite: true }),
+            ...(record.site && { constructionSite: true, constructionStage: record.stage }),
           });
         }
       }
