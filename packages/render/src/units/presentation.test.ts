@@ -10,6 +10,7 @@ import {
   type PBRMaterial,
   Scene,
   TransformNode,
+  Vector2,
   Vector3,
   Viewport,
 } from "@babylonjs/core";
@@ -61,6 +62,114 @@ function fixture() {
     },
   };
 }
+
+test("original structures share materials but own assembly stages, rotated scaffolds and completion cleanup", async () => {
+  const f = fixture();
+  f.engine.getCaps().instancedArrays = true;
+  f.terrain.level.fill(2);
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("industrial-reactor", "structures"),
+    movementDomain: null,
+    footprint: [2, 3],
+  }));
+  const site = (handle: string, stage: number) =>
+    entity(handle, {
+      constructionSite: true,
+      constructionStage: stage,
+      facing: 0,
+    });
+  const model = (handle: string) => {
+    const mesh = root(f.scene, handle)
+      .getChildMeshes()
+      .find((mesh) => mesh instanceof InstancedMesh);
+    assert(mesh instanceof InstancedMesh);
+    return mesh;
+  };
+  try {
+    await layer.accept(snapshot(0, [site("a", 25), site("b", 75)]), 0);
+    const a = model("a"),
+      b = model("b");
+    expect(a.sourceMesh).toBe(b.sourceMesh);
+    expect(a.material).toBe(b.material);
+    const av = a.instancedBuffers.instanceAssembly,
+      bv = b.instancedBuffers.instanceAssembly;
+    assert(av instanceof Vector2 && bv instanceof Vector2);
+    expect(av).not.toBe(bv);
+    expect(av.x).toBeLessThan(bv.x);
+    expect(av.x).toBeGreaterThan(3.5);
+    expect(av.y).toBe(1);
+    const scaffold = root(f.scene, "a")
+      .getChildMeshes()
+      .find((mesh) => mesh.name === "construction scaffold");
+    assert(scaffold);
+    scaffold.computeWorldMatrix(true);
+    const box = scaffold.getBoundingInfo().boundingBox;
+    expect(box.maximumWorld.x - box.minimumWorld.x).toBeCloseTo(6.2);
+    expect(box.maximumWorld.z - box.minimumWorld.z).toBeCloseTo(4.2);
+    const previous = bv.clone();
+    layer.setPlaybackRate(0);
+    await layer.accept(snapshot(1, [site("a", 0), site("b", 75)]), 100);
+    expect(av.x).toBeCloseTo(3.599);
+    expect(bv.equals(previous)).toBe(true);
+    await layer.accept(snapshot(2, [entity("a"), site("b", 75)]), 150);
+    expect(av.y).toBe(0);
+    expect(scaffold.isDisposed()).toBe(true);
+    expect(
+      root(f.scene, "b")
+        .getChildMeshes()
+        .some((mesh) => mesh.name === "construction scaffold"),
+    ).toBe(true);
+    await layer.accept(snapshot(3, []), 200);
+    expect(f.scene.meshes.some((mesh) => mesh.name === "construction scaffold")).toBe(false);
+  } finally {
+    layer.dispose();
+    expect(f.scene.materials).toHaveLength(0);
+    f.dispose();
+  }
+});
+
+test("late remembered construction uses the latest observed stage, remains unpickable and releases its scaffold", async () => {
+  const f = fixture();
+  let resolve: ((data: Uint8Array) => void) | undefined;
+  const pending = new Promise<Uint8Array>((done) => {
+    resolve = done;
+  });
+  const layer = createEntityPresentation(
+    f.scene,
+    f.terrain,
+    async () => ({
+      bytes: await pending,
+      movementDomain: null,
+      footprint: [2, 3],
+    }),
+    { ghost: true },
+  );
+  try {
+    const first = layer.accept(snapshot(0, [entity("g1", { constructionSite: true })]), 0);
+    const second = layer.accept(
+      snapshot(1, [entity("g1", { constructionSite: true, constructionStage: 25 })]),
+      50,
+    );
+    resolve?.(await bytes("industrial-reactor", "structures"));
+    await Promise.all([first, second]);
+    const meshes = root(f.scene, "g1").getChildMeshes();
+    expect(meshes.every((mesh) => !mesh.isPickable)).toBe(true);
+    expect(meshes.some((mesh) => mesh.name === "construction scaffold")).toBe(true);
+    const plane = meshes.find((mesh) => mesh.instancedBuffers?.instanceAssembly)?.instancedBuffers
+      .instanceAssembly;
+    assert(plane instanceof Vector2);
+    const observed = plane.clone();
+    layer.render(100000);
+    expect(plane.equals(observed)).toBe(true);
+    expect(layer.pick(20, 20)).toBeNull();
+    await layer.accept(snapshot(2, []), 100000);
+    expect(f.scene.meshes).toHaveLength(0);
+    expect(f.scene.materials).toHaveLength(0);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
 
 test("box selection projects rendered centres into the top-origin canvas under asymmetric HUD insets", async () => {
   const engine = new NullEngine({

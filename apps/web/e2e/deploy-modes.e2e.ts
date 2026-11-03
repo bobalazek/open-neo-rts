@@ -2,7 +2,8 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
-import { parseMatchRecord, verifyMatchRecord } from "../../../packages/sim/src";
+import { parseMatchRecord, type SeatSnapshot, verifyMatchRecord } from "../../../packages/sim/src";
+import type { start as startConstructionProof } from "./construction-proof";
 import type { start } from "./deploy-fixture";
 import type { start as startDeploymentProof } from "./deployment-proof";
 
@@ -10,6 +11,8 @@ declare global {
   interface Window {
     deployFixture: Awaited<ReturnType<typeof start>>;
     deploymentProof: Awaited<ReturnType<typeof startDeploymentProof>>;
+    constructionProof: Awaited<ReturnType<typeof startConstructionProof>>;
+    constructionSnapshots: SeatSnapshot[];
   }
 }
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -1060,24 +1063,51 @@ test("paid original reactors gain and lose their adjacency output through worker
     { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
   ];
   const errors: string[] = [];
+  const renderFixture = execFileSync(
+    "bun",
+    ["build", "apps/web/e2e/construction-proof.ts", "--target=browser"],
+    { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
+  );
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   await page.route("http://reactor-adjacency.test/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path === "/industrial-reactor.glb")
+      return route.fulfill({
+        contentType: "model/gltf-binary",
+        body: readFileSync(
+          `${root}/content/core/factions/eastern-collective/structures/industrial-reactor/industrial-reactor.glb`,
+        ),
+      });
     return route.fulfill({
       contentType: path.endsWith(".js") ? "text/javascript" : "text/html",
       body:
         path === "/fixture.js"
           ? fixture
-          : path === "/sim-worker.js"
-            ? worker
-            : '<!doctype html><title>Reactor adjacency</title><canvas tabindex="0"></canvas>',
+          : path === "/renderer.js"
+            ? renderFixture
+            : path === "/sim-worker.js"
+              ? worker
+              : '<!doctype html><title>Reactor adjacency</title><canvas tabindex="0"></canvas>',
     });
   });
   await page.goto("http://reactor-adjacency.test/");
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.evaluate(async (setup) => {
     const moduleUrl = "/fixture.js";
     const { start } = (await import(moduleUrl)) as typeof import("./deploy-fixture");
     window.deployFixture = await start(setup);
+    window.constructionSnapshots = [];
+    const canvas = document.querySelector("canvas")!;
+    canvas.width = 960;
+    canvas.height = 640;
+    canvas.style.width = "960px";
+    canvas.style.height = "640px";
+    const rendererUrl = "/renderer.js";
+    const { start: render } = (await import(rendererUrl)) as typeof import("./construction-proof");
+    window.constructionProof = await render(canvas);
   }, candidate);
   try {
     const built = await page.evaluate(async (reactor) => {
@@ -1115,6 +1145,22 @@ test("paid original reactors gain and lose their adjacency output through worker
           await f.step(1);
         f.select([reactor]);
         building.push(document.querySelector("[data-details]")?.textContent ?? "");
+        window.constructionSnapshots.push(structuredClone(f.state()!.snapshot));
+        for (
+          let i = 0;
+          i < 500 &&
+          !f
+            .state()!
+            .snapshot.entities.some(
+              (row) =>
+                row.force === 0 &&
+                row.definition === reactor &&
+                (row.constructionStage ?? -1) >= 50,
+            );
+          i++
+        )
+          await f.step(1);
+        window.constructionSnapshots.push(structuredClone(f.state()!.snapshot));
         const complete = () =>
           f
             .state()!
@@ -1122,6 +1168,7 @@ test("paid original reactors gain and lose their adjacency output through worker
               (row) => row.force === 0 && row.definition === reactor && !row.constructionSite,
             );
         for (let i = 0; i < 500 && complete().length < index + 1; i++) await f.step(1);
+        window.constructionSnapshots.push(structuredClone(f.state()!.snapshot));
         produced.push(f.state()!.snapshot.power?.find((row) => row.force === 0)?.produced);
       }
       f.select([reactor]);
@@ -1141,6 +1188,27 @@ test("paid original reactors gain and lose their adjacency output through worker
     expect(built.building[0]).not.toContain("Brownout");
     expect(built.credits).toBe(3200);
     expect(built.reactors).toHaveLength(2);
+    await info.attach("construction-renderer-backend", {
+      body: await page.evaluate(() => window.constructionProof.backend),
+      contentType: "text/plain",
+    });
+    const frames = [];
+    for (let i = 0; i < 6; i++) {
+      const frame = await page.evaluate(
+        (index) => window.constructionProof.accept(window.constructionSnapshots[index]!),
+        i,
+      );
+      frames.push(frame);
+      await page.locator("canvas").screenshot({ path: info.outputPath(`construction-${i}.png`) });
+    }
+    expect(frames[0]?.[0]).toMatchObject({ stage: 0, scaffold: true });
+    expect(frames[1]?.[0]?.stage).toBeGreaterThanOrEqual(50);
+    expect(frames[1]?.[0]?.plane[1]).toBe(1);
+    expect(frames[2]?.[0]?.scaffold).toBe(false);
+    expect(frames[2]?.[0]?.plane[1]).toBe(0);
+    expect(frames[4]?.filter((row) => row.scaffold)).toHaveLength(1);
+    expect(frames[4]?.filter((row) => row.plane[1] === 0)).toHaveLength(1);
+    expect(frames[5]?.every((row) => !row.scaffold && row.plane[1] === 0)).toBe(true);
     expect(
       built.reactors.every(
         (row) =>
@@ -1178,6 +1246,7 @@ test("paid original reactors gain and lose their adjacency output through worker
     expect(await page.evaluate(() => window.deployFixture.errors())).toEqual([]);
     expect(errors).toEqual([]);
   } finally {
+    await page.evaluate(() => window.constructionProof?.dispose());
     await page.evaluate(() => window.deployFixture.dispose());
   }
 });

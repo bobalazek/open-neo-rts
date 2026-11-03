@@ -1,4 +1,4 @@
-// Projected structure foundations. Construction and destruction remain phase 2.
+// Projected foundations and construction assembly. Destruction remains phase 2.
 import { Color3, Mesh, type Scene, StandardMaterial, VertexData } from "@babylonjs/core";
 import { BIOMES, type TerrainGrid } from "@open-neo-rts/content";
 import { CELL_SIZE, PALETTES, terrainHeight } from "../terrain";

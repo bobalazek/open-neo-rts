@@ -332,7 +332,53 @@ exec session 12497, output `/tmp/neo-ai-qualification-sim46-60000-20261103`, log
 do not restart on an observation timeout or overwrite evidence. The historical
 SIM39 batch remains 13 natural outcomes/seven caps and is not current acceptance.
 
-Next: construction assembly/scaffolds (2-21b1), then actual production door
-events and canonical wreck/salvage plus presentation as separate tasks. Continue
+Next: actual production door events (2-21b2) and canonical wreck/salvage plus
+presentation as separate tasks. Construction assembly/scaffolds are delivered below. Continue
 remaining phase-2 effects/orders, full persistence/replay, audio/help/content
 tools and acceptance, then phases 3–5. The overall goal remains unfinished.
+
+## Construction stages and assembly, SIM47
+
+PR #228 merged the stage contract at `1ea6ad9abb6061d2d906ddc3d2012cbdeebbd9e9`:
+public floored integer percentages from actual quarter-work, exact work/builders
+still grant-private, last-seen stages in canonical memory format 2, strict atomic
+restore and copied wire/ghost adapters. Three scenario headers now use SIM47;
+normal startup/short-replay hashes are `3710f12169c99149` /
+`93d019b9d6ee634b`. Debug goldens and content identities stay unchanged. Independent
+review checked exhaustive integer arithmetic against BigInt, hash/restore
+isolation and private build grants. This remains memory-level restore, not a full save.
+
+The renderer in `/tmp/neo-construction-presentation`, branch
+`codex/construction-presentation`, reveals original structures in quarter-metre
+layers with independent instance buffers and shared geometry/materials. Selectable
+gold scaffold envelopes follow footprint/rotation/ground; ghosts are grey and
+unpickable. Missing stage stays at zero, completion restores the full model and
+removes scaffolds, and progress never advances from the render clock.
+
+Independent review accepted production code `45cf5b2`; the subsequent change
+to fixture backend reporting uses explicit `engine.isWebGPU`, plus documentation
+and a folder-purpose comment. A real GPU fallback probe forced no instancing at
+terrain level 2/world y=3.6: original reactor Mesh clones shared geometry/materials
+but maintained distinct zero/half/completed cutoffs; cleanup left zero meshes and
+materials. Evidence `/tmp/neo-independent-clone-{0,50,100}.png`.
+
+The actual catalog/worker/HUD reactor journey now retains six observed snapshots
+from two paid builds, renders the original GLB at zero/half/completion, checks
+independent completed/partial instances and preserves its terminal Bun replay.
+The explicit fixtures are a two-builder kit, fog off, stubbed HUD picking, manual
+snapshot playback, close camera and flat renderer-only ground; worker gameplay
+still uses Training Grounds and authored numbers. WebGL screenshots under
+`/tmp/neo-construction-presentation-browser-results` and WebGPU screenshots under
+`/tmp/neo-construction-webgpu-verified-browser-results` were inspected. The latter's
+JSON report explicitly records `webgpu`; an earlier headless-shell attempt only
+used WebGL and is not GPU-backend evidence. Repo fix/typecheck/test/build/content
+checks pass; the assembled Chromium/WebKit batch passed 19 cases in 58.1 seconds
+with 11 expected non-Chromium skips. Hosted CI and local Firefox remain unavailable.
+
+Partial structures intentionally cast no shadow until completion. Clipped depth
+passes are recorded as later visual polish (2-21b1c), after functional door/wreck
+lifecycle work. No FPS or full-phase acceptance is claimed. The frozen SIM46
+twenty-seed batch is still running on `20623ea` (session 12497); its results are
+evidence for that older revision, not full SIM47 acceptance. Preserve that process
+and its worktree/evidence; do not launch another long qualification batch for each
+small feature while phase-2 canonical work is still changing.
