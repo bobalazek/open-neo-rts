@@ -2,6 +2,15 @@
 
 **Opened with:** Esc or the ☰ button in a match · **Overlay** over the dimmed match
 
+The local match menu, settings, objectives, current-controls and named-save panes
+use native Babylon GUI. Its canvas lives inside the existing modal HTML dialog,
+so native pointer input and semantic keyboard/assistive focus share the same
+modal lifetime. The original pause/speed/save/restart/surrender handlers remain
+authoritative. The Load gallery keeps its existing HTML presentation pending its
+own native pass. Escape closes a native choice list before backing out or
+resuming. Disposing the menu cancels pending graphics startup and preference
+previews; it never owns or disposes the battlefield renderer.
+
 ```text
             ┌──────────────────────────────┐
             │          PAUSED              │   (single player / playtest)

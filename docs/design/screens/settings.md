@@ -2,6 +2,15 @@
 
 **Route:** `/settings`, or as an overlay from the [in-game menu](in-game-menu.md)
 
+The implemented graphics preset, interface scale, camera speed, edge scrolling
+and reduced camera motion controls now use native Babylon GUI at both entry
+points. Their existing validation and versioned device storage remain unchanged.
+Changes preview live; Back or closing the match menu restores the last saved
+preferences. Failed storage writes restore saved preferences and show the error.
+Descriptions are visible alongside fields and keyboard focus scrolls them into
+view. Semantic HTML retains assistive editing and the graphics-failure fallback.
+The additional categories/options in the target layout below remain future work.
+
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ ◂ Back                         SETTINGS                                     │

@@ -12,6 +12,10 @@ The owner [authorized gameplay before performance acceptance](./decisions/2026-1
 
 The owner now prioritizes the UI pass. Home uses [native Babylon GUI](./decisions/2026-11-03-native-menu.md), an original vector wordmark and an authored model display. [Skirmish setup](./decisions/2026-11-03-native-skirmish-setup.md) now uses native fields/actions and the authored map preview while preserving its validator and shared normal match path. Continue through the remaining game screens with keyboard/assistive access intact.
 
+[Settings and pause panels](./decisions/2026-11-03-native-settings-and-pause.md) now
+share native presentation while retaining their real preference and modal
+controllers. Load-gallery, results, debug and HUD conversion remain UI work.
+
 - [ ] Native setup input polish: mirror the caret and selection while the semantic HTML field handles keyboard editing; the native pointer editor already shows both.
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.

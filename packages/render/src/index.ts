@@ -14,6 +14,7 @@ export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createPlacementOverlay } from "./overlays/placement";
 export { createMenuScene, type MenuAction } from "./scene/menu";
+export { createPanelScene, type PanelContent } from "./scene/panel";
 export { createRenderCounters } from "./scene/performance";
 export type { GraphicsQuality } from "./scene/quality";
 export { createSkirmishScene, type SkirmishField } from "./scene/skirmish";

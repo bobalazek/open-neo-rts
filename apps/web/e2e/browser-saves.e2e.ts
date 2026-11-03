@@ -95,9 +95,9 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
   let menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
-  await menu.getByRole("button", { name: "Save game", exact: true }).click();
+  await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await menu.getByLabel("Save name", { exact: true }).fill("Before the push");
-  await menu.getByRole("button", { name: "Save game", exact: true }).click();
+  await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await expect(menu.locator("[data-saved]")).toHaveText("Game saved in this browser.");
   const manual = (await saves(page)).find((save) => save.name === "Before the push")!;
   expect(manual.packs).toHaveLength(1);
@@ -117,14 +117,14 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     return colors.size;
   }, manual.thumbnail);
   expect(colors).toBeGreaterThan(20);
-  await menu.getByRole("button", { name: "Back", exact: true }).click();
-  await menu.getByRole("button", { name: "Quicksave now", exact: true }).click();
+  await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
+  await menu.getByRole("button", { name: "Quicksave now", exact: true }).press("Enter");
   await expect
     .poll(async () => (await saves(page)).some((save) => save.id === "quicksave"))
     .toBe(true);
   const quick = (await saves(page)).find((save) => save.id === "quicksave")!;
   await page.evaluate(() => Reflect.set(window, "failSaveWrites", true));
-  await menu.getByRole("button", { name: "Quicksave now", exact: true }).click();
+  await menu.getByRole("button", { name: "Quicksave now", exact: true }).press("Enter");
   await expect(menu.locator("[data-menu-error]")).not.toBeEmpty();
   expect((await saves(page)).find((save) => save.id === "quicksave")).toEqual(quick);
   await page.evaluate(() => Reflect.set(window, "failSaveWrites", false));
@@ -144,12 +144,12 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     .poll(async () => (await saves(page)).find((save) => save.id === "autosave-0")!.createdAt)
     .toBeGreaterThan(originalAuto);
   expect((await saves(page)).filter((save) => save.kind === "auto")).toHaveLength(3);
-  await menu.getByRole("button", { name: "Resume match", exact: true }).click();
+  await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
   await expect
     .poll(async () => Number(await page.locator("#game").getAttribute("data-tick")))
     .toBeGreaterThan(manual.match.tick + 3);
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
-  await menu.getByRole("button", { name: "Load game", exact: true }).click();
+  await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Before the push" }).click();
   const download = page.waitForEvent("download");
   await menu.getByRole("button", { name: "Export save", exact: true }).click();
@@ -207,9 +207,9 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Match menu", exact: true }).click();
   menu = page.getByRole("dialog", { name: "Match menu", exact: true });
-  await menu.getByRole("button", { name: "Save game", exact: true }).click();
+  await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await menu.getByLabel("Save name", { exact: true }).fill("Resumed proof");
-  await menu.getByRole("button", { name: "Save game", exact: true }).click();
+  await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await expect(menu.locator("[data-saved]")).toHaveText("Game saved in this browser.");
   const resumed = (await saves(page)).find((save) => save.name === "Resumed proof")!;
   expect(resumed.match.hash).toBe(manual.match.hash);
@@ -218,8 +218,8 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   );
   writeFileSync(info.outputPath("resumed-save.json"), JSON.stringify(resumed));
   await page.screenshot({ path: info.outputPath("saved-match.png") });
-  await menu.getByRole("button", { name: "Back", exact: true }).click();
-  await menu.getByRole("button", { name: "Load game", exact: true }).click();
+  await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
+  await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Resumed proof" }).click();
   await replaceStored(page, { ...resumed, createdAt: resumed.createdAt + 1 });
   await menu.getByRole("button", { name: "Load selected game", exact: true }).click();
@@ -238,8 +238,8 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     match: { ...manual.match, simVersion: manual.match.simVersion + 1 },
   } as SavedGame;
   await replaceStored(page, incompatible);
-  await menu.getByRole("button", { name: "Back", exact: true }).click();
-  await menu.getByRole("button", { name: "Load game", exact: true }).click();
+  await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
+  await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Old game version" }).click();
   await expect(
     menu.getByRole("button", { name: "Load selected game", exact: true }),

@@ -274,7 +274,8 @@
   margin: 7vh auto 0;
 }
 .game-shell.home-native,
-.game-shell.setup-native {
+.game-shell.setup-native,
+.game-shell.native-panel {
   padding: 0;
   background: transparent;
   pointer-events: none;
@@ -282,7 +283,8 @@
 }
 /* The visible controls are Babylon GUI; retain semantic Home navigation for assistive technology. */
 .home-native .home-screen,
-.setup-native .setup-screen {
+.setup-native .setup-screen,
+.native-panel [data-native-semantics] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -290,6 +292,30 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+.native-menu-canvas {
+  background: transparent;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: auto;
+}
+.match-menu.native-panel {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+}
+.match-menu.native-panel::backdrop {
+  background: transparent;
 }
 .home-screen h1 {
   font-size: 3.5rem;

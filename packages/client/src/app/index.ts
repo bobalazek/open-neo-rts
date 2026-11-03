@@ -191,7 +191,7 @@ export function startApp(canvas: HTMLCanvasElement) {
   }
   function show(notice = "") {
     if (location.pathname === "/settings") {
-      const settings = settingsScreen(root, applyInterfaceScale, () => navigate("/"));
+      const settings = settingsScreen(root, applyInterfaceScale, () => navigate("/"), canvas);
       disposeScreen = settings.cancel;
     } else if (location.pathname === "/load") {
       disposeScreen = loadGameScreen(root, {

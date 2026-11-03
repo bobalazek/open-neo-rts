@@ -1,6 +1,7 @@
 // Device preferences and one shared Home/in-match settings panel. Phase 2.
 import type { GraphicsQuality } from "@open-neo-rts/render";
 import { text } from "../../shared";
+import { mountNativePanel } from "../../shared/native-panel";
 
 export const DEVICE_SETTINGS_KEY = "open-neo-rts.settings.v1";
 export const UI_SCALES = [75, 100, 125, 150] as const;
@@ -87,6 +88,7 @@ export function settingsScreen(
   root: HTMLElement,
   apply: (settings: DeviceSettings) => void,
   back: () => void,
+  canvas?: HTMLCanvasElement,
 ) {
   let saved = readDeviceSettings();
   root.innerHTML = `<section class="settings-screen"><header><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.settings.title")}</h1></header><form><label>${text("ui.settings.quality")}<select name="quality" title="${text("ui.settings.quality-help")}">${["low", "medium", "high", "ultra"].map((quality) => `<option value="${quality}">${text(`ui.settings.${quality}` as "ui.settings.low")}</option>`).join("")}</select><small>${text("ui.settings.quality-help")}</small></label><label>${text("ui.settings.scale")}<select name="uiScale" title="${text("ui.settings.scale-help")}">${UI_SCALES.map((scale) => `<option value="${scale}">${scale}%</option>`).join("")}</select><small>${text("ui.settings.scale-help")}</small></label><label>${text("ui.settings.camera")}<select name="cameraSpeed" title="${text("ui.settings.camera-help")}">${CAMERA_SPEEDS.map((speed) => `<option value="${speed}">${speed}%</option>`).join("")}</select><small>${text("ui.settings.camera-help")}</small></label><label class="settings-check"><input type="checkbox" name="edgeScroll" />${text("ui.settings.edge")}<small>${text("ui.settings.edge-help")}</small></label><label class="settings-check"><input type="checkbox" name="reducedMotion" />${text("ui.settings.motion")}<small>${text("ui.settings.motion-help")}</small></label><p role="status" aria-live="polite" data-status></p><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-reset>${text("ui.settings.defaults")}</button><button type="submit" class="primary">${text("ui.settings.apply")}</button></div></form></section>`;
@@ -94,6 +96,7 @@ export function settingsScreen(
   const error = root.querySelector("[data-error]");
   const status = root.querySelector("[data-status]");
   if (!form || !error || !status) throw new Error("Settings controls missing");
+  let panel: ReturnType<typeof mountNativePanel> | undefined;
   const field = (name: string) =>
     form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   const fill = (value: DeviceSettings) => {
@@ -135,6 +138,7 @@ export function settingsScreen(
     } catch {
       error.textContent = text("ui.settings.invalid");
     }
+    panel?.update();
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -154,13 +158,26 @@ export function settingsScreen(
       error.textContent = text("ui.settings.save-failed");
       status.textContent = "";
     }
+    panel?.update();
   });
   root.querySelector("[data-reset]")?.addEventListener("click", () => {
     fill(defaultDeviceSettings());
     apply(read());
     status.textContent = "";
     error.textContent = "";
+    panel?.update();
   });
   root.querySelector("[data-back]")?.addEventListener("click", back);
-  return { cancel: () => apply(saved) };
+  if (canvas)
+    panel = mountNativePanel(root, root.querySelector<HTMLElement>(".settings-screen")!, canvas, {
+      id: () => "settings",
+      title: () => text("ui.settings.title"),
+      modal: false,
+    });
+  return {
+    cancel: () => {
+      panel?.dispose();
+      apply(saved);
+    },
+  };
 }
