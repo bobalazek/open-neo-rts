@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Battlefield screen regions](./2026-11-03-battlefield-regions.md) — AoE IV reference analysis, economy beside contextual selection, compact global controls and no empty selection panel.
+
 - [2026-11-03 — Native battlefield command station](./2026-11-03-native-battlefield-station.md) — Right circular map, integrated selection/commands, icon tooltips and render-scale-safe input.
 
 - [2026-11-03 — Native save galleries and results](./2026-11-03-native-load-and-results.md) — Babylon thumbnails, final tables/history and keyboard scrolling preserve the existing storage and result controllers.

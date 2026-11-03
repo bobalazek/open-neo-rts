@@ -10,6 +10,19 @@ import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { BattlefieldMap } from "./battlefield-map";
 import { placePanelControl as place } from "./panel-content";
 
+const localImages: Record<string, string> = Object.fromEntries(
+  Object.entries({
+    inspect: "M12 8v1m0 3v5M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18",
+    groups: "M3 4h7v7H3Zm11 0h7v7h-7ZM3 15h7v6H3Zm11 0h7v6h-7Z",
+    commands: "M4 12h16m-6-6 6 6-6 6",
+    build: "m4 20 9-9m-5-7 4-2 8 8-3 3-4-4-2 2-4-4Z",
+    objective: "M12 3v4m0 10v4M3 12h4m10 0h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8",
+  }).map(([id, path]) => [
+    id,
+    `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ddc382" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`)}`,
+  ]),
+);
+
 export interface BattlefieldAction {
   id: string;
   label: string;
@@ -24,11 +37,16 @@ export interface BattlefieldAction {
 }
 export interface BattlefieldHudContent {
   scale: number;
+  objective: { label: string; tooltip: string };
   resources: readonly { id: string; label: string; tooltip: string; image?: string }[];
+  status: BattlefieldHudContent["resources"];
   top: readonly BattlefieldAction[];
   selection: {
     label: string;
-    image?: string;
+    owner: string;
+    color: string;
+    count: number;
+    types: readonly BattlefieldAction[];
     health: number;
     maxHealth: number;
     details: string;
@@ -81,19 +99,35 @@ export function createBattlefieldHud(
     parent.addControl(node);
     return node;
   };
-  const topFrame = frame("resource bar");
+  const topFrame = frame("match status");
+  const objectiveLabel = text("match objective", 12, "#ddc382");
+  const objectiveIcon = new Image("objective", localImages.objective);
+  layer.addControl(objectiveIcon);
+  const economy = frame("economy");
   const dock = frame("selection command station");
+  const typeScroll = new ScrollViewer("selected types scroll");
+  typeScroll.isPointerBlocker = true;
+  typeScroll.thickness = 0;
+  typeScroll.barSize = 5;
+  typeScroll.barColor = "#ddc382";
+  layer.addControl(typeScroll);
+  const typeBody = new Container("selected types");
+  typeBody.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+  typeBody.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+  typeScroll.addControl(typeBody);
   const mini = new BattlefieldMap(minimapSource);
   layer.addControl(mini);
   const selectionName = text("selected actor", 16);
+  const selectionOwner = text("selected owner", 11);
+  const ownerColor = frame("selected Force color");
+  ownerColor.thickness = 0;
+  ownerColor.isHitTestVisible = ownerColor.isPointerBlocker = false;
   selectionName.fontWeight = "bold";
-  const portrait = new Image("selected portrait");
-  portrait.stretch = Image.STRETCH_UNIFORM;
-  portrait.isHitTestVisible = false;
-  layer.addControl(portrait);
   const health = frame("health track");
+  health.isHitTestVisible = health.isPointerBlocker = false;
   health.background = "#10191e";
   const healthFill = frame("health", health);
+  healthFill.isHitTestVisible = healthFill.isPointerBlocker = false;
   healthFill.background = "#83c391";
   healthFill.thickness = 0;
   const healthLabel = text("selected health", 12, "#b5c0bf");
@@ -133,6 +167,19 @@ export function createBattlefieldHud(
     alt = false;
   let layoutRects: { x: number; y: number; width: number; height: number }[] = [];
   const placed = new Set<string>();
+  const awaitingLayout = new Set<Control>();
+  const afterDraw = scene.onAfterRenderObservable.add(() => {
+    for (const button of awaitingLayout) if (button.isVisible) button.isHitTestVisible = true;
+    awaitingLayout.clear();
+  });
+  function show(control: Control, visible: boolean) {
+    // Newly shown controls must be measured before either GUI picking or world guards use them.
+    if (visible && !control.isVisible && control.isPointerBlocker) {
+      control.isHitTestVisible = false;
+      awaitingLayout.add(control);
+    }
+    control.isVisible = visible;
+  }
   let mapBounds = { x: 0, y: 0, size: 0 };
   const buttons = new Map<
     string,
@@ -147,6 +194,7 @@ export function createBattlefieldHud(
     }
   >();
   const resourceWidgets: { label: TextBlock; image?: Image; tooltip: string }[] = [];
+  const statusWidgets: typeof resourceWidgets = [];
   const hideTooltip = () => {
     tooltip.isVisible = false;
   };
@@ -200,12 +248,15 @@ export function createBattlefieldHud(
     label,
     tooltip: key ? `${label} (${key})` : label,
     key,
+    image: localImages[id],
     disabled: false,
     active: false,
     activate,
   });
   function make(action: BattlefieldAction, parent: Container = layer) {
     const button = new Button(action.id);
+    button.isVisible = false;
+    button.isHitTestVisible = false;
     button.background = "#18262e";
     button.color = "#475354";
     button.thickness = 1;
@@ -230,7 +281,7 @@ export function createBattlefieldHud(
     const badge = text(`${action.id} count`, 11, "#eff1e9", button);
     badge.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
     const key = text(`${action.id} key`, 10, "#ddc382", button);
-    key.text = action.key ?? "";
+    key.text = action.key && action.key.length <= 2 ? action.key : "";
     badge.text = action.badge ?? "";
     let progress: Rectangle | undefined;
     if (action.progress !== undefined) {
@@ -283,10 +334,10 @@ export function createBattlefieldHud(
     const item = buttons.get(action.id);
     if (!item) return;
     placed.add(action.id);
-    item.button.isVisible = true;
+    show(item.button, true);
     place(item.button, x, y, width, height);
     if (item.image) {
-      const inset = item.action.image?.startsWith("data:image/svg") ? 7 : 2;
+      const inset = item.action.image?.startsWith("data:image/svg") ? 4 : 2;
       place(
         item.image,
         inset,
@@ -315,174 +366,209 @@ export function createBattlefieldHud(
     const commandRows = Math.ceil(
       (Math.max(-1, ...commandSlots.map((item) => item.index)) + 1) / 4,
     );
-    const resourceColumns =
-      width < 650 ? Math.min(3, content.resources.length) : content.resources.length;
-    const topHeight =
-      width < 650
-        ? Math.ceil(content.resources.length / Math.max(1, resourceColumns)) * 30 + 34
-        : 40;
+    const hasSelection = content.selection.count > 0;
+    const recipeMode = content.recipes.length > 0;
+    const topHeight = 42;
+    const economyWidth = compact ? width - 24 : 132 * scale;
     const mapSize = (compact ? 144 : 216) * scale;
     const dockHeight =
-      Math.max(
-        compact ? 218 : 208,
-        44 + commandRows * 41 - 5 + 12 + (content.queue.length ? 36 : 0),
-      ) * scale;
-    const dockWidth = compact ? width - 24 : Math.min(900 * scale, width - mapSize - 52);
+      Math.max(compact ? 190 : 176, 38 + commandRows * 36 + (content.queue.length ? 34 : 0)) *
+      scale;
+    const dockX = compact ? 12 : 20 + economyWidth;
+    const recipeWidth = recipeMode ? 144 + 16 + Math.min(6, content.recipes.length) * 37 - 5 : 144;
+    const queueWidth = Math.min(6, content.queue.length) * 32 - 5;
+    const desktopWidth = 184 * scale + 36 + Math.max(recipeWidth, queueWidth) * scale;
+    const dockWidth = compact
+      ? width - 24
+      : Math.min(desktopWidth, width - mapSize - 52 - economyWidth - 8);
     const dockY = height - dockHeight - 12;
     const mapX = width - mapSize - 16;
-    const mapY = compact ? dockY - mapSize - 42 : height - mapSize - 52;
+    const economyColumns = compact ? Math.min(3, content.resources.length) : 1;
+    const economyHeight = compact
+      ? Math.ceil(content.resources.length / Math.max(1, economyColumns)) * 26 + 8
+      : content.resources.length * 26 + 12;
+    const economyY = compact
+      ? (hasSelection ? dockY : height - 12) - economyHeight - 8
+      : height - economyHeight - 12;
+    const mapY = compact ? economyY - mapSize - 42 : height - mapSize - 40;
     mapBounds = { x: mapX, y: mapY, size: mapSize };
-    place(topFrame, 0, 0, width, topHeight);
-    place(dock, 12, dockY, dockWidth, dockHeight);
+    const topReserve = content.top.length * 30;
+    place(topFrame, width - topReserve - 8, 6, topReserve, 30);
+    place(economy, 12, economyY, economyWidth, economyHeight);
+    place(dock, dockX, dockY, dockWidth, dockHeight);
+    show(dock, hasSelection);
+    show(typeScroll, hasSelection);
+    selectionName.isVisible = hasSelection;
+    selectionOwner.isVisible = hasSelection;
+    ownerColor.isVisible = hasSelection;
+    health.isVisible = hasSelection;
+    healthLabel.isVisible = hasSelection;
+    if (!hasSelection) showDetails = false;
     place(mini, mapX, mapY, mapSize, mapSize);
     layoutRects = [
-      { x: 0, y: 0, width, height: topHeight },
-      { x: 12, y: dockY, width: dockWidth, height: dockHeight },
+      { x: width - topReserve - 8, y: 6, width: topReserve, height: 30 },
+      { x: compact ? 38 : width / 2 - 72, y: 6, width: 144, height: 30 },
+      { x: 12, y: economyY, width: economyWidth, height: economyHeight },
+      ...(hasSelection ? [{ x: dockX, y: dockY, width: dockWidth, height: dockHeight }] : []),
       { x: mapX, y: mapY + mapSize, width: mapSize, height: 38 },
     ];
     placed.clear();
-    const topReserve = content.top.length * 36 + 8;
-    const columns = resourceColumns;
-    const resourceWidth = Math.max(
-      82,
-      (width - (width < 650 ? 8 : topReserve) - 16) / Math.max(1, columns),
-    );
+    place(objectiveIcon, 12, 13, 16, 16);
+    place(objectiveLabel, 36, 6, 200, 30);
+    objectiveLabel.isVisible = !compact;
+    const columns = economyColumns;
+    const resourceWidth = economyWidth / Math.max(1, columns);
     resourceWidgets.forEach((widget, i) => {
       const row = Math.floor(i / columns),
-        x = 10 + (i % columns) * resourceWidth;
-      const y = row * 30 + 5;
+        x = 20 + (i % columns) * resourceWidth;
+      const y = economyY + 6 + row * 26;
       if (widget.image) place(widget.image, x, y + 4, 16, 16);
       place(widget.label, x + (widget.image ? 22 : 0), y, resourceWidth - 26, 24);
     });
-    content.top.forEach((action, i) => {
-      position(action, width - topReserve + i * 36, topHeight - 35, 32, 30);
+    statusWidgets.forEach((widget, i) => {
+      const x = (compact ? 38 : width / 2 - 70) + i * 76;
+      if (widget.image) place(widget.image, x, 13, 14, 14);
+      place(widget.label, x + 19, 7, 54, 26);
     });
-    const profileWidth = compact ? 116 * scale : 184 * scale;
-    place(selectionName, 24, dockY + 10, profileWidth - 8, 36 * scale);
-    selectionName.textWrapping = true;
-    selectionName.fontSize = 14 * scale;
-    const portraitSize = 72 * scale;
-    place(portrait, 24, dockY + 49 * scale, portraitSize, portraitSize);
-    place(health, 24, dockY + 126 * scale, profileWidth - 16, 5 * scale);
-    place(
-      healthFill,
-      0,
-      0,
-      Math.max(
-        0,
-        ((profileWidth - 16) * content.selection.health) / Math.max(1, content.selection.maxHealth),
-      ),
-      5 * scale,
-    );
-    place(healthLabel, 24, dockY + 134 * scale, profileWidth - 16, 20);
-    position(
-      local("inspect", "Details", () => {}),
-      24,
-      dockY + dockHeight - 40 * scale,
-      profileWidth - 16,
-      28 * scale,
-    );
-    const contextX = 24 + profileWidth;
-    const contextWidth = dockWidth - profileWidth - 36;
-    const recipeMode = content.recipes.length > 0;
-    const commandTab = buttons.get("commands"),
-      buildTab = buttons.get("build");
-    if (commandTab)
-      commandTab.button.background = activeMode === "commands" ? "#3c392d" : "#18262e";
-    if (buildTab) buildTab.button.background = activeMode === "build" ? "#3c392d" : "#18262e";
-    const both = !compact && recipeMode;
-    position(
-      local("commands", "Commands", () => {}),
-      contextX,
-      dockY + 10,
-      96 * scale,
-      26 * scale,
-    );
-    if (recipeMode)
-      position(
-        local("build", "Build / train", () => {}),
-        contextX + 104 * scale,
-        dockY + 10,
-        104 * scale,
-        26 * scale,
+    content.top.forEach((action, i) => {
+      position(action, width - topReserve - 8 + i * 30, 6, 30, 30);
+    });
+    const profileWidth = compact ? 112 * scale : 184 * scale;
+    const profileX = dockX + 10;
+    if (hasSelection) {
+      place(selectionName, profileX, dockY + 5, profileWidth - 30, 30 * scale);
+      selectionName.textWrapping = true;
+      selectionName.fontSize = 13 * scale;
+      place(ownerColor, profileX, dockY + 42 * scale, 7 * scale, 7 * scale);
+      place(
+        selectionOwner,
+        profileX + 12 * scale,
+        dockY + 34 * scale,
+        profileWidth - 22 * scale,
+        25 * scale,
       );
-    const commandWidth = both ? 180 * scale : contextWidth;
-    const commandsShown = both || activeMode === "commands" || !recipeMode;
-    const recipesShown = both || (activeMode === "build" && recipeMode);
-    const grid = (
-      actions: readonly BattlefieldAction[],
-      x: number,
-      y: number,
-      availableWidth: number,
-      cell: number,
-    ) => {
-      const cols = Math.max(1, Math.floor((availableWidth + 5 * scale) / (cell + 5 * scale)));
-      actions.forEach((action, i) => {
+      selectionOwner.textWrapping = true;
+      selectionOwner.fontSize = 11 * scale;
+      const multi = content.selection.types.length > 1;
+      const typeWidth = multi ? profileWidth - 12 : 56 * scale;
+      const typeHeight = multi ? Math.max(40, dockHeight - 104 * scale) : 56 * scale;
+      place(typeScroll, profileX, dockY + 64 * scale, typeWidth, typeHeight);
+      typeBody.widthInPixels = typeWidth - 5;
+      const typeCols = multi ? Math.max(1, Math.floor((typeWidth - 5) / (36 * scale))) : 1;
+      const typeCell = multi ? 32 * scale : 50 * scale;
+      typeBody.heightInPixels =
+        Math.ceil(content.selection.types.length / typeCols) * (typeCell + 4 * scale);
+      content.selection.types.forEach((action, i) => {
         position(
           action,
-          x + (i % cols) * (cell + 5 * scale),
-          y + Math.floor(i / cols) * (cell + 5 * scale),
-          cell,
-          cell,
+          (i % typeCols) * (typeCell + 4 * scale),
+          Math.floor(i / typeCols) * (typeCell + 4 * scale),
+          typeCell,
+          typeCell,
         );
       });
-    };
-    if (commandsShown)
-      for (const { action, index } of commandSlots)
+      place(health, profileX, dockY + dockHeight - 33 * scale, profileWidth - 16, 4 * scale);
+      place(
+        healthFill,
+        0,
+        0,
+        Math.max(
+          0,
+          ((profileWidth - 16) * content.selection.health) /
+            Math.max(1, content.selection.maxHealth),
+        ),
+        5 * scale,
+      );
+      place(healthLabel, profileX, dockY + dockHeight - 26 * scale, profileWidth - 16, 20);
+      position(
+        local("inspect", "Details", () => {}),
+        profileX + profileWidth - 28 * scale,
+        dockY + 5,
+        24 * scale,
+        24 * scale,
+      );
+      const contextX = profileX + profileWidth;
+      const contextWidth = dockWidth - profileWidth - 36;
+      const commandTab = buttons.get("commands"),
+        buildTab = buttons.get("build");
+      if (commandTab)
+        commandTab.button.background = activeMode === "commands" ? "#3c392d" : "#18262e";
+      if (buildTab) buildTab.button.background = activeMode === "build" ? "#3c392d" : "#18262e";
+      const both = !compact && recipeMode;
+      position(
+        local("commands", "Commands", () => {}),
+        contextX,
+        dockY + 10,
+        28 * scale,
+        24 * scale,
+      );
+      if (recipeMode)
         position(
-          action,
-          contextX + (index % 4) * 41 * scale,
-          dockY + (44 + Math.floor(index / 4) * 41) * scale,
-          36 * scale,
-          36 * scale,
+          local("build", "Build / train", () => {}),
+          contextX + 34 * scale,
+          dockY + 10,
+          28 * scale,
+          24 * scale,
         );
-    const buildX = both ? contextX + commandWidth + 16 * scale : contextX;
-    const buildWidth = both ? contextWidth - commandWidth - 16 * scale : contextWidth;
-    if (recipesShown) grid(content.recipes, buildX, dockY + 44 * scale, buildWidth, 36 * scale);
-    grid(content.queue, contextX, dockY + dockHeight - 36 * scale, contextWidth, 27 * scale);
+      const commandWidth = both ? 144 * scale : contextWidth;
+      const commandsShown = both || activeMode === "commands" || !recipeMode;
+      const recipesShown = both || (activeMode === "build" && recipeMode);
+      const grid = (
+        actions: readonly BattlefieldAction[],
+        x: number,
+        y: number,
+        availableWidth: number,
+        cell: number,
+      ) => {
+        const cols = Math.max(
+          1,
+          Math.min(6, Math.floor((availableWidth + 5 * scale) / (cell + 5 * scale))),
+        );
+        actions.forEach((action, i) => {
+          position(
+            action,
+            x + (i % cols) * (cell + 5 * scale),
+            y + Math.floor(i / cols) * (cell + 5 * scale),
+            cell,
+            cell,
+          );
+        });
+      };
+      if (commandsShown)
+        for (const { action, index } of commandSlots)
+          position(
+            action,
+            contextX + (index % 4) * 36 * scale,
+            dockY + (38 + Math.floor(index / 4) * 36) * scale,
+            32 * scale,
+            32 * scale,
+          );
+      const buildX = both ? contextX + commandWidth + 16 * scale : contextX;
+      const buildWidth = both ? contextWidth - commandWidth - 16 * scale : contextWidth;
+      if (recipesShown) grid(content.recipes, buildX, dockY + 38 * scale, buildWidth, 32 * scale);
+      grid(content.queue, contextX, dockY + dockHeight - 36 * scale, contextWidth, 27 * scale);
+    }
+    const helperY = economyY - 36 * scale;
     content.helpers.forEach((action, i) => {
-      position(action, 12 + i * 46 * scale, dockY - 42 * scale, 40 * scale, 34 * scale);
+      position(action, 12 + i * 36 * scale, helperY, 32 * scale, 30 * scale);
     });
-    const helperCount = content.helpers.length;
     position(
       local("groups", "Groups", () => {}),
-      12 + content.helpers.length * 46 * scale,
-      dockY - 42 * scale,
-      64 * scale,
-      34 * scale,
+      12 + content.helpers.length * 36 * scale,
+      helperY,
+      30 * scale,
+      30 * scale,
     );
     const groups = showGroups ? content.groups : content.groups.filter((action) => !!action.badge);
+    const groupRows = Math.max(1, Math.floor((helperY - topHeight - 100) / (34 * scale)));
     groups.forEach((action, i) => {
       position(
         action,
-        18 + (i % 10) * 39 * scale,
-        dockY - (showGroups ? 84 : 42) * scale,
-        34 * scale,
-        34 * scale,
+        12 + Math.floor(i / groupRows) * 34 * scale,
+        helperY - 8 - ((i % groupRows) + 1) * 34 * scale,
+        30 * scale,
+        30 * scale,
       );
-    });
-    if (!showGroups)
-      groups.forEach((action, i) => {
-        position(
-          action,
-          88 * scale + helperCount * 46 * scale + i * 39 * scale,
-          dockY - 42 * scale,
-          34 * scale,
-          34 * scale,
-        );
-      });
-    if (showGroups)
-      layoutRects.push({
-        x: 12,
-        y: dockY - 84 * scale,
-        width: Math.min(width - 24, 400 * scale),
-        height: 42 * scale,
-      });
-    layoutRects.push({
-      x: 12,
-      y: dockY - 42 * scale,
-      width: Math.min(dockWidth, (content.helpers.length * 46 + 76 + groups.length * 39) * scale),
-      height: 36 * scale,
     });
     content.mapActions.forEach((action, i) => {
       position(action, mapX + i * 40 * scale, mapY + mapSize + 5, 34 * scale, 30 * scale);
@@ -499,28 +585,30 @@ export function createBattlefieldHud(
       0,
       content.notices.findIndex((action) => action.id === focused) - 2,
     );
+    const noticeCount = Math.min(content.notices.length, 3);
     content.notices.slice(noticeStart, noticeStart + 3).forEach((action, i) => {
       position(
         action,
-        12,
-        Math.max(topHeight + 68, dockY - 190 + i * 34),
-        Math.min(260, width - mapSize - 36),
+        width - Math.min(260, width - 24) - 12,
+        Math.max(topHeight + 8, mapY - 38 * (noticeCount - i)),
+        Math.min(260, width - 24),
         30,
       );
     });
-    inspector.isVisible = showDetails;
+    show(inspector, showDetails);
     if (showDetails) {
       const inspectWidth = Math.min(480, width - 24);
       const textHeight = heightFor(content.selection.details, inspectWidth - 44, 13);
       const bodyHeight = textHeight + 16 + content.details.length * 38;
+      const inspectBottom = compact ? Math.min(economyY, mapY) : dockY;
       const inspectHeight = Math.min(
         Math.ceil(bodyHeight + 24),
-        Math.max(1, Math.min(440, dockY - topHeight - 24)),
+        Math.max(1, Math.min(440, inspectBottom - topHeight - 24)),
       );
       place(
         inspector,
-        12,
-        Math.max(topHeight + 12, dockY - inspectHeight - 12),
+        compact ? 12 : dockX,
+        Math.max(topHeight + 12, inspectBottom - inspectHeight - 12),
         inspectWidth,
         inspectHeight,
       );
@@ -549,6 +637,7 @@ export function createBattlefieldHud(
     content = next;
     const all = [
       ...next.top,
+      ...next.selection.types,
       ...next.commands,
       ...next.recipes,
       ...next.queue,
@@ -561,18 +650,29 @@ export function createBattlefieldHud(
     const key = JSON.stringify([
       all.map((action) => [action.id, action.image]),
       next.resources.map((item) => item.id),
+      next.status.map((item) => item.id),
     ]);
     if (key !== contentKey) {
       contentKey = key;
       hideTooltip();
       for (const item of buttons.values()) item.button.dispose();
+      awaitingLayout.clear();
       buttons.clear();
-      for (const widget of resourceWidgets) {
+      for (const widget of [...resourceWidgets, ...statusWidgets]) {
         widget.label.dispose();
         widget.image?.dispose();
       }
       resourceWidgets.length = 0;
-      for (const action of all) make(action, next.details.includes(action) ? inspectorBody : layer);
+      statusWidgets.length = 0;
+      for (const action of all)
+        make(
+          action,
+          next.selection.types.includes(action)
+            ? typeBody
+            : next.details.includes(action)
+              ? inspectorBody
+              : layer,
+        );
       make(
         local(
           "inspect",
@@ -607,22 +707,26 @@ export function createBattlefieldHud(
           layout();
         }),
       );
-      for (const item of next.resources) {
-        const label = text(item.id, 12);
-        const image = item.image ? new Image(`${item.id} icon`, item.image) : undefined;
-        if (image) {
-          image.isHitTestVisible = false;
-          layer.addControl(image);
+      for (const [items, widgets] of [
+        [next.resources, resourceWidgets],
+        [next.status, statusWidgets],
+      ] as const)
+        for (const item of items) {
+          const label = text(item.id, 12);
+          const image = item.image ? new Image(`${item.id} icon`, item.image) : undefined;
+          if (image) {
+            image.isHitTestVisible = false;
+            layer.addControl(image);
+          }
+          const widget = { label, image, tooltip: item.tooltip };
+          label.isHitTestVisible = true;
+          label.onPointerEnterObservable.add(() => {
+            const rect = cssRect(label);
+            showTooltip(widget.tooltip, rect.left, rect.top);
+          });
+          label.onPointerOutObservable.add(hideTooltip);
+          widgets.push(widget);
         }
-        const widget = { label, image, tooltip: item.tooltip };
-        label.isHitTestVisible = true;
-        label.onPointerEnterObservable.add(() => {
-          const rect = cssRect(label);
-          showTooltip(widget.tooltip, rect.left, rect.top);
-        });
-        label.onPointerOutObservable.add(hideTooltip);
-        resourceWidgets.push(widget);
-      }
     }
     for (const action of all) {
       const item = buttons.get(action.id);
@@ -631,7 +735,7 @@ export function createBattlefieldHud(
       item.button.alpha = action.disabled ? 0.45 : 1;
       item.button.background = action.active ? "#3c392d" : "#18262e";
       item.badge.text = action.badge ?? "";
-      item.key.text = action.key ?? "";
+      item.key.text = action.key && action.key.length <= 2 ? action.key : "";
       if (item.label) item.label.text = action.label;
       if (item.progress)
         item.progress.width = `${Math.max(0, Math.min(100, action.progress ?? 0))}%`;
@@ -640,9 +744,15 @@ export function createBattlefieldHud(
       resourceWidgets[i]!.label.text = item.label;
       resourceWidgets[i]!.tooltip = item.tooltip;
     });
-    selectionName.text = next.selection.label;
-    portrait.isVisible = !!next.selection.image;
-    if (portrait.source !== next.selection.image) portrait.source = next.selection.image ?? "";
+    next.status.forEach((item, i) => {
+      statusWidgets[i]!.label.text = item.label.replace(/^[^\d−-]*/, "");
+      statusWidgets[i]!.tooltip = item.tooltip;
+    });
+    selectionName.text =
+      next.selection.label + (next.selection.count > 1 ? ` ×${next.selection.count}` : "");
+    selectionOwner.text = next.selection.owner;
+    objectiveLabel.text = next.objective.label;
+    ownerColor.background = next.selection.color;
     health.isVisible = next.selection.maxHealth > 0;
     healthLabel.text = next.selection.maxHealth
       ? `${next.selection.health} / ${next.selection.maxHealth}`
@@ -657,6 +767,13 @@ export function createBattlefieldHud(
     alt = event.altKey;
   };
   const off = new AbortController();
+  for (const control of [objectiveIcon, objectiveLabel]) {
+    control.isHitTestVisible = true;
+    control.onPointerEnterObservable.add(() =>
+      showTooltip(content?.objective.tooltip ?? "", 12, 48),
+    );
+    control.onPointerOutObservable.add(hideTooltip);
+  }
   window.addEventListener("keydown", modifiers, { capture: true, signal: off.signal });
   window.addEventListener("keyup", modifiers, { capture: true, signal: off.signal });
   canvas.addEventListener("pointerdown", modifiers, { capture: true, signal: off.signal });
@@ -704,6 +821,9 @@ export function createBattlefieldHud(
         const rect = cssRect(button);
         return (
           button.isVisible &&
+          button.isHitTestVisible &&
+          button.parent !== typeBody &&
+          button.parent !== inspectorBody &&
           x >= rect.left &&
           y >= rect.top &&
           x <= rect.left + rect.width &&
@@ -714,6 +834,18 @@ export function createBattlefieldHud(
       hideTooltip();
       focused = id;
       const focusedItem = id ? buttons.get(id) : undefined;
+      if (focusedItem?.button.parent === typeBody) {
+        const maximum = Math.max(1, typeBody.heightInPixels - typeScroll.heightInPixels);
+        const offset = typeScroll.verticalBar.value * maximum;
+        const top = focusedItem.button.topInPixels;
+        const bottom = top + focusedItem.button.heightInPixels;
+        if (top < offset) typeScroll.verticalBar.value = top / maximum;
+        else if (bottom > offset + typeScroll.heightInPixels)
+          typeScroll.verticalBar.value = Math.min(
+            1,
+            (bottom - typeScroll.heightInPixels) / maximum,
+          );
+      }
       if (id === "inspect" || focusedItem?.button.parent === inspectorBody) {
         showDetails = true;
         layout();
@@ -731,7 +863,7 @@ export function createBattlefieldHud(
       }
       const item = id && buttons.get(id);
       if (item) {
-        const rect = cssRect(item.button);
+        const rect = cssRect(item.button.parent === typeBody ? typeScroll : item.button);
         showTooltip(item.action.tooltip, rect.left, rect.top);
       }
       mini.focused = id === "minimap";
@@ -743,7 +875,7 @@ export function createBattlefieldHud(
         layout();
         return true;
       }
-      if (code === "KeyI") {
+      if (code === "KeyI" && content?.selection.count) {
         showDetails = !showDetails;
         layout();
         return true;
@@ -766,6 +898,8 @@ export function createBattlefieldHud(
       }),
     dispose() {
       off.abort();
+      scene.onAfterRenderObservable.remove(afterDraw);
+      awaitingLayout.clear();
       gui.dispose();
     },
   };

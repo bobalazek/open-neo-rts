@@ -70,15 +70,25 @@ source.
   semantics, modal ownership and the usable graphics fallback for both surfaces.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
-- The match places a circular minimap at the right and one integrated selection
-  station at the bottom left. Original command pictograms and model thumbnails
-  keep persistent copy sparse. Hover and keyboard focus expose complete action
-  descriptions, prices, requirements and unavailable reasons; Details exposes
-  actor state and secondary controls above the station.
+- The match follows the owner's Age of Empires IV regional reference: actual
+  objective at top left, clock and speed above, compact global icons at top right,
+  populated groups on the left and notices above the right circular minimap.
+  Economy stacks beside the bottom selection station; narrow layouts place it
+  above the station. No selection means no station or invisible dock hit area.
+- Selection shows the actual Force name and color chip, actor name/count, health
+  and scrollable original-model type buttons with counts. Type buttons retain
+  their existing selection callbacks. Mixed Forces retain readable names and a
+  neutral accent chip. Original command pictograms keep persistent copy sparse.
+  Hover and keyboard focus expose complete action descriptions, prices,
+  requirements and unavailable reasons. Details exposes actor state and secondary
+  controls; narrow layouts place it above the map and economy to preserve controls.
 - Commands retain their existing hotkeys and stable QWER/ASDF/ZXCV slots. B switches
   the contextual build/train view, I toggles Details, and Escape closes auxiliary
   views. Populated groups appear directly; Groups reveals every group. Idle
   builder/producer helpers and existing group assign/add/recall controls remain.
+- Icon mode controls switch Commands and Build / train; recipes use at most six
+  columns and queue entries retain actual progress. Only short shortcut badges
+  appear on compact buttons; full Home/Space labels remain in tooltips.
 - The whole rotated square map fits within the circular minimap, including all
   corner cells. Existing navigation, orders, pings, zoom and keyboard controls
   keep their command handlers. Pause keeps Resume fixed in the header while the

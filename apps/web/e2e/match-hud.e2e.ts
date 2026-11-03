@@ -20,10 +20,13 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   const layout = await page.evaluate(() => {
     const paint = Reflect.get(window, "nativePaintText") as Map<string, { x: number; y: number }>;
     return {
-      playable: ((paint.get("Commands")?.y ?? 0) - (paint.get("5000")?.y ?? 0)) / innerHeight,
+      playable: (paint.get("Field Technician")?.y ?? 0) / innerHeight,
+      economyBeforeSelection:
+        (paint.get("5000")?.x ?? innerWidth) < (paint.get("Field Technician")?.x ?? 0),
     };
   });
   expect(layout.playable).toBeGreaterThan(0.55);
+  expect(layout.economyBeforeSelection).toBe(true);
   await expect(
     page.locator('[data-definition="core.structure:eastern-collective/command-center"]'),
   ).toBeDisabled();

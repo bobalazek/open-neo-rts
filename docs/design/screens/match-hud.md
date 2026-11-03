@@ -3,8 +3,9 @@
 **Route:** `/match` · The in-match screen for every mode: skirmish, multiplayer, campaign, editor playtest, and replays (with the observer variant).
 
 The current normal skirmish uses native Babylon GUI on the battlefield scene.
-One bottom-left station combines selection and contextual commands/recipes; a
-circular minimap sits on the right. Complete descriptions appear on hover or
+Economy sits beside the contextual selection station; a circular minimap sits
+on the right. Compact objective/status/menu controls leave the upper field clear.
+Complete descriptions appear on hover or
 keyboard focus, and Details retains full actor state and secondary actions.
 Clipped HTML keeps semantic controls and the existing command handlers. Later
 mode-specific elements below remain design reference, not implemented claims.
@@ -12,33 +13,30 @@ mode-specific elements below remain design reference, not implemented claims.
 ## Layout
 
 ```text
-┌───────────────────────────────────────────────────────────────────────────────┐
-│ ◉ 4 820 credits  ▲ 1 240 materials  ⚡ 85/100 power   ⏱ 12:41   ☰ Menu        │ resource bar
-│ ┌ OBJECTIVES ─────────────┐                          ┌ TEAM ──────────────┐   │
-│ │ ◻ Capture the dam        │                          │ Mara (army)  🎤    │   │
-│ │ ◼ Destroy radar 04:12    │                          │ Bob (economy)      │   │
-│ └──────────────────────────┘                          │ Bot · Force 2      │   │
-│                                                       └────────────────────┘   │
-│                                                                               │
-│                     (3D battlefield)                                          │
-│              Mara's cursor ↖ · Bob's placement ghost ▢                        │
-│                                                                               │
-│ ┌ FEED ──────────────────┐                                                    │
-│ │ ⚠ Base under attack  ▸ │                                                    │
-│ │ ✔ Tank ready          │                                                    │
-│ │ Bob: going north       │                                                    │
-│ └────────────────────────┘                                                    │
-│ [1 ×8] [2 ×12]  populated groups · idle builders / producers                  │
-│ ┌ SELECTION + CONTEXTUAL CONTROLS ────────────────────┐     ╭────────────╮  │
-│ │ [portrait] Name/count   Commands | Build / train     │    ╱            ╲ │
-│ │ health                 Q  W  E  R   [recipe icons]  │   │   MINIMAP    │ │
-│ │                        A  S  D  F                  │   │ full rotated │ │
-│ │ Details (I)            Z  X  C  V   queue progress  │    ╲ square map ╱ │
-│ └────────────────────────────────────────────────────┘     ╰────────────╯  │
-└───────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Last Man Standing              clock / speed              icon controls │
+│                                                                          │
+│                          3D battlefield                                  │
+│                                                                          │
+│ [1 ×8]                                                   event notices   │
+│ [2 ×3]                                                                   │
+│ idle helpers                                              circular map   │
+│ ┌ ECONOMY ┐ ┌ SELECTION + CONTEXT ───────────────────┐    ╭───────────╮  │
+│ │ credits │ │ Name/count · Details icon (I)          │   ╱             ╲ │
+│ │ material│ │ owner / Force color  mode icons (B)    │  │ full rotated  ││
+│ │ power   │ │ model/type counts   command / recipes │  │  square map   ││
+│ │ pop     │ │ health             queue progress    │   ╲             ╱ │
+│ └─────────┘ └───────────────────────────────────────┘    ╰───────────╯  │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Elements
+
+The current [region pass](../../project/decisions/2026-11-03-battlefield-regions.md)
+uses clickable original type thumbnails and explicit owner labels. The selection
+station and its hit area disappear when selection is empty. Compact layouts stack
+the economy above the station; Details stays above both the map and economy.
+The following table also describes later-mode reference elements.
 
 | Element             | Behaviour                                                                                                                                                                |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

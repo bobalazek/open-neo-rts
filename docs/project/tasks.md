@@ -20,11 +20,19 @@ also use native thumbnails, tables and history views. The
 native contextual controls and a right-hand circular minimap. Loading feedback
 and debug conversion remain UI work.
 
+The [region pass](./decisions/2026-11-03-battlefield-regions.md) follows the owner's
+AoE IV reference: economy beside selection, explicit owner/type identity, compact
+global controls and no empty selection panel.
+
+- [ ] World interaction feedback: hover outlines for visible units/structures,
+  a highlighted harvest-command target, and Supply Truck working/unloading
+  animation driven by its actual projected state. Preserve fog and original
+  models/team colors.
+
 Native text inputs now mirror semantic caret and selection in setup, named saves
 and both save galleries, while retaining native pointer editing and HTML keyboard
 and clipboard ownership. The [selection adapter](./learnings/2026-11-03-native-selection-indices.md)
 isolates the pinned Babylon range representation.
-- [ ] Native minimap browser qualification: retain the [intermittent WebKit pan observation](./learnings/2026-11-03-native-hud-coordinates.md) for real playthroughs; the exact test recheck and three independent repetitions passed, with no confirmed cause for the single miss.
 
 - [ ] [2-15b3 · Remaining non-damage warheads and timed effects](./phases/2.md#2-15--warheads-damage-and-timed-effects). PR type: engine after EMP/burn; slow, required reveal/spawn and persistent ground effects remain.
 - [ ] [2-33b · Direct canonical-state loading](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; replace provisional history reconstruction with complete feature validators and direct state loading before fast replay seeking.
