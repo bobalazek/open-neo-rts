@@ -23,6 +23,14 @@ test("worker accepts copied typed fog grids and remembered structures, without r
   expect(isWorkerReply(reply())).toBe(true);
   expect(isWorkerReply(reply([], []))).toBe(true);
   expect(isWorkerReply(reply([grid()], [{ ...ghost, constructionSite: true }]))).toBe(true);
+  expect(
+    isWorkerReply(reply([grid()], [{ ...ghost, constructionSite: true, constructionStage: 32 }])),
+  ).toBe(true);
+  for (const constructionStage of [-1, 101, 0.5, NaN, null, "32"])
+    expect(
+      isWorkerReply(reply([grid()], [{ ...ghost, constructionSite: true, constructionStage }])),
+    ).toBe(false);
+  expect(isWorkerReply(reply([grid()], [{ ...ghost, constructionStage: 32 }]))).toBe(false);
   expect(isWorkerReply(reply([grid(), { ...grid(), group: 2 }], [ghost]))).toBe(true);
   expect(isWorkerReply(reply(undefined, undefined, "debug-no-fog"))).toBe(false);
 });

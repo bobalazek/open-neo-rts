@@ -141,6 +141,13 @@ Hundreds of units and thousands of props only work with instancing.
 
 ## Construction and destruction
 
+Live construction sites expose integer `constructionStage` from 0 to 100 (floored
+percentage of actual quarter-work). Exact work and active-builder counts stay
+private to build controllers. Completed structures omit the stage; a zero-time
+or missing-progress site stays at zero until actual completion. Remembered sites
+keep only the last observed stage, including through hidden progress/completion,
+ownership changes or death. The renderer must not consult live hidden state.
+
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
 - **Packing up and deploying** (Phoenix Initiative mobile structures such as the Command Node) shuffles the bricks into the vehicle form and back.

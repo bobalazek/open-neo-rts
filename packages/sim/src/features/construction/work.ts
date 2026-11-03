@@ -16,6 +16,18 @@ import {
 
 export const CONSTRUCTION_WORK_STATES = ["approaching", "working", "blocked"] as const;
 
+/** Public visual percentage; exact work and builder details remain grant-private. */
+export function constructionStage(kernel: Kernel, entity: number, definition: Definition): number {
+  const { world } = kernel;
+  if (!world.has(entity, ConstructionSite)) return 100;
+  const duration = definition.construction?.buildTicks ?? 0;
+  if (!duration || !world.has(entity, ConstructionProgress)) return 0;
+  const completed =
+    world.get(entity, ConstructionProgress, "completedTicks") * 4 +
+    world.get(entity, ConstructionProgress, "quarter");
+  return Math.min(100, Math.floor((completed * 100) / (duration * 4)));
+}
+
 /** Exterior cell centres along each rotated footprint side, far enough away for this builder's disc. */
 function workPositions(
   kernel: Kernel,
