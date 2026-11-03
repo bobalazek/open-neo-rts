@@ -1,6 +1,6 @@
 # Tasks
 
-Work that can start now without a further decision, grouped by [roadmap](./roadmap.md) phase. One task, one pull request of the type shown ([pull-requests.md](../contributing/pull-requests.md)). Dependencies, scope and acceptance criteria live in the [phase plans](./phases/README.md); work blocked on a person goes in [human-tasks.md](./human-tasks.md).
+Work that can start now without a further decision, grouped by [roadmap](./roadmap.md) phase. Default to one substantial task per pull request; small related tasks may share a PR. The types shown guide its primary type and required checks ([pull-requests.md](../contributing/pull-requests.md)). Dependencies, scope and acceptance criteria live in the [phase plans](./phases/README.md); work blocked on a person goes in [human-tasks.md](./human-tasks.md).
 
 ## Phase 1a: delivery status
 

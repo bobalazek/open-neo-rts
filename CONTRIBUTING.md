@@ -1,6 +1,6 @@
 # Contributing to open-neo-rts
 
-Thanks for helping. The project is early: most of what exists is design docs in [docs/](docs/README.md), and the first code milestone is a deterministic headless simulation. Discussion, design feedback and small PRs are all welcome.
+Thanks for helping. The project is early: most of what exists is design docs in [docs/](docs/README.md), and the first code milestone is a deterministic headless simulation. Discussion, design feedback and coherent feature PRs are all welcome.
 
 ## Setup
 
@@ -45,10 +45,10 @@ For model checks, run `bun run dev` and open `/debug?models=1`. Choose a GLB to 
 
 ## Workflow
 
-1. Pick a task from [tasks.md](docs/project/tasks.md). For anything that isn't listed and is bigger than a small fix, open an issue or discussion first, so effort isn't wasted.
-2. Each task is one branch and one pull request of exactly one type, with the branch prefix that type uses ([pull-requests.md](docs/contributing/pull-requests.md)).
-3. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat(sim): …`, `content(alliance-of-free-nations): add panther mbt`).
-4. Open the PR using the template. In the same PR, remove the task from `tasks.md`.
+1. Pick one substantial task from [tasks.md](docs/project/tasks.md); small related tasks may be grouped. For unlisted work bigger than a small fix, open an issue or discussion first.
+2. Use one branch and one pull request for that task or small related batch, with a primary type and its branch prefix ([pull-requests.md](docs/contributing/pull-requests.md)). Keep the implementation, required content, fixes, checks and docs together.
+3. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat(sim): …`, `content(alliance-of-free-nations): add panther mbt`). Prefer feature-sized commits; squash unpublished WIP and related follow-up fixes before publishing, and squash merge the reviewed batch.
+4. Open the PR using the template. In the same PR, remove all completed tasks from `tasks.md`.
 
 ## Rules that matter most
 
