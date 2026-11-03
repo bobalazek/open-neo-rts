@@ -31,13 +31,13 @@ export default {
         const resolved = resolvePacks([{ id: "core", files, json }], "0.1.0", { bytes });
         const catalog = compileGameplayCatalog(resolved);
         return {
-          contents: `export const content = ${JSON.stringify({ catalog, error: null })};`,
+          contents: `export const content = ${JSON.stringify({ catalog, packs: resolved.packs, cosmeticHash: resolved.cosmeticHash, error: null })};`,
           loader: "js",
         };
       } catch (error) {
         // Incomplete LFS installs still mount Home/debug and explain why normal matches are unavailable.
         return {
-          contents: `export const content = ${JSON.stringify({ catalog: null, error: error instanceof Error ? error.message : "Core content unavailable" })};`,
+          contents: `export const content = ${JSON.stringify({ catalog: null, packs: [], cosmeticHash: null, error: error instanceof Error ? error.message : "Core content unavailable" })};`,
           loader: "js",
         };
       }

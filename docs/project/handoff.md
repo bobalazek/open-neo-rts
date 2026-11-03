@@ -748,3 +748,122 @@ seeking and remaining phase-2 systems. Phase 2 and all later phases remain open;
 20 current-version complete AI games and the actual human match are unqualified.
 Hosted CI remains affected by the known billing block; Firefox launch and deferred
 hardware FPS acceptance remain unqualified.
+
+## SIM52 — first functional local snapshot save/resume (2-33a)
+
+Runtime candidate `66c6b46dc9adf02ccdd6779c9cf511146873e9ab` adds explicit normal
+local-host snapshot export and fresh paused-worker initialization from `savedMatch`.
+Full ECS bytes, PRNG words, queued work, navigation paths/search/cached obstacles,
+fog/ghost state, bot memory/handle continuity/pending commands and accepted external
+history are captured. No normal seat publication includes hidden save state.
+Installed setup must match; failed loading leaves the old host untouched. Exports
+refuse pending worker inputs. Resumed worker input sequences continue correctly.
+
+This is a functional history-verified implementation, not direct state loading:
+the loader reconstructs accepted history, rejects refused commands and compares the
+entire captured state before returning the verified host. This removes the need
+for a second partially validated loader. Two-hour/100,000-input and JSON limits
+bound imports. Direct state loading remains 2-33b; do not mark whole 2-33 complete.
+Browser persistence/menu/quicksave/autosave (2-34) is next. Full pack/time metadata,
+replay keyframes/viewer and remaining phases are still work.
+
+Final batch passes fix, all 11 typecheck/test tasks (540 simulation cases), build
+and content validation: `/tmp/neo-snapshots-finish-*.log` and
+`/tmp/neo-snapshots-final2-{build,validate}.log`. SIM52/goldens and content identity
+remain unchanged (137 definitions/833 assets, gameplay `97ddd2a140545413`, cosmetic
+`54a8905a7eee497b`). Five committed save regressions cover continuation, full
+terminal replay, import isolation/identity/corruption, unsigned PRNG state and
+refused-history rejection. Earlier batch failures were regression-fixture target
+selection mistakes; the final run passes.
+
+Chromium and WebKit pass the original Training Grounds/kit/standard-fog/basic-bot
+worker journey in `/tmp/neo-snapshots-final-browsers.log` (16.1 s total). Save at tick
+120/hash `dab049d6406939bf`, resume/continue both hosts to tick 180/hash
+`49db2f17401adf02`, then explicit surrender exports a complete verified record at
+181/`b86d217efa330f38`. Artifacts:
+`/tmp/neo-snapshots-browser-results/**/{match-snapshot.json,resumed.record.json}`.
+This tests the actual worker transport/API, not a storage/load-screen UI or natural
+complete match. Ten additional original queued-order checkpoints continue with
+matching hashes (`/tmp/neo-snapshot-original-proof2.log`).
+
+Independent review found unsigned PRNG capture, semantically forged queued-cargo
+state and refused input history issues; all were fixed. Raw adversarial imports
+now reject. Seven standard-fog/basic-bot save splits through tick 1050 match every
+continued hash (`/tmp/snapshot-continuation-review.ts`). The reviewer independently
+recompiled original setup and verified both actual browser snapshot and terminal
+record artifacts (`/tmp/snapshot-browser-review.ts`). Hosted CI billing, local
+Firefox and hardware FPS remain unqualified; full phase-2/later exits remain open.
+
+## SIM52 — browser save slots and transactional loading (2-34)
+
+Runtime candidate `4b325977ec4579eb03e037d1825d1d2fd2d87847` connects actual normal
+skirmishes to IndexedDB named saves, quicksave/load and three rotating autosaves
+(at mission start/every three wall-clock minutes). Menu buttons preserve reserved
+browser keys. `/load` and Home Continue provide compatible saves, type/search,
+metadata/thumbnails, validated portable imports, exports and confirmed deletion.
+Files contain real pack/version/gameplay/cosmetic metadata, installed map hash,
+configuration and full canonical snapshot/history. Loaded games start paused;
+camera/selection reset as documented, and current device preferences apply.
+
+A replacement loads offscreen while the paused old host stays alive. Commit only
+after renderer/worker/UI readiness; cancel, timeout and failure dispose only the
+candidate. Active-session error recovery remains live after a canceled load.
+Atomic IndexedDB transactions retain previous slots on failed writes. Revision
+checks protect load; deletion compares the full displayed record inside one
+read/write transaction, retaining unseen newer saves from another tab. Unsupported
+versions/content are explained, and unsafe preview URLs are rejected. Pending
+worker inputs now flush at one real tick boundary before capture rather than
+leaving a paused save stuck; no pending command is discarded.
+
+Independent review reproduced/fixed stale deletion and abandoned-generation error
+recovery, then rechecked current source with real Chromium/IndexedDB probes:
+`/tmp/saves-stale-delete-review.ts`, `/tmp/saves-cancel-failure-review.ts`.
+A real transaction abort after request success preserves the previous quicksave.
+The app config probe `/tmp/saves-selected-config-review.ts` also verifies selected
+seed42/veterancyfalse survive initial cancellation, and a failed saved replacement
+with99/true cannot alter active7/false rematch configuration.
+
+Repository fix, all11 typecheck/test tasks, build and validation pass. Logs:
+`/tmp/neo-browser-saves-{regression-typecheck,final2-test,final2-build,final2-validate}.log`.
+SIM52/goldens remain unchanged, as do137definitions/833assets and content identities
+`97ddd2a140545413` / `54a8905a7eee497b`.
+
+The broad browser batch `/tmp/neo-browser-saves-final-browsers.log` passes both full
+save journeys, both worker save/resume journeys and several existing menu flows.
+It exposes two Chromium regressions: initial cancellation reset setup choices
+(fixed), and restart's test mistook the retained old canvas for the replacement
+(test now waits real detachment). Both affected complete Chromium journeys pass
+against4b32597 in `/tmp/neo-browser-saves-regression-browsers.log` (32.0s).
+The broad batch's five WebKit skips are existing Chromium-only graphical checks,
+not failures. Reusing its artifact output folder in that focused rerun overwrote
+some JSON evidence; protected full-journey replays are regenerated separately at
+`/tmp/neo-browser-saves-preserved-results` and logged in
+`/tmp/neo-browser-saves-preserved-browsers.log`.
+
+Full save journeys use real original content/rendering/workers and IndexedDB:
+named save/actual thumbnail, quicksave/failed-write preservation, triggered real
+autosave callbacks, export/import, blocked-init cancellation preserving old host,
+corrupt/SVG import refusal, later restoration to the same saved hash, stale
+load/delete protection, incompatible-version explanation, narrow layout, surviving
+host failure recovery, `/load` search and Home Continue. Failure/interval injection
+is test-only; it is not a hardware/performance or natural full-match acceptance.
+Independent artifact checks recompile installed catalog and Training Grounds,
+check header metadata/map hash/JPEG and compare restored/uninterrupted60ticks:
+`/tmp/browser-save-artifacts-review.ts`.
+
+Next: remaining phase2 functional systems (statistics, replay viewer, effects,
+audio/input/help/tooling and bot qualification). Direct state loading stays2-33b;
+current saves reconstruct history. Save-before-leave remains2-31b, native desktop
+storage/multiplayer saves remain later phases. Hosted CI billing/Firefox/hardware
+FPS and actual human/20-current-version complete matches remain unqualified.
+
+Final protected rerun against4b32597 passes both full production UI journeys in
+2.3minutes: `/tmp/neo-browser-saves-preserved-browsers.log`. These artifacts are
+preserved separately from all targeted reruns. Fresh independent original-content
+validation proves Chromium saved/resumedtick65/`8d915d45f2fa9bb0`, then matched
+uninterruptedtick125/`44e0fac8bb8e2612`; WebKit saved/resumedtick11/
+`e2f93953f30cb02b`, then matched uninterruptedtick71/`08ffb0ec10a62c12`.
+Both fresh files carry core0.1.0 with real per-pack/combined identities and
+Training Grounds map hash`7de934b8f9aa8af9`. Independent verdict: ship within the
+documented functional scope; no remaining proven findings. No fresh performance,
+full seeded qualification or Firefox claim is made.

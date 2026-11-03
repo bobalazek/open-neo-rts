@@ -121,7 +121,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   const tick = await canvas.getAttribute("data-tick");
-  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeDisabled();
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
   await menu.getByLabel("Game speed", { exact: true }).selectOption("0.75");
   await expect(page.locator("[data-speed]")).toHaveText("Speed 0.75×");
   await menu.getByLabel("Game speed", { exact: true }).selectOption("1.5");
@@ -145,8 +145,12 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Restart match", exact: true }).click();
   expect(workers).toBe(1);
+  const previousCanvas = await canvas.elementHandle();
   page.once("dialog", (dialog) => dialog.accept());
   await menu.getByRole("button", { name: "Restart match", exact: true }).click();
+  await expect
+    .poll(() => previousCanvas!.evaluate((element) => element.isConnected), { timeout: 60000 })
+    .toBe(false);
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   expect(workers).toBe(2);
   await page.getByRole("button", { name: "Match menu", exact: true }).click();

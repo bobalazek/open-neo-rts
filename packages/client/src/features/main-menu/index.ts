@@ -19,5 +19,10 @@ export function homeScreen(
   settings.addEventListener("click", () => navigate("/settings"));
   root.querySelector("nav")?.append(settings);
   root.querySelector("[data-skirmish]")?.addEventListener("click", () => navigate("/skirmish"));
+  const load = document.createElement("button");
+  load.type = "button";
+  load.textContent = text("ui.saves.title");
+  load.addEventListener("click", () => navigate("/load"));
+  root.querySelector("[data-single-menu]")?.append(load);
   root.querySelector("[data-quick]")?.addEventListener("click", quickStart);
 }

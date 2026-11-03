@@ -22,6 +22,7 @@ import { type RunOptions, replayScenario, scenarioTicks } from "./replay";
 import { strictObject } from "./schema";
 
 export * from "./match-record";
+export * from "./match-snapshot";
 export * from "./trace";
 
 export const SCENARIO_FORMAT = 2;

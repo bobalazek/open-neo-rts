@@ -1,6 +1,7 @@
 // One disposable, modal owner for normal single-player match controls. Phase 2.
 import { text } from "../../shared";
 import { NORMAL_GAME_SPEEDS } from "../../worker";
+import { loadGameScreen, type SavedGame } from "../load-game";
 import { type DeviceSettings, settingsScreen } from "../settings";
 
 export function createInGameMenu(
@@ -16,6 +17,11 @@ export function createInGameMenu(
     leave: () => void;
     surrender: () => Promise<boolean>;
     focus: () => void;
+    save?: (name: string) => Promise<void>;
+    saveName?: () => string;
+    load?: (save: SavedGame) => Promise<void>;
+    quicksave?: () => Promise<void>;
+    quickload?: () => Promise<void>;
   },
   signal: AbortSignal,
 ) {
@@ -32,6 +38,7 @@ export function createInGameMenu(
     pending = false,
     pane = "menu";
   let settings: ReturnType<typeof settingsScreen> | undefined;
+  let cleanupPane: (() => void) | undefined;
   const ended = () => !!options.state()?.ended;
   const focus = () => dialog.querySelector<HTMLButtonElement>("button")?.focus();
   function update() {
@@ -51,6 +58,8 @@ export function createInGameMenu(
     if (speed) speed.value = String(options.state()?.speed ?? 1);
   }
   function finish() {
+    cleanupPane?.();
+    cleanupPane = undefined;
     settings?.cancel();
     settings = undefined;
     if (dialog.open) dialog.close();
@@ -71,10 +80,72 @@ export function createInGameMenu(
     }
   }
   function menu() {
+    cleanupPane?.();
+    cleanupPane = undefined;
     settings?.cancel();
     settings = undefined;
     pane = "menu";
     body!.innerHTML = `<nav aria-label="${text("ui.menu.title")}"><button type="button" class="primary" data-resume>${text("ui.menu.resume")}</button><label>${text("ui.menu.speed")}<select data-game-speed>${NORMAL_GAME_SPEEDS.map((speed, index) => `<option value="${speed}">${text(["ui.menu.slow", "ui.menu.normal", "ui.menu.fast", "ui.menu.faster"][index] as "ui.menu.normal")} (${speed}×)</option>`).join("")}</select></label><button type="button" data-objectives>${text("ui.menu.objectives")}</button><button type="button" disabled data-unavailable title="${text("ui.menu.saves-unavailable")}">${text("ui.menu.save")}</button><button type="button" disabled data-unavailable title="${text("ui.menu.saves-unavailable")}">${text("ui.menu.load")}</button><button type="button" data-restart>${text("ui.menu.restart")}</button><button type="button" data-settings>${text("ui.settings.title")}</button><button type="button" data-keys>${text("ui.menu.keys")}</button><button type="button" data-surrender>${text("ui.result.surrender")}</button><button type="button" data-leave-menu>${text("ui.match.leave")}</button></nav>`;
+    const unavailable = body!.querySelectorAll<HTMLButtonElement>("[data-unavailable]");
+    const save = unavailable[0],
+      load = unavailable[1];
+    if (save && options.save) {
+      save.removeAttribute("data-unavailable");
+      save.removeAttribute("title");
+      save.addEventListener("click", () => {
+        pane = "save";
+        body!.innerHTML = `<button type="button" data-back>${text("ui.common.back")}</button><form data-save-form><label>${text("ui.saves.name")}<input name="name" maxlength="96" required></label><button type="submit">${text("ui.menu.save")}</button><p role="status" data-saved></p></form>`;
+        const input = body!.querySelector<HTMLInputElement>("input")!;
+        input.value = options.saveName?.() ?? "";
+        body!.querySelector("[data-back]")?.addEventListener("click", () => {
+          menu();
+          focus();
+        });
+        body!.querySelector("form")?.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const name = input.value.trim();
+          if (!name) return;
+          void run(async () => {
+            await options.save?.(name);
+            const notice = body!.querySelector("[data-saved]");
+            if (!disposed && notice) notice.textContent = text("ui.saves.saved");
+          });
+        });
+        input.focus();
+        input.select();
+      });
+    }
+    if (load && options.load) {
+      load.removeAttribute("data-unavailable");
+      load.removeAttribute("title");
+      load.addEventListener("click", () => {
+        pane = "load";
+        cleanupPane = loadGameScreen(body!, {
+          load: options.load!,
+          back: () => {
+            menu();
+            focus();
+          },
+        });
+      });
+    }
+    for (const [action, name] of [
+      [options.quicksave, "ui.saves.quick-save"],
+      [options.quickload, "ui.saves.quick-load"],
+    ] as const) {
+      if (!action) continue;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = text(name);
+      button.addEventListener(
+        "click",
+        () =>
+          void run(async () => {
+            await action();
+          }),
+      );
+      body!.querySelector("nav")?.append(button);
+    }
     body!.querySelector("[data-resume]")?.addEventListener("click", () => void resume());
     body!.querySelector("[data-game-speed]")?.setAttribute("aria-label", text("ui.menu.speed"));
     body!.querySelector("[data-game-speed]")?.addEventListener("change", (event) => {

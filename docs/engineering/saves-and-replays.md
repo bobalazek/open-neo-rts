@@ -16,6 +16,14 @@ Every file carries a header: format version, sim version, pack IDs, versions and
 
 ## Single player
 
+The first [local snapshot implementation](../project/decisions/2026-11-03-first-playable-match-snapshots.md)
+exports a complete canonical capture plus accepted external history. A new worker
+can resume it after checking installed setup, checksums and the reproduced full
+state. This provisional loader replays history; direct state loading is still
+2-33b. [Browser save slots](../project/decisions/2026-11-03-browser-save-slots.md),
+menu/load screens, quicksave and rotating autosaves are connected by 2-34. Normal seat updates never
+include the full save. Failed loading leaves the old worker/session untouched.
+
 - **Save, load, quicksave and autosave** (every few minutes and at mission start). A save is a snapshot plus the command log so far, so a loaded game still produces a full replay. If a save is migrated to a newer sim version on load, the replay starts a **new segment** from the migrated snapshot; the old segment stays playable only with the old version.
 - Saving happens between ticks, in the Web Worker, without stalling rendering.
 - Storage: IndexedDB in the browser, the app data folder in the Tauri app. Saves can be exported and imported as files.

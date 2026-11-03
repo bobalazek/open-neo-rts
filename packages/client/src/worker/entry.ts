@@ -4,6 +4,7 @@ import {
   checkpointHash,
   createMatch,
   createMatchRecord,
+  createMatchSnapshot,
   createProjection,
   type DebugSpawn,
   debugSpawnPlacement,
@@ -11,6 +12,7 @@ import {
   type MatchSetup,
   type ProjectionMode,
   parseScenario,
+  restoreMatchSnapshot,
   SCENARIO_FORMAT,
   SIM_VERSION,
   step,
@@ -114,7 +116,14 @@ port.onmessage = ({ data }) => {
       seat = options.seat;
       mode = options.mode;
       projection = createProjection(setup, seat, mode);
-      kernel = createMatch(setup);
+      kernel =
+        options.savedMatch === undefined
+          ? createMatch(setup)
+          : restoreMatchSnapshot(options.savedMatch, setup);
+      sequence = kernel.log.reduce((next, entry) => {
+        const command = entry.command as Command;
+        return command.seat === seat ? Math.max(next, command.sequence + 1) : next;
+      }, 0);
       diagnostics = createDebugDiagnostics(kernel, setup.definitions, projection.resolve);
       publish(id);
       return;
@@ -278,6 +287,10 @@ port.onmessage = ({ data }) => {
       }
       case "export-match-record":
         publish(id, createMatchRecord(kernel, setup));
+        return;
+      case "export-match-snapshot":
+        if (queued.length) tick();
+        publish(id, createMatchSnapshot(kernel, setup));
         return;
       default:
         throw new Error("Unknown worker request");

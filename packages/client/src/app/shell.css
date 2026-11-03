@@ -18,6 +18,65 @@
   color-scheme: dark;
   scrollbar-color: #62707d var(--surface);
 }
+.save-filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.save-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-block: 1.5rem;
+}
+.save-layout aside img {
+  width: 100%;
+  height: auto;
+  max-width: 320px;
+}
+.save-layout [data-save-list] {
+  max-height: 26rem;
+  overflow: auto;
+  padding: 0.2rem;
+}
+.save-layout aside button {
+  margin: 0.25rem;
+}
+.save-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.save-row[aria-pressed="true"] {
+  outline: 2px solid var(--accent);
+}
+.save-row img {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 54px;
+  object-fit: cover;
+}
+.save-row small {
+  color: var(--muted);
+}
+.match-menu .save-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (max-width: 640px) {
+  .save-layout [data-save-list] {
+    max-height: 15rem;
+  }
+  .save-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .save-row {
+    flex-wrap: wrap;
+  }
+}
 [hidden] {
   display: none;
 }
