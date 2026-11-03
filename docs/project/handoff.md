@@ -594,3 +594,58 @@ unexplored northeast goal, no remembered enemy structures and no failed/stuck
 route flags in the sampled routes. This differs from seed-12 quota starvation;
 no new AI fix is included or proven. Inspect actual goal/vision/travel history
 before diagnosing or changing it. Preserve both frozen worktrees and all records.
+
+## Builder clearance and bounded salvage, SIM50
+
+Runtime candidate `0e9f83c6e371fbf62c1bb0d97964b933cf68a284` completes 2-16b2.
+Actual living builder units approach currently visible wrecks/rubble through the
+existing finite exterior path policy, work using the original tool animation and
+clear the row for a finite material reward. The normal HUD provides Clear / salvage
+and right-click context targeting without making remains army-selectable. Private
+states cross strict worker validation only with economic permission and a current
+public target row. Stop/move/attack/build/repair/harvest/boarding replacement,
+grant expiry, fog loss, blocked approaches and bank overflow are handled.
+
+The [provisional rule](decisions/2026-11-03-builder-salvage.md) stores
+`floor((materials + floor(credits / 100)) / 4)` from authored costs at death, zero
+for unfinished/unpriced actors. One builder clears in 100 ticks; assistance uses
+construction rates. Competing Forces never combine workers or double-pay; the
+smallest active builder ID chooses a Force, and progress persists if it leaves.
+Atomic completion keeps finished work when the bank would overflow. No credits,
+salvage points, resurrection or specialist/faction bonuses are claimed.
+
+Repository fix/typecheck/test/build/content validation pass in one final batch
+(`/tmp/neo-salvage-complete-*`), including 515 simulation cases. SIM50 advances the
+three scenario headers; normal startup/short replay goldens are
+`85ad4a42e82c0d68` / `8898ada992a4d86e`. Catalog identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`, with 137 definitions and 833 assets.
+
+Independent fresh-context review reproduced an omitted automatic construction
+clearance replacement: an unselected salvager could override its blocker move
+and cause a placement timeout. The missing suspension is fixed; the preserved
+probe and a committed regression now permit the site while preserving wreck
+work. The reviewer independently checked blocked/disabled/competing workers,
+assistance and private copies, passed 63 focused tests/654 assertions and replayed
+the original-content record. No remaining confirmed runtime finding was reported.
+
+Original-content evidence `/tmp/neo-original-salvage-proof` uses unchanged original
+Training Grounds kits/stats/fog with bots disabled and only explicit truck move,
+salvage and surrender inputs. The truck actually dies at tick 6069; original
+builders clear its wreck by 6172 for three materials; the terminal record at 6173
+reproduces `63cd6478ba084a2c`. No World/content injection or natural-match/balance
+claim. Script and log use the same `/tmp/neo-original-salvage-proof` stem.
+
+The Chromium/WebKit HUD/worker journey passed both cases
+(`/tmp/neo-salvage-browsers2.log`, artifacts `/tmp/neo-salvage-browser-results`):
+actual original weapon death, opaque target mapping, button targeting, Stop,
+right-click resumption, once-only payment and terminal replay. This fixture uses
+no fog and an explicit shared enemy order grant so one worker can move the truck;
+its picker is a target stub, not new graphical picking proof. The earlier
+first-sample debris color limitation remains tracked by 2-21b3a. Chromium's run
+preceded the unrelated automatic blocker suspension fix; the affected clearance
+path was verified separately by the regression and independent reproducer.
+Hosted CI billing, local Firefox launch and hardware FPS remain unqualified.
+
+Next: remaining functional timed effects, complete orders and persistence/audio/
+help/tools, then later phases. Do not rerun long AI qualification after every small
+feature: the exact seed-20 diagnosis remains separate and the phase exit is open.
