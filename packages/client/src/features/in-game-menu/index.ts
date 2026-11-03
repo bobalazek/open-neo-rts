@@ -1,5 +1,6 @@
 // One disposable, modal owner for normal single-player match controls. Phase 2.
 import { text } from "../../shared";
+import { mountNativePanel } from "../../shared/native-panel";
 import { NORMAL_GAME_SPEEDS } from "../../worker";
 import { loadGameScreen, type SavedGame } from "../load-game";
 import { type DeviceSettings, settingsScreen } from "../settings";
@@ -28,12 +29,15 @@ export function createInGameMenu(
   const dialog = document.createElement("dialog");
   dialog.className = "match-menu";
   dialog.setAttribute("aria-labelledby", "match-menu-title");
-  dialog.innerHTML = `<h1 id="match-menu-title">${text("ui.menu.title")}</h1><p role="status" data-menu-state></p><div data-menu-body></div><p role="alert" data-menu-error></p>`;
+  dialog.innerHTML = `<canvas class="native-menu-canvas" tabindex="-1" aria-hidden="true" hidden></canvas><div data-menu-semantics><h1 id="match-menu-title">${text("ui.menu.title")}</h1><p role="status" data-menu-state></p><div data-menu-body></div><p role="alert" data-menu-error></p></div>`;
   root.append(dialog);
   const body = dialog.querySelector<HTMLElement>("[data-menu-body]");
   const status = dialog.querySelector("[data-menu-state]");
   const error = dialog.querySelector("[data-menu-error]");
   if (!body || !status || !error) throw new Error("Match menu controls missing");
+  const nativeCanvas = dialog.querySelector<HTMLCanvasElement>("canvas")!;
+  const semantics = dialog.querySelector<HTMLElement>("[data-menu-semantics]")!;
+  let native: ReturnType<typeof mountNativePanel> | undefined;
   let disposed = false,
     pending = false,
     pane = "menu";
@@ -41,6 +45,23 @@ export function createInGameMenu(
   let cleanupPane: (() => void) | undefined;
   const ended = () => !!options.state()?.ended;
   const focus = () => dialog.querySelector<HTMLButtonElement>("button")?.focus();
+  function present() {
+    if (!dialog.open || disposed) return;
+    if (pane === "load") {
+      native?.dispose();
+      native = undefined;
+      return;
+    }
+    if (!native)
+      native = mountNativePanel(dialog, semantics, nativeCanvas, {
+        id: () => pane,
+        title: () =>
+          body!.querySelector("h1,h2")?.textContent ??
+          text(pane === "save" ? "ui.menu.save" : "ui.menu.title"),
+        modal: true,
+      });
+    else native.update();
+  }
   function update() {
     if (!dialog.open || disposed) return;
     if (ended()) {
@@ -56,8 +77,11 @@ export function createInGameMenu(
       control.disabled = pending || control.hasAttribute("data-unavailable");
     const speed = dialog.querySelector<HTMLSelectElement>("[data-game-speed]");
     if (speed) speed.value = String(options.state()?.speed ?? 1);
+    present();
   }
   function finish() {
+    native?.dispose();
+    native = undefined;
     cleanupPane?.();
     cleanupPane = undefined;
     settings?.cancel();
@@ -113,6 +137,7 @@ export function createInGameMenu(
         });
         input.focus();
         input.select();
+        present();
       });
     }
     if (load && options.load) {
@@ -127,6 +152,7 @@ export function createInGameMenu(
             focus();
           },
         });
+        present();
       });
     }
     for (const [action, name] of [
@@ -159,6 +185,7 @@ export function createInGameMenu(
         focus();
       });
       focus();
+      present();
     });
     for (const topic of ["objectives", "keys"] as const)
       body!.querySelector(`[data-${topic}]`)?.addEventListener("click", () => {
@@ -169,6 +196,7 @@ export function createInGameMenu(
           focus();
         });
         focus();
+        present();
       });
     body!.querySelector("[data-restart]")?.addEventListener("click", () => {
       if (window.confirm(text("ui.menu.restart-confirm"))) options.restart();

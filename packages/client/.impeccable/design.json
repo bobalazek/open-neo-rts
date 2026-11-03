@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T09:08:23+00:00",
-  "title": "Design System: Open Neo RTS Home, Skirmish setup and match HUD",
+  "generatedAt": "2026-11-03T10:01:04+00:00",
+  "title": "Design System: Open Neo RTS native menus and match HUD",
   "extensions": {
     "colorMeta": {
       "panel": {
@@ -213,6 +213,34 @@
           "oklch(84% 0.09 30)",
           "oklch(95% 0.09 30)"
         ]
+      },
+      "panel-error": {
+        "role": "secondary",
+        "displayName": "Panel error",
+        "tonalRamp": [
+          "oklch(15% 0.09 30)",
+          "oklch(26% 0.09 30)",
+          "oklch(38% 0.09 30)",
+          "oklch(49% 0.09 30)",
+          "oklch(61% 0.09 30)",
+          "oklch(72% 0.09 30)",
+          "oklch(84% 0.09 30)",
+          "oklch(95% 0.09 30)"
+        ]
+      },
+      "modal-shade": {
+        "role": "neutral",
+        "displayName": "Modal shade",
+        "tonalRamp": [
+          "oklch(15% 0.02 240)",
+          "oklch(26% 0.02 240)",
+          "oklch(38% 0.02 240)",
+          "oklch(49% 0.02 240)",
+          "oklch(61% 0.02 240)",
+          "oklch(72% 0.02 240)",
+          "oklch(84% 0.02 240)",
+          "oklch(95% 0.02 240)"
+        ]
       }
     },
     "shadows": [
@@ -255,7 +283,15 @@
       },
       {
         "name": "setup-wide",
-        "value": "900px \u00d7 effective UI scale"
+        "value": "900px × effective UI scale"
+      },
+      {
+        "name": "panel-compact-insets",
+        "value": "width < 600px"
+      },
+      {
+        "name": "panel-two-columns",
+        "value": "inner content width >= 650px × effective panel scale"
       }
     ],
     "typographyMeta": {
@@ -286,6 +322,22 @@
       "setup-action": {
         "displayName": "Setup action",
         "purpose": "Native framed actions and narrow faction labels."
+      },
+      "panel-title": {
+        "displayName": "Shared panel title",
+        "purpose": "Bold 27px base; inherits Babylon’s current default Arial family. Multiplied by the effective panel scale."
+      },
+      "panel-body": {
+        "displayName": "Shared panel text",
+        "purpose": "Explicit Arial for paragraph/caption TextBlocks; 15px base, shared by action sizes. Paragraph reservation uses measured wraps at 1.4 times font size per line."
+      },
+      "panel-field": {
+        "displayName": "Shared panel field",
+        "purpose": "16px base native input/select text; family inherits Babylon’s current default. Named-save semantic editing mirrors focus, with caret/selection mirroring deferred."
+      },
+      "panel-help": {
+        "displayName": "Shared panel supporting text",
+        "purpose": "Explicit Arial help at 13px base; status/errors share that size with inherited family. Empty supporting blocks reserve no extra height."
       }
     },
     "motion": [
@@ -302,7 +354,7 @@
       "kind": "button",
       "refersTo": "command-button",
       "description": "Original line pictogram with a corner hotkey; inherited focus stays visible.",
-      "html": "<button class=\"ds-command\" aria-label=\"Q \u00b7 Move\"><span>Q</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
+      "html": "<button class=\"ds-command\" aria-label=\"Q · Move\"><span>Q</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
       "css": ".ds-command{position:relative;display:grid;place-items:center;width:3rem;min-height:2.4rem;padding:0;border:1px solid #536164;border-radius:2px;background:linear-gradient(#293438,#1a2428);color:#e5d7b1;cursor:pointer}.ds-command svg{width:1.4rem;height:1.4rem}.ds-command span{position:absolute;top:.15rem;left:.2rem;font: .55rem/1 'Segoe UI',Tahoma,sans-serif;color:#d9e0da}.ds-command:hover:not(:disabled),.ds-command[aria-pressed=true]{border-color:#ddc382;background:#394147;color:#fff0ba}.ds-command:active:not(:disabled){background:#476071}.ds-command:focus-visible{outline:3px solid #f5cf60;outline-offset:3px}.ds-command:disabled{color:#9ba5a5;opacity:.38;cursor:default}"
     },
     {
@@ -310,7 +362,7 @@
       "kind": "card",
       "refersTo": "dock-panel",
       "description": "Thin steel frame and subdued title around match information.",
-      "html": "<section class=\"ds-dock\"><h2>Selection</h2><strong>Field Technician \u00d7 1</strong><p>Field Technician: 100/100 HP \u00b7 Armor: infantry</p></section>",
+      "html": "<section class=\"ds-dock\"><h2>Selection</h2><strong>Field Technician × 1</strong><p>Field Technician: 100/100 HP · Armor: infantry</p></section>",
       "css": ".ds-dock{padding:.55rem;border:1px solid #475354;border-top-color:#92917a;border-radius:2px;background:#182126f5;box-shadow:0 3px 14px #0007,inset 0 1px #d2cba00a;color:#eff1e9;font:.75rem/1.35 'Segoe UI',Tahoma,sans-serif}.ds-dock h2{margin:0 0 .4rem;color:#d6cba9;font-size:.7rem;font-weight:600;line-height:1.25}.ds-dock strong{font-size:.8rem}.ds-dock p{color:#b5c0bf}"
     },
     {
@@ -373,18 +425,26 @@
       "description": "Static preview of the native Start action; production validation disables it and dims it to 0.4 alpha.",
       "html": "<button class=\"ds-setup-start\">Start local match</button>",
       "css": ".ds-setup-start{width:100%;height:44px;padding:0;border:1px solid #ddc382;border-radius:0;background:#3c392d;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-setup-start:hover:not(:disabled){background:#35434a}.ds-setup-start:active:not(:disabled){background:#4a4535}.ds-setup-start:focus-visible{outline:none;border-width:2px}.ds-setup-start:disabled{opacity:.4;cursor:default}"
+    },
+    {
+      "name": "Shared native panel",
+      "kind": "custom",
+      "description": "Static HTML preview of the native Settings/pause vocabulary at base scale. Production uses measured Babylon layout and synchronized semantic controls; this preview does not implement the modal, persistence or canvas renderer.",
+      "html": "<section class=\"ds-panel\"><h2>Settings</h2><label class=\"ds-panel-field\">Graphics quality<select><option>Medium</option></select><small>Changes lighting, shadows, effects and resolution in the current scene.</small></label><label class=\"ds-panel-check\"><input type=\"checkbox\" checked> Edge scrolling</label><div class=\"ds-panel-actions\"><button>Defaults</button><button class=\"ds-panel-primary\">Apply</button></div></section>",
+      "css": ".ds-panel{padding:28px;border:1px solid #475354;border-radius:0;background:#182126;color:#eff1e9;font:15px Arial,sans-serif}.ds-panel h2{margin:0 0 20px;font-size:27px;font-weight:700}.ds-panel-field{display:grid;gap:8px}.ds-panel-field select{height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:16px Arial,sans-serif}.ds-panel-field small{color:#b5c0bf;font-size:13px;line-height:1.4}.ds-panel-check{display:flex;align-items:center;gap:16px;min-height:44px;margin-top:24px}.ds-panel-check input{width:26px;height:26px;accent-color:#ddc382}.ds-panel-actions{display:flex;gap:24px;margin-top:24px}.ds-panel-actions button{flex:1;height:44px;border:1px solid #ddc382;border-radius:0;background:#18262e;color:#ddc382;font:15px Arial,sans-serif;cursor:pointer}.ds-panel-actions .ds-panel-primary{background:#3c392d}.ds-panel-actions button:hover{background:#35434a}.ds-panel-actions button:active{background:#4a4535}.ds-panel-actions button:focus-visible,.ds-panel-field select:focus-visible,.ds-panel-check input:focus-visible{outline:2px solid #ddc382;outline-offset:0}.ds-panel-actions button:disabled{opacity:.4;cursor:default}"
     }
   ],
   "narrative": {
     "northStar": "Graphite Command Stations",
-    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nThis records the built Home, Skirmish setup and normal match HUD. Settings, load, results and debug retain their existing presentation outside this system's current scope. Home and setup use native GUI; the recorded HUD retains its HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `src/app/shell.css` and `src/features/match/`.",
+    "overview": "The normal match uses thin steel frames, warm metal command pictograms and original model portraits around a dominant battlefield. Dense, quiet controls support reading resources, inspecting real actor state and issuing orders. There is no decorative animation; minimap activity communicates game events.\n\nHome shares graphite steel, warm metal and original assets through native Babylon GUI. An original angular vector wordmark introduces an authored Dragon Tank on an octagonal plinth. Plain, framed actions sit beside the model on desktop and below it in portrait. Slow display rotation stops when reduced motion is requested.\n\nSkirmish setup extends the native graphite field with compact Force rows, framed inputs and a top-down preview of authored Training Grounds. Content scrolls within a fixed header and action area; validation feedback stays above the actions.\n\nSettings, pause actions, Objectives, Current controls and named saves extend the same native graphite vocabulary through a shared content-sized panel. In a match it floats above the dimmed battlefield; the HTML dialog owns modal focus and Escape while its separate canvas leaves the world renderer intact.\n\nThis records the built Home, Skirmish setup, shared native panels and normal match HUD. The Load gallery, results and debug retain their HTML presentation outside this system's current scope. The recorded HUD also retains its HTML/CSS presentation. The direction comes from the first body comment in `../../apps/web/index.html`; implementation evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`, `../render/src/scene/skirmish.ts`, `src/features/skirmish/index.ts`, `../render/src/scene/panel.ts`, `src/shared/native-panel.ts`, `src/features/settings/`, `src/features/in-game-menu/`, `src/app/shell.css` and `src/features/match/`.",
     "keyCharacteristics": [
       "Battlefield first, with a slim resource strip and bottom command docks.",
       "Graphite surfaces, restrained brass highlights and tabular counters.",
       "Original brick models and original line pictograms.",
       "Narrow screens expose one dock through explicit panel tabs.",
       "Native Home actions, original vector lettering and an authored model display.",
-      "Native setup fields, compact Force rows and an authored terrain preview."
+      "Native setup fields, compact Force rows and an authored terrain preview.",
+      "Native content-sized Settings and pause panes over an intact match renderer."
     ],
     "rules": [
       {
@@ -403,12 +463,13 @@
       "Do use real match state for portraits, counters, availability and feedback.",
       "Do preserve full recipe values and readable unavailable explanations.",
       "Do retain accessible action names, visible focus and narrow panel switching.",
-      "Do keep native Home and setup controls synchronized with semantic HTML and preserve the graphics fallback.",
+      "Do keep native Home, setup and panel controls synchronized with semantic HTML and preserve the graphics fallback.",
       "Do honor reduced motion in the Home model display.",
-      "Do use authored terrain, resource positions and selected spawns for the setup preview."
+      "Do use authored terrain, resource positions and selected spawns for the setup preview.",
+      "Do size shared panels from measured content and keep modal rendering separate from the match canvas."
     ],
     "donts": [
-      "Don't promote legacy settings, load, results or debug styling into Home, setup or the match HUD.",
+      "Don't promote legacy Load gallery, results or debug styling into the recorded native surfaces or match HUD.",
       "Don't substitute borrowed artwork or text glyphs for original model and SVG assets.",
       "Don't add ornamental animation that competes with battlefield activity."
     ]

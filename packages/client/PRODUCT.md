@@ -37,9 +37,10 @@ source.
 - The battlefield remains visible while the player commands units.
 - Show the selected actors' actual state and context-appropriate controls.
 - Preserve accessible names, keyboard controls and narrow-screen operation.
-- The owner prefers native Babylon GUI for game presentation. Home and Skirmish
-  setup use it; settings, load, results, debug and the match HUD retain their
-  existing presentation during the staged conversion.
+- The owner prefers native Babylon GUI for game presentation. Home, Skirmish
+  setup, device Settings and the pause menu's actions, Objectives, Current controls
+  and named-save panes use it. The Load gallery, results, debug and match HUD
+  retain HTML/CSS presentation during the staged conversion.
 - Native Home and setup preserve semantic HTML controls and usable graphics
   fallbacks. Setup keeps validation feedback and actions visible while content
   scrolls; focused fields and the checkbox scroll into view. Leaving setup
@@ -47,5 +48,16 @@ source.
 - Native pointer text editing shows a caret and selection. Semantic setup text
   editing currently shows the native focus frame without mirrored caret or
   selection; the remaining polish is recorded in `../../docs/project/tasks.md`.
+- Settings use the same preferences, validation and storage from Home and in a
+  match. Changes preview immediately; Apply persists them, while Back or cancel
+  restores the saved preferences. Graphics failure leaves semantic HTML usable.
+- The HTML dialog owns modal focus and Escape in a match. Its separate native
+  panel canvas keeps the world renderer and save-thumbnail source intact, with
+  the paused battlefield dimly visible behind it. Menu state and actions still
+  come from the existing worker/controller; Current controls keeps the complete
+  existing help text. Compact panels size and scroll from their actual content.
+- Semantic text entry in setup and named saves retains the deferred native
+  caret/selection-mirroring polish; focus frames remain synchronized. This does
+  not claim screen-reader or physical-device qualification.
 - The owner delegates routine choices; implement coherent defaults and review
   the running result instead of interrupting for repeated design approvals.
