@@ -9,7 +9,7 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await page.getByRole("button", { name: /Idle builders 2/ }).click();

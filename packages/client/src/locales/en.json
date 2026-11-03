@@ -6,6 +6,7 @@
   "ui.hud.transport-full": "Transport capacity is reserved or full",
   "ui.home.title": "Open Neo RTS",
   "ui.home.intro": "Build a base. Command your Force.",
+  "ui.home.gui-unavailable": "The 3D menu could not start. You can still use these menu controls.",
   "ui.home.single-player": "Single player",
   "ui.home.skirmish": "Skirmish setup",
   "ui.home.quick-start": "Quick start local match",

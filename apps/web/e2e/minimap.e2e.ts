@@ -36,7 +36,7 @@ test("normal minimap masks shroud, pans locally, returns Home and submits owned 
   });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const world = page.locator("#game"),
     minimap = page.locator(".hud-minimap canvas");
   await expect(world).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
@@ -147,7 +147,7 @@ test("local minimap pings refuse shroud and support keyboard placement and Space
   test.skip(info.project.name !== "chromium", "Bounded offline minimap ping journey");
   test.setTimeout(90_000);
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   const minimap = page.locator(".hud-minimap canvas");
   await minimap.click({ position: { x: 150, y: 150 }, modifiers: ["Alt"] });

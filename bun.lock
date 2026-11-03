@@ -81,6 +81,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@babylonjs/core": "9.33.1",
+        "@babylonjs/gui": "9.33.1",
         "@babylonjs/loaders": "9.33.1",
         "@open-neo-rts/content": "workspace:*",
         "@open-neo-rts/sim": "workspace:*",
@@ -108,6 +109,8 @@
   },
   "packages": {
     "@babylonjs/core": ["@babylonjs/core@9.33.1", "", {}, "sha512-NoIfREw4QeoXzRPpXnbUpmxxPIjuRi9iS4xFDbPgXHiLwCeHSI13DJHF8YB2gKHp6rA6T5R7BAevPvWHklvXWQ=="],
+
+    "@babylonjs/gui": ["@babylonjs/gui@9.33.1", "", { "peerDependencies": { "@babylonjs/core": "^9.0.0" } }, "sha512-3+VZSrATRu/rlHD3ufJa9lJCM0z4nssDm2OEeHUyyVqyQ2vqiZYSPQSZVOmPBz51TJIlgGcKG+hsemtnusCvKA=="],
 
     "@babylonjs/loaders": ["@babylonjs/loaders@9.33.1", "", { "peerDependencies": { "@babylonjs/core": "^9.0.0", "babylonjs-gltf2interface": "^9.0.0" } }, "sha512-FE3scCE1CaBg8e6a62CJCQA+X/sD13ILihy60PyOjapy0HSbGY3VZ1NQybnB+jiOUNM7+UVygBQKQEpCwHsrqw=="],
 

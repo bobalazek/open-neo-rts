@@ -23,7 +23,7 @@ test("real paid production reaches the frozen final totals on desktop and narrow
     };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page).toHaveURL(/\/match$/);
   const refused = await page.evaluate(
@@ -213,7 +213,7 @@ test("a terminal result arriving before a stale surrender resume rejection stays
   });
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", {
     timeout: 60_000,
   });
@@ -238,7 +238,7 @@ test("real surrender ends a paused normal match once, rematch creates a new work
   page.on("worker", () => workers++);
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match" }).click();
+  await page.getByRole("button", { name: "Quick start local match" }).press("Enter");
   const canvas = page.locator("#game");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page).toHaveURL(/\/match$/);

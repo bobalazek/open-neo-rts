@@ -87,7 +87,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Quick start local match", exact: true }).click();
+  await page.getByRole("button", { name: "Quick start local match", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect
     .poll(async () => (await saves(page)).filter((save) => save.kind === "auto").length)
@@ -276,13 +276,13 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect(
     page.getByRole("button", { name: "Continue latest save", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Single player", exact: true }).click();
-  await page.getByRole("button", { name: "Load game", exact: true }).click();
+  await page.getByRole("button", { name: "Single player", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/load$/);
   await page.getByLabel("Search saves", { exact: true }).fill("does not exist");
   await expect(page.locator("[data-save-list]")).toHaveText("No saves match this search.");
   await page.getByRole("button", { name: "Back", exact: true }).click();
-  await page.getByRole("button", { name: "Continue latest save", exact: true }).click();
+  await page.getByRole("button", { name: "Continue latest save", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(manual.match.tick));
 });

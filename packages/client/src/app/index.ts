@@ -205,7 +205,14 @@ export function startApp(canvas: HTMLCanvasElement) {
       history.replaceState(null, "", "/skirmish");
       skirmishScreen(root, config, start, () => navigate("/"), text("ui.skirmish.no-session"));
     } else {
-      homeScreen(root, navigate, () => start(defaultSkirmish()));
+      const home = homeScreen(
+        root,
+        canvas,
+        navigate,
+        () => start(defaultSkirmish()),
+        text("ui.home.version", { version: "0.1.0", sim: SIM_VERSION }),
+      );
+      disposeScreen = home.dispose;
       const homeRoot = root,
         ticket = generation;
       void saveStore
@@ -225,16 +232,9 @@ export function startApp(canvas: HTMLCanvasElement) {
             .sort((a, b) => b.createdAt - a.createdAt);
           const latest = saves[0];
           if (!latest) return;
-          const button = document.createElement("button");
-          button.type = "button";
-          button.textContent = text("ui.saves.continue");
-          button.addEventListener("click", () => void begin(latest.config, latest).catch(() => {}));
-          homeRoot.querySelector("nav")?.prepend(button);
+          home.setContinue(() => void begin(latest.config, latest).catch(() => {}));
         })
         .catch(() => {});
-      const version = root.querySelector("[data-version]");
-      if (version)
-        version.textContent = text("ui.home.version", { version: "0.1.0", sim: SIM_VERSION });
     }
     root.querySelector<HTMLElement>("h1")?.setAttribute("tabindex", "-1");
     root.querySelector<HTMLElement>("h1")?.focus();

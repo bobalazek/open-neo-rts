@@ -4,6 +4,7 @@ dist/
 coverage/
 test-results/
 playwright-report/
+.impeccable/review/
 *.tsbuildinfo
 *.log
 .env
