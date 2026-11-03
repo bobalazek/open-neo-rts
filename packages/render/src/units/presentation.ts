@@ -16,6 +16,12 @@ import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { eventVisible } from "../effects";
 import { registerModelShadows } from "../scene/shadows";
 import { createFoundation } from "../structures";
+import {
+  createConstructionScaffold,
+  initializeConstruction,
+  prepareConstruction,
+  setConstructionStage,
+} from "../structures/construction";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
 import { createModelLod } from "./lod";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
@@ -33,12 +39,17 @@ interface Entity {
   maxHealth: number;
   rank?: number;
   construction?: number;
+  constructionStage?: number;
+  scaffold?: Mesh;
+  shadows?: boolean;
   working?: boolean;
   workElapsed?: number;
   attackElapsed?: number;
   deployed: boolean;
   deployElapsed?: number;
   deployHistory?: number[];
+  doorElapsed?: number;
+  doorHistory?: number[];
   deathElapsed?: number;
   height?: number;
   root?: TransformNode;
@@ -64,6 +75,15 @@ interface Template {
 
 const keyFor = (definition: string, force: number) => JSON.stringify([definition, force]);
 const poseOf = ({ x, y, facing }: Pose): Pose => ({ x, y, facing });
+
+/** Continue opening, renew an open hold, or reverse the authored closing phase. */
+function reopenDoor(elapsed: number, opening: number, closing: number): number {
+  if (!opening || !closing) return 0;
+  if (elapsed < opening) return elapsed;
+  if (elapsed < opening * 2) return opening;
+  if (elapsed < opening * 2 + closing) return opening * (1 - (elapsed - opening * 2) / closing);
+  return 0;
+}
 
 /** A presentation-only owner. Call accept on copied worker snapshots, render with the same monotonic clock. */
 export function createEntityPresentation(
@@ -142,6 +162,7 @@ export function createEntityPresentation(
             return undefined;
           }
           try {
+            if (footprint) prepareConstruction(model);
             const color = colors.get(force);
             if (color && !options.ghost) setTeamColor(model.materials, color);
             if (options.ghost) {
@@ -193,6 +214,7 @@ export function createEntityPresentation(
       if (entity.attackElapsed !== undefined) entity.attackElapsed += delta;
       if (entity.working) entity.workElapsed = (entity.workElapsed ?? 0) + delta;
       if (entity.deployElapsed !== undefined) entity.deployElapsed += delta;
+      if (entity.doorElapsed !== undefined) entity.doorElapsed += delta;
     }
     for (const [handle, entity] of dying) {
       entity.deathElapsed = (entity.deathElapsed ?? 0) + delta;
@@ -207,6 +229,7 @@ export function createEntityPresentation(
       }
       entity.playback.seek(entity.deathElapsed);
       sampleDeployment(entity);
+      sampleDoor(entity);
     }
     pruneTemplates();
     const alpha =
@@ -243,6 +266,40 @@ export function createEntityPresentation(
       if (domain === "naval" || domain === "hover" || domain === "amphibious")
         height = Math.max(height, waterHeight(terrain, x, y));
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
+      if (template?.footprint) {
+        setConstructionStage(
+          entity.root.getChildMeshes(),
+          height,
+          entity.height ?? 0.5,
+          entity.constructionStage,
+        );
+        if (entity.constructionStage !== undefined) {
+          if (!entity.scaffold) {
+            entity.scaffold = createConstructionScaffold(
+              scene,
+              template.footprint,
+              entity.height ?? 0.5,
+              !!options.ghost,
+            );
+            entity.scaffold.parent = entity.root;
+            if (!options.ghost) meshHandles.set(entity.scaffold, handle);
+          }
+        } else {
+          if (entity.scaffold) {
+            meshHandles.delete(entity.scaffold);
+            entity.scaffold.dispose();
+            entity.scaffold = undefined;
+          }
+          // shortcut: partial structures cast no shadow; add clipped depth passes when construction shadows are implemented.
+          if (!options.ghost && !entity.shadows) {
+            registerModelShadows(entity.root);
+            entity.shadows = true;
+          }
+        }
+      } else if (!options.ghost && !entity.shadows) {
+        registerModelShadows(entity.root);
+        entity.shadows = true;
+      }
       const camera = scene.activeCamera;
       entity.lod?.setDistant(
         !!camera &&
@@ -313,6 +370,7 @@ export function createEntityPresentation(
         entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
       }
       sampleDeployment(entity);
+      sampleDoor(entity);
       const bar =
         !options.ghost &&
         (selected.has(handle) ||
@@ -351,6 +409,31 @@ export function createEntityPresentation(
     }
     const elapsed = Math.min(length, entity.deployElapsed ?? length);
     entity.playback.deploy(entity.deployed ? elapsed : length - elapsed);
+  }
+
+  function sampleDoor(entity: Entity) {
+    const playback = entity.playback;
+    if (!playback) return;
+    const opening = playback.duration("open"),
+      closing = playback.duration("close");
+    if (!opening || !closing) {
+      entity.doorElapsed = undefined;
+      entity.doorHistory = undefined;
+      return;
+    }
+    if (entity.doorHistory) {
+      let elapsed = 0;
+      for (const span of entity.doorHistory) elapsed = reopenDoor(elapsed + span, opening, closing);
+      entity.doorElapsed = elapsed + (entity.doorElapsed ?? 0);
+      entity.doorHistory = undefined;
+    }
+    const elapsed = entity.doorElapsed;
+    if (elapsed === undefined || elapsed >= opening * 2 + closing) {
+      entity.doorElapsed = undefined;
+      playback.door("close", closing);
+    } else if (elapsed < opening) playback.door("open", elapsed);
+    else if (elapsed < opening * 2) playback.door("open", opening);
+    else playback.door("close", elapsed - opening * 2);
   }
 
   return {
@@ -395,10 +478,14 @@ export function createEntityPresentation(
               );
             }
             entity.deathElapsed = 0;
+            if (entity.scaffold) meshHandles.delete(entity.scaffold);
+            entity.scaffold?.dispose();
+            entity.scaffold = undefined;
             entity.attackElapsed = undefined;
             entity.playback.play("death");
             entity.playback.seek(0);
             sampleDeployment(entity);
+            sampleDoor(entity);
             for (const mesh of entity.root.getChildMeshes()) {
               meshHandles.delete(mesh);
               mesh.isPickable = false;
@@ -455,16 +542,34 @@ export function createEntityPresentation(
           }
           entity.deployed = deployed;
         }
+        entity.constructionStage = projected.constructionSite
+          ? (projected.constructionStage ?? 0)
+          : undefined;
         entity.construction = projected.construction
           ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
             Math.max(1, projected.construction.totalTicks * 4)
-          : undefined;
+          : entity.constructionStage === undefined
+            ? undefined
+            : entity.constructionStage / 100;
         const working =
           !projected.disabled &&
           (projected.constructionOrder?.state === "working" ||
             projected.repairOrder?.state === "working");
         if (working !== entity.working) entity.workElapsed = 0;
         entity.working = working;
+        if (!options.ghost && snapshot.productionExits?.includes(handle)) {
+          if (entity.playback)
+            entity.doorElapsed = reopenDoor(
+              entity.doorElapsed ?? Infinity,
+              entity.playback.duration("open"),
+              entity.playback.duration("close"),
+            );
+          else {
+            entity.doorHistory ??= [];
+            if (entity.doorElapsed !== undefined) entity.doorHistory.push(entity.doorElapsed);
+            entity.doorElapsed = 0;
+          }
+        }
         if (
           !options.ghost &&
           (snapshot.combatEvents ?? []).some(
@@ -482,7 +587,10 @@ export function createEntityPresentation(
               if (!model || disposed || entities.get(handle) !== current) return;
               const instance = model.instantiateModelsToScene((name) => name, false, {
                 // Morph weights need their own manager; rigid parts use hardware instances.
-                doNotInstantiate: (node) => node instanceof Mesh && !!node.morphTargetManager,
+                doNotInstantiate: (node) =>
+                  node instanceof Mesh &&
+                  (!!node.morphTargetManager ||
+                    (!!template.footprint && !scene.getEngine().getCaps().instancedArrays)),
               });
               current.instance = instance;
               current.root = new TransformNode(`entity ${handle}`, scene);
@@ -491,6 +599,7 @@ export function createEntityPresentation(
                 .getDescendants()
                 .filter((node) => node instanceof TransformNode);
               const meshes = current.root.getChildMeshes();
+              if (template.footprint) initializeConstruction(meshes);
               for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
                 if (options.ghost) mesh.isPickable = false;
@@ -498,7 +607,6 @@ export function createEntityPresentation(
               }
               current.height = Math.max(0.5, current.root.getHierarchyBoundingVectors().max.y);
               current.lod = createModelLod(nodes, meshes);
-              if (!options.ghost) registerModelShadows(current.root);
               current.playback = createModelPlayback(
                 nodes,
                 instance.animationGroups,

@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test";
 import type { Grant } from "../commands";
-import { ConstructionProgress, ConstructionSite } from "../features/construction";
+import {
+  ConstructionProgress,
+  ConstructionSite,
+  constructionStage,
+} from "../features/construction";
 import {
   type Definition,
   Health,
@@ -9,7 +13,7 @@ import {
   Template,
   Transform,
 } from "../features/entities";
-import { canObserveEventSource } from "../features/events";
+import { canObserveEventSource, emitProductionExit } from "../features/events";
 import { MoveIntent } from "../features/movement";
 import { checkpointHash, register, registerController, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
@@ -129,7 +133,11 @@ test("normal controlled snapshots expose only own and sight-visible entities, co
   const f = fixture(true);
   f.kernel.world.add(f.enemy, MoveIntent, { x: 40 * 1024, y: 40 * 1024 });
   f.kernel.world.add(f.factory, ConstructionSite);
-  f.kernel.world.add(f.factory, ConstructionProgress, { completedTicks: 3, buildersWorking: 2 });
+  f.kernel.world.add(f.factory, ConstructionProgress, {
+    completedTicks: 3,
+    quarter: 1,
+    buildersWorking: 2,
+  });
   const snapshot = f.projection.snapshot(f.kernel);
   expect(snapshot.entities.map((entity) => entity.force)).toEqual([1, 2, 3, 3]);
   expect(snapshot.fog?.map((grid) => grid.group)).toEqual([1]);
@@ -139,6 +147,7 @@ test("normal controlled snapshots expose only own and sight-visible entities, co
   const factory = snapshot.entities.find((entity) => entity.definition.includes("factory"));
   expect(enemy?.order).toBeNull();
   expect(factory?.constructionSite).toBe(true);
+  expect(factory?.constructionStage).toBe(32);
   expect(factory?.construction).toBeUndefined();
   expect(factory?.power).toBeUndefined();
   expect(factory?.extraction).toBeUndefined();
@@ -195,6 +204,11 @@ test("hidden units disappear and stale live/ghost handles cannot resolve, includ
 test("structure ghosts retain the observed health, ownership and site state through hidden changes and death until re-observed", () => {
   const f = fixture();
   f.kernel.world.add(f.factory, ConstructionSite);
+  f.kernel.world.add(f.factory, ConstructionProgress, {
+    completedTicks: 3,
+    quarter: 1,
+    buildersWorking: 2,
+  });
   f.refresh();
   f.projection.snapshot(f.kernel);
   f.kernel.world.set(f.scout, Transform, "x", 20 * 1024 + 512);
@@ -206,8 +220,12 @@ test("structure ghosts retain the observed health, ownership and site state thro
     health: 200,
     force: 3,
     constructionSite: true,
+    constructionStage: 32,
   });
   expect(f.projection.resolve(ghost?.handle)).toBeUndefined();
+  f.kernel.world.set(f.factory, ConstructionProgress, "completedTicks", 8);
+  f.refresh();
+  expect(f.projection.snapshot(f.kernel).ghosts?.[0]?.constructionStage).toBe(32);
   f.kernel.world.set(f.factory, Health, "current", 1);
   f.kernel.world.set(f.factory, OwnerForce, "force", 2);
   f.kernel.world.remove(f.factory, ConstructionSite);
@@ -222,6 +240,27 @@ test("structure ghosts retain the observed health, ownership and site state thro
   f.kernel.world.set(f.scout, Transform, "y", 8 * 1024 + 512);
   f.refresh();
   expect(f.projection.snapshot(f.kernel).ghosts).toEqual([]);
+});
+
+test("producer exits disclose only currently projected actors without allocating hidden handles or animating ghosts", () => {
+  const f = fixture();
+  const initial = f.projection.snapshot(f.kernel),
+    allocation = f.projection.serialize();
+  emitProductionExit(f.kernel, f.factory);
+  emitProductionExit(f.kernel, f.hidden);
+  emitProductionExit(f.kernel, 1000000);
+  const packet = f.projection.snapshot(f.kernel);
+  const factory = initial.entities.find((row) => f.projection.resolve(row.handle) === f.factory)!;
+  expect(packet.productionExits).toEqual([factory.handle]);
+  expect(f.projection.serialize()).toEqual(allocation);
+  expect(packet.entities.find((row) => row.handle === factory.handle)?.production).toBeUndefined();
+  f.kernel.world.set(f.scout, Transform, "x", 20 * 1024 + 512);
+  f.kernel.world.set(f.scout, Transform, "y", 20 * 1024 + 512);
+  f.refresh();
+  expect(f.projection.snapshot(f.kernel).productionExits).toEqual([]);
+  expect(
+    f.projection.snapshot(f.kernel).ghosts?.some((row) => row.definition.includes("factory")),
+  ).toBe(true);
 });
 
 test("memory is canonical and copied, rejects malformed loads atomically, and does not depend on projector polling", () => {
@@ -242,6 +281,14 @@ test("memory is canonical and copied, rejects malformed loads atomically, and do
   for (const value of [
     null,
     { ...state, extra: 1 },
+    { ...state, format: 1 },
+    ...[-1, 101, 0.5, undefined, 0].map((stage) => ({
+      ...state,
+      groups: state.groups.map((group) => ({
+        ...group,
+        records: group.records.map((record) => ({ ...record, stage })),
+      })),
+    })),
     { ...state, groups: [...state.groups].reverse() },
     { ...state, groups: Array(state.groups.length) },
     {
@@ -264,6 +311,30 @@ test("memory is canonical and copied, rejects malformed loads atomically, and do
   }
   for (const group of state.groups) group.records.length = 0;
   expect(checkpointHash(f.kernel)).toBe(hash);
+});
+
+test("public construction stages clamp quarter-work and disappear only on actual completion", () => {
+  const f = fixture();
+  const definition = definitions[2]!;
+  f.kernel.world.add(f.factory, ConstructionSite);
+  expect(constructionStage(f.kernel, f.factory, definition)).toBe(0);
+  f.kernel.world.add(f.factory, ConstructionProgress, { completedTicks: 9, quarter: 3 });
+  expect(constructionStage(f.kernel, f.factory, definition)).toBe(97);
+  expect(
+    constructionStage(f.kernel, f.factory, {
+      ...definition,
+      construction: { cost: {}, buildTicks: 0 },
+    }),
+  ).toBe(0);
+  f.kernel.world.set(f.factory, ConstructionProgress, "completedTicks", 11);
+  expect(constructionStage(f.kernel, f.factory, definition)).toBe(100);
+  f.kernel.world.remove(f.factory, ConstructionSite);
+  const completed = f.projection
+    .snapshot(f.kernel)
+    .entities.find((row) => row.definition === definition.id);
+  expect(completed).toBeDefined();
+  expect(completed?.constructionStage).toBeUndefined();
+  expect(completed?.constructionSite).toBeUndefined();
 });
 
 test("re-observation refreshes structure state and replaces a remembered destroyed structure without retaining its ghost", () => {

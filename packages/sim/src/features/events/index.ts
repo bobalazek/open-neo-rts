@@ -1,6 +1,7 @@
 import type { Kernel } from "../../kernel";
 
 export * from "./combat";
+export * from "./production";
 
 /** Later producers must gate each disclosed entity/location independently, including attacker origins.
  * Own-hit alerts may reveal the owned victim; they do not authorize disclosing an unseen attacker.

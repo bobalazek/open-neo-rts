@@ -124,6 +124,8 @@ export interface Kernel {
   burning?: (entity: number) => boolean;
   /** Presentation-only output from the completed tick; never read by gameplay systems. */
   combatEvents?: CombatEvent[];
+  /** Successful producer exits for presentation; never read by gameplay or hashed. */
+  productionExits?: Set<number>;
   /** Authoritative stock balances exist only for initialized normal matches. */
   economy?: ForceBanks;
   /** Completed-structure power capacity and brownout; values live in World. */

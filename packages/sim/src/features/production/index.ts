@@ -6,6 +6,7 @@ import type { MatchSetup } from "../../match";
 import { ConstructionSite } from "../construction";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import { perimeterPoint } from "../entities/perimeter";
+import { emitProductionExit } from "../events";
 
 export const PRODUCTION_QUEUE_LIMIT = 5;
 export const PRODUCTION_STATUSES = [
@@ -204,6 +205,7 @@ export function productionFeature(
       return;
     }
     const spawned = spawnEntity(kernel, index, unit, { definition: unit.id, force, ...point });
+    emitProductionExit(kernel, producer);
     const reward = definitionOf(kernel, producer)?.productionReward;
     if (
       reward &&
@@ -228,6 +230,7 @@ export function productionFeature(
     world.destroy(id);
   }
   function tick(kernel: Kernel) {
+    kernel.productionExits?.clear();
     const world = kernel.world;
     for (const id of world.query(ProductionItem)) {
       const producer = world.get(id, ProductionItem, "producer");

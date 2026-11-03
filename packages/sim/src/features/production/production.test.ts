@@ -12,6 +12,7 @@ import { registerBotSeat } from "../control/bots";
 import { StructurePower } from "../economy";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import type { GameplayWeapon } from "../entities/weapons";
+import { emitProductionExit, MAX_PRODUCTION_EXITS } from "../events";
 import { MoveIntent } from "../movement";
 import { CombatMotion, Projectile } from "../projectiles";
 import { PRODUCTION_STATUSES, ProductionGifts, ProductionItem } from ".";
@@ -675,6 +676,7 @@ test("blocked authored exits retain the paid ready item with no far-side fallbac
   const blockers = blockExits(kernel, building);
   step(kernel, [enqueue(kernel, building)]);
   expect(units(kernel)).toEqual([]);
+  expect([...(kernel.productionExits ?? [])]).toEqual([]);
   expect(state(kernel, itemIds(kernel)[0] as number)).toBe("exit");
   expect(kernel.economy?.balance(0)?.credits).toBe(4900);
   ticks(kernel, 3);
@@ -682,6 +684,7 @@ test("blocked authored exits retain the paid ready item with no far-side fallbac
   kernel.world.destroy(blockers[0] as number);
   step(kernel, []);
   expect(units(kernel)).toHaveLength(1);
+  expect([...(kernel.productionExits ?? [])]).toEqual([building]);
   expect(itemIds(kernel)).toEqual([]);
   expect(kernel.economy?.balance(0)?.credits).toBe(4900);
 });
@@ -693,6 +696,7 @@ test("included trucks become ready only on completion, wait for exits, stay outs
   step(kernel, []);
   expect(kernel.world.has(building, ProductionGifts)).toBe(false);
   expect(units(kernel, 4)).toEqual([]);
+  expect([...(kernel.productionExits ?? [])]).toEqual([]);
   kernel.world.remove(building, ConstructionSite);
   step(
     kernel,
@@ -707,9 +711,40 @@ test("included trucks become ready only on completion, wait for exits, stay outs
   kernel.world.destroy(blockers[0] as number);
   step(kernel, []);
   expect(units(kernel, 4)).toHaveLength(1);
+  expect([...(kernel.productionExits ?? [])]).toEqual([building]);
   ticks(kernel, 5);
+  expect([...(kernel.productionExits ?? [])]).toEqual([]);
   expect(units(kernel, 4)).toHaveLength(1);
   expect(kernel.economy?.balance(0)?.credits).toBe(4800);
+});
+
+test("successful multi-slot exits coalesce, clear each tick, and cannot affect canonical state or bot observations", () => {
+  const a = fixture({ duration: 0 }),
+    b = fixture({ duration: 0 });
+  for (const f of [a, b])
+    step(f.kernel, [enqueue(f.kernel, f.building), enqueue(f.kernel, f.building, soldier.id, 1)]);
+  expect(units(a.kernel)).toHaveLength(2);
+  expect([...(a.kernel.productionExits ?? [])]).toEqual([a.building]);
+  const projection = createProjection(a.setup, 1, "controlled");
+  const packet = projection.snapshot(a.kernel);
+  expect(packet.productionExits).toEqual([
+    packet.entities.find((row) => projection.resolve(row.handle) === a.building)!.handle,
+  ]);
+  const allocation = projection.serialize(),
+    hash = checkpointHash(a.kernel);
+  for (let i = 0; i <= MAX_PRODUCTION_EXITS; i++) emitProductionExit(a.kernel, 1000000 + i);
+  expect(a.kernel.productionExits?.size).toBe(MAX_PRODUCTION_EXITS);
+  expect(checkpointHash(a.kernel)).toBe(hash);
+  expect(checkpointHash(a.kernel)).toBe(checkpointHash(b.kernel));
+  expect(projection.snapshot(a.kernel).productionExits).toEqual(packet.productionExits);
+  expect(projection.serialize()).toEqual(allocation);
+  expect(Object.hasOwn(a.kernel.observe?.(1) ?? {}, "productionExits")).toBe(false);
+  packet.productionExits!.length = 0;
+  expect(projection.snapshot(a.kernel).productionExits).toHaveLength(1);
+  step(a.kernel, []);
+  step(b.kernel, []);
+  expect([...(a.kernel.productionExits ?? [])]).toEqual([]);
+  expect(checkpointHash(a.kernel)).toBe(checkpointHash(b.kernel));
 });
 
 test("normal controller observations copy private queues and resolve cancellation handles", () => {

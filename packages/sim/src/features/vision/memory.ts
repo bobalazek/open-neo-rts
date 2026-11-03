@@ -4,7 +4,7 @@ import { hasGrant, type Scope } from "../../commands";
 import { type Kernel, register } from "../../kernel";
 import type { MatchSetup } from "../../match";
 import { strictObject } from "../../snapshots/schema";
-import { ConstructionSite } from "../construction";
+import { ConstructionSite, constructionStage } from "../construction";
 import { Health, OwnerForce, Template, Transform } from "../entities";
 
 /** Authoritative IDs stay inside the host. Projectors allocate their own opaque ghost handles. */
@@ -17,10 +17,11 @@ export interface StructureMemory {
   facing: number;
   health: number;
   site: number;
+  stage: number;
   seen: number;
 }
 export interface VisibilityMemoryState {
-  format: 1;
+  format: 2;
   groups: { id: number; records: StructureMemory[] }[];
 }
 const kind = (id: string) => id.split(":")[0]?.split(".").at(-1);
@@ -136,6 +137,11 @@ export class VisibilityMemory {
           facing: world.get(entity, Transform, "facing"),
           health: world.get(entity, Health, "current"),
           site: world.has(entity, ConstructionSite) ? 1 : 0,
+          stage: constructionStage(
+            this.kernel,
+            entity,
+            this.setup.definitions[world.get(entity, Template, "definition")]!,
+          ),
           seen: this.kernel.tick,
         });
       }
@@ -162,7 +168,7 @@ export class VisibilityMemory {
 
   serialize(): VisibilityMemoryState {
     return {
-      format: 1,
+      format: 2,
       groups: [...this.groups].map(([id, group]) => ({
         id,
         records: [...group.records.values()]
@@ -176,7 +182,7 @@ export class VisibilityMemory {
   load(value: unknown): void {
     const u32 = () => int(0, 0xffffffff);
     const schema = strictObject({
-      format: int(1, 1),
+      format: int(2, 2),
       groups: arr(
         strictObject({
           id: int(0, 0x7fffffff),
@@ -190,6 +196,7 @@ export class VisibilityMemory {
               facing: int(0, 0xffff),
               health: u32(),
               site: int(0, 1),
+              stage: int(0, 100),
               seen: int(0, this.kernel.tick),
             }),
           ),
@@ -210,6 +217,7 @@ export class VisibilityMemory {
           kind(this.setup.definitions[record.definition]?.id ?? "") !== "structure" ||
           !this.setup.forces.some((force) => force.index === record.force) ||
           record.health === 0 ||
+          (!record.site && record.stage !== 100) ||
           record.x % 1024 ||
           record.y % 1024 ||
           record.facing % 0x4000
@@ -227,7 +235,7 @@ export class VisibilityMemory {
   }
 
   hashInto(hasher: Hasher): void {
-    addString(hasher, "visibility-memory:1");
+    addString(hasher, "visibility-memory:2");
     addU32(hasher, this.groups.size);
     for (const [group, memory] of this.groups) {
       addU32(hasher, group);
@@ -242,6 +250,7 @@ export class VisibilityMemory {
           record.facing,
           record.health,
           record.site,
+          record.stage,
           record.seen,
         ])
           addU32(hasher, value);

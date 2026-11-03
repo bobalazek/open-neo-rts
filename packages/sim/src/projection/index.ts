@@ -9,6 +9,7 @@ import {
   ConstructionProgress,
   ConstructionRequest,
   ConstructionSite,
+  constructionStage,
 } from "../features/construction";
 import {
   REPAIR_STATES,
@@ -67,6 +68,7 @@ export interface PresentedEntity {
   extraction?: ExtractionSnapshot;
   harvesting?: HarvestSnapshot;
   constructionSite?: true;
+  constructionStage?: number;
   construction?: {
     completedTicks: number;
     quarter: number;
@@ -118,6 +120,7 @@ export interface SeatSnapshot {
   fog?: VisionGrid[];
   ghosts?: PresentedGhost[];
   combatEvents?: PresentedCombatEvent[];
+  productionExits?: string[];
   /** Static node origins discovered through permitted canonical exploration; no stock/claims. */
   resourceNodes?: { kind: "materials" | "oil"; x: number; y: number }[];
 }
@@ -134,6 +137,7 @@ export interface PresentedGhost {
   maxHealth: number;
   seen: number;
   constructionSite?: true;
+  constructionStage?: number;
 }
 
 /** Trusted host save state only: these authoritative IDs never enter seat snapshots. */
@@ -286,7 +290,10 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             kernel.visibility?.canSeeEntity(seat, attackTarget) && {
               attackTarget: handleOf(attackTarget),
             }),
-          ...(site && { constructionSite: true }),
+          ...(site && {
+            constructionSite: true,
+            constructionStage: constructionStage(kernel, id, definition),
+          }),
           ...(inspectProduction && {
             production: {
               slots: definition.productionSlots ?? 1,
@@ -416,7 +423,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
             health: record.health,
             maxHealth: definition.health,
             seen: record.seen,
-            ...(record.site && { constructionSite: true }),
+            ...(record.site && { constructionSite: true, constructionStage: record.stage }),
           });
         }
       }
@@ -443,6 +450,10 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         ...(setup.normal && { constructionRequests }),
         ...(setup.normal &&
           mode === "controlled" && {
+            productionExits: [...(kernel.productionExits ?? [])]
+              .filter((id) => published.has(id))
+              .sort((a, b) => a - b)
+              .map((id) => handles.get(id)!),
             combatEvents: projectCombatEvents(
               kernel,
               seat,

@@ -332,7 +332,92 @@ exec session 12497, output `/tmp/neo-ai-qualification-sim46-60000-20261103`, log
 do not restart on an observation timeout or overwrite evidence. The historical
 SIM39 batch remains 13 natural outcomes/seven caps and is not current acceptance.
 
-Next: construction assembly/scaffolds (2-21b1), then actual production door
-events and canonical wreck/salvage plus presentation as separate tasks. Continue
+Next: inspect the frozen bot batch's reproducible seed-12 cap, then canonical
+wreck/salvage and remains presentation as separate tasks. Construction assembly
+and production-door delivery are recorded below. Continue
 remaining phase-2 effects/orders, full persistence/replay, audio/help/content
 tools and acceptance, then phases 3–5. The overall goal remains unfinished.
+
+## Construction stages and assembly, SIM47
+
+PR #228 merged the stage contract at `1ea6ad9abb6061d2d906ddc3d2012cbdeebbd9e9`:
+public floored integer percentages from actual quarter-work, exact work/builders
+still grant-private, last-seen stages in canonical memory format 2, strict atomic
+restore and copied wire/ghost adapters. Three scenario headers now use SIM47;
+normal startup/short-replay hashes are `3710f12169c99149` /
+`93d019b9d6ee634b`. Debug goldens and content identities stay unchanged. Independent
+review checked exhaustive integer arithmetic against BigInt, hash/restore
+isolation and private build grants. This remains memory-level restore, not a full save.
+
+The renderer in `/tmp/neo-construction-presentation`, branch
+`codex/construction-presentation`, reveals original structures in quarter-metre
+layers with independent instance buffers and shared geometry/materials. Selectable
+gold scaffold envelopes follow footprint/rotation/ground; ghosts are grey and
+unpickable. Missing stage stays at zero, completion restores the full model and
+removes scaffolds, and progress never advances from the render clock.
+
+Independent review accepted production code `45cf5b2`; the subsequent change
+to fixture backend reporting uses explicit `engine.isWebGPU`, plus documentation
+and a folder-purpose comment. A real GPU fallback probe forced no instancing at
+terrain level 2/world y=3.6: original reactor Mesh clones shared geometry/materials
+but maintained distinct zero/half/completed cutoffs; cleanup left zero meshes and
+materials. Evidence `/tmp/neo-independent-clone-{0,50,100}.png`.
+
+The actual catalog/worker/HUD reactor journey now retains six observed snapshots
+from two paid builds, renders the original GLB at zero/half/completion, checks
+independent completed/partial instances and preserves its terminal Bun replay.
+The explicit fixtures are a two-builder kit, fog off, stubbed HUD picking, manual
+snapshot playback, close camera and flat renderer-only ground; worker gameplay
+still uses Training Grounds and authored numbers. WebGL screenshots under
+`/tmp/neo-construction-presentation-browser-results` and WebGPU screenshots under
+`/tmp/neo-construction-webgpu-verified-browser-results` were inspected. The latter's
+JSON report explicitly records `webgpu`; an earlier headless-shell attempt only
+used WebGL and is not GPU-backend evidence. Repo fix/typecheck/test/build/content
+checks pass; the assembled Chromium/WebKit batch passed 19 cases in 58.1 seconds
+with 11 expected non-Chromium skips. Hosted CI and local Firefox remain unavailable.
+
+Partial structures intentionally cast no shadow until completion. Clipped depth
+passes are recorded as later visual polish (2-21b1c), after functional door/wreck
+lifecycle work. No FPS or full-phase acceptance is claimed. The frozen SIM46
+twenty-seed batch is still running on `20623ea` (session 12497); its results are
+evidence for that older revision, not full SIM47 acceptance. Preserve that process
+and its worktree/evidence; do not launch another long qualification batch for each
+small feature while phase-2 canonical work is still changing.
+
+## Actual production doors, SIM47 retained
+
+`/tmp/neo-production-door-events`, branch `codex/production-door-events`, implements
+2-21b2. Successful paid or gift output emits a bounded cosmetic producer set;
+per-tick coalescing and projection reuse already published opaque actor handles.
+Private queues, output types/costs and hidden/dead actors do not enter the stream.
+Bots never receive it, capacity cannot change output/World/IDs/hash, and all
+canonical goldens remain unchanged. SIM47 is retained; content identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`.
+
+Original paired clips open, hold for one authored opening duration and close.
+Repeated output preserves the current opening phase, renews holds or reverses
+closing; pending imports reconstruct the observed inter-exit spans. Base activity,
+deployment, preview/rest, pause and instance ownership remain separate. Ghost
+doors remain closed/inert. Models without paired clips do nothing; output gains
+no gameplay delay or new balance value.
+
+Independent review accepted `1fa2b65`: 101 tests / 1,055 assertions plus four
+independent cases / 54 assertions covering refusal, saturation with bot/world/hash
+twins, repeated/late opening and hidden pending removal. The author batch passed
+fix/typecheck/test/build/content checks and 83 focused cases / 871 assertions.
+The assembled Chromium/WebKit batch passed 19 cases, with 11 expected
+non-Chromium skips. A full Chromium-channel run explicitly recorded `webgpu`
+and passed the actual catalog/worker/HUD production journey and terminal Bun
+replay. Original Barracks opening/open/closed frames were inspected under
+`/tmp/neo-production-doors-browser-results`; the GPU run/report is under
+`/tmp/neo-production-doors-webgpu-*`. Its renderer-only flat ground, close camera,
+filtered producer view, test-only builder kit/fog-off/stub HUD picking and manual
+snapshot playback are explicit fixtures, not natural-match or FPS acceptance.
+Hosted CI billing and local Firefox launch remain unavailable.
+
+The frozen SIM46 batch remains session 12497 on clean `20623ea` in
+`/tmp/neo-veterancy-credit-fix`. At the latest inspection, 14 double trials were
+recorded: 13 natural outcomes, one reproducible seed-12 cap at tick 60000/hash
+`db0d49c446004166`. Preserve its first replay/result and scenario before diagnosis.
+It is older-revision evidence, not SIM47 acceptance. Continue observing the same
+live process; do not cancel/restart it or mutate its source while investigating.

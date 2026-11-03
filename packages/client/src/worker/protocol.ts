@@ -16,6 +16,7 @@ import {
   EXTRACTION_STATUSES,
   HARVEST_STATUSES,
   MAX_COMBAT_EVENTS,
+  MAX_PRODUCTION_EXITS,
   PRODUCTION_STATUSES,
   SIM_VERSION,
   STAT_COUNTERS,
@@ -407,6 +408,7 @@ function isGhosts(value: unknown, fog: unknown, tick: number, entities: unknown[
         "maxHealth",
         "seen",
         ...(ghost.constructionSite === undefined ? [] : ["constructionSite"]),
+        ...(ghost.constructionStage === undefined ? [] : ["constructionStage"]),
       ]) ||
       typeof ghost.handle !== "string" ||
       !/^g[1-9][0-9]*$/.test(ghost.handle) ||
@@ -425,7 +427,9 @@ function isGhosts(value: unknown, fog: unknown, tick: number, entities: unknown[
       Number(ghost.x) % 1024 !== 0 ||
       Number(ghost.y) % 1024 !== 0 ||
       Number(ghost.facing) % 0x4000 !== 0 ||
-      (ghost.constructionSite !== undefined && ghost.constructionSite !== true)
+      (ghost.constructionSite !== undefined && ghost.constructionSite !== true) ||
+      (ghost.constructionStage !== undefined &&
+        (ghost.constructionSite !== true || !bounded(ghost.constructionStage, 100)))
     )
       return false;
     const grid = fog.find((entry) => isRecord(entry) && entry.group === ghost.group);
@@ -583,6 +587,29 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       !isGhosts(snapshot.ghosts, snapshot.fog, Number(snapshot.tick), snapshot.entities)
     )
       return false;
+  }
+  if (snapshot.productionExits !== undefined) {
+    const exits = snapshot.productionExits;
+    if (
+      snapshot.mode !== "controlled" ||
+      !Array.isArray(exits) ||
+      Object.getPrototypeOf(exits) !== Array.prototype ||
+      exits.length > MAX_PRODUCTION_EXITS ||
+      Reflect.ownKeys(exits).length !== exits.length + 1
+    )
+      return false;
+    const known = new Set(snapshot.entities.filter(isRecord).map((entity) => entity.handle));
+    const seen = new Set();
+    for (const handle of exits) {
+      if (
+        typeof handle !== "string" ||
+        !/^e[1-9][0-9]*$/.test(handle) ||
+        !known.has(handle) ||
+        seen.has(handle)
+      )
+        return false;
+      seen.add(handle);
+    }
   }
   if (snapshot.combatEvents !== undefined) {
     if (
@@ -762,6 +789,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "extraction",
             "harvesting",
             "constructionSite",
+            "constructionStage",
             "construction",
             "constructionOrder",
             "production",
@@ -784,6 +812,11 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (
+      entity.constructionStage !== undefined &&
+      (entity.constructionSite !== true || !bounded(entity.constructionStage, 100))
+    )
+      return false;
     if (entity.disabled !== undefined && entity.disabled !== true) return false;
     if (entity.burning !== undefined && entity.burning !== true) return false;
     if (entity.veterancy !== undefined) {

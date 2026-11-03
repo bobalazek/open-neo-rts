@@ -75,6 +75,23 @@ clock controls progression and pause, without multiplying speed twice. Retained 
 clips hold the last stance; fog removal/disposal still removes the instance. This adds
 no simulation state, private cooldown dependency, inferred death or wreck lifecycle.
 
+Successful production output publishes `productionExits`: a bounded, copied list
+of already projected opaque producer handles, coalesced per producer/tick. No
+queue contents, output type, cost or hidden actor handle is included. Blocked
+exits, population/EMP/refusal and mere queue progress do not emit it; actual gift
+output does. The stream is cosmetic, cleared each production tick, excluded from
+controller observations and canonical hashes, and cannot affect unit output.
+
+Paired authored `open`/`close` clips reserve their genuinely moving channels
+separately from deployment and base activity. An observed exit opens the door,
+holds it for one authored opening duration and closes it. Repeated output keeps
+opening continuous, renews a hold or reverses closing. Pending imports retain
+inter-exit spans until clip durations are known, then catch up without replaying
+finished activity. Ghosts remain closed and inert; disappearance revokes the
+instance. The existing simulation-millisecond clock controls pause/speed. Preview
+clip selection/rest still works. These visual timings delay no gameplay output
+and introduce no balance number; models without both clips remain inert.
+
 ## Phase-1b entity presentation
 
 `createEntityPresentation(scene, terrain, resolveModel)` consumes only copied `SeatSnapshot` values. The caller resolves a definition ID to `{ bytes, movementDomain }`, using the existing content domain or `null` for structures. This layer owns no pack catalog or simulation. Set Force colours with `setForceColor(force, "#RRGGBB")`; call `accept(snapshot, receivedAtMs)` on delivery and `render(nowMs)` each frame, using the same monotonic clock. Await or handle the promise from `accept` to report model-loading errors. Dispose the layer before its scene.
@@ -140,6 +157,30 @@ Hundreds of units and thousands of props only work with instancing.
 - Entities in fog aren't sent to the client at all ([fog-of-war.md](../design/fog-of-war.md)), so they cost nothing.
 
 ## Construction and destruction
+
+Live construction sites expose integer `constructionStage` from 0 to 100 (floored
+percentage of actual quarter-work). Exact work and active-builder counts stay
+private to build controllers. Completed structures omit the stage; a zero-time
+or missing-progress site stays at zero until actual completion. Remembered sites
+keep only the last observed stage, including through hidden progress/completion,
+ownership changes or death. The renderer must not consult live hidden state.
+
+Structures reveal from the ground in provisional 0.25 m brick layers using that
+public stage. A [custom instance buffer](https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers)
+holds each model's world-space cutoff and activation flag; original geometry and
+Force materials stay shared. GLSL/WebGL and WGSL/WebGPU hooks discard unrevealed
+fragments. Devices without hardware instancing use shared-geometry clones and
+per-mesh uniforms. Completion disables clipping, including the final partial
+layer, and removes the scaffold. Models without a known stage remain at zero
+while their construction-site marker exists.
+
+A gold wire scaffold encloses the declared footprint and full model height,
+follows terrain and rotation, and provides a selectable site envelope even at
+zero progress. Remembered scaffolds are grey and unpickable. Public stage supplies
+the progress bar where exact private work is unavailable. No animation clock
+advances building work. Partial models currently cast no shadow; registration
+begins at completion, pending clipped depth-pass support. Site removal, cancellation,
+fog revocation and disposal release the scaffold/material and model instance.
 
 - **Building up:** structures assemble brick-layer by brick-layer from the ground, driven by the construction progress in the sim (0–100% reveals layers). A scaffold outline shows the full footprint while building.
 - **Units leaving a factory** do a quick snap-together assembly at the exit.
