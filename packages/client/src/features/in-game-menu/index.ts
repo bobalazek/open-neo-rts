@@ -4,6 +4,8 @@ import { mountNativePanel } from "../../shared/native-panel";
 import { NORMAL_GAME_SPEEDS } from "../../worker";
 import { loadGameScreen, type SavedGame } from "../load-game";
 import { type DeviceSettings, settingsScreen } from "../settings";
+import { bindingText, controlsHelp, readBindings } from "../settings/bindings";
+import { bindingsScreen } from "../settings/bindings-screen";
 import { createExitPrompt, type MatchExit } from "./exit";
 
 export function createInGameMenu(
@@ -69,10 +71,11 @@ export function createInGameMenu(
     status!.textContent = text(
       options.state()?.paused ? "ui.menu.paused" : pending ? "ui.menu.pausing" : "ui.menu.running",
     );
-    for (const control of dialog.querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
-      "button,select",
-    ))
-      control.disabled = pending || control.hasAttribute("data-unavailable");
+    if (pane === "menu" || pane === "save")
+      for (const control of dialog.querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
+        "button,select",
+      ))
+        control.disabled = pending || control.hasAttribute("data-unavailable");
     const speed = dialog.querySelector<HTMLSelectElement>("[data-game-speed]");
     if (speed) speed.value = String(options.state()?.speed ?? 1);
     present();
@@ -156,14 +159,15 @@ export function createInGameMenu(
         present();
       });
     }
-    for (const [action, name] of [
-      [options.quicksave, "ui.saves.quick-save"],
-      [options.quickload, "ui.saves.quick-load"],
+    for (const [action, name, binding] of [
+      [options.quicksave, "ui.saves.quick-save", "quicksave"],
+      [options.quickload, "ui.saves.quick-load", "quickload"],
     ] as const) {
       if (!action) continue;
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = text(name);
+      button.title = bindingText(readBindings(), binding);
       button.addEventListener(
         "click",
         () =>
@@ -192,6 +196,23 @@ export function createInGameMenu(
       body!.querySelector(`[data-${topic}]`)?.addEventListener("click", () => {
         pane = topic;
         body!.innerHTML = `<button type="button" data-back>${text("ui.common.back")}</button><h2>${text(topic === "keys" ? "ui.menu.keys" : "ui.menu.objectives")}</h2><p>${text(topic === "keys" ? "ui.menu.keys-help" : "ui.menu.objectives-help")}</p>`;
+        if (topic === "keys") {
+          body!.querySelector("p")!.textContent = controlsHelp(readBindings());
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.textContent = text("ui.bindings.edit");
+          edit.addEventListener("click", () => {
+            pane = "bindings";
+            const controls = bindingsScreen(body!, () => {
+              menu();
+              body!.querySelector<HTMLButtonElement>("[data-keys]")?.click();
+            });
+            cleanupPane = controls.dispose;
+            focus();
+            present();
+          });
+          body!.append(edit);
+        }
         body!.querySelector("[data-back]")?.addEventListener("click", () => {
           menu();
           focus();
@@ -277,6 +298,7 @@ export function createInGameMenu(
           update();
         }
         if (!disposed && !ended() && exit === prompt) {
+          exit = undefined;
           options.controls(!dialog.open);
           requestAnimationFrame(() => {
             if (disposed || exit || ended()) return;

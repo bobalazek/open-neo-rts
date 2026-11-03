@@ -2,6 +2,7 @@
 import type { GraphicsQuality } from "@open-neo-rts/render";
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
+import { bindingsScreen } from "./bindings-screen";
 
 export const DEVICE_SETTINGS_KEY = "open-neo-rts.settings.v1";
 export const UI_SCALES = [75, 100, 125, 150] as const;
@@ -97,6 +98,29 @@ export function settingsScreen(
   const status = root.querySelector("[data-status]");
   if (!form || !error || !status) throw new Error("Settings controls missing");
   let panel: ReturnType<typeof mountNativePanel> | undefined;
+  const preferences = root.querySelector<HTMLElement>(".settings-screen")!;
+  const semantics = document.createElement("div");
+  preferences.replaceWith(semantics);
+  semantics.append(preferences);
+  const controlsHost = document.createElement("div");
+  let controls: ReturnType<typeof bindingsScreen> | undefined;
+  const controlsButton = document.createElement("button");
+  controlsButton.type = "button";
+  controlsButton.textContent = text("ui.bindings.title");
+  preferences.querySelector("header")!.after(controlsButton);
+  controlsButton.addEventListener("click", () => {
+    preferences.replaceWith(controlsHost);
+    controls = bindingsScreen(controlsHost, () => {
+      controls?.dispose();
+      controls = undefined;
+      controlsHost.replaceChildren();
+      controlsHost.replaceWith(preferences);
+      panel?.update();
+      controlsButton.focus({ preventScroll: true });
+    });
+    panel?.update();
+    controlsHost.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
+  });
   const field = (name: string) =>
     form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   const fill = (value: DeviceSettings) => {
@@ -169,13 +193,14 @@ export function settingsScreen(
   });
   root.querySelector("[data-back]")?.addEventListener("click", back);
   if (canvas)
-    panel = mountNativePanel(root, root.querySelector<HTMLElement>(".settings-screen")!, canvas, {
-      id: () => "settings",
-      title: () => text("ui.settings.title"),
+    panel = mountNativePanel(root, semantics, canvas, {
+      id: () => (controls ? "bindings" : "settings"),
+      title: () => text(controls ? "ui.bindings.title" : "ui.settings.title"),
       modal: false,
     });
   return {
     cancel: () => {
+      controls?.dispose();
       panel?.dispose();
       apply(saved);
     },

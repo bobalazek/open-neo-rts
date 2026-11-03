@@ -29,6 +29,7 @@ export interface BattlefieldAction {
   tooltip: string;
   image?: string;
   key?: string;
+  slot?: number;
   badge?: string;
   progress?: number;
   disabled: boolean;
@@ -37,6 +38,7 @@ export interface BattlefieldAction {
 }
 export interface BattlefieldHudContent {
   scale: number;
+  shortcuts?: { details: string; build: string };
   objective: { label: string; tooltip: string };
   resources: readonly { id: string; label: string; tooltip: string; image?: string }[];
   status: BattlefieldHudContent["resources"];
@@ -360,7 +362,7 @@ export function createBattlefieldHud(
     const commandKeys = ["Q", "W", "E", "R", "A", "S", "D", "F", "Z", "X", "C", "V"];
     let extra = commandKeys.length;
     const commandSlots = content.commands.map((action) => {
-      const index = commandKeys.indexOf(action.key ?? "");
+      const index = action.slot ?? commandKeys.indexOf(action.key ?? "");
       return { action, index: index < 0 ? extra++ : index };
     });
     const commandRows = Math.ceil(
@@ -651,6 +653,7 @@ export function createBattlefieldHud(
       all.map((action) => [action.id, action.image]),
       next.resources.map((item) => item.id),
       next.status.map((item) => item.id),
+      next.shortcuts,
     ]);
     if (key !== contentKey) {
       contentKey = key;
@@ -681,7 +684,7 @@ export function createBattlefieldHud(
             showDetails = !showDetails;
             layout();
           },
-          "I",
+          next.shortcuts?.details ?? "I",
         ),
       );
       make(
@@ -698,7 +701,7 @@ export function createBattlefieldHud(
             activeMode = "build";
             layout();
           },
-          "B",
+          next.shortcuts?.build ?? "B",
         ),
       );
       make(

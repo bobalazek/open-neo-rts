@@ -1,5 +1,5 @@
 // UI primitives used by several features (buttons, panels, dialogs). Phase 2.
-import english from "../locales/en.json";
+import english from "../locales/en.json" with { type: "json" };
 
 /** Replacing unchanged text between pointerdown/up can cancel WebKit clicks. */
 export function setText(element: Element, value: string) {

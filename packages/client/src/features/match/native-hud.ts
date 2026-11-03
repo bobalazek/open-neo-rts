@@ -5,6 +5,14 @@ import {
 } from "@open-neo-rts/render";
 import { text } from "../../shared";
 import { visiblePanelElement } from "../../shared/panel-content";
+import {
+  bindingText,
+  CONTROL_GROUPS,
+  chordText,
+  defaultBindings,
+  type KeyBindings,
+  matchesBinding,
+} from "../settings/bindings";
 import { hudIcon } from "./icons";
 
 /** Existing HUD controllers remain authoritative. This binding copies their display values only. */
@@ -18,6 +26,7 @@ export function mountNativeMatchHud(
     zoom: (delta: number) => void;
   },
   signal: AbortSignal,
+  bindings: () => KeyBindings = defaultBindings,
 ) {
   const off = new AbortController();
   const identities = new WeakMap<HTMLElement, string>();
@@ -67,6 +76,8 @@ export function mountNativeMatchHud(
         .join("\n"),
       image: image(button),
       key: button.dataset.hotkey,
+      slot:
+        button.dataset.commandIndex === undefined ? undefined : Number(button.dataset.commandIndex),
       badge: button.dataset.count ?? (row ? context?.match(/^\d+/)?.[0] : undefined),
       disabled: button.disabled || button.getAttribute("aria-disabled") === "true",
       active: button.getAttribute("aria-pressed") === "true",
@@ -94,13 +105,13 @@ export function mountNativeMatchHud(
     const summary = root.querySelector<HTMLElement>("[data-summary]");
     const groups = buttons("[data-groups] button").map((item, i) => {
       const source = root.querySelectorAll<HTMLButtonElement>("[data-groups] button")[i]!;
-      const group = i === 9 ? 0 : i + 1;
+      const group = CONTROL_GROUPS[i]!;
       const count = source.dataset.count ?? source.textContent?.split(":")[1]?.trim() ?? "0";
       return {
         ...item,
         label: String(group),
         badge: count === "0" ? "" : `×${count}`,
-        tooltip: `${text("ui.hud.select-group", { group })} · ${count}\nCtrl+${group}: ${text("ui.hud.set-group")}\nCtrl+Shift+${group}: ${text("ui.hud.add-group")}`,
+        tooltip: `${text("ui.hud.select-group", { group })} · ${count}\n${bindingText(bindings(), `group.select.${group}`)}: ${text("ui.hud.select-group", { group })}\n${bindingText(bindings(), `group.set.${group}`)}: ${text("ui.hud.set-group")}\n${bindingText(bindings(), `group.add.${group}`)}: ${text("ui.hud.add-group")}\n${text("ui.bindings.group-pointer")}`,
         activate: () => {
           if (ctrl) {
             const index = root.querySelector<HTMLSelectElement>("[data-group-index]");
@@ -119,7 +130,9 @@ export function mountNativeMatchHud(
       return {
         ...item,
         image: image(span),
-        key: i ? "," : ".",
+        key: bindings()[i ? "idleProducer" : "idleBuilder"][0]
+          ? chordText(bindings()[i ? "idleProducer" : "idleBuilder"][0]!)
+          : "",
         badge: item.label.match(/\d+/)?.[0] ?? "0",
       };
     });
@@ -201,6 +214,10 @@ export function mountNativeMatchHud(
       });
     return {
       scale: (Number.parseFloat(document.documentElement.style.fontSize) || 100) / 100,
+      shortcuts: {
+        details: bindingText(bindings(), "details"),
+        build: bindingText(bindings(), "buildMenu"),
+      },
       objective: {
         label: text("ui.match.objective"),
         tooltip: `${root.querySelector(".match-top > strong")?.textContent ?? ""}\n${text("ui.menu.objectives-help")}`,
@@ -294,18 +311,29 @@ export function mountNativeMatchHud(
     (event) => {
       if (
         (event.target === canvas || event.target === minimap.canvas) &&
-        !event.ctrlKey &&
-        !event.metaKey &&
-        !event.altKey &&
         !event.repeat &&
+        !event.isComposing &&
         !root.querySelector("dialog[open]") &&
-        gui.shortcut(event.code)
+        gui.shortcut(
+          matchesBinding(bindings(), "buildMenu", event)
+            ? "KeyB"
+            : matchesBinding(bindings(), "details", event)
+              ? "KeyI"
+              : "",
+        )
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();
         return;
       }
-      if (event.key === "Escape" && !root.querySelector("dialog[open]") && gui.close()) {
+      if (
+        event.key === "Escape" &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !root.querySelector("dialog[open]") &&
+        gui.close()
+      ) {
         event.preventDefault();
         event.stopImmediatePropagation();
         canvas.focus();

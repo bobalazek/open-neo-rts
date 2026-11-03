@@ -58,6 +58,20 @@ source.
 - Settings use the same preferences, validation and storage from Home and in a
   match. Changes preview immediately; Apply persists them, while Back or cancel
   restores the saved preferences. Graphics failure leaves semantic HTML usable.
+- Keyboard controls in Settings and the pause menu use the same native panel to
+  edit a versioned device-local profile for 64 currently implemented normal-match
+  actions. Category, action and primary/alternate choices expose up to two
+  physical key-code chords per action, including an unbound state. Capture,
+  clearing, per-action defaults and Grid/WASD presets stay staged until Apply;
+  conflicts name the actions and block Apply. Escape or window blur cancels
+  capture. Bounded JSON import stages validated values; export downloads the
+  staged profile. Failed persistence preserves the previous active profile.
+  Successful Apply refreshes the running match's controls and captions without
+  a restart. Quicksave/load shortcuts are optional and unbound by default.
+  The provisional WASD preset keeps F1 unassigned; see
+  `../../docs/project/decisions/2026-11-03-match-input-bindings.md`.
+  Debug/replay controls, mouse/audio options and unimplemented actions retain
+  their own scope. Physical-key and OS accelerator capture remain unqualified.
 - The HTML dialog owns modal focus and Escape in a match. Its separate native
   panel canvas keeps the world renderer and save-thumbnail source intact, with
   the paused battlefield dimly visible behind it. Menu state and actions still
@@ -137,10 +151,12 @@ source.
 - Supply Truck mining and unloading use original collector/drum and cargo-bed
   motion. Work follows projected state, including pause and suspended dock work,
   and returning to idle restores the authored rest pose.
-- Commands retain their existing hotkeys and stable QWER/ASDF/ZXCV slots. B switches
-  the contextual build/train view, I toggles Details, and Escape closes auxiliary
-  views. Populated groups appear directly; Groups reveals every group. Idle
-  builder/producer helpers and existing group assign/add/recall controls remain.
+- Commands retain stable four-column slots independently of their live key
+  captions. Grid defaults are QWER/ASDF/ZXCV, with B switching the contextual
+  build/train view and I toggling Details; the device profile can remap them.
+  Escape closes auxiliary views. Populated groups appear directly; Groups
+  reveals every group. Idle builder/producer helpers and group assign/add/recall
+  controls use the active profile while preserving their existing actions.
 - Icon mode controls switch Commands and Build / train; recipes use at most six
   columns and queue entries retain actual progress. Only short shortcut badges
   appear on compact buttons; full Home/Space labels remain in tooltips.
