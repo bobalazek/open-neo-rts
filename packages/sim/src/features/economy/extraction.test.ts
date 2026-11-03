@@ -33,7 +33,15 @@ import { MoveIntent, MovementFailure } from "../movement";
 import { ProductionGifts, ProductionItem, ProductionRally } from "../production";
 import { CombatMotion, PendingImpact, Projectile } from "../projectiles";
 import { Remains, SalvageOrder } from "../salvage";
-import { ForceOutcome, ForceStatistics, MatchOutcome } from "../victory";
+import {
+  ControllerStatistics,
+  ForceOutcome,
+  ForceStatistics,
+  MatchOutcome,
+  StatisticsSample,
+  StatisticsSeries,
+  TypeStatistics,
+} from "../victory";
 import { ForceBank } from "./bank";
 import { Extraction, ResourceNode } from "./extraction";
 import { Harvester } from "./harvesting";
@@ -327,6 +335,10 @@ test("canonical snapshots include fractional progress and deposit state, with id
     ExperienceYield,
     ForceOutcome,
     ForceStatistics,
+    ControllerStatistics,
+    TypeStatistics,
+    StatisticsSeries,
+    StatisticsSample,
     MatchOutcome,
   ])
     restored.register(component);

@@ -1,6 +1,7 @@
 // Canonical result summary and local rematch navigation. Phase 2.
 import type { ForceStatisticsSnapshot, VictorySnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
+import { mountDetailedStatistics } from "./statistics";
 
 const columns = [
   { label: "ui.result.units", keys: ["unitsBuilt", "unitsLost", "unitsDestroyed"] },
@@ -80,6 +81,7 @@ export function postMatchScreen(
   home: () => void,
   statistics?: ForceStatisticsSnapshot[],
   saveReplay?: () => Promise<void>,
+  definitions: readonly { id: string; name: string; kind: string }[] = [],
 ) {
   const result = matchResult(victory, force, statistics);
   if (!result) throw new Error("Cannot present an unfinished match");
@@ -130,6 +132,7 @@ export function postMatchScreen(
     if (statistics)
       for (const { index } of shown) row.insertCell().textContent = entry.totals?.[index] ?? "—";
   }
+  if (statistics) mountDetailedStatistics(dialog, scroll, statistics, definitions);
   dialog.addEventListener("keydown", (event) => event.stopPropagation());
   dialog.addEventListener("cancel", (event) => event.preventDefault());
   dialog.querySelector("[data-rematch]")!.addEventListener("click", rematch);

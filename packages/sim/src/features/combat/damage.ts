@@ -182,7 +182,7 @@ export function applyWarhead(
     kernel.statistics?.damage(
       impact.force,
       force,
-      !!definition.footprint,
+      world.get(target, Template, "definition"),
       amount,
       world.get(target, Health, "current") === 0,
     );

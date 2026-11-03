@@ -13,6 +13,7 @@ import {
   type Command,
   type CommandType,
   type Payloads,
+  QUEUED_ORDER_TYPES,
   type Rejection,
   SYSTEM_SEAT,
   sortCommands,
@@ -318,6 +319,8 @@ function dispatch(
   const stray = commands.find((c) => c.tick !== kernel.tick);
   if (stray) throw new RangeError(`Command for tick ${stray.tick} stepped at tick ${kernel.tick}`);
   for (const command of commands) {
+    const queuedOrder = QUEUED_ORDER_TYPES.some((type) => type === command.type);
+    const actingForces = queuedOrder ? [] : (kernel.statistics?.commandForces(command) ?? []);
     const handler = kernel.handlers.get(command.type);
     // ponytail: reuses unknown_type for a type no registered feature handles; add a code if acks need to tell them apart.
     const code = kernel.victory?.ended
@@ -328,6 +331,7 @@ function dispatch(
           ? handler(kernel, command)
           : "unknown_type";
     if (code !== undefined) (accepted.get(command) as LogEntry).result = code;
+    else if (!queuedOrder) kernel.statistics?.order(command.seat, actingForces);
   }
   return entries;
 }

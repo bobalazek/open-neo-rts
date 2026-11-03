@@ -342,7 +342,10 @@ export class UnitTransports {
           "damageTaken",
           world.get(id, Health, "current"),
         );
-        this.kernel.statistics?.record(world.get(id, OwnerForce, "force"), "unitsLost");
+        this.kernel.statistics?.loss(
+          world.get(id, OwnerForce, "force"),
+          world.get(id, Template, "definition"),
+        );
         // Cargo with no exit never becomes a spatial actor or a public death marker.
         for (const state of world.query(WeaponState))
           if (world.get(state, WeaponState, "shooter") === id) world.destroy(state);

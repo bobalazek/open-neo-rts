@@ -55,7 +55,7 @@ export {
 } from "./match-map";
 
 /** Bump whenever simulation outcomes change. */
-export const SIM_VERSION = 52;
+export const SIM_VERSION = 53;
 
 /** Map-aware setup; definitions are an ordered table addressed by their unique IDs. */
 export interface MatchSetup {
@@ -206,5 +206,6 @@ export function createMatch(setup: MatchSetup): Kernel {
   if (setup.normal) initializeOrderQueues(kernel, { ...setup, definitions });
   initializeObservations(kernel, { ...setup, definitions });
   initializeBotSeats(kernel, { ...setup, definitions });
+  kernel.statistics?.sample(0);
   return kernel;
 }

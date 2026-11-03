@@ -18,6 +18,31 @@
   color-scheme: dark;
   scrollbar-color: #62707d var(--surface);
 }
+.result-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+.result-tabs [aria-selected="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.result-history svg {
+  display: block;
+  width: 100%;
+  max-width: 50rem;
+  margin-top: 1rem;
+}
+.result-history svg text {
+  font-size: 13px;
+}
+.result-history details {
+  margin-block: 1rem;
+}
+.result-history summary {
+  cursor: pointer;
+}
 .save-filters {
   display: flex;
   gap: 1rem;

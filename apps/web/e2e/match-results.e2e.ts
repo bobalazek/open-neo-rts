@@ -1,13 +1,12 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
-import type { MatchRecord } from "../../../packages/sim/src";
+import type { MatchRecord, SeatSnapshot } from "../../../packages/sim/src";
 
 test("real paid production reaches the frozen final totals on desktop and narrow layouts", async ({
   page,
 }, info) => {
-  test.skip(info.project.name !== "chromium", "Bounded authored production/result journey");
   test.setTimeout(120_000);
   page.on("dialog", (dialog) => dialog.accept());
   await page.addInitScript(() => {
@@ -16,12 +15,17 @@ test("real paid production reaches the frozen final totals on desktop and narrow
       constructor(url: string | URL, options?: WorkerOptions) {
         super(url, options);
         Reflect.set(window, "recordWorker", this);
+        this.addEventListener("message", (event) => {
+          if (event.data.state?.snapshot)
+            Reflect.set(window, "lastResultSnapshot", event.data.state.snapshot);
+        });
       }
     };
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match" }).click();
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  await expect(page).toHaveURL(/\/match$/);
   const refused = await page.evaluate(
     () =>
       new Promise<string>((resolve) => {
@@ -36,13 +40,46 @@ test("real paid production reaches the frozen final totals on desktop and narrow
       }),
   );
   expect(refused).toContain("Finish the normal match");
-  await page.getByRole("button", { name: /Idle producers 1/ }).click();
+  const producer = await page.getByRole("button", { name: /Idle producers 1/ }).boundingBox();
+  if (!producer) throw new Error("Idle producer control missing");
+  await page.mouse.move(producer.x + producer.width / 2, producer.y + producer.height / 2);
+  await page.mouse.down();
+  // A live snapshot between down/up must not replace the label and cancel WebKit's click.
+  await page
+    .getByRole("button", { name: "Pause", exact: true })
+    .evaluate((button) => (button as HTMLButtonElement).click());
+  await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
+  await page.mouse.up();
+  await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
+  await page.getByRole("button", { name: "Resume", exact: true }).click();
   await page.locator('[data-definition="core.unit:eastern-collective/field-technician"]').click();
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
   await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
     timeout: 30_000,
   });
   await expect(page.locator(".match-notices button")).toContainText("Unit ready");
+  const live = await page.evaluate(async () => {
+    const worker = Reflect.get(window, "recordWorker") as Worker;
+    let id = 8_000_000;
+    const request = (data: object) =>
+      new Promise<void>((resolve, reject) => {
+        const current = id++;
+        const listener = (event: MessageEvent) => {
+          if (event.data.id !== current) return;
+          worker.removeEventListener("message", listener);
+          if (event.data.error) reject(new Error(event.data.error));
+          else resolve();
+        };
+        worker.addEventListener("message", listener);
+        worker.postMessage({ ...data, id: current });
+      });
+    await request({ type: "pause", paused: true });
+    while ((Reflect.get(window, "lastResultSnapshot") as { tick: number }).tick < 650)
+      await request({ type: "step" });
+    return Reflect.get(window, "lastResultSnapshot") as SeatSnapshot;
+  });
+  expect(live.statistics?.map((row) => row.force)).toEqual([0]);
+  expect(live.statistics?.[0]?.details).toBeUndefined();
   await page.getByRole("button", { name: "Surrender", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Defeat", exact: true });
   await expect(dialog).toBeVisible();
@@ -72,11 +109,72 @@ test("real paid production reaches the frozen final totals on desktop and narrow
     },
   );
   expect(JSON.parse(verified)).toMatchObject({ tick: record.tick, hash: record.hash });
+  const snapshot = await page.evaluate(
+    () => Reflect.get(window, "lastResultSnapshot") as SeatSnapshot,
+  );
+  const own = snapshot.statistics?.find((row) => row.force === 0);
+  expect(own?.details?.history.map((point) => point.tick)).toContain(600);
+  expect(own?.details?.history.at(-1)?.tick).toBe(record.tick);
+  expect(
+    own?.details?.types.find((type) => type.definition.endsWith("/field-technician"))?.built,
+  ).toBe(1);
+  expect(own?.details?.controllers.find((controller) => controller.seat === 1)).toMatchObject({
+    orders: 2,
+    ticks: record.tick,
+  });
+  writeFileSync(info.outputPath("detailed-statistics.json"), JSON.stringify(snapshot.statistics));
+  await dialog.getByRole("tab", { name: "Economy", exact: true }).click();
+  await expect(dialog.getByRole("img", { name: "Credits stock", exact: true })).toBeVisible();
+  await dialog
+    .getByRole("combobox", { name: "History metric", exact: true })
+    .selectOption("creditsGathered");
+  await dialog
+    .getByRole("tabpanel", { name: "Economy", exact: true })
+    .getByText("Show sampled values", { exact: true })
+    .click();
+  await expect(dialog.getByRole("region", { name: "Credits gathered", exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath("economy-history.png") });
+  await dialog
+    .getByRole("combobox", { name: "History metric", exact: true })
+    .selectOption("industrialIncome");
+  await dialog
+    .getByRole("tabpanel", { name: "Economy", exact: true })
+    .getByText("Show sampled values", { exact: true })
+    .click();
+  await expect(
+    dialog
+      .getByRole("region", { name: "Industrial capacity income / minute", exact: true })
+      .getByRole("row", { name: "Force 1 0:30 2", exact: true })
+      .getByRole("cell")
+      .last(),
+  ).toHaveText("2");
+  await dialog.getByRole("tab", { name: "Military", exact: true }).click();
+  await expect(
+    dialog
+      .getByRole("row")
+      .filter({ hasText: "Field Technician" })
+      .filter({ hasText: "Force 1" })
+      .getByRole("cell")
+      .nth(1),
+  ).toHaveText("1");
+  await dialog.getByRole("tab", { name: "Orders / APM", exact: true }).click();
+  await expect(
+    dialog.getByRole("row").filter({ hasText: "Player seat 1" }).getByRole("cell").nth(1),
+  ).toHaveText("2");
+  await expect(dialog).toContainText("Bot seat 2");
+  await dialog.getByRole("tab", { name: "Orders / APM", exact: true }).focus();
+  await page.keyboard.press("Home");
+  await expect(dialog.getByRole("tab", { name: "Summary", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
   await expect(dialog.getByRole("status")).toHaveText("Replay download started.");
   await page.screenshot({ path: info.outputPath("match-totals-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(dialog.getByRole("region", { name: "Final Force totals" })).toBeVisible();
   await page.screenshot({ path: info.outputPath("match-totals-mobile.png") });
+  await dialog.getByRole("tab", { name: "Economy", exact: true }).click();
+  await page.screenshot({ path: info.outputPath("history-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
 

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { STAT_COUNTERS } from "@open-neo-rts/sim";
+import { HISTORY_METRICS, STAT_COUNTERS } from "@open-neo-rts/sim";
 import { isWorkerReply } from "./protocol";
 
 test("remains packets are bounded, strict, unique opaque rows separate from living actors", () => {
@@ -349,6 +349,78 @@ test("statistics wire shape requires complete bounded counters and sorted privat
   ])
     expect(isWorkerReply(packet(value))).toBe(false);
   expect(isWorkerReply(packet([], "debug-no-fog"))).toBe(false);
+});
+
+test("detailed statistics require a terminal result, bounded ordered history and exact controller/type data", () => {
+  const counters = Object.fromEntries(STAT_COUNTERS.map((key) => [key, 0]));
+  const values = Object.fromEntries(HISTORY_METRICS.map((metric) => [metric, 0]));
+  const details = {
+    controllers: [{ seat: 1, bot: false, orders: 2, ticks: 1200, apm: 2 }],
+    types: [{ definition: "unit:fixture/worker", built: 1, lost: 0, destroyed: 0, remaining: 0 }],
+    history: [
+      { tick: 0, values },
+      { tick: 1200, values },
+    ],
+  };
+  const victory = {
+    rule: "annihilation",
+    forces: [
+      { force: 0, team: 0, reason: "surrendered", tick: 1200 },
+      { force: 1, team: 1, reason: "active", tick: null },
+    ],
+    result: { tick: 1200, winner: 1, reason: "lastManStanding" },
+  };
+  const packet = (detail: unknown, ended = true) => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1200,
+        mode: "controlled",
+        entities: [],
+        statistics: [{ force: 0, counters, details: detail }],
+        ...(ended && { victory }),
+      },
+    },
+  });
+  expect(isWorkerReply(packet(details))).toBe(true);
+  expect(isWorkerReply(packet(details, false))).toBe(false);
+  for (const bad of [
+    { ...details, secret: 1 },
+    { ...details, controllers: [{ ...details.controllers[0]!, apm: 3 }] },
+    { ...details, controllers: [details.controllers[0], details.controllers[0]] },
+    { ...details, types: [details.types[0], details.types[0]] },
+    { ...details, types: [{ ...details.types[0]!, definition: "prop:fixture/tree" }] },
+    { ...details, types: [{ ...details.types[0]!, lost: -1 }] },
+    { ...details, history: Array(513).fill({ tick: 0, values }) },
+    { ...details, history: [{ tick: 1, values }] },
+    {
+      ...details,
+      history: [
+        { tick: 0, values },
+        { tick: 0, values },
+      ],
+    },
+    {
+      ...details,
+      history: [
+        { tick: 0, values },
+        { tick: 1201, values },
+      ],
+    },
+    {
+      ...details,
+      history: [
+        { tick: 0, values: { ...values, creditsGathered: 1 } },
+        { tick: 1200, values },
+      ],
+    },
+    { ...details, history: [{ tick: 0, values: { ...values, credits: 0.5 } }] },
+    { ...details, history: [{ tick: 0, values: { ...values, hidden: 10 } }] },
+    { ...details, history: Array(1) },
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
 });
 
 test("worker replies accept bounded copied stock banks and retain bank-free debug packets", () => {
