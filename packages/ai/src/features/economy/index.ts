@@ -106,6 +106,8 @@ export interface SkirmishMemory {
   placement: number;
   scout: number;
   scoutWork: number;
+  enemyBase: { x: number; y: number; radius: number } | null;
+  baseScout: number;
   owned: string[];
   enemy: string | null;
   goal: { x: number; y: number; until: number; handle: string | null; health?: number } | null;

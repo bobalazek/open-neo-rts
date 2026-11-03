@@ -81,6 +81,8 @@ export const initialSkirmishMemory = (): SkirmishMemory => ({
   placement: 0,
   scout: 0,
   scoutWork: 0,
+  enemyBase: null,
+  baseScout: 0,
   owned: [],
   enemy: null,
   goal: null,
@@ -110,6 +112,29 @@ export function basicSkirmishProgram(
           !policy.allies.includes(entity.force) &&
           !(memory.avoid?.handle === entity.handle && memory.avoid.until > observation.tick)
         ) {
+          const definition = definitions.get(entity.definition);
+          if (
+            definition?.role === "headquarters" &&
+            definition.footprint &&
+            !entity.constructionSite
+          ) {
+            const [width, depth] = definition.footprint;
+            const rotated = (((entity.facing >>> 14) + 3) & 1) !== 0;
+            const base = {
+              x: entity.x + (rotated ? depth : width) * 512,
+              y: entity.y + (rotated ? width : depth) * 512,
+              radius: Math.max(width, depth) * 512 + 6 * 1024,
+            };
+            if (
+              !memory.enemyBase ||
+              memory.enemyBase.x !== base.x ||
+              memory.enemyBase.y !== base.y ||
+              memory.enemyBase.radius !== base.radius
+            ) {
+              memory.enemyBase = base;
+              memory.baseScout = 0;
+            }
+          }
           const previous = memory.enemy && entities.get(memory.enemy);
           const rank = (candidate: PolicyEntity) =>
             definitions.get(candidate.definition)?.role === "combat" ? 0 : 1;

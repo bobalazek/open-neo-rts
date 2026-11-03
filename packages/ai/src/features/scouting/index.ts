@@ -5,6 +5,17 @@ import type { WorkBudget } from "../..";
 import { shouldRetreat } from "../combat";
 import { distance, type PlanningView } from "../economy";
 
+const PERIMETER = [
+  [1, 0],
+  [1, 1],
+  [0, 1],
+  [-1, 1],
+  [-1, 0],
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+] as const;
+
 /** A goal candidate's travel bound uses already-scanned own observations, never a path oracle. */
 export function goalDeadline(view: PlanningView, point: { x: number; y: number }): number {
   let travel = 0;
@@ -47,6 +58,19 @@ export function scout(view: PlanningView, work: WorkBudget, random: Stream): boo
       until: goalDeadline(view, point),
       handle: ghost.handle,
     };
+    return true;
+  }
+  const base = memory.enemyBase;
+  while (base && memory.baseScout < PERIMETER.length) {
+    if (!work.take()) return false;
+    const [dx, dy] = PERIMETER[memory.baseScout++]!;
+    const point = {
+      x: Math.max(512, Math.min(grid.width * 1024 - 512, base.x + dx * base.radius)),
+      y: Math.max(512, Math.min(grid.height * 1024 - 512, base.y + dy * base.radius)),
+    };
+    const cell = Math.floor(point.y / 1024) * grid.width + Math.floor(point.x / 1024);
+    if (observation.fog?.some((fog) => fog.cells[cell] === 2)) continue;
+    memory.goal = { ...point, until: goalDeadline(view, point), handle: null };
     return true;
   }
   const count = grid.width * grid.height;

@@ -128,6 +128,8 @@ function decisionState(value: unknown): State {
       placement: int(0, 1088),
       scout: int(0, 512 * 512 - 1),
       scoutWork: int(0, 8),
+      enemyBase: nullable(strictObject({ x: coordinate(), y: coordinate(), radius: coordinate() })),
+      baseScout: int(0, 8),
       owned: arr(handle(), 0, 10000),
       enemy: nullable(target()),
       goal: nullable(

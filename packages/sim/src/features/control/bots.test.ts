@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { initialSkirmishMemory } from "@open-neo-rts/ai";
 import { nextU32 } from "@open-neo-rts/deterministic";
 import type { ControllerCommand } from "../../kernel";
 import { checkpointHash, registerController, step } from "../../kernel";
@@ -281,6 +282,43 @@ test("malformed bot restores are rejected atomically before replacing decisions,
     }),
   ).toThrow();
   expect(checkpointHash(kernel)).toBe(hash);
+});
+
+test("remembered base-search state is canonical and malformed restores are atomic", () => {
+  const { kernel, host } = fixture();
+  step(kernel, []);
+  const saved = host.serialize();
+  const first = saved.bots[0]!;
+  // Synthetic restore values exercise strict memory bounds, not hidden-knowledge acquisition.
+  first.state.memory = {
+    ...initialSkirmishMemory(),
+    enemyBase: { x: 24 * 1024 + 512, y: 24 * 1024 + 512, radius: 6 * 1024 + 512 },
+    baseScout: 4,
+  };
+  host.load(saved);
+  expect(host.serialize()).toEqual(saved);
+  const hash = checkpointHash(kernel);
+  expect(hash).toBe("473a32529ede8f18");
+  for (const change of [
+    (memory: NonNullable<typeof first.state.memory>) => {
+      memory.baseScout = 9;
+    },
+    (memory: NonNullable<typeof first.state.memory>) => {
+      memory.baseScout = -1;
+    },
+    (memory: NonNullable<typeof first.state.memory>) => {
+      memory.enemyBase!.radius = 0.5;
+    },
+    (memory: NonNullable<typeof first.state.memory>) => {
+      memory.enemyBase!.x = 1 << 19;
+    },
+  ]) {
+    const bad = structuredClone(saved);
+    change(bad.bots[0]!.state.memory!);
+    expect(() => host.load(bad)).toThrow();
+    expect(checkpointHash(kernel)).toBe(hash);
+    expect(host.serialize()).toEqual(saved);
+  }
 });
 
 test("expired grants pause work, and a decision that expires before execution is never queued", () => {
