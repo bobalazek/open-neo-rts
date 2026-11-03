@@ -12,6 +12,7 @@ import { type Definition, Health, OwnerForce, Template, Transform } from "../ent
 import { Cargo } from "../entities/transport";
 import type { GameplayWeapon } from "../entities/weapons";
 import { MoveIntent } from "../movement";
+import { suspendSalvage } from "../salvage";
 
 export const MAX_SHOT_INTENTS = 4096;
 export { Burning } from "./burn";
@@ -211,6 +212,7 @@ export function combatFeature(setup: Pick<MatchSetup, "definitions" | "grants">)
           kernel.transport?.cancel(actor);
           suspendHarvesting(kernel, actor);
           suspendRepair(kernel, actor);
+          suspendSalvage(kernel, actor);
           clearAttackOrder(kernel, actor);
           if (world.has(actor, BuilderConstruction)) clearConstructionOrder(kernel, actor);
           kernel.movement?.cancel(actor);

@@ -25,7 +25,7 @@ import { oppositeBase } from "./performance-scene";
 import { bindPlacementPreview } from "./placement";
 import { createReproductionControls } from "./reproduction";
 
-const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
+const catalog = builtins.map(({ raw, model, wreck }) => catalogEntry(raw, model, wreck));
 const linkMaps = MAPS.map(({ definition }) => ({
   id: `core.${definition.id}`,
   ...definition.size,

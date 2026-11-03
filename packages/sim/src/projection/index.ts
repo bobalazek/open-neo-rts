@@ -30,6 +30,7 @@ import { Health, OwnerForce, Template, Transform } from "../features/entities";
 import { type PresentedCombatEvent, projectCombatEvents } from "../features/events/combat";
 import { MoveIntent } from "../features/movement";
 import { PRODUCTION_STATUSES, ProductionItem, ProductionRally } from "../features/production";
+import { REMAINS_KINDS, Remains, SALVAGE_STATES, SalvageOrder } from "../features/salvage";
 import type { ForceStatisticsSnapshot, VictorySnapshot } from "../features/victory";
 import type { VisionGrid } from "../features/vision";
 import type { Kernel } from "../kernel";
@@ -77,6 +78,7 @@ export interface PresentedEntity {
   };
   constructionOrder?: { site: string; state: (typeof CONSTRUCTION_WORK_STATES)[number] };
   repairOrder?: { target: string; state: (typeof REPAIR_STATES)[number]; workRemainder: number };
+  salvageOrder?: { target: string; state: (typeof SALVAGE_STATES)[number] };
   repair?: { creditCarry: number; repairersWorking: number };
   production?: {
     slots: number;
@@ -108,6 +110,7 @@ export interface PresentedConstructionRequest {
   reason?: (typeof CONSTRUCTION_REFUSALS)[number];
 }
 export interface SeatSnapshot {
+  remains?: PresentedRemains[];
   statistics?: ForceStatisticsSnapshot[];
   victory?: VictorySnapshot;
   tick: number;
@@ -123,6 +126,16 @@ export interface SeatSnapshot {
   productionExits?: string[];
   /** Static node origins discovered through permitted canonical exploration; no stock/claims. */
   resourceNodes?: { kind: "materials" | "oil"; x: number; y: number }[];
+}
+
+export interface PresentedRemains {
+  handle: string;
+  definition: string;
+  kind: (typeof REMAINS_KINDS)[number];
+  force: number;
+  x: number;
+  y: number;
+  facing: number;
 }
 
 export interface PresentedGhost {
@@ -266,6 +279,15 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           ...(kernel.disabled?.(id) && { disabled: true }),
           ...(kernel.burning?.(id) && { burning: true }),
           maxHealth: kernel.veterancy?.maxHealth(id, definition.health) ?? definition.health,
+          ...(inspectBuilder &&
+            kernel.remains &&
+            world.has(id, SalvageOrder) &&
+            kernel.remains.canSee(seat, world.get(id, SalvageOrder, "target")) && {
+              salvageOrder: {
+                target: handleOf(world.get(id, SalvageOrder, "target")),
+                state: SALVAGE_STATES[world.get(id, SalvageOrder, "state")]!,
+              },
+            }),
           ...(inspectRepair &&
             world.has(id, RepairCredit) && {
               repair: {
@@ -427,6 +449,21 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
           });
         }
       }
+      const remains: PresentedRemains[] = [];
+      if (kernel.remains && mode === "controlled")
+        for (const id of kernel.world.query(Remains, Transform)) {
+          if (!kernel.remains.canSee(seat, id)) continue;
+          const { world } = kernel;
+          remains.push({
+            handle: handleOf(id),
+            definition: setup.definitions[world.get(id, Remains, "definition")]!.id,
+            kind: REMAINS_KINDS[world.get(id, Remains, "kind")]!,
+            force: world.get(id, Remains, "force"),
+            x: world.get(id, Transform, "x"),
+            y: world.get(id, Transform, "y"),
+            facing: world.get(id, Transform, "facing"),
+          });
+        }
       const published = new Set(visible.values());
       for (const round of roundHandles.keys())
         if (
@@ -439,6 +476,7 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
         tick: kernel.tick,
         mode,
         entities,
+        ...(kernel.remains && mode === "controlled" && { remains }),
         ...(kernel.victory && { victory: kernel.victory.snapshot() }),
         ...(kernel.statistics && { statistics: kernel.statistics.snapshot(seat) }),
         ...(kernel.economy && {
@@ -510,6 +548,8 @@ export function createProjection(setup: MatchSetup, seat: number, mode: Projecti
       if (id === undefined || !current?.world.isAlive(id)) return undefined;
       if (mode === "debug-no-fog") return id;
       const { world } = current;
+      if (current.remains && world.has(id, Remains))
+        return !scope && current.remains.canSee(seat, id) ? id : undefined;
       const request = !!setup.normal && world.has(id, ConstructionRequest);
       const item = !!setup.normal && world.has(id, ProductionItem);
       const force = request

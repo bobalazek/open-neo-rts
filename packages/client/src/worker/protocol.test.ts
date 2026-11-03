@@ -2,7 +2,102 @@ import { expect, test } from "bun:test";
 import { STAT_COUNTERS } from "@open-neo-rts/sim";
 import { isWorkerReply } from "./protocol";
 
+test("remains packets are bounded, strict, unique opaque rows separate from living actors", () => {
+  const row = {
+    handle: "e2",
+    definition: "core.unit:fixture/vehicle",
+    kind: "wreck",
+    force: 1,
+    x: 1024,
+    y: 2048,
+    facing: 12345,
+  };
+  const packet = (remains: unknown, mode = "controlled", entities: unknown[] = []) => ({
+    id: 1,
+    state: { paused: true, speed: 1, snapshot: { tick: 1, mode, entities, remains } },
+  });
+  expect(isWorkerReply(packet([row]))).toBe(true);
+  expect(
+    isWorkerReply(packet([{ ...row, definition: "core.structure:fixture/hq", kind: "rubble" }])),
+  ).toBe(true);
+  for (const bad of [
+    [row, row],
+    Array(501).fill(row),
+    Array(1),
+    [{ ...row, handle: "e4294967295" }],
+    [{ ...row, handle: "r1" }],
+    [{ ...row, handle: 1 }],
+    [{ ...row, kind: "rubble" }],
+    [{ ...row, force: -1 }],
+    [{ ...row, x: 0.5 }],
+    [{ ...row, facing: 65536 }],
+    [{ ...row, definition: "core.prop:fixture/box" }],
+    [{ ...row, health: 100 }],
+    [{ ...row, eligible: true }],
+    [{ ...row, [Symbol("hidden")]: true }],
+    Object.assign([row], { hidden: true }),
+  ])
+    expect(isWorkerReply(packet(bad))).toBe(false);
+  expect(isWorkerReply(packet([row], "debug-no-fog"))).toBe(false);
+  expect(
+    isWorkerReply(
+      packet([row], "controlled", [{ ...row, health: 100, maxHealth: 100, order: null }]),
+    ),
+  ).toBe(false);
+});
+
 const resources = { credits: 5000, materials: 0, "industrial-capacity": 0, "salvage-points": 0 };
+
+test("salvage orders accept only strict states and a currently published remains target", () => {
+  const row = {
+    handle: "e2",
+    definition: "core.unit:fixture/vehicle",
+    kind: "wreck",
+    force: 1,
+    x: 1024,
+    y: 2048,
+    facing: 0,
+  };
+  const packet = (salvageOrder: unknown, remains: unknown = [row]) => ({
+    id: 1,
+    state: {
+      paused: true,
+      speed: 1,
+      snapshot: {
+        tick: 1,
+        mode: "controlled",
+        remains,
+        entities: [
+          {
+            handle: "e1",
+            definition: "core.unit:fixture/builder",
+            force: 0,
+            x: 0,
+            y: 0,
+            facing: 0,
+            health: 100,
+            maxHealth: 100,
+            order: null,
+            salvageOrder,
+          },
+        ],
+      },
+    },
+  });
+  for (const state of ["approaching", "working", "blocked", "grant", "contested", "storage"])
+    expect(isWorkerReply(packet({ target: "e2", state }))).toBe(true);
+  for (const order of [
+    null,
+    {},
+    { target: "e2", state: "unknown" },
+    { target: 2, state: "working" },
+    { target: "e3", state: "working" },
+    { target: "e2", state: "working", materials: 100 },
+    { target: "e2", state: "working", [Symbol("hidden")]: true },
+  ])
+    expect(isWorkerReply(packet(order))).toBe(false);
+  expect(isWorkerReply(packet({ target: "e2", state: "working" }, []))).toBe(false);
+});
 
 test("veterancy wire data bounds public ranks and paired private XP without accepting internal state", () => {
   const packet = (veterancy: unknown, mode = "controlled") => ({

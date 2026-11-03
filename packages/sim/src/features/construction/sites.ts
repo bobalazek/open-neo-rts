@@ -8,6 +8,7 @@ import { suspendHarvesting } from "../economy/harvesting";
 import { type Definition, Health, OwnerForce, spawnEntity, Template, Transform } from "../entities";
 import { checkSpawnPlacement, type SpawnCell } from "../entities/placement";
 import { MoveIntent, MovementFailure } from "../movement";
+import { suspendSalvage } from "../salvage";
 import { ConstructionSite } from ".";
 import { suspendRepair } from "./repair";
 
@@ -68,6 +69,7 @@ export function assignBuilderConstruction(kernel: Kernel, builder: number, targe
   kernel.transport?.cancel(builder);
   clearAttackOrder(kernel, builder);
   suspendRepair(kernel, builder);
+  suspendSalvage(kernel, builder);
   suspendHarvesting(kernel, builder);
   clearConstructionOrder(kernel, builder);
   kernel.world.add(builder, BuilderConstruction, { target });
@@ -404,6 +406,7 @@ export function constructionFeature(
           suspendHarvesting(kernel, id);
           clearAttackOrder(kernel, id);
           suspendRepair(kernel, id);
+          suspendSalvage(kernel, id);
           if (
             world.has(id, BuilderConstruction) &&
             world.get(id, BuilderConstruction, "target") !== request

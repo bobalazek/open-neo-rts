@@ -14,7 +14,7 @@ declare module "*.png" {
 }
 
 declare module "virtual:debug-builtins" {
-  export const builtins: readonly { raw: unknown; model?: string; icon?: string }[];
+  export const builtins: readonly { raw: unknown; model?: string; wreck?: string; icon?: string }[];
 }
 
 declare module "virtual:normal-catalog" {

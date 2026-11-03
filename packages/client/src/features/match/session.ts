@@ -213,7 +213,7 @@ export function createNormalSession(
       );
       await art.ready;
       if (disposed) return;
-      const catalog = builtins.map(({ raw, model }) => catalogEntry(raw, model));
+      const catalog = builtins.map(({ raw, model, wreck }) => catalogEntry(raw, model, wreck));
       const uiCatalog: HudDefinition[] = content.catalog.definitions.map((gameplay) => {
         const entry = builtins.find(
           ({ raw }) => `core.${(raw as { id: string }).id}` === gameplay.id,
@@ -229,10 +229,10 @@ export function createNormalSession(
       presentation = createMatchPresentation(
         renderer.scene,
         loaded.grid,
-        async (id) => {
+        async (id, variant) => {
           const entry = catalog.find((entry) => entry.definition.id === id);
           if (!entry) throw new Error(`Model unavailable: ${id}`);
-          return resolveEntityModel(entry);
+          return resolveEntityModel(entry, variant);
         },
         () => hud?.update(),
       );

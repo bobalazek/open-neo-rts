@@ -45,6 +45,7 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       ...(entity.constructionOrder && { constructionOrder: { ...entity.constructionOrder } }),
       ...(entity.repair && { repair: { ...entity.repair } }),
       ...(entity.repairOrder && { repairOrder: { ...entity.repairOrder } }),
+      ...(entity.salvageOrder && { salvageOrder: { ...entity.salvageOrder } }),
       ...(entity.production && {
         production: {
           ...entity.production,
@@ -64,6 +65,7 @@ function copy(snapshot: SeatSnapshot): SeatSnapshot {
       fog: snapshot.fog.map((grid) => ({ ...grid, cells: grid.cells.slice() })),
     }),
     ...(snapshot.ghosts && { ghosts: snapshot.ghosts.map((ghost) => ({ ...ghost })) }),
+    ...(snapshot.remains && { remains: snapshot.remains.map((remains) => ({ ...remains })) }),
     ...(snapshot.resourceNodes && {
       resourceNodes: snapshot.resourceNodes.map((node) => ({ ...node })),
     }),

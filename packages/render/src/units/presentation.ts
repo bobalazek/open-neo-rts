@@ -89,14 +89,17 @@ function reopenDoor(elapsed: number, opening: number, closing: number): number {
 export function createEntityPresentation(
   scene: Scene,
   terrain: TerrainGrid,
-  resolveModel: (definition: string) => Promise<{
+  resolveModel: (
+    definition: string,
+    variant: "model" | "wreck",
+  ) => Promise<{
     bytes: Uint8Array;
     movementDomain: (typeof DOMAINS)[number] | null;
     footprint?: readonly [number, number];
     radiusSubcells?: number;
     foundation?: boolean;
   }>,
-  options: { ghost?: boolean } = {},
+  options: { ghost?: boolean; remains?: boolean } = {},
 ) {
   const entities = new Map<string, Entity>();
   const dying = new Map<string, Entity>();
@@ -153,7 +156,7 @@ export function createEntityPresentation(
       loading: Promise.resolve()
         .then(async () => {
           const { bytes, movementDomain, footprint, radiusSubcells, foundation } =
-            await resolveModel(definition);
+            await resolveModel(definition, options.remains ? "wreck" : "model");
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
           const model = await loadModelContainer(scene, bytes);
@@ -162,7 +165,7 @@ export function createEntityPresentation(
             return undefined;
           }
           try {
-            if (footprint) prepareConstruction(model);
+            if (footprint && !options.remains) prepareConstruction(model);
             const color = colors.get(force);
             if (color && !options.ghost) setTeamColor(model.materials, color);
             if (options.ghost) {
@@ -233,7 +236,9 @@ export function createEntityPresentation(
     }
     pruneTemplates();
     const alpha =
-      playbackRate === 0 ? 1 : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
+      playbackRate === 0 || options.remains
+        ? 1
+        : Math.max(0, Math.min(1, (nowMs - receivedAt) / duration));
     for (const [handle, entity] of entities) {
       if (!entity.root || !entity.playback) continue;
       const a = entity.previous;
@@ -246,7 +251,12 @@ export function createEntityPresentation(
         const [width, depth] = template.footprint;
         const turned = (((b.facing >>> 14) + 3) & 1) !== 0;
         const pose = `${b.x},${b.y},${turned}`;
-        if (template.foundation && !options.ghost && entity.foundationPose !== pose) {
+        if (
+          template.foundation &&
+          !options.ghost &&
+          !options.remains &&
+          entity.foundationPose !== pose
+        ) {
           entity.foundation?.dispose();
           entity.foundation = createFoundation(
             scene,
@@ -266,7 +276,7 @@ export function createEntityPresentation(
       if (domain === "naval" || domain === "hover" || domain === "amphibious")
         height = Math.max(height, waterHeight(terrain, x, y));
       entity.root.position.set(x * CELL_SIZE, height, y * CELL_SIZE);
-      if (template?.footprint) {
+      if (template?.footprint && !options.remains) {
         setConstructionStage(
           entity.root.getChildMeshes(),
           height,
@@ -347,32 +357,36 @@ export function createEntityPresentation(
           ? "active"
           : "attack"
         : "";
-      const clip = options.ghost
-        ? ""
-        : attacking
-          ? action
-          : work && entity.playback.clips.includes(work)
-            ? work
-            : entity.moving && entity.playback.clips.includes("move")
-              ? "move"
-              : entity.playback.clips.includes("idle")
-                ? "idle"
-                : "";
+      const clip =
+        options.ghost || options.remains
+          ? ""
+          : attacking
+            ? action
+            : work && entity.playback.clips.includes(work)
+              ? work
+              : entity.moving && entity.playback.clips.includes("move")
+                ? "move"
+                : entity.playback.clips.includes("idle")
+                  ? "idle"
+                  : "";
       if (clip !== entity.clip) {
         entity.playback.play(clip);
         entity.clip = clip;
       }
-      entity.playback.setRate(options.ghost ? 0 : playbackRate);
+      entity.playback.setRate(options.ghost || options.remains ? 0 : playbackRate);
       if (attacking) entity.playback.seek(entity.attackElapsed ?? 0);
       else if (work && clip === work) {
         // The authored builder attack is also its tool motion; loop only during private working state.
         const length = entity.playback.duration(work);
         entity.playback.seek(length ? (entity.workElapsed ?? 0) % length : 0);
       }
-      sampleDeployment(entity);
-      sampleDoor(entity);
+      if (!options.remains) {
+        sampleDeployment(entity);
+        sampleDoor(entity);
+      }
       const bar =
         !options.ghost &&
+        !options.remains &&
         (selected.has(handle) ||
           !!entity.rank ||
           entity.health < entity.maxHealth ||
@@ -436,6 +450,26 @@ export function createEntityPresentation(
     else playback.door("close", elapsed - opening * 2);
   }
 
+  function pickHit(x: number, y: number): { handle: string; distance: number } | null {
+    // Asset readiness can precede the next scene frame; picking needs the latest posed hierarchy.
+    for (const mesh of meshHandles.keys())
+      if (mesh.isVisible && mesh.isEnabled()) mesh.computeWorldMatrix(true);
+    const hits =
+      scene.multiPick(
+        x,
+        y,
+        (mesh) => meshHandles.has(mesh) && mesh.isVisible && mesh.isEnabled(),
+      ) ?? [];
+    hits.sort((a, b) => {
+      const left = a.pickedMesh ? (meshHandles.get(a.pickedMesh) ?? "") : "";
+      const right = b.pickedMesh ? (meshHandles.get(b.pickedMesh) ?? "") : "";
+      return a.distance - b.distance || (left < right ? -1 : left > right ? 1 : 0);
+    });
+    const hit = hits[0],
+      handle = hit?.pickedMesh ? meshHandles.get(hit.pickedMesh) : undefined;
+    return handle && hit ? { handle, distance: hit.distance } : null;
+  }
+
   return {
     async accept(snapshot: SeatSnapshot, nowMs: number): Promise<void> {
       if (disposed) throw new Error("Entity presentation is disposed");
@@ -456,13 +490,15 @@ export function createEntityPresentation(
           .filter((event) => event.type === "death" && event.entity)
           .map((event) => [event.entity, event]),
       );
-      const visible = new Set(snapshot.entities.map((entity) => entity.handle));
+      const projectedEntities = options.remains ? (snapshot.remains ?? []) : snapshot.entities;
+      const visible = new Set(projectedEntities.map((entity) => entity.handle));
       for (const [handle, entity] of entities) {
         if (!visible.has(handle)) {
           status.remove(handle);
           status.remove(`construction:${handle}`);
           if (
             !options.ghost &&
+            !options.remains &&
             deaths.has(handle) &&
             entity.root &&
             entity.playback?.clips.includes("death") &&
@@ -498,8 +534,9 @@ export function createEntityPresentation(
         }
       }
       const pending: Promise<void>[] = [];
-      for (const projected of snapshot.entities) {
+      for (const projected of projectedEntities) {
         const { handle, definition, force } = projected;
+        const live = "health" in projected ? projected : undefined;
         let entity = entities.get(handle);
         if (entity && (entity.definition !== definition || entity.force !== force)) {
           status.remove(handle);
@@ -515,9 +552,9 @@ export function createEntityPresentation(
             previous: poseOf(projected),
             current: poseOf(projected),
             moving: false,
-            health: projected.health,
-            maxHealth: projected.maxHealth,
-            deployed: projected.deploy?.active ?? false,
+            health: live?.health ?? 0,
+            maxHealth: live?.maxHealth ?? 0,
+            deployed: live?.deploy?.active ?? false,
           };
           entities.set(handle, entity);
         } else {
@@ -526,10 +563,10 @@ export function createEntityPresentation(
           entity.moving =
             entity.previous.x !== entity.current.x || entity.previous.y !== entity.current.y;
         }
-        entity.health = projected.health;
-        entity.maxHealth = projected.maxHealth;
-        entity.rank = projected.veterancy?.rank;
-        const deployed = projected.deploy?.active ?? false;
+        entity.health = live?.health ?? 0;
+        entity.maxHealth = live?.maxHealth ?? 0;
+        entity.rank = live?.veterancy?.rank;
+        const deployed = live?.deploy?.active ?? false;
         if (deployed !== entity.deployed) {
           if (entity.playback) {
             const length = entity.playback.duration("deploy");
@@ -542,22 +579,24 @@ export function createEntityPresentation(
           }
           entity.deployed = deployed;
         }
-        entity.constructionStage = projected.constructionSite
-          ? (projected.constructionStage ?? 0)
+        entity.constructionStage = live?.constructionSite
+          ? (live.constructionStage ?? 0)
           : undefined;
-        entity.construction = projected.construction
-          ? (projected.construction.completedTicks * 4 + projected.construction.quarter) /
-            Math.max(1, projected.construction.totalTicks * 4)
+        entity.construction = live?.construction
+          ? (live.construction.completedTicks * 4 + live.construction.quarter) /
+            Math.max(1, live.construction.totalTicks * 4)
           : entity.constructionStage === undefined
             ? undefined
             : entity.constructionStage / 100;
         const working =
-          !projected.disabled &&
-          (projected.constructionOrder?.state === "working" ||
-            projected.repairOrder?.state === "working");
+          !!live &&
+          !live.disabled &&
+          (live.constructionOrder?.state === "working" ||
+            live.repairOrder?.state === "working" ||
+            live.salvageOrder?.state === "working");
         if (working !== entity.working) entity.workElapsed = 0;
         entity.working = working;
-        if (!options.ghost && snapshot.productionExits?.includes(handle)) {
+        if (!options.ghost && !options.remains && snapshot.productionExits?.includes(handle)) {
           if (entity.playback)
             entity.doorElapsed = reopenDoor(
               entity.doorElapsed ?? Infinity,
@@ -572,6 +611,7 @@ export function createEntityPresentation(
         }
         if (
           !options.ghost &&
+          !options.remains &&
           (snapshot.combatEvents ?? []).some(
             (event) => event.type === "launch" && event.entity === handle,
           )
@@ -590,16 +630,21 @@ export function createEntityPresentation(
                 doNotInstantiate: (node) =>
                   node instanceof Mesh &&
                   (!!node.morphTargetManager ||
-                    (!!template.footprint && !scene.getEngine().getCaps().instancedArrays)),
+                    (!!template.footprint &&
+                      !options.remains &&
+                      !scene.getEngine().getCaps().instancedArrays)),
               });
               current.instance = instance;
-              current.root = new TransformNode(`entity ${handle}`, scene);
+              current.root = new TransformNode(
+                `${options.remains ? "remains" : "entity"} ${handle}`,
+                scene,
+              );
               for (const root of instance.rootNodes) root.parent = current.root;
               const nodes = current.root
                 .getDescendants()
                 .filter((node) => node instanceof TransformNode);
               const meshes = current.root.getChildMeshes();
-              if (template.footprint) initializeConstruction(meshes);
+              if (template.footprint && !options.remains) initializeConstruction(meshes);
               for (const mesh of meshes) {
                 mesh.isVisible = template.visibility.get(mesh.name) ?? true;
                 if (options.ghost) mesh.isPickable = false;
@@ -639,26 +684,12 @@ export function createEntityPresentation(
     },
     /** Picking is confined to currently projected, rendered entity geometry. */
     pick(x: number, y: number): string | null {
-      // Asset readiness can precede the next scene frame; picking needs the latest posed hierarchy.
-      for (const mesh of meshHandles.keys())
-        if (mesh.isVisible && mesh.isEnabled()) mesh.computeWorldMatrix(true);
-      const hits =
-        scene.multiPick(
-          x,
-          y,
-          (mesh) => meshHandles.has(mesh) && mesh.isVisible && mesh.isEnabled(),
-        ) ?? [];
-      hits.sort((a, b) => {
-        const left = a.pickedMesh ? (meshHandles.get(a.pickedMesh) ?? "") : "";
-        const right = b.pickedMesh ? (meshHandles.get(b.pickedMesh) ?? "") : "";
-        return a.distance - b.distance || (left < right ? -1 : left > right ? 1 : 0);
-      });
-      const mesh = hits[0]?.pickedMesh;
-      return mesh ? (meshHandles.get(mesh) ?? null) : null;
+      return pickHit(x, y)?.handle ?? null;
     },
+    pickHit,
     /** Screen-space centres from the same rendered poses used for rings and picking. */
     inRectangle(left: number, top: number, right: number, bottom: number): string[] {
-      if (options.ghost) return [];
+      if (options.ghost || options.remains) return [];
       const camera = scene.activeCamera;
       const canvas = scene.getEngine().getRenderingCanvas();
       if (!camera || !canvas) return [];

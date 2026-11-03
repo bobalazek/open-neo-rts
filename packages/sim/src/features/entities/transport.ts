@@ -8,6 +8,7 @@ import { suspendRepair } from "../construction/repair";
 import { suspendHarvesting } from "../economy/harvesting";
 import { MoveIntent, MovementFailure } from "../movement";
 import { CombatMotion } from "../projectiles";
+import { suspendSalvage } from "../salvage";
 import { type Definition, Health, OwnerForce, Template, Transform } from ".";
 
 export const Boarding = defineComponent("Boarding", {
@@ -109,6 +110,7 @@ export class UnitTransports {
     if (world.has(id, BuilderConstruction)) clearConstructionOrder(this.kernel, id);
     suspendHarvesting(this.kernel, id);
     suspendRepair(this.kernel, id);
+    suspendSalvage(this.kernel, id);
   }
   load(seat: number, transport: number, entities: readonly number[]): Rejection | undefined {
     const { world, tick } = this.kernel;

@@ -464,3 +464,188 @@ remaining effects/orders, complete persistence/replay/audio/help/tools and later
 phases active. Large wounded reserves can still consume the normal population
 cap; repair/reintegration is later tuning. Hosted CI billing and local Firefox
 launch remain unavailable; no FPS or full-phase acceptance is claimed.
+
+## Canonical wrecks and rubble, SIM49
+
+`/tmp/neo-canonical-remains`, branch `codex/canonical-remains`, delivers 2-16b1
+under the [recorded provisional contract](./decisions/2026-11-03-canonical-remains.md).
+Actual normal-combat death creates separate inert ECS remains, preserving source
+definition, former Force and final pose. Non-foot units leave nonblocking wrecks;
+structures leave rotated footprint-blocking rubble; infantry and props leave
+nothing. The shared 500-remains cap evicts by oldest creation tick then ID.
+Navigation/placement caches update after destruction/eviction. No resources are
+awarded. Unfinished-site eligibility is retained for the subsequent salvage rule.
+
+Copied public remains use current footprint sight and opaque handles; former
+ownership grants no sight, fog revokes rows/handles, scoped actor authority is
+refused, and worker packets reject malformed/private/duplicate data. Remains have
+no living components, so they cannot keep a Force alive, work, fire, provide
+vision/radius/power or consume living population. They are not ghost structures.
+
+Independent fresh-context review accepted code
+`637783857d309c7df8550a725374c5631b9c29fd`: 183 focused tests passed plus three
+independent probes/297 assertions covering all four exact collision/sight
+rotations, fog/reappearance/projection restore, equal-age ID eviction and no
+resource side effects. `/tmp/neo-remains-reviewer-probe.test.ts` is preserved.
+Repository fix/typecheck/test/build/content checks pass, including 505 sim cases
+and all 11 Turbo test tasks. Nonzero World-only restore retains actual remains
+pose/age/eligibility and identical capped continuation; this is not a full save.
+The new normal component schema changes startup/short-replay goldens to
+`81cb57d463df2b70` / `32292f64b5eb4f19`; debug goldens and catalog identities
+`97ddd2a140545413` / `54a8905a7eee497b` stay unchanged. All three scenario
+headers use SIM49.
+
+Original-catalog evidence is `/tmp/neo-original-remains-proof` with log/script
+of the same name and source companion `/tmp/neo-original-remains-proof-source.txt`.
+On actual Training Grounds with unchanged kits/stats/fog, one permitted external
+order moves the original enemy Supply Truck into the opposing base; actual combat
+kills it at tick 6069 and emits a visible canonical wreck accepted by the worker
+wire validator. Explicit surrender then ends at tick 6070; the complete input
+record reproduces hash `92761ac4714bf9ec` in Bun. Bots are disabled in this fixture;
+there is no state/content injection, natural full-match or rendered-wreck claim.
+
+Next: builder clearance/salvage 2-16b2 and actual on-map remains/picking 2-21b3.
+Until those connected deliveries, rubble already blocks but has no manual clear
+command or persistent renderer. Wreck repair/resurrection and specialist Phoenix
+Initiative behavior are later roster work. Keep all remaining phases active;
+hosted CI billing and local Firefox launch remain unavailable.
+
+## Frozen bot qualification completion and remaining cap
+
+The original SIM46 batch (session 12497) finished all 20 double trials on clean
+`20623ea`: 18 natural outcomes and two reproducible caps, seeds 12 and 20. Exit 1
+correctly reports incomplete qualification. Preserve the entire output/source
+under `/tmp/neo-ai-qualification-sim46-60000-20261103`. Seed 20's old terminal
+hash is `dd07f349c8762049`. The separate SIM48 seed-12 quota repair already
+finished naturally/reproducibly as recorded above.
+
+The same SIM48 runtime is checking seed 20 separately: session 65169, worktree
+`/tmp/neo-bot-seed12-stall` at clean `50a8f8d7991f59d22802feff1ce7d4622157295d`
+(runtime equals reviewed e4de7c2; later commits are docs), directory
+`/tmp/neo-ai-qualification-sim48-seed20-20261103`, log
+`/tmp/neo-ai-qualification-sim48-seed20.log`, source companion
+`/tmp/neo-ai-qualification-sim48-seed20-source.txt`. Both trials capped at
+60000/hash `f837039a18dfb9f9`, reproducibly; the process exited 1 as expected.
+Preserve the source and results. An exact forensic replay is now running on that
+unchanged source: session 44053, script/log `/tmp/neo-ai-stall-sim48-seed20.ts`
+and `.log`, output directory `/tmp/neo-ai-stall-sim48-seed20`. It asserts the
+original tick/hash/outcome before writing actor/bot/observation/movement data and
+primitive World bytes; diagnostics must not change the reproduced hash. Observe
+the same process without restarting it. Inspect those raw artifacts before any
+further bot repair; do not guess the cause. This is historical SIM48 evidence
+while canonical remains advances to SIM49, not current full acceptance.
+
+## Persistent remains presentation, SIM49 retained
+
+`/tmp/neo-remains-presentation`, branch `codex/remains-presentation`, implements
+the functional 2-21b3 slice. Public canonical remains resolve separate original
+`presentation.wreck` URLs through the validated builtin catalog and normal session.
+All 84 required original non-foot-unit/structure remains GLBs exist. Instances
+share geometry/materials and preserve original neutral vertex-color debris;
+live Force-color models remain separate. Final pose, rotated footprint and actual
+terrain/water height drive positioning. Remains have no live clips, bars,
+construction shaders or foundations. Context picking compares real distances
+across live/remains layers, while army and box selection exclude remains.
+Fog omission, rewind/group reset, late imports and disposal revoke roots/picking.
+
+Runtime candidate is `ef86e7f188f2b082e0437d1b0238145f842c6865`; later edits
+only clarify documentation/evidence. Repository fix/typecheck/test/build/content
+validation pass. Catalog identities and all canonical goldens remain unchanged;
+there is no additional simulation-version change. The assembled Chromium/WebKit
+batch passed 11 cases with nine expected non-Chromium skips, covering existing
+worker/HUD/replay journeys and the new remains proof. Logs are
+`/tmp/neo-remains-presentation-final-*` and `/tmp/neo-remains-final-browsers.log`;
+report/artifacts are `/tmp/neo-remains-browser-report.json` and
+`/tmp/neo-remains-browser-results`. Chromium explicitly reports `webgpu`.
+
+The new proof uses actual original catalog/stats/Training Grounds and explicit
+fixture-only extra Tank/Reactor/Truck placement with bots disabled. Real permitted
+attacks produce Reactor rubble at tick 1087 and a Supply Truck wreck at 8991;
+moving the own mobile units away actually removes current sight by 9054. Only
+those actual remains rows are displayed, with a close camera on original terrain.
+Both original GLBs pick through their real geometry and stay out of army selection;
+the no-remains sample removes both roots. This is not a normal economy or natural
+full-match/replay proof. Catalog coverage is not 84 individually rendered assets.
+
+Independent fresh-context review found no confirmed runtime blocker: 32 focused
+tests, exact Chromium/WebKit reruns, a first-only single-Reactor probe with the
+render loop held at three frames, plus async group/rewind/disposal probes passed.
+It found a stale phase summary, now corrected. Visual acceptance remains explicitly
+conditional: author parallel captures sometimes show an entirely white first-only
+Reactor, followed by correct neutral colors. Independent exact and held first-only
+captures have correct colors, so neither a persistent defect nor a timing cause
+is established. Two readiness frames did not explain the author artifact.
+
+Preserved contrary evidence: `/tmp/neo-remains-first-sample-artifacts` contains
+both white captures and the broad report. Independent correct samples/probes are
+under `/tmp/neo-remains-independent-review` (`first.png`, `held-first.png` and
+the final exact WebKit results). Do not claim unconditional first-frame visual
+readiness or silently discard these samples. The owner permits rough edges while
+functional gameplay advances; 2-21b3a tracks this investigation after builder
+clearance, and 2-21b1c remains construction-shadow polish. Hosted CI billing,
+local Firefox launch and hardware FPS remain unqualified.
+
+Next: actual builder clearance and bounded salvage (2-16b2), then the remaining
+gameplay/persistence/audio/help/tools and later phases. The exact SIM48 seed-20
+forensic process (44053) has now exited zero and verified `f837039a18dfb9f9`.
+Raw artifacts are complete under `/tmp/neo-ai-stall-sim48-seed20`. Force 0 has
+only a surviving unarmed Supply Depot; Force 1 has healthy scouts moving to an
+unexplored northeast goal, no remembered enemy structures and no failed/stuck
+route flags in the sampled routes. This differs from seed-12 quota starvation;
+no new AI fix is included or proven. Inspect actual goal/vision/travel history
+before diagnosing or changing it. Preserve both frozen worktrees and all records.
+
+## Builder clearance and bounded salvage, SIM50
+
+Runtime candidate `0e9f83c6e371fbf62c1bb0d97964b933cf68a284` completes 2-16b2.
+Actual living builder units approach currently visible wrecks/rubble through the
+existing finite exterior path policy, work using the original tool animation and
+clear the row for a finite material reward. The normal HUD provides Clear / salvage
+and right-click context targeting without making remains army-selectable. Private
+states cross strict worker validation only with economic permission and a current
+public target row. Stop/move/attack/build/repair/harvest/boarding replacement,
+grant expiry, fog loss, blocked approaches and bank overflow are handled.
+
+The [provisional rule](decisions/2026-11-03-builder-salvage.md) stores
+`floor((materials + floor(credits / 100)) / 4)` from authored costs at death, zero
+for unfinished/unpriced actors. One builder clears in 100 ticks; assistance uses
+construction rates. Competing Forces never combine workers or double-pay; the
+smallest active builder ID chooses a Force, and progress persists if it leaves.
+Atomic completion keeps finished work when the bank would overflow. No credits,
+salvage points, resurrection or specialist/faction bonuses are claimed.
+
+Repository fix/typecheck/test/build/content validation pass in one final batch
+(`/tmp/neo-salvage-complete-*`), including 515 simulation cases. SIM50 advances the
+three scenario headers; normal startup/short replay goldens are
+`85ad4a42e82c0d68` / `8898ada992a4d86e`. Catalog identities remain
+`97ddd2a140545413` / `54a8905a7eee497b`, with 137 definitions and 833 assets.
+
+Independent fresh-context review reproduced an omitted automatic construction
+clearance replacement: an unselected salvager could override its blocker move
+and cause a placement timeout. The missing suspension is fixed; the preserved
+probe and a committed regression now permit the site while preserving wreck
+work. The reviewer independently checked blocked/disabled/competing workers,
+assistance and private copies, passed 63 focused tests/654 assertions and replayed
+the original-content record. No remaining confirmed runtime finding was reported.
+
+Original-content evidence `/tmp/neo-original-salvage-proof` uses unchanged original
+Training Grounds kits/stats/fog with bots disabled and only explicit truck move,
+salvage and surrender inputs. The truck actually dies at tick 6069; original
+builders clear its wreck by 6172 for three materials; the terminal record at 6173
+reproduces `63cd6478ba084a2c`. No World/content injection or natural-match/balance
+claim. Script and log use the same `/tmp/neo-original-salvage-proof` stem.
+
+The Chromium/WebKit HUD/worker journey passed both cases
+(`/tmp/neo-salvage-browsers2.log`, artifacts `/tmp/neo-salvage-browser-results`):
+actual original weapon death, opaque target mapping, button targeting, Stop,
+right-click resumption, once-only payment and terminal replay. This fixture uses
+no fog and an explicit shared enemy order grant so one worker can move the truck;
+its picker is a target stub, not new graphical picking proof. The earlier
+first-sample debris color limitation remains tracked by 2-21b3a. Chromium's run
+preceded the unrelated automatic blocker suspension fix; the affected clearance
+path was verified separately by the regression and independent reproducer.
+Hosted CI billing, local Firefox launch and hardware FPS remain unqualified.
+
+Next: remaining functional timed effects, complete orders and persistence/audio/
+help/tools, then later phases. Do not rerun long AI qualification after every small
+feature: the exact seed-20 diagnosis remains separate and the phase exit is open.

@@ -8,6 +8,7 @@ import { suspendRepair } from "../construction/repair";
 import { type Definition, Health, OwnerForce, Template, Transform } from "../entities";
 import { perimeterPoint } from "../entities/perimeter";
 import { MoveIntent, MovementFailure } from "../movement";
+import { suspendSalvage } from "../salvage";
 import { mineOreCell, oreCells, readOreCell } from "./ore";
 
 export const HARVEST_UNLOAD_TICKS = 40;
@@ -272,6 +273,7 @@ export function harvestingFeature(setup: Pick<MatchSetup, "definitions" | "grant
           if (!world.has(id, Harvester)) continue;
           clearAttackOrder(kernel, id);
           suspendRepair(kernel, id);
+          suspendSalvage(kernel, id);
           stopRoute(kernel, id);
           world.set(id, Harvester, "enabled", 1);
           world.set(id, Harvester, "dock", 0);
