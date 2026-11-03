@@ -100,6 +100,7 @@ export function mountNativePanel(
         .map((node) => node.textContent?.trim())
         .filter(Boolean)
         .join(" · ");
+    const progress = semantics.querySelector("progress");
     return {
       id: options.id(),
       revision:
@@ -122,6 +123,7 @@ export function mountNativePanel(
         .filter(Boolean)
         .join(" · "),
       error: notices("alert"),
+      ...(progress && { progress: { value: progress.value, max: progress.max } }),
       scale: (Number.parseFloat(document.documentElement.style.fontSize) || 100) / 100,
       fields: fields.map((control) => ({
         id: control.dataset.nativeField!,

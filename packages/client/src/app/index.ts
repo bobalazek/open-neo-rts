@@ -15,6 +15,7 @@ import { applyInterfaceScale, readDeviceSettings, settingsScreen } from "../feat
 import { skirmishScreen } from "../features/skirmish";
 import { defaultSkirmish, type SkirmishSetup } from "../features/skirmish/setup";
 import { text } from "../shared";
+import { mountNativePanel } from "../shared/native-panel";
 
 /** URL navigation and ownership only: gameplay stays in one disposable normal worker. */
 export function startApp(canvas: HTMLCanvasElement) {
@@ -33,9 +34,13 @@ export function startApp(canvas: HTMLCanvasElement) {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   let disposeScreen: (() => void) | undefined;
   let cancelLoading: (() => void) | undefined;
+  let dismissLoading: (() => void) | undefined;
+  let disposeLoading: (() => void) | undefined;
   function stop() {
     cancelLoading?.();
     cancelLoading = undefined;
+    dismissLoading = undefined;
+    disposeLoading?.();
     disposeScreen?.();
     disposeScreen = undefined;
     loading = false;
@@ -77,11 +82,12 @@ export function startApp(canvas: HTMLCanvasElement) {
     } else {
       disposeScreen?.();
       disposeScreen = undefined;
+      root.replaceChildren();
     }
     const ticket = ++generation;
     const nextRoot = previous ? document.createElement("main") : root;
     const nextCanvas = previous ? document.createElement("canvas") : canvas;
-    const overlay = previous ? document.createElement("dialog") : undefined;
+    const overlay = document.createElement("dialog");
     if (previous) {
       nextRoot.className = "game-shell";
       nextRoot.style.visibility = "hidden";
@@ -89,26 +95,38 @@ export function startApp(canvas: HTMLCanvasElement) {
       nextCanvas.width = canvas.width;
       nextCanvas.height = canvas.height;
       document.body.append(nextCanvas, nextRoot);
-      overlay!.className = "match-menu";
-      root.append(overlay!);
     }
-    const loadingRoot = overlay ?? root;
-    loadingRoot.innerHTML = `<section class="loading-screen"><h1>${text("ui.loading.title")}</h1><p role="status" aria-live="polite" data-loading></p><progress aria-label="${text("ui.loading.title")}" max="5" value="0"></progress><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-cancel>${text("ui.common.cancel")}</button></div></section>`;
-    overlay?.showModal();
+    overlay.className = "match-menu";
+    overlay.setAttribute("aria-labelledby", "match-loading-title");
+    overlay.innerHTML = `<canvas class="native-menu-canvas" tabindex="-1" aria-hidden="true" hidden></canvas><section class="loading-screen"><h1 id="match-loading-title">${text("ui.loading.title")}</h1><p role="status" aria-live="polite" data-loading></p><progress aria-label="${text("ui.loading.title")}" max="5" value="0"></progress><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-cancel>${text("ui.common.cancel")}</button></div></section>`;
+    document.body.append(overlay);
+    overlay.showModal();
+    const loadingRoot = overlay;
+    const nativeLoading = mountNativePanel(
+      overlay,
+      overlay.querySelector<HTMLElement>("section")!,
+      overlay.querySelector<HTMLCanvasElement>("canvas")!,
+      { id: () => "loading", title: () => text("ui.loading.title"), modal: true },
+    );
+    const releaseLoading = () => {
+      nativeLoading.dispose();
+      if (overlay.open) overlay.close();
+      overlay.remove();
+      if (disposeLoading === releaseLoading) disposeLoading = undefined;
+    };
+    disposeLoading = releaseLoading;
     const current = () => !disposed && generation === ticket;
     let rejectLoad: (error: Error) => void = () => {};
     const cancelled = new Promise<never>((_resolve, reject) => {
       rejectLoad = reject;
     });
     cancelLoading = () => rejectLoad(new Error(text("ui.saves.cancelled")));
-    loadingRoot
-      .querySelector("[data-cancel]")
-      ?.addEventListener("click", () =>
-        previous ? cancelLoading?.() : navigate(saved ? "/load" : "/skirmish"),
-      );
-    overlay?.addEventListener("cancel", (event) => {
+    const dismiss = () => (previous ? cancelLoading?.() : navigate(saved ? "/load" : "/skirmish"));
+    dismissLoading = dismiss;
+    loadingRoot.querySelector("[data-cancel]")?.addEventListener("click", dismiss);
+    overlay.addEventListener("cancel", (event) => {
       event.preventDefault();
-      cancelLoading?.();
+      dismiss();
     });
     timeout = setTimeout(() => rejectLoad(new Error(text("ui.loading.timeout"))), 60_000);
     const stages = [
@@ -129,6 +147,7 @@ export function startApp(canvas: HTMLCanvasElement) {
           progress = loadingRoot.querySelector("progress");
         if (status) status.textContent = text(stages[stage] ?? "ui.loading.content");
         if (progress) progress.value = stage;
+        nativeLoading.update();
       },
       (error) => {
         if (committed) {
@@ -167,7 +186,7 @@ export function startApp(canvas: HTMLCanvasElement) {
       } else if (current()) {
         canvas.hidden = true;
         root.classList.remove("match-shell");
-        root.innerHTML = `<section class="loading-screen"><h1>${text("ui.loading.failed")}</h1><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-retry>${text("ui.common.retry")}</button><button type="button" data-back>${text("ui.common.back")}</button></div></section>`;
+        root.innerHTML = `<section class="loading-screen"><h1 tabindex="-1">${text("ui.loading.error-title")}</h1><p role="alert" data-error></p><div class="setup-actions"><button type="button" class="primary" data-retry>${text("ui.common.retry")}</button><button type="button" data-return>${text("ui.common.back")}</button></div></section>`;
         const detail = root.querySelector("[data-error]");
         if (detail)
           detail.textContent = error instanceof Error ? error.message : text("ui.match.failed");
@@ -175,15 +194,33 @@ export function startApp(canvas: HTMLCanvasElement) {
           .querySelector("[data-retry]")
           ?.addEventListener("click", () => void begin(selected, saved).catch(() => {}));
         root
-          .querySelector("[data-back]")
+          .querySelector("[data-return]")
           ?.addEventListener("click", () => navigate(saved ? "/load" : "/skirmish"));
+        const failurePanel = mountNativePanel(
+          root,
+          root.querySelector<HTMLElement>("section")!,
+          canvas,
+          {
+            id: () => "loading-error",
+            title: () => text("ui.loading.error-title"),
+            modal: false,
+          },
+        );
+        disposeScreen = failurePanel.dispose;
       }
       throw error;
     } finally {
-      overlay?.remove();
+      releaseLoading();
+      // Restore focus after the modal's inert state has cleared in every browser.
+      requestAnimationFrame(() => {
+        if (!current()) return;
+        if (committed) canvas.focus({ preventScroll: true });
+        else if (!previous) root.querySelector<HTMLElement>("h1")?.focus({ preventScroll: true });
+      });
       if (generation === ticket) {
         loading = false;
         cancelLoading = undefined;
+        dismissLoading = undefined;
         clearTimeout(timeout);
         timeout = undefined;
       }
@@ -247,8 +284,12 @@ export function startApp(canvas: HTMLCanvasElement) {
         })
         .catch(() => {});
     }
-    root.querySelector<HTMLElement>("h1")?.setAttribute("tabindex", "-1");
-    root.querySelector<HTMLElement>("h1")?.focus();
+    const heading = root.querySelector<HTMLElement>("h1"),
+      shownAt = generation;
+    heading?.setAttribute("tabindex", "-1");
+    requestAnimationFrame(() => {
+      if (!disposed && generation === shownAt) heading?.focus({ preventScroll: true });
+    });
   }
   window.addEventListener(
     "popstate",
@@ -263,8 +304,7 @@ export function startApp(canvas: HTMLCanvasElement) {
     (event) => {
       if (event.code === "Escape" && loading) {
         event.preventDefault();
-        if (session) cancelLoading?.();
-        else navigate("/skirmish");
+        dismissLoading?.();
       } else if (event.code === "Escape" && !session && location.pathname !== "/") navigate("/");
     },
     { signal: signal.signal },

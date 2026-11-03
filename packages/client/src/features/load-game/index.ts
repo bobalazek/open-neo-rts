@@ -91,6 +91,7 @@ export function loadGameScreen(
   }
   async function run(action: () => Promise<void>) {
     if (disposed || busy) return;
+    const focused = document.activeElement;
     busy = true;
     error.textContent = "";
     status.textContent = text("ui.saves.working");
@@ -105,6 +106,12 @@ export function loadGameScreen(
       if (!disposed) {
         status.textContent = "";
         controls();
+        if (
+          focused instanceof HTMLElement &&
+          root.contains(focused) &&
+          document.activeElement === document.body
+        )
+          focused.focus({ preventScroll: true });
       }
     }
   }

@@ -225,9 +225,7 @@ test("a terminal result arriving before a stale surrender resume rejection stays
   await page.evaluate(() => Reflect.set(window, "raceSurrender", true));
   await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(page.getByRole("dialog", { name: "Defeat", exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Could not start this match. Retry, or return to setup." }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Match loading failed" })).toHaveCount(0);
 });
 
 test("real surrender ends a paused normal match once, rematch creates a new worker and Home disposes it", async ({
