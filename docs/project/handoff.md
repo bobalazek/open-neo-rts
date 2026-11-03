@@ -421,3 +421,45 @@ recorded: 13 natural outcomes, one reproducible seed-12 cap at tick 60000/hash
 `db0d49c446004166`. Preserve its first replay/result and scenario before diagnosis.
 It is older-revision evidence, not SIM47 acceptance. Continue observing the same
 live process; do not cancel/restart it or mutate its source while investigating.
+
+## Combat-ready bot reinforcements, SIM48
+
+`/tmp/neo-bot-seed12-stall`, branch `codex/bot-seed12-stall`, addresses issue #231
+and task 2-40c. The exact frozen seed-12 forensic replay completed at tick 60000
+with the original hash `db0d49c446004166`; raw actors, bot state, observations,
+movement and primitive World bytes are in `/tmp/neo-ai-stall-sim46-seed12`.
+Force 1 had 26 combat survivors, 25 retreating, empty producer queues and 11600
+credits. One healthy tank was still attacking, so this was reinforcement
+starvation rather than evidence of an infinite match or a navigation fault.
+
+The existing quota now counts combat-ready units and all queued combat output.
+Retreat thresholds/hysteresis, authoritative prices/population/exits and all
+authored content remain unchanged. An exact opaque-handle-remapped comparison
+emits zero enqueues before and one original Soldier enqueue after. Permanent
+regressions cover thresholds/recovery, mixed queues and actual paid legal output
+through the normal bot host; the latter explicitly seeds a completed original
+Barracks and 24 wounded troops to isolate the failure, not a natural match.
+
+Repository fix/typecheck/test/build/content validation pass. An independent
+fresh-context review accepted code `e4de7c22fc1439816e3f6841bced38c4163dedf2`,
+ran 32 focused tests/428 assertions and separately checked the raw policy
+comparison, no-completed-base fallback and budgets 1/2/64. Normal/debug goldens
+remain unchanged; SIM48 and all three scenario headers identify changed bot
+outcomes. Catalog identities remain `97ddd2a140545413` / `54a8905a7eee497b`.
+
+A single-seed double trial runs on that clean committed code: exec session
+65430, `/tmp/neo-ai-qualification-sim48-seed12-20261103`, log
+`/tmp/neo-ai-qualification-sim48-seed12.log`, source companion
+`/tmp/neo-ai-qualification-sim48-seed12-source.txt`. First trial ended naturally
+at tick 23333/hash `d1ed481e228a0254`, winner 1; repeat verification is pending.
+This is not a complete current-version 20-match qualification or human exit.
+Do not mutate runtime sources in that worktree while the trial is running.
+The separate frozen SIM46 batch remains session 12497 on clean `20623ea`;
+19 results currently show 18 natural outcomes and the one seed-12 cap, all
+reproducible. Preserve its existing process/source/evidence unchanged.
+
+Next: canonical wrecks/rubble/salvage, then their projected presentation. Keep
+remaining effects/orders, complete persistence/replay/audio/help/tools and later
+phases active. Large wounded reserves can still consume the normal population
+cap; repair/reintegration is later tuning. Hosted CI billing and local Firefox
+launch remain unavailable; no FPS or full-phase acceptance is claimed.
