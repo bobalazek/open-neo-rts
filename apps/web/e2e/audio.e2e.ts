@@ -169,6 +169,8 @@ test("native Audio previews actual output, saves independently, restores Back an
   });
   await page.reload();
   await expect(page.locator("#game")).toHaveAttribute("data-panel", "settings");
+  await page.getByRole("button", { name: "Audio", exact: true }).focus();
+  await nativeFrame(page);
   await clickNativeText(page, "Audio");
   await channel.selectOption("ui");
   await expect(volume).toHaveValue("25");

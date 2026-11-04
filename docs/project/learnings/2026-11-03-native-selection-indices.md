@@ -16,3 +16,10 @@ On macOS WebKit, Home does not reliably move an HTML input's caret to its start.
 Browser regressions position the caret explicitly before exercising actual arrow
 and Shift-arrow selection. Real copy/cut/paste, long text, Unicode replacement,
 focus transfer and saved-game filtering were checked separately.
+
+Resizing setup must reveal its focused field again. Babylon's scroll viewer can
+also retain its old evaluated bounds after resize: a later input dirty rectangle
+clears the field, but the stale ancestor bounds exclude it from repainting. Setup
+therefore disables dirty-rectangle optimization, as the shared native panel already
+does. Selection regressions require visible paint from the current viewport;
+coordinates recorded before resizing cannot establish that the caret stayed visible.

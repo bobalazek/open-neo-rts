@@ -10,6 +10,7 @@ async function observeSelection(page: Page) {
       if (
         this.canvas.width >= innerWidth * 0.6 &&
         this.canvas.height >= innerHeight * 0.6 &&
+        Math.abs(this.canvas.width / this.canvas.height - innerWidth / innerHeight) < 0.01 &&
         ((this.fillStyle === "#ddc382" && Math.abs(this.globalAlpha - 0.35) < 0.01) ||
           (this.fillStyle === "#eff1e9" && width === 2 && height > 10))
       ) {
@@ -19,6 +20,8 @@ async function observeSelection(page: Page) {
           y: (point.y * innerHeight) / this.canvas.height,
           width: (width * innerWidth) / this.canvas.width,
           height: (height * innerHeight) / this.canvas.height,
+          viewportWidth: innerWidth,
+          viewportHeight: innerHeight,
           selection: this.fillStyle === "#ddc382",
           expected:
             (this.measureText(Reflect.get(window, "selectionNeedle") ?? "").width * innerWidth) /
@@ -55,9 +58,24 @@ async function paintedRange(page: Page, selection: boolean) {
       page.evaluate(
         (selection) =>
           Reflect.get(window, "selectionPaint").some(
-            (paint: { selection: boolean; width: number; expected: number }) =>
+            (paint: {
+              selection: boolean;
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+              viewportWidth: number;
+              viewportHeight: number;
+              expected: number;
+            }) =>
               paint.selection === selection &&
+              paint.viewportWidth === innerWidth &&
+              paint.viewportHeight === innerHeight &&
               paint.width > 0 &&
+              paint.x >= 0 &&
+              paint.y >= 0 &&
+              paint.x + paint.width <= innerWidth &&
+              paint.y + paint.height <= innerHeight &&
               (!selection || Math.abs(paint.width - paint.expected) < 1),
           ),
         selection,
@@ -104,7 +122,11 @@ test("semantic setup editing paints its caret and range and returns to native po
   await page.keyboard.press("ControlOrMeta+A");
   await page.keyboard.type("73");
   await expect(seed).toHaveValue("73");
+  await page.evaluate(() => Reflect.set(window, "selectionPaint", []));
   await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("setup-resize-focus-mobile.png") });
+  await paintedRange(page, false);
   await seed.fill("1234567890");
   await range(page, seed, 2, 5, "backward");
   await page.screenshot({ path: info.outputPath("setup-selection-mobile.png") });

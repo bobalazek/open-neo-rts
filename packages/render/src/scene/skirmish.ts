@@ -66,6 +66,8 @@ export async function createSkirmishScene(
   scene.clearColor = Color4.FromHexString("#10191eff");
   new FreeCamera("setup camera", new Vector3(0, 0, -10), scene);
   const gui = AdvancedDynamicTexture.CreateFullscreenUI("Skirmish", true, scene);
+  // Scrolled dirty rectangles can retain old bounds after resize and erase focused fields.
+  gui.useInvalidateRectOptimization = false;
   const scroll = new ScrollViewer("setup scroll");
   scroll.thickness = 0;
   scroll.barColor = "#ddc382";
@@ -389,6 +391,9 @@ export async function createSkirmishScene(
   const resize = () => {
     engine.resize();
     layout();
+    const target = fields.find((item) => item.field.id === focused)?.input;
+    if (target) ensureVisible(target);
+    else if (focused === "veterancy") ensureVisible(check);
   };
   const render = () => scene.render();
   window.addEventListener("resize", resize);
