@@ -151,3 +151,35 @@ test("read-only pack folders download a checked copy and dirty navigation retain
     "source pack has not been changed",
   );
 });
+
+test("invalid unreferenced wrecks block saves without changing the draft or disk", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  await installEditorPack(page);
+  await edit(page);
+  await page.evaluate(async () => {
+    const files = Reflect.get(window, "editorFixture").files as Map<string, File>;
+    const path = "factions/eastern-collective/units/dragon-tank/dragon-tank.wreck.glb";
+    const bytes = new Uint8Array(await files.get(path)!.arrayBuffer());
+    bytes[0] = 0;
+    files.set(path, new File([bytes], "dragon-tank.wreck.glb"));
+  });
+  await click(page, "Open pack folder");
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("900", { timeout: 30000 });
+  await health.fill("901");
+  await click(page, "Save definition");
+  await expect(page.locator(".definition-editor")).toContainText("glTF:", {
+    timeout: 30000,
+  });
+  await expect(health).toHaveValue("901");
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  expect(
+    await page.evaluate(
+      async (path) =>
+        JSON.parse(await Reflect.get(window, "editorFixture").files.get(path).text()).health,
+      path,
+    ),
+  ).toBe(900);
+});

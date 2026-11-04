@@ -4,6 +4,7 @@ import { defaultField } from "./definition-form";
 import {
   checkDefinitionDraft,
   EditorConflict,
+  type EditorFile,
   type EditorFileHandle,
   readEditorPack,
   safeEditorPath,
@@ -37,12 +38,21 @@ describe("definition authoring", () => {
   });
   test("uses actual core references, schemas, gameplay compiler and model requirements", async () => {
     const root = resolve(import.meta.dir, "../../../../../content/core");
-    const files = new Map(
+    const files = new Map<string, EditorFile>(
       [...new Bun.Glob("**/*").scanSync({ cwd: root, onlyFiles: true })].map((path) => [
         path,
         Bun.file(resolve(root, path)),
       ]),
     );
+    files.set("factions/eastern-collective/units/dragon-tank/source/ignored.json", {
+      size: 300 * 1024 * 1024,
+      text() {
+        throw new Error("Editable source must not be read");
+      },
+      arrayBuffer() {
+        throw new Error("Editable source must not be read");
+      },
+    });
     const pack = await readEditorPack("core", files);
     const path = "factions/eastern-collective/units/dragon-tank/unit.json";
     const original = pack.input.json.get(path) as Record<string, unknown>;
@@ -74,7 +84,40 @@ describe("definition authoring", () => {
       ),
     ).toBe(true);
     expect(pack.input.json.get(path)).toBe(original);
-  });
+    const metadata = path.replace("unit.json", "assets.json");
+    const uncredited = {
+      ...pack,
+      input: { ...pack.input, json: new Map(pack.input.json) },
+    };
+    uncredited.input.json.set(metadata, { files: {} });
+    expect(
+      (await checkDefinitionDraft([uncredited], "core", path, original)).some(
+        (issue) => issue.level === "error" && issue.message.includes("no assets.json entry"),
+      ),
+    ).toBe(true);
+    expect(pack.input.json.get(metadata)).not.toEqual({ files: {} });
+    const nested = "misc/source/runtime/";
+    const withNested = new Map(files);
+    withNested.set(nested + "extra.png", new File([new Uint8Array([0])], "extra.png"));
+    withNested.set(
+      nested + "assets.json",
+      new File(
+        [
+          JSON.stringify({
+            files: { "extra.png": { author: "Fixture author", source: "fixture.notes" } },
+          }),
+        ],
+        "assets.json",
+      ),
+    );
+    const nestedPack = await readEditorPack("core", withNested);
+    expect(nestedPack.input.json.has(nested + "assets.json")).toBe(true);
+    expect(
+      (await checkDefinitionDraft([nestedPack], "core", path, original)).filter(
+        (issue) => issue.level === "error",
+      ),
+    ).toEqual([]);
+  }, 15000);
 
   test("checks the latest file before opening a write and aborts failed writes", async () => {
     let disk = "old",

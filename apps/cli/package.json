@@ -10,8 +10,7 @@
   "dependencies": {
     "@open-neo-rts/ai": "workspace:*",
     "@open-neo-rts/content": "workspace:*",
-    "@open-neo-rts/sim": "workspace:*",
-    "gltf-validator": "2.0.0-dev.3.10"
+    "@open-neo-rts/sim": "workspace:*"
   },
   "bin": {
     "neo": "./src/index.ts"

@@ -6,6 +6,15 @@ Models, icons, textures and sounds live **in this repository** next to the defin
 
 ## Where assets go
 
+The CLI and browser definition editor share provenance checks. Every runtime
+export needs an `assets.json` entry with nonempty author and source strings;
+entries must name existing files without escaping their folder. Metadata does
+not prove authorship or a license. Sources may refer to project tooling outside
+the pack, and source freshness remains a separate check. Editable `source/`
+subtrees inside declared asset folders are excluded from runtime checks.
+Every runtime GLB, including wrecks and rubble, also receives shared Khronos
+conformance and generic model checks before a definition save or download.
+
 Assets sit in the same folder as the definition that uses them:
 
 ```text
