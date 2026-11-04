@@ -127,6 +127,8 @@ test("named save and both galleries paint Unicode and search selections without 
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("canvas")).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await expect(menu.locator("canvas")).toHaveAttribute("data-panel", "save");
   const name = menu.getByLabel("Save name", { exact: true });

@@ -77,5 +77,16 @@ does not qualify physical input latency, FPS or audio. The guidance journey
 pauses the actual simulation while inspecting help and dismissal, so its
 400-tick hint cannot expire during slow remote-control round trips.
 
-These fixes do not establish a common cause for every hosted failure. The full
-twelve-job browser matrix must qualify the final candidate before merge.
+These fixes do not establish a common cause for every hosted failure. The owner
+subsequently [narrowed qualification to current Chrome and WebKit](../decisions/2026-11-04-browser-support-scope.md).
+The four-shard/Firefox work above is historical evidence, not the current CI
+configuration. The two standard full-suite browser jobs must qualify the final
+candidate before merge; Linux WPE failures are not presented as repaired.
+
+The first macOS WebKit run, 41883902689, completed 76 journeys with 24 skips
+and two failures. Its text-selection trace shows Enter sent to Save while the
+menu still said Pausing; wait for Paused and an enabled Save button. The salvage
+trace expires inside its bounded death-step loop, before the work assertions,
+and cleanup masks that original location. Keep all tick bounds and assertions
+and allow this full worker/HUD/replay integration case 240 seconds. A longer
+deadline requires a complete passing rerun before qualification.

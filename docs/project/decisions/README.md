@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Current Chrome and WebKit only](./2026-11-04-browser-support-scope.md) — Two standard browser setups replace the broader compatibility matrix.
+
 - [2026-11-04 — Visible public construction effects](./2026-11-04-public-construction-effects.md) — Public tool poses and existing original work audio for currently visible builder/site pairs, without economic details.
 
 - [Browser definition authoring](./2026-11-04-browser-definition-authoring.md)

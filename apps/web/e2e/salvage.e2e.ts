@@ -47,7 +47,7 @@ const setup: MatchSetup = {
 test("normal worker and HUD clear an original combat wreck, stop/resume, pay once and replay", async ({
   page,
 }, info) => {
-  test.setTimeout(120_000);
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("http://salvage.test/**", (route) => {

@@ -6,7 +6,7 @@ export default defineConfig({
   testMatch: "**/*.e2e.ts",
   outputDir: "test-results",
   forbidOnly: !!process.env.CI,
-  // Headed Firefox and software WebGL share one runner's display/device resources.
+  // Keep each browser's full gameplay journey on one worker.
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   expect: { timeout: process.env.CI ? 15_000 : 5_000 },
@@ -19,15 +19,8 @@ export default defineConfig({
     url: "http://localhost:4320",
   },
   projects: [
-    { name: "chromium", use: { browserName: "chromium" } },
-    {
-      name: "firefox",
-      use: {
-        browserName: "firefox",
-        // Linux headless Firefox has no WebGL display; CI supplies Xvfb and Mesa.
-        headless: process.env.CI && process.platform === "linux" ? false : undefined,
-      },
-    },
+    // Preserve the existing project name used by engine-specific fixtures.
+    { name: "chromium", use: { browserName: "chromium", channel: "chrome" } },
     { name: "webkit", use: { browserName: "webkit" } },
   ],
 });
