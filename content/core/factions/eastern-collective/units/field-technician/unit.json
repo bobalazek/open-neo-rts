@@ -34,6 +34,10 @@
     "materials": {},
     "parts": [],
     "sockets": [],
-    "animations": ["idle", "move", "attack", "death"]
+    "animations": ["idle", "move", "attack", "death"],
+    "sounds": {
+      "build": "field-technician.build.ogg",
+      "build_complete": "field-technician.build_complete.ogg"
+    }
   }
 }

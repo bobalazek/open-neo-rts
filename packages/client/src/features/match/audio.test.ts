@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type { AudioPlayOptions, createAudioMixer } from "@open-neo-rts/render";
-import type { SeatSnapshot } from "@open-neo-rts/sim";
+import type { PresentedEntity, SeatSnapshot } from "@open-neo-rts/sim";
 import { createMatchAudio } from "./audio";
 
 test("match audio deduplicates ticks, refuses unseen events, revokes tails and discards paused/history work", async () => {
@@ -176,4 +176,156 @@ test("impacts follow only continuously visible launches, including instant shots
   accept([impact]);
   expect(played).toHaveLength(9);
   audio.dispose();
+});
+
+function workFixture() {
+  const played: { source: string | AudioBuffer; owner: number; options: AudioPlayOptions }[] = [];
+  const disposed: number[] = [];
+  let next = 0;
+  const audio = createMatchAudio(
+    {
+      scope() {
+        const owner = next++;
+        return {
+          async play(source, options) {
+            played.push({ source, owner, options });
+            return true;
+          },
+          dispose() {
+            disposed.push(owner);
+          },
+          stop() {},
+          retain() {},
+        };
+      },
+    },
+    new Map<string, Record<string, string>>([
+      ["truck", { harvest: "/harvest.ogg", unload: "/unload.ogg" }],
+      ["builder", { build: "/build.ogg", build_complete: "/complete.ogg" }],
+    ]),
+  );
+  return {
+    audio,
+    played,
+    disposed,
+    accept(tick: number, entities: PresentedEntity[], active = true, visible = true) {
+      audio.accept(
+        {
+          tick,
+          entities,
+          mode: "controlled",
+          fog: [
+            { group: 0, width: 2, height: 1, cells: new Uint8Array(visible ? [2, 2] : [1, 1]) },
+          ],
+        },
+        active,
+      );
+    },
+  };
+}
+const worker = (handle: string, definition: string): PresentedEntity => ({
+  handle,
+  definition,
+  force: 0,
+  x: 512,
+  y: 512,
+  facing: 0,
+  health: 100,
+  maxHealth: 100,
+  order: null,
+});
+
+test("public harvesting cues have a bounded cadence and unloading stops on stalled progress, fog and pause", () => {
+  const f = workFixture();
+  const truck = { ...worker("t1", "truck"), workAnimation: "harvest" as const };
+  f.accept(0, [truck]);
+  expect(f.played).toHaveLength(0);
+  f.accept(1, [truck]);
+  f.accept(1, [truck]);
+  f.accept(20, [truck]);
+  expect(f.played.map((p) => p.source)).toEqual(["/harvest.ogg"]);
+  f.accept(21, [truck]);
+  expect(f.played).toHaveLength(2);
+  f.accept(22, [worker("t1", "truck")]);
+  expect(f.disposed).toContain(1);
+  const unload = (progress: number) => ({
+    ...worker("t1", "truck"),
+    workAnimation: "unload" as const,
+    workProgressTicks: progress,
+  });
+  f.accept(23, [unload(1)]);
+  f.accept(24, [unload(1)]);
+  expect(f.disposed).toContain(2);
+  f.accept(25, [unload(1)]);
+  expect(f.played).toHaveLength(3);
+  f.accept(26, [unload(2)]);
+  f.accept(36, [unload(12)]);
+  expect(f.played.map((p) => p.source)).toEqual([
+    "/harvest.ogg",
+    "/harvest.ogg",
+    "/unload.ogg",
+    "/unload.ogg",
+    "/unload.ogg",
+  ]);
+  f.accept(36, [unload(12)], false);
+  expect(f.disposed).toContain(3);
+  f.accept(36, [unload(12)], true);
+  expect(f.played).toHaveLength(5);
+  f.accept(37, [truck]);
+  f.accept(37, [truck], true, false);
+  expect(f.disposed).toContain(4);
+  f.accept(38, [], true);
+  expect(f.played).toHaveLength(6);
+  f.accept(39, [truck]);
+  f.accept(40, [{ ...truck, disabled: true }]);
+  expect(f.disposed).toContain(5);
+  f.accept(60, [{ ...truck, disabled: true }]);
+  expect(f.played).toHaveLength(7);
+  f.accept(61, [truck]);
+  expect(f.played).toHaveLength(8);
+  f.audio.dispose();
+  expect(f.disposed).toContain(0);
+});
+
+test("construction clicks follow actual site progress once per site and chime only on a visible completion", () => {
+  const f = workFixture();
+  const builder = (id: string): PresentedEntity => ({
+    ...worker(id, "builder"),
+    constructionOrder: { site: "s1", state: "working" },
+  });
+  const site = (progress: number): PresentedEntity => ({
+    ...worker("s1", "structure"),
+    x: 1536,
+    constructionSite: true,
+    construction: { completedTicks: progress, quarter: 0, totalTicks: 100, buildersWorking: 2 },
+  });
+  const builders = [builder("b1"), builder("b2")];
+  f.accept(0, [...builders, site(0)]);
+  f.accept(1, [...builders, site(1)]);
+  f.accept(2, [...builders, site(2)]);
+  f.accept(13, [...builders, site(13)]);
+  expect(f.played.map((p) => p.source)).toEqual(["/build.ogg", "/build.ogg"]);
+  expect(f.played[0]?.options.position).toEqual({ x: 3, y: 0, z: 1 });
+  f.accept(14, [...builders, site(13)]);
+  expect(f.disposed).toContain(1);
+  f.accept(15, [...builders, site(13)]);
+  expect(f.played).toHaveLength(2);
+  f.accept(16, [worker("s1", "structure")]);
+  f.accept(16, [worker("s1", "structure")]);
+  expect(f.played.at(-1)).toMatchObject({ source: "/complete.ogg", owner: 0 });
+  expect(f.played).toHaveLength(3);
+  f.accept(18, [...builders, site(1)]);
+  f.accept(19, []);
+  expect(f.played.at(-1)?.source).toBe("/build.ogg");
+  f.accept(20, [...builders, site(2)]);
+  f.accept(21, [worker("s1", "structure")], true, false);
+  expect(f.played.filter((p) => p.source === "/complete.ogg")).toHaveLength(1);
+  f.accept(22, [...builders, site(3)]);
+  f.accept(23, [worker("s1", "structure")], false);
+  expect(f.played.filter((p) => p.source === "/complete.ogg")).toHaveLength(1);
+  f.accept(24, [...builders, site(4)]);
+  f.accept(24, [...builders, site(4)], true, false);
+  f.accept(25, [worker("s1", "structure")]);
+  expect(f.played.filter((p) => p.source === "/complete.ogg")).toHaveLength(1);
+  f.audio.dispose();
 });

@@ -1,0 +1,4 @@
+aevalsrc='0.12*sin(2*PI*660*t)*exp(-9*t)':s=48000:d=0.65[a];
+aevalsrc='0.12*sin(2*PI*880*t)*exp(-9*t)':s=48000:d=0.65,adelay=100[b];
+aevalsrc='0.14*sin(2*PI*1320*t)*exp(-9*t)':s=48000:d=0.65,adelay=200[c];
+[a][b][c]amix=inputs=3:normalize=0:duration=longest,afade=t=in:d=0.003,afade=t=out:st=0.65:d=0.2
