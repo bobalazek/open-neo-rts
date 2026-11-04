@@ -2,8 +2,30 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseScenario, runScenario } from "@open-neo-rts/sim";
-import { aiMatchOptions, aiMatchTrial, aiVsAi } from "./ai-vs-ai";
+import {
+  checkpointHash,
+  createMatch,
+  createMatchKeyframe,
+  parseScenario,
+  runScenario,
+  step,
+} from "@open-neo-rts/sim";
+import { aiMatchOptions, aiMatchScenario, aiMatchTrial, aiVsAi } from "./ai-vs-ai";
+
+test("original bot economy and construction snapshots restore with identical future decisions", async () => {
+  const { setup } = await aiMatchScenario(7);
+  const kernel = createMatch(setup);
+  for (const at of [0, 40, 400, 1000, 2000]) {
+    while (kernel.tick < at) step(kernel, []);
+    const restored = createMatchKeyframe(kernel, setup).restore(setup);
+    expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
+    for (let i = 0; i < 20; i++) {
+      step(kernel, []);
+      step(restored, []);
+      expect(checkpointHash(restored)).toBe(checkpointHash(kernel));
+    }
+  }
+}, 30000);
 
 test("AI match runner validates bounded distinct seeds, tick limit and required fresh output", () => {
   const defaults = aiMatchOptions(["--out", "evidence"]);

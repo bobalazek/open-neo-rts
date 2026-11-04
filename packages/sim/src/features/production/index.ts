@@ -98,6 +98,19 @@ function exitPoint(
   }
 }
 
+export function productionUnitSupported(
+  definition: Definition | undefined,
+): definition is Definition {
+  return (
+    !!definition &&
+    kind(definition) === "unit" &&
+    definition.pop !== undefined &&
+    definition.domain !== undefined &&
+    definition.domain !== "air" &&
+    definition.radiusSubcells !== undefined
+  );
+}
+
 /** Closures contain immutable setup only; all queues, work, receipts and once-only flags are ECS state. */
 export function productionFeature(
   setup: Pick<MatchSetup, "definitions" | "grants" | "normal">,
@@ -110,13 +123,6 @@ export function productionFeature(
     kernel.world.has(producer, Template) &&
     kernel.world.has(producer, OwnerForce) &&
     !kernel.world.has(producer, ConstructionSite);
-  const unitValid = (definition: Definition | undefined) =>
-    !!definition &&
-    kind(definition) === "unit" &&
-    definition.pop !== undefined &&
-    definition.domain !== undefined &&
-    definition.domain !== "air" &&
-    definition.radiusSubcells !== undefined;
   const items = (kernel: Kernel, producer: number) =>
     kernel.world
       .query(ProductionItem)
@@ -295,7 +301,9 @@ export function productionFeature(
         definition.spawnsWith?.length &&
         !world.has(producer, ProductionGifts) &&
         definition.exits?.length &&
-        definition.spawnsWith.every((id) => unitValid(definitions.find((unit) => unit.id === id)))
+        definition.spawnsWith.every((id) =>
+          productionUnitSupported(definitions.find((unit) => unit.id === id)),
+        )
       ) {
         world.add(producer, ProductionGifts);
         for (const unit of definition.spawnsWith)
@@ -372,7 +380,7 @@ export function productionFeature(
         if (
           !producer?.exits?.length ||
           !producer.produces?.includes(requested) ||
-          !unitValid(unit) ||
+          !productionUnitSupported(unit) ||
           !unit?.construction
         )
           return "bad_payload";

@@ -587,6 +587,8 @@ export class TerrainMovement {
         throw new Error("Invalid movement route actor");
       routes.set(entity, route);
     }
+    for (const entity of this.kernel.world.query(MoveIntent))
+      if (!routes.has(entity)) throw new Error("Movement intent has no saved route");
     const pending = [...state.scheduler.queues.flat(), ...state.scheduler.anchors.flat()];
     const queued = new Set<number>();
     for (const { request } of pending) {

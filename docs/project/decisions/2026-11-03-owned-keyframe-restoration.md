@@ -1,5 +1,9 @@
 # Owned keyframes and canonical state restoration
 
+Follow-up: [2-33b2 component validation](./2026-11-04-canonical-component-validation.md)
+now implements the independent invariants described below. External imports
+continue to verify history.
+
 Task 2-33b needs direct state restoration for replay seeking while preserving
 the existing external-save verification contract. The owner delegated routine
 implementation and sequencing choices. Deliver the owned-frame path first;

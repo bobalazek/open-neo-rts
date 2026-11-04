@@ -20,9 +20,12 @@ The first [local snapshot implementation](../project/decisions/2026-11-03-first-
 exports a complete canonical capture plus accepted external history. A new worker
 can resume it after checking installed setup, checksums and the reproduced full
 state. [Canonical restoration](../project/decisions/2026-11-03-owned-keyframe-restoration.md)
-now loads the verified state into a fresh host. External imports still replay-verify
-history first; independent feature validators remain 2-33b2. Privately captured
-owned keyframes restore without stepping elapsed ticks and can support replay
+now loads the verified state into a fresh host. Independent
+[component validators](../project/decisions/2026-11-04-canonical-component-validation.md)
+check feature invariants and relationships before loading its caches. External
+imports still replay-verify history first; plausible state does not prove its
+input history. Privately captured owned keyframes restore without stepping elapsed
+ticks and support replay
 seeking. [Browser save slots](../project/decisions/2026-11-03-browser-save-slots.md),
 menu/load screens, quicksave and rotating autosaves are connected by 2-34. Normal seat updates never
 include the full save. Failed loading leaves the old worker/session untouched.

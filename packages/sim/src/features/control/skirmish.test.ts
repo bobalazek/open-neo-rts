@@ -8,6 +8,7 @@ import { createMatchKeyframe } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder } from "../combat";
 import { ConstructionSite } from "../construction";
+import { ConstructionPayment } from "../construction/sites";
 import { StructurePower } from "../economy";
 import {
   compileGameplayCatalog,
@@ -180,6 +181,15 @@ test("original tier-one bot pays/builds its base, harvests, extracts materials a
 
 test("a hosted bot scouts and clears a destroyed remote extractor, then rebuilds and extracts after restore", () => {
   const value = setup();
+  const normal = value.normal!;
+  value.normal = {
+    ...normal,
+    settings: { ...normal.settings, startingCredits: 10000 },
+    forces: normal.forces.map((force) => ({
+      ...force,
+      start: { ...force.start, resources: { ...force.start.resources, credits: 10000 } },
+    })),
+  };
   value.map = {
     ...value.map,
     resources: [
@@ -190,15 +200,24 @@ test("a hosted bot scouts and clears a destroyed remote extractor, then rebuilds
   const kernel = createMatch(value);
   const spawn = (id: string, x: number, y: number) => {
     const index = catalog.definitions.findIndex((definition) => definition.id === id);
-    return spawnEntity(kernel, index, catalog.definitions[index]!, {
+    const entity = spawnEntity(kernel, index, catalog.definitions[index]!, {
       definition: id,
       force: 1,
       x: x * 1024,
       y: y * 1024,
       facing: 0x4000,
     });
+    const cost = catalog.definitions[index]!.construction!.cost;
+    expect(kernel.economy?.spend(1, 1, cost, "economy.build").ok).toBe(true);
+    kernel.world.add(entity, ConstructionPayment, {
+      credits: cost.credits ?? 0,
+      materials: cost.materials ?? 0,
+      industrialCapacity: cost["industrial-capacity"] ?? 0,
+      salvagePoints: cost["salvage-points"] ?? 0,
+    });
+    return entity;
   };
-  // Fixture only: completed original base buildings isolate recovery from the full opening build order.
+  // Fixture only: pay for completed original buildings to isolate recovery from their build durations.
   spawn(structure("industrial-reactor"), 6, 10);
   spawn(structure("supply-depot"), 10, 4);
   spawn(structure("barracks-complex"), 17, 10);
