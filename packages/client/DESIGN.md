@@ -105,9 +105,13 @@ definition authoring extends this same pane with schema-derived fields, applicab
 tabs and one optional/collection-change menu. Compact source identity and unsaved
 status remain visible; contextual help carries descriptions, units and full paths.
 Conflict review temporarily replaces fields with changed-value rows and pinned
-Reload/Keep choices. This records model inspection (2-38a) and existing-definition
-authoring (2-38b1); full asset validation/formatting, creation templates, draft
-playtests and asset editing remain open.
+Reload/Keep choices. A clean selected definition also supplies an authored
+template for a sibling: two framed name fields replace the editing form, with
+pinned Create definition, Download changes ZIP and Cancel creation actions. The
+original model and source identity remain visible. This records model inspection
+(2-38a), existing-definition authoring (2-38b1) and sibling creation (2-38b3);
+full runtime audio, source freshness, exact formatter parity, draft playtests and
+asset editing remain open.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -115,8 +119,8 @@ retains its keyboard queue controls and localized hover/focus help. No new panel
 palette, font or asset accompanies the gesture; empty selection leaves no station.
 
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
-results, local Replays, Field Manual, content-model inspection, existing-definition
-authoring and native normal match HUD. Debug retains HTML/CSS presentation; native
+results, local Replays, Field Manual, content-model inspection, definition
+authoring and sibling creation, and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -139,9 +143,12 @@ recorded in `.impeccable/surfaces/src-features-onboarding-match-ts.md`.
 Content tools' local contract is in `src/features/content-editor/index.ts` and
 `.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
 also uses `src/features/content-editor/content-tools.css`, `model.ts`,
-`definition-editor.ts`, `definition-form.ts` and `definition-pack.ts`. Existing
+`definition-editor.ts`, `definition-form.ts`, `definition-pack.ts`, `creation.ts`,
+`creation-write.ts` and `archive.ts`. Existing
 definition boundaries are recorded in
 `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
+Sibling creation is recorded in
+`../../docs/project/decisions/2026-11-04-definition-creation.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -172,6 +179,7 @@ Pending route editing follows the WAYPOINTS EXTENSION in
 - Optional native HUD region labels and one observed-context hint with a direct reference link.
 - Native model-first content inspection with real presentation controls and expandable project checks.
 - Native existing-definition fields with contextual schema help, guarded saves/downloads and explicit disk-conflict review.
+- Native sibling creation from authored templates with two framed name fields, guarded publication and a changes ZIP fallback.
 - Pending route hover diamonds and terrain-aligned previews with the existing native keyboard queue alternative.
 
 ## Colors
@@ -401,7 +409,10 @@ shared-panel type ramp and interface scale. Back and title, status/error feedbac
 and pinned Open/Retry stay outside the scrolling body; choices and expandable
 tables scroll within it. Definition authoring inherits this arrangement: Open/Save
 stay pinned, schema tabs and nested fields scroll, and conflict review replaces
-the fields with a scrollable comparison while Reload/Keep stay pinned. This
+the fields with a scrollable comparison while Reload/Keep stay pinned. Sibling
+creation replaces the form with display-name and folder-name fields while
+Create definition, Download changes ZIP and Cancel creation stay pinned; the
+original model remains left/above. This
 arrangement belongs to content tools rather than changing the other galleries'
 column proportions.
 
@@ -573,8 +584,23 @@ the text leaves space for that disclosure mark.
   File System Access saves the selected existing file after validation; the
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model checks gate saving, while
-  full asset/provenance/audio/glTF conformance, exact formatter parity, new-file
-  templates, multi-file creation, draft playtests and asset editing remain open.
+  full runtime audio, source freshness, exact formatter parity, draft playtests
+  and asset editing remain open.
+- **Sibling-definition creation:** New from selected uses a clean unit, structure
+  or prop as an authored template. Two framed fields collect a new display name
+  and sibling folder name in the same native pane; the original model and source
+  identity remain visible. Create definition, Download changes ZIP and Cancel
+  creation stay pinned; read-only folders omit Create definition. Shared checks
+  gate both outputs. Writable folders copy the co-located files and preserve
+  their credits, then publish the updated manifest last after read-back and
+  validation. Conflicts stop creation; failures retain the entered names and
+  preserve externally changed files with recovery feedback. Successful creation
+  selects and previews the new definition. The ZIP contains the new folder and
+  updated manifest: it is a changes bundle to extract into a copy of the selected
+  pack, not a standalone pack. Download leaves the source intact; Cancel creation
+  returns to the original definition. Busy work locks the controls. The workflow
+  reuses the graphite fields, ivory focus and warm-metal actions without new
+  tokens, artwork or decorative motion.
 - **Settings preview and feedback:** quality, UI scale, keyboard/edge camera pan
   speed, mouse sensitivity, drag inversion, edge scroll and reduced motion use the
   shared native fields, validation and device storage. Mouse camera sensitivity
