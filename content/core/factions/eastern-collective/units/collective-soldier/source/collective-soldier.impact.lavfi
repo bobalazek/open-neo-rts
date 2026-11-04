@@ -1,0 +1,3 @@
+anoisesrc=color=white:amplitude=0.65:sample_rate=48000:duration=0.18:seed=1109,highpass=f=1400,lowpass=f=8500,afade=t=out:st=0:d=0.07[chip];
+aevalsrc='(0.16*sin(2*PI*1870*t)+0.12*sin(2*PI*2930*t))*exp(-60*t)':s=48000:d=0.18[brick];
+[chip][brick]amix=inputs=2:normalize=0,volume=0.4,afade=t=in:d=0.001,afade=t=out:st=0.14:d=0.04

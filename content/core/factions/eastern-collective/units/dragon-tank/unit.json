@@ -96,6 +96,11 @@
     "parts": ["hull", "turret", "barrel"],
     "sockets": ["socket_muzzle", "socket_exhaust"],
     "animations": ["idle", "move", "attack", "fire_recoil", "deploy"],
-    "wreck": "dragon-tank.wreck.glb"
+    "wreck": "dragon-tank.wreck.glb",
+    "sounds": {
+      "fire": "dragon-tank.fire.ogg",
+      "impact": "dragon-tank.impact.ogg",
+      "death": "dragon-tank.death.ogg"
+    }
   }
 }

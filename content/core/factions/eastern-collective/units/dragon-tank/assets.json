@@ -1,5 +1,17 @@
 {
   "files": {
+    "dragon-tank.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.fire.lavfi"
+    },
+    "dragon-tank.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.impact.lavfi"
+    },
+    "dragon-tank.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.death.lavfi"
+    },
     "dragon-tank.glb": {
       "author": "Borut Balazek",
       "source": "source/dragon-tank.bricks.json"

@@ -1,0 +1,3 @@
+anoisesrc=color=white:amplitude=0.8:sample_rate=48000:duration=0.22:seed=1103,highpass=f=650,lowpass=f=9000,afade=t=out:st=0:d=0.12[crack];
+aevalsrc='0.5*sin(2*PI*(190*t+9*(1-exp(-55*t))))*exp(-55*t)':s=48000:d=0.22[body];
+[crack][body]amix=inputs=2:normalize=0,volume=0.5,afade=t=in:d=0.001,afade=t=out:st=0.18:d=0.04

@@ -1,5 +1,17 @@
 {
   "files": {
+    "collective-soldier.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.fire.lavfi"
+    },
+    "collective-soldier.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.impact.lavfi"
+    },
+    "collective-soldier.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.death.lavfi"
+    },
     "collective-soldier.glb": {
       "author": "Borut Balazek",
       "source": "source/collective-soldier.bricks.json"

@@ -51,6 +51,11 @@
     "materials": {},
     "parts": [],
     "sockets": ["socket_muzzle"],
-    "animations": ["idle", "move", "attack", "death"]
+    "animations": ["idle", "move", "attack", "death"],
+    "sounds": {
+      "fire": "collective-soldier.fire.ogg",
+      "impact": "collective-soldier.impact.ogg",
+      "death": "collective-soldier.death.ogg"
+    }
   }
 }

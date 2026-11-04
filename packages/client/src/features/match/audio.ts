@@ -9,6 +9,7 @@ export function createMatchAudio(
   const scope = mixer.scope();
   let tick = -1,
     prior = new Map<string, PresentedEntity>(),
+    impacts = new Map<string, string>(),
     group: string | undefined;
   return {
     accept(snapshot: SeatSnapshot, active: boolean) {
@@ -17,8 +18,10 @@ export function createMatchAudio(
         scope.stop();
         tick = -1;
         prior.clear();
+        impacts.clear();
       }
       group = nextGroup;
+      if (!active) impacts.clear();
       scope.retain(
         (position) =>
           active &&
@@ -33,22 +36,32 @@ export function createMatchAudio(
       const initialized = tick >= 0;
       tick = snapshot.tick;
       const current = new Map(snapshot.entities.map((entity) => [entity.handle, entity]));
+      const flying = new Map<string, string>();
       if (active && initialized)
         for (const event of snapshot.combatEvents ?? []) {
-          if (
-            (event.type !== "launch" && event.type !== "death") ||
-            !event.entity ||
-            !eventVisible(snapshot, event.x, event.y)
-          )
-            continue;
-          const entity = current.get(event.entity) ?? prior.get(event.entity);
-          const source =
-            entity && sounds.get(entity.definition)?.[event.type === "launch" ? "fire" : "death"];
+          if (!eventVisible(snapshot, event.x, event.y)) continue;
+          let source: string | undefined;
+          if (event.type === "launch" || event.type === "death") {
+            const entity = event.entity && (current.get(event.entity) ?? prior.get(event.entity));
+            const clips = entity ? sounds.get(entity.definition) : undefined;
+            source = clips?.[event.type === "launch" ? "fire" : "death"];
+            if (event.type === "launch" && event.handle && clips?.impact) {
+              impacts.set(event.handle, clips.impact);
+              flying.set(event.handle, clips.impact);
+            }
+          } else if (event.type === "flight" && event.handle) {
+            const impact = impacts.get(event.handle);
+            if (impact) flying.set(event.handle, impact);
+          } else if (event.type === "impact" && event.handle) {
+            source = impacts.get(event.handle);
+            impacts.delete(event.handle);
+            flying.delete(event.handle);
+          }
           if (source)
             void scope
               .play(source, {
                 bus: "effects",
-                priority: event.type === "death" ? 1 : 0,
+                priority: event.type === "launch" ? 0 : 1,
                 position: {
                   x: (event.x * CELL_SIZE) / 1024,
                   y: 0,
@@ -57,6 +70,8 @@ export function createMatchAudio(
               })
               .catch(() => {});
         }
+      // A missing round is unknown; never carry its sound identity through hidden space.
+      impacts = flying;
       prior = new Map(snapshot.entities.map((entity) => [entity.handle, { ...entity }]));
     },
     dispose: scope.dispose,

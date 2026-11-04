@@ -1,6 +1,6 @@
 # Assets
 
-Models, icons, textures and sounds. All of them are original work, live **in this repository** next to the definition that uses them, and are stored with Git LFS. The art style is in [art-and-audio.md](../design/art-and-audio.md).
+Models, icons, textures and sounds live **in this repository** next to the definition that uses them, and are stored with Git LFS. Models, icons and textures are original work; audio may be original or verified CC0 under the [owner's audio decision](../project/decisions/2026-11-04-cc0-audio.md). The art style is in [art-and-audio.md](../design/art-and-audio.md).
 
 **Status:** first-pass brick models are being built for every unit and structure ([decision](../project/decisions/2026-11-01-first-pass-models.md)); the art direction sign-off, with one finished reference model per faction, is a [human task](../project/human-tasks.md). `bun neo make-placeholders` can still generate temporary block models locally, but they aren't committed.
 
@@ -44,6 +44,23 @@ Aircraft add `rotor` nodes; structures add whatever their `active`, `open` and `
 
 Structures are the same, with `structure.json` and `<name>.rubble.glb`. Neutral structures live in `content/core/neutral/structures/<name>/`, and map props (trees, rocks, ruins) in `content/core/props/<biome>/<name>/` with a `prop.json`. A definition's `presentation` refers to its files by name only (`"model": "dragon-tank.glb"`).
 
+## Sound sources
+
+The first Collective Soldier and Dragon Tank sounds use editable FFmpeg `.lavfi`
+filter graphs in their unit's `source/` folder. Seeded noise, oscillator envelopes
+and delayed resonances supply the complete signal without external samples. See
+the [first combat sound decision](../project/decisions/2026-11-04-first-combat-sounds.md)
+for the single-clip rebuild command. Keep each graph, its `.ogg`, the presentation
+reference and provenance entry together. Future recorded/editable sources can use
+the same co-located provenance convention.
+
+For CC0 audio, preserve the actual creator in `assets.json`, keep the upstream
+source file and license evidence in `source/`, and record the original filename,
+creator's download page, CC0 declaration and any processing in a source note.
+Do not credit imported audio to the owner or treat a site's generic "free" label
+as a CC0 declaration. Import only the clips used by the game, rather than whole
+unused packs. Keep the same format, loudness and LFS rules as original sounds.
+
 ## Git LFS
 
 Binary files are stored with **Git LFS** ([.gitattributes](../../.gitattributes)). Run `git lfs install` once after cloning.
@@ -63,7 +80,7 @@ Every folder with assets has an `assets.json`:
 }
 ```
 
-- **Every asset is original work** made for this game, contributed under the repository's MIT licence. No downloaded, purchased, ripped or traced assets.
+- Models, icons and textures are original work made for this game, contributed under the repository's MIT licence. Audio may also use verified CC0 assets with their upstream provenance and dedication preserved; the imported asset retains its CC0 status.
 - `author` feeds the credits screen; `source` points at the editable original.
 - CI rejects runtime files without an entry, and entries without a file.
 
