@@ -225,9 +225,8 @@ source.
   together; failure or supersession retains the last good view and Retry.
   Replacement/disposal releases owned effects and paired containers; retained
   editor playtests pause the effect clock. No sources, saves, normal matches or
-  simulation state change. Broader authored opponent/map presets remain 2-38c2;
-  full 2-38b2 validation/formatter parity and 2-38d socket/part gizmos, GLB export
-  and damage-socket smoke/fire previews stay open. See
+  simulation state change. Full 2-38b2 validation/formatter parity and 2-38d
+  socket/part gizmos, GLB export and damage-socket smoke/fire previews stay open. See
   `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 - The same model-first tool includes 2-38b1 editing of existing unit, structure
   and prop definitions from owner-selected pack folders. Opened packs supply
@@ -294,18 +293,26 @@ source.
   draft and its models; export reproduces simulation, not an asset pack. Native
   debug conversion and full 2-38b2 validation parity remain separate work. See
   `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
-- Skirmish draft adds bounded 2-38c2 combat/economy integration through the actual
-  normal-session worker on Training Grounds, with an Eastern Collective mirror
-  and basic bot. Normal construction, production, resources, combat and fog
-  retain normal commands and permissions. Supported content is existing core
-  first-playable definitions, compatible prerequisite-free priced units trained
+- Skirmish draft opens a native scenario modal before freezing the unsaved draft
+  for the actual normal-session worker. Authors choose any of six installed
+  authored maps, distinct spawn sides, an unsigned 32-bit integer seed and the
+  basic skirmish bot, an idle Eastern Collective opening or a draft-unit mirror
+  with an idle controller. The mirror adds one supported ground unit to each
+  Force's normal starting kit, incrementing an existing starter where applicable;
+  structures use the faction-opening presets. Dry maps omit starting harvesters,
+  and harvester mirrors require ore. Normal construction, production, resources,
+  combat and fog retain normal commands and permissions. Supported content is
+  existing core first-playable definitions, compatible prerequisite-free priced units trained
   by their producers, and prerequisite-free priced Eastern Collective or neutral
   structures. Compatible cloned units join only the temporary roster. Other
   packs, factions, props and definitions outside this compatibility gate retain
   debug checks; a rejected normal draft keeps edits and explains the restriction.
-  Shared checks
-  gate copied inputs and freeze metadata plus checked model, wreck, icon and
-  sound bytes for the preview and every restart. Later source edits do not
+  Named semantic fields, keyboard editing and mirrored native focus share the
+  modal's validation; invalid seeds or duplicate spawns disable Start with an
+  alert. Cancel, Escape or leaving tools retains edits without starting a worker.
+  Shared checks gate copied inputs and freeze the selected scenario, metadata and
+  checked model, wreck, icon and sound bytes for the preview and every restart.
+  Later source edits do not
   replace that snapshot. Native loading Cancel or Return to draft restores the
   retained editor and initiating action focus; initialization/worker failure
   returns with an error. Each preview owns its worker, renderer and audio mixer;
@@ -317,10 +324,11 @@ source.
   Launch eligibility does not guarantee every edited recipe or movement domain
   can execute: normal engine validation still rejects incompatible commands.
   Focused Chrome and WebKit journeys cover this bounded flow; they do not close
-  the whole 2-38c task. Broader authored opponent/map presets remain 2-38c2;
-  full 2-38b2 parity and 2-38d asset
-  gizmos remain open. See
-  `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
+  the whole editor task. Scenario presets complete the remaining 2-38c2 slice;
+  full 2-38b2 parity and 2-38d asset gizmos remain open. Normal quick play and
+  saved setup defaults retain the installed Training Grounds mirror. See
+  `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md` and
+  `../../docs/project/decisions/2026-11-04-draft-scenario-presets.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual

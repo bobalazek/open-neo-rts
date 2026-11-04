@@ -7,6 +7,7 @@ import { applyInterfaceScale, readDeviceSettings } from "../settings";
 import { mountDefinitionEditor } from "./definition-editor";
 import { inspectModel, installedModel, MODEL_FILE_LIMIT } from "./model";
 import { prepareDraftPlaytest } from "./playtest";
+import { defaultDraftScenario } from "./scenarios";
 
 /** Model-first content tools; definition writes and draft playtests have separate owners. */
 export function startContentTools(canvas: HTMLCanvasElement) {
@@ -88,6 +89,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   edit.setAttribute("data-panel-footer", "");
   semantics.append(edit);
   let editor: ReturnType<typeof mountDefinitionEditor> | undefined;
+  let scenario = defaultDraftScenario();
   let restoreEditor: (() => void) | undefined;
   edit.addEventListener(
     "click",
@@ -109,9 +111,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           await load(async () => value);
         },
         playtest: async (packs, packId, path, draft, mode) => {
+          if (mode === "skirmish") {
+            const { chooseDraftScenario } = await import("./scenario-panel");
+            const selected = await chooseDraftScenario(
+              events.signal,
+              scenario,
+              String(draft.id).startsWith("unit:"),
+            );
+            if (!selected || disposed) return;
+            scenario = selected;
+          }
           const { startDebugSession } = await import("../debug/session");
           const { startDraftSkirmish } = await import("./skirmish-playtest");
-          const prepared = await prepareDraftPlaytest(packs, packId, path, draft);
+          const prepared = await prepareDraftPlaytest(packs, packId, path, draft, scenario);
           if (disposed) {
             prepared.dispose();
             return;

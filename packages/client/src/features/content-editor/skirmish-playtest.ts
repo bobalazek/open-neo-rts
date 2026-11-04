@@ -71,7 +71,12 @@ export function startDraftSkirmish(
     const candidate = createNormalSession(
       canvas,
       root,
-      defaultSkirmish(),
+      {
+        ...defaultSkirmish(),
+        seed: source.scenario.seed,
+        yourSpawn: source.scenario.yourSpawn,
+        otherSpawn: source.scenario.otherSpawn,
+      },
       (stage) => {
         if (!current()) return;
         loading.querySelector("[role=status]")!.textContent = text(stages[stage]!);

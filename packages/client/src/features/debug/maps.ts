@@ -25,6 +25,7 @@ interface MapEntry {
   definition: {
     id: string;
     name: string;
+    players: { min: number; max: number };
     biome: string;
     size: { width: number; height: number };
     objects: readonly MapDecoration[];

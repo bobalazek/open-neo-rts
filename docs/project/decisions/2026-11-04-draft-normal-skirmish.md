@@ -1,5 +1,10 @@
 # Temporary normal skirmishes from unsaved drafts
 
+Follow-up: [draft scenario presets](./2026-11-04-draft-scenario-presets.md) now
+extend the initial Training Grounds path with authored map/spawn/seed choices
+and basic, idle or selected-unit mirror opponents. The trust and persistence
+boundaries below still apply.
+
 Task 2-38c2 now adds **Skirmish draft** beside the existing movement/placement
 playtest. It uses the actual normal-session worker, Training Grounds, Eastern
 Collective mirror and basic opposing bot. Combat, construction, production,
