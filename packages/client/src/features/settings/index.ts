@@ -4,6 +4,7 @@ import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
 import { audioScreen } from "./audio-screen";
 import { bindingsScreen } from "./bindings-screen";
+import { guidanceScreen } from "./guidance-screen";
 
 export const DEVICE_SETTINGS_KEY = "open-neo-rts.settings.v1";
 export const UI_SCALES = [75, 100, 125, 150] as const;
@@ -105,14 +106,21 @@ export function settingsScreen(
   semantics.append(preferences);
   const controlsHost = document.createElement("div");
   let controls: ReturnType<typeof bindingsScreen> | undefined;
-  let child: "bindings" | "audio" | undefined;
+  let child: "bindings" | "audio" | "guidance" | undefined;
   for (const [id, editor] of [
     ["bindings", bindingsScreen],
     ["audio", audioScreen],
+    ["guidance", guidanceScreen],
   ] as const) {
     const controlsButton = document.createElement("button");
     controlsButton.type = "button";
-    controlsButton.textContent = text(id === "audio" ? "ui.audio.title" : "ui.bindings.title");
+    controlsButton.textContent = text(
+      id === "guidance"
+        ? "ui.guidance.title"
+        : id === "audio"
+          ? "ui.audio.title"
+          : "ui.bindings.title",
+    );
     preferences.querySelector("header")!.after(controlsButton);
     controlsButton.addEventListener("click", () => {
       child = id;
@@ -206,7 +214,13 @@ export function settingsScreen(
       id: () => child ?? "settings",
       title: () =>
         text(
-          child === "audio" ? "ui.audio.title" : child ? "ui.bindings.title" : "ui.settings.title",
+          child === "guidance"
+            ? "ui.guidance.title"
+            : child === "audio"
+              ? "ui.audio.title"
+              : child
+                ? "ui.bindings.title"
+                : "ui.settings.title",
         ),
       modal: false,
     });

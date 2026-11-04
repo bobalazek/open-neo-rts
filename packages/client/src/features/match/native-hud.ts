@@ -195,7 +195,7 @@ export function mountNativeMatchHud(
       });
     const details = [
       ...buttons(
-        "[data-order-queue] button,.hud-sites button,[data-requests] button,[data-set-group],[data-add-group]",
+        "[data-order-queue] button,.hud-sites button,[data-requests] button,[data-set-group],[data-add-group],[data-selection-manual]",
       ),
     ];
     const groupIndex = root.querySelector<HTMLSelectElement>("[data-group-index]");
@@ -261,6 +261,22 @@ export function mountNativeMatchHud(
       helpers,
       mapActions,
       notices: buttons(".match-notices button"),
+      guidance: {
+        message: root.querySelector<HTMLElement>("[data-hint]")?.hidden
+          ? ""
+          : [
+              root.querySelector("[data-hint] p")?.textContent,
+              root.querySelector("[data-guidance-error]")?.textContent,
+            ]
+              .filter(Boolean)
+              .join("\n"),
+        actions: buttons("[data-hint] button"),
+        help: Object.fromEntries(
+          [...root.querySelectorAll<HTMLElement>("[data-hud-help]:not([hidden]) li")].map(
+            (node) => [node.dataset.helpRegion!, node.textContent ?? ""],
+          ),
+        ),
+      },
       mode: canvas.dataset.commandMode ? `${modeLabel} · Shift · Esc` : "",
       feedback: [
         root.querySelector<HTMLElement>("[data-result]")?.dataset.feedbackKey === "ui.hud.accepted"

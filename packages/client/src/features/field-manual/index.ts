@@ -2,6 +2,7 @@ import { builtins } from "virtual:debug-builtins";
 import { content } from "virtual:normal-catalog";
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
+import { controlsHelp, readBindings } from "../settings/bindings";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { damageModifiers, type ManualEntry, searchManual } from "./catalog";
 import { inspectManualModel } from "./model";
@@ -12,6 +13,7 @@ export function fieldManual(
   back: () => void,
   canvas?: HTMLCanvasElement,
   update?: () => void,
+  initialEntry?: string,
 ) {
   root.innerHTML = `<!-- THESIS: searchable roster reference, separate from battlefield commands.
 OWN-WORLD: inherited graphite panels, warm metal focus frames, original model icons.
@@ -23,6 +25,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   const section = root.querySelector<HTMLElement>(".manual-screen")!;
   const search = section.querySelector<HTMLInputElement>("input")!;
   const kind = section.querySelector<HTMLSelectElement>("select")!;
+  const concepts = document.createElement("option");
+  concepts.value = "concept";
+  concepts.textContent = text("ui.guidance.concepts");
+  kind.append(concepts);
   const list = section.querySelector<HTMLElement>("[data-panel-list]")!;
   const detail = section.querySelector<HTMLElement>("[data-panel-detail]")!;
   const status = section.querySelector<HTMLElement>('[role="status"]')!;
@@ -46,7 +52,20 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       description: metadata.get(gameplay.id)?.description ?? "",
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
-  let selected = entries[0]?.gameplay.id;
+  const topics = ["economy", "fog", "combat", "controls"].map((id) => ({
+    id: `guide:${id}`,
+    name: text(`ui.guidance.topic-${id}` as "ui.guidance.topic-economy"),
+    body:
+      id === "controls"
+        ? controlsHelp(readBindings())
+        : text(`ui.guidance.topic-${id}-body` as "ui.guidance.topic-economy-body"),
+  }));
+  let selected = [
+    ...entries.map((entry) => entry.gameplay.id),
+    ...topics.map((topic) => topic.id),
+  ].includes(initialEntry ?? "")
+    ? initialEntry
+    : entries[0]?.gameplay.id;
   let native: ReturnType<typeof mountNativePanel> | undefined;
   let closeModel: (() => void) | undefined;
   let disposed = false;
@@ -204,10 +223,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
   function render() {
     const visible = searchManual(entries, search.value, kind.value);
-    if (!visible.some((entry) => entry.gameplay.id === selected))
-      selected = visible[0]?.gameplay.id;
+    const terms = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const guides = ["all", "concept"].includes(kind.value)
+      ? topics.filter((topic) =>
+          terms.every((term) => `${topic.name} ${topic.body}`.toLowerCase().includes(term)),
+        )
+      : [];
+    if (
+      !visible.some((entry) => entry.gameplay.id === selected) &&
+      !guides.some((topic) => topic.id === selected)
+    )
+      selected = visible[0]?.gameplay.id ?? guides[0]?.id;
     list.replaceChildren();
-    if (!visible.length) element("p", text("ui.manual.empty"), list);
+    if (!visible.length && !guides.length) element("p", text("ui.manual.empty"), list);
     for (const entry of visible) {
       const button = document.createElement("button");
       button.type = "button";
@@ -233,8 +261,29 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       });
       list.append(button);
     }
+    for (const topic of guides) {
+      const button = element("button", topic.name, list);
+      button.type = "button";
+      button.className = "save-row";
+      button.dataset.panelEntry = topic.id;
+      button.setAttribute("aria-pressed", String(selected === topic.id));
+      element("small", text("ui.guidance.concepts"), button);
+      button.addEventListener("click", () => {
+        selected = topic.id;
+        render();
+        detail.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+      });
+    }
     show(visible.find((entry) => entry.gameplay.id === selected));
-    status.textContent = text("ui.manual.results", { count: visible.length });
+    const guide = guides.find((topic) => topic.id === selected);
+    if (guide) {
+      element("h2", guide.name).tabIndex = -1;
+      for (const paragraph of guide.body.split("\n")) if (paragraph.trim()) element("p", paragraph);
+      const browse = element("button", text("ui.manual.browse"));
+      browse.type = "button";
+      browse.addEventListener("click", () => search.focus());
+    }
+    status.textContent = text("ui.manual.results", { count: visible.length + guides.length });
     changed();
   }
   section.querySelector("[data-back]")!.addEventListener("click", back, { signal: abort.signal });
@@ -250,6 +299,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       title: () => text("ui.manual.title"),
       modal: false,
     });
+  if (initialEntry && selected === initialEntry) {
+    const heading = detail.querySelector<HTMLElement>("h2");
+    heading?.focus({ preventScroll: true });
+    if (!root.closest(".native-panel")) heading?.scrollIntoView({ block: "start" });
+  }
   return () => {
     if (disposed) return;
     disposed = true;

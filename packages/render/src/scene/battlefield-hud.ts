@@ -63,6 +63,11 @@ export interface BattlefieldHudContent {
   notices: readonly BattlefieldAction[];
   mode: string;
   feedback: string;
+  guidance?: {
+    message: string;
+    actions: readonly BattlefieldAction[];
+    help: Readonly<Record<string, string>>;
+  };
 }
 
 /** Scene-owned command station. Controllers supply copied labels, pixels and validated callbacks. */
@@ -136,6 +141,36 @@ export function createBattlefieldHud(
   const mode = text("active command", 13, "#ddc382");
   const feedback = text("match feedback", 13, "#eff1e9");
   feedback.textWrapping = true;
+  const hintFrame = frame("contextual guidance");
+  hintFrame.isVisible = false;
+  const hintText = text("contextual hint", 13, "#eff1e9", hintFrame);
+  hintText.textWrapping = true;
+  const helpLabels = new Map<string, Rectangle>();
+  function helpLabel(id: string, x: number, y: number, width: number) {
+    const value = content?.guidance?.help[id];
+    if (!value) return;
+    let box = helpLabels.get(id);
+    if (!box) {
+      box = frame(`HUD help ${id}`);
+      box.isPointerBlocker = box.isHitTestVisible = false;
+      box.color = "#ddc382";
+      const label = text(`HUD help ${id} label`, 12, "#eff1e9", box);
+      label.textWrapping = true;
+      helpLabels.set(id, box);
+    }
+    const label = box.children[0] as TextBlock;
+    label.text = value;
+    const h = Math.max(28, heightFor(value, width - 16, 12) + 12);
+    place(
+      box,
+      Math.max(8, Math.min(x, canvas.clientWidth - width - 8)),
+      Math.max(42, Math.min(y, canvas.clientHeight - h - 8)),
+      width,
+      h,
+    );
+    place(label, 8, 6, width - 16, h - 12);
+    box.isVisible = true;
+  }
   const tooltip = frame("command tooltip", gui);
   tooltip.isHitTestVisible = false;
   tooltip.isPointerBlocker = false;
@@ -353,6 +388,7 @@ export function createBattlefieldHud(
   }
   function layout() {
     if (!content) return;
+    for (const box of helpLabels.values()) box.isVisible = false;
     const width = canvas.clientWidth,
       height = canvas.clientHeight;
     gui.idealWidth = width;
@@ -390,7 +426,10 @@ export function createBattlefieldHud(
       ? Math.ceil(content.resources.length / Math.max(1, economyColumns)) * 26 + 8
       : content.resources.length * 26 + 12;
     const economyY = compact
-      ? (hasSelection ? dockY : height - 12) - economyHeight - 8
+      ? (hasSelection ? dockY : height - 12) -
+        economyHeight -
+        8 -
+        (hasSelection && content.guidance?.help.selection ? 72 : 0)
       : height - economyHeight - 12;
     const mapY = compact ? economyY - mapSize - 42 : height - mapSize - 40;
     mapBounds = { x: mapX, y: mapY, size: mapSize };
@@ -597,6 +636,40 @@ export function createBattlefieldHud(
         30,
       );
     });
+    const guidance = content.guidance;
+    hintFrame.isVisible = !!guidance?.message;
+    if (guidance?.message) {
+      const hintWidth = Math.min(460, width - 24);
+      const hintHeight = heightFor(guidance.message, hintWidth - 24, 13) + 54;
+      const hintY = topHeight + 42 + Math.min(72, heightFor(content.feedback, width - 32, 13));
+      place(hintFrame, 12, hintY, hintWidth, hintHeight);
+      hintText.text = guidance.message;
+      place(hintText, 12, 8, hintWidth - 24, hintHeight - 48);
+      guidance.actions.forEach((action, i) => {
+        position(
+          action,
+          24 + (i * (hintWidth - 36)) / 2,
+          hintY + hintHeight - 34,
+          (hintWidth - 44) / 2,
+          28,
+        );
+      });
+      layoutRects.push({ x: 12, y: hintY, width: hintWidth, height: hintHeight });
+    }
+    if (guidance && Object.keys(guidance.help).length) {
+      helpLabel("objective", 12, 44, compact ? 142 : 210);
+      helpLabel("status", compact ? 12 : width / 2 - 90, compact ? 106 : 44, compact ? 142 : 180);
+      helpLabel("global", width - 198, 44, 186);
+      helpLabel("economy", 12, economyY - 76, compact ? 200 : 132 * scale);
+      helpLabel("groups", 12, helperY - 112, 170);
+      helpLabel("map", mapX, mapY - 62, mapSize);
+      if (hasSelection) {
+        helpLabel("selection", dockX, dockY - 64, compact ? 142 : 184);
+        helpLabel("commands", compact ? width - 202 : dockX + 196 * scale, dockY - 64, 190);
+      }
+      if (content.notices.length)
+        helpLabel("notices", width - 272, Math.max(156, mapY - 38 * noticeCount - 64), 260);
+    }
     show(inspector, showDetails);
     if (showDetails) {
       const inspectWidth = Math.min(480, width - 24);
@@ -648,6 +721,7 @@ export function createBattlefieldHud(
       ...next.helpers,
       ...next.mapActions,
       ...next.notices,
+      ...(next.guidance?.message ? next.guidance.actions : []),
     ];
     const key = JSON.stringify([
       all.map((action) => [action.id, action.image]),

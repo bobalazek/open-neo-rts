@@ -196,20 +196,7 @@ export function createInGameMenu(
     const manual = document.createElement("button");
     manual.type = "button";
     manual.textContent = text("ui.manual.title");
-    manual.addEventListener("click", () => {
-      pane = "manual";
-      cleanupPane = fieldManual(
-        body!,
-        () => {
-          menu();
-          focus();
-        },
-        undefined,
-        present,
-      );
-      focus();
-      present();
-    });
+    manual.addEventListener("click", () => manualPane());
     body!.querySelector("nav")?.append(manual);
     for (const topic of ["objectives", "keys"] as const)
       body!.querySelector(`[data-${topic}]`)?.addEventListener("click", () => {
@@ -252,6 +239,22 @@ export function createInGameMenu(
     );
     update();
   }
+  function manualPane(definition?: string) {
+    cleanupPane?.();
+    pane = "manual";
+    cleanupPane = fieldManual(
+      body!,
+      () => {
+        menu();
+        focus();
+      },
+      undefined,
+      present,
+      definition,
+    );
+    if (!body!.contains(document.activeElement)) focus();
+    present();
+  }
   async function resume() {
     await run(async () => {
       if (!ended()) await options.pause(false);
@@ -287,6 +290,18 @@ export function createInGameMenu(
   signal.addEventListener("abort", dispose, { once: true });
   return {
     open,
+    async openManual(definition?: string) {
+      await open();
+      if (
+        !disposed &&
+        dialog.open &&
+        !pending &&
+        pane === "menu" &&
+        options.state()?.paused &&
+        !ended()
+      )
+        manualPane(definition);
+    },
     update,
     finish,
     isOpen: () => dialog.open || !!exit,

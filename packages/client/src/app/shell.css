@@ -1321,3 +1321,19 @@ canvas[data-command-mode] {
   outline: 1px solid #ddc382;
   outline-offset: -1px;
 }
+.match-guidance {
+  max-width: 32rem;
+}
+.match-guidance [data-hint],
+.match-guidance [data-hud-help] {
+  padding: 0.75rem;
+  background: #182126;
+  color: #eff1e9;
+  border: 1px solid #475354;
+}
+.match-guidance [data-hint] p {
+  margin: 0 0 0.5rem;
+}
+.match-guidance [data-guidance-error] {
+  display: block;
+}

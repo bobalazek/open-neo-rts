@@ -76,11 +76,20 @@ The timeline explicitly participates in sequential keyboard focus after speed an
 vision, retaining its native focus frame.
 
 Field Manual extends the same gallery with original actor icons, searchable
-roster rows and compiled-statistic tables. Desktop gives the selected entry the
-larger reading column; narrow layouts stack. An isolated original-model orbit
+roster rows, four concept/control entries and compiled-statistic tables. Desktop
+gives the selected entry the larger reading column; narrow layouts stack.
+Contextual links focus and reveal the actual entry at the top of the reading
+viewport, preserving the paused match. An isolated original-model orbit
 view pairs the real GLB with native controls, using the existing graphite,
 ivory, warm-metal and blue Force tokens. Idle animation respects either reduced
 motion preference. The embedded pane preserves the paused battlefield.
+
+Contextual guidance extends the native HUD and Settings without changing the
+visual world. Optional labels name active HUD regions; one brief hint drawn from
+permitted observations offers More and Dismiss below global feedback. Existing
+individual action descriptions remain on hover/focus. Guidance preferences and
+history reset stay staged until Apply in the shared native panel. Reference links
+reuse the paused menu and manual rather than adding a teaching overlay.
 
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
 results, local Replays, Field Manual and native normal match HUD. Debug retains HTML/CSS presentation; native
@@ -97,9 +106,12 @@ evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `src/features/match/native-hud.ts`
 and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`,
 `src/features/replays/`, `../render/src/scene/replay-hud.ts`,
-`src/features/field-manual/` and `src/app/shell.css`. Field Manual's local direction
+`src/features/field-manual/`, `src/features/onboarding/`,
+`src/features/settings/guidance-screen.ts` and `src/app/shell.css`. Field Manual's local direction
 is the emitted comment in `src/features/field-manual/index.ts`; it extends the
-incumbent world rather than defining a new one.
+incumbent world rather than defining a new one. Contextual guidance's emitted
+contract is in `src/features/onboarding/match.ts`; its Operate direction is
+recorded in `.impeccable/surfaces/src-features-onboarding-match-ts.md`.
 
 **Key Characteristics:**
 
@@ -120,6 +132,7 @@ incumbent world rather than defining a new one.
 - Native loading with actual stage progress, cancellation and explicit recovery.
 - Native local Replay library and read-only playback with synchronized keyboard focus.
 - Native Field Manual with original icons, compiled facts and isolated model inspection.
+- Optional native HUD region labels and one observed-context hint with a direct reference link.
 
 ## Colors
 
@@ -333,7 +346,9 @@ Field Manual alone splits the gallery's available column space 32%/68%, after
 the shared 32px scaled gap, at the same 760px scaled inner-width threshold.
 Narrower views place selected details after the roster. Search and category
 stay before those columns; selection reveals the focused detail heading, while
-Return to roster restores search focus. The full-viewport model inspector places
+Back to search restores search focus. Contextual entry links align that heading
+to the top of the reading viewport even when all 19 entries remain in the narrow
+stacked list. The full-viewport model inspector places
 native controls in a left region bounded by 400px or 45vw, with the orbit scene
 alongside it. At widths of 640px or less, controls move above the scene in a region
 bounded by 320px or 45dvh. The shared panel's existing viewport scale clamp still
@@ -445,11 +460,31 @@ the text leaves space for that disclosure mark.
   Current controls preserves the complete existing help copy, with height derived
   from actual wrapping rather than an estimated character count.
 - **Field Manual gallery:** original-icon roster buttons reuse selected warm wells
-  and synchronized ivory focus frames. Search and Units/Structures choices use
-  the shared editor/choice bridge. Compiled facts use existing rich tables;
+  and synchronized ivory focus frames. Search and All entries, Units, Structures
+  and Concepts and controls choices use the shared editor/choice bridge. Four
+  guide entries explain economy, fog, combat and the current binding profile;
+  their titles and body text participate in search. Compiled actor facts use existing rich tables;
   expandable armour-multiplier controls retain target and final-damage caveats.
   Produces/Builds relationships are filtered to the current roster. Selecting a
-  row focuses and reveals the detail heading; Return to roster focuses search.
+  row focuses and reveals the detail heading; contextual links align it at the
+  viewport top. Back to search focuses search.
+- **Contextual guidance:** one graphite hint frame uses existing ivory body copy
+  and framed More/Dismiss actions beneath global feedback. It fits wrapped text
+  and the viewport; optional help labels replace the hint while enabled. Labels
+  cover active regions only, including selection/commands only when selected and
+  notices only when present. They do not create an empty station. Existing
+  individual action hover/focus descriptions remain available. Hint More and a
+  supported selection's Details link open its actual manual reference through
+  the paused menu, preserving the worker and current paused selection target.
+- **Guidance Settings:** the shared native panel stages All/Important/Off and
+  Show hints again until Apply, with Back, visible status and actual storage
+  errors. Important is the provisional default. Browser-local history records
+  four observed-context hints once each; at least 20 simulation seconds separate
+  hints. Important excludes the idle-builder hint. A failed history write exposes
+  session-only retention rather than claiming durable storage.
+  The weapon-bonus hint means a visible enemy weapon has an authored damage
+  multiplier above 100% against an owned actor's armour; it does not promise a
+  universal counter or final damage.
 - **Field Manual model inspector:** the real installed GLB occupies a separate
   orbit/zoom scene, with square native controls beside or above it. Existing blue
   Force color is the preview color; there is no color control. Loading and actual
