@@ -598,6 +598,7 @@ export function createEntityPresentation(
           !!live &&
           !live.disabled &&
           (live.constructionOrder?.state === "working" ||
+            !!live.buildTarget ||
             live.repairOrder?.state === "working" ||
             live.salvageOrder?.state === "working" ||
             !!live.workAnimation);

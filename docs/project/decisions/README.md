@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Visible public construction effects](./2026-11-04-public-construction-effects.md) — Public tool poses and existing original work audio for currently visible builder/site pairs, without economic details.
+
 - [Browser definition authoring](./2026-11-04-browser-definition-authoring.md)
 
 - [2026-11-04 — Model-first content tools](./2026-11-04-model-inspection-tools.md) — Inspect installed/local models, actual presentation controls and shared project checks; editing and draft playtests remain named follow-ups.

@@ -252,6 +252,74 @@ test("authored anti-air clips decode and play from permitted presentation fixtur
     .toBe("closed");
 });
 
+test("a visible enemy bot exposes public work and plays original audio without economic grants", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const candidate = structuredClone(setup);
+  if (!candidate.normal) throw new Error("Missing original normal setup");
+  candidate.normal = {
+    ...candidate.normal,
+    bots: candidate.normal.bots?.filter((bot) => bot.force === 1),
+    settings: { ...candidate.normal.settings, fog: "off" },
+  };
+  candidate.map = {
+    ...flatMap(48),
+    spawns: [
+      { id: "north-west", position: [12 * 1024, 12 * 1024], facing: 16384 },
+      { id: "south-east", position: [30 * 1024, 12 * 1024], facing: 49152 },
+    ],
+    resources: [{ kind: "ore", position: [20 * 1024, 20 * 1024], amount: 5000, radius: 1 }],
+  };
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("http://combat-audio.test/");
+  await page.evaluate(async (setup) => {
+    const url = "/combat-audio-proof.js";
+    const { mount } = (await import(url)) as typeof import("./combat-audio-proof");
+    mount(setup);
+  }, candidate);
+  await page.getByRole("button", { name: "Start combat audio" }).click();
+  await expect(page.getByRole("button", { name: "Combat audio ready" })).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const f = Reflect.get(window, "combatAudio");
+    let observed = false,
+      completed = false;
+    let target: string | undefined;
+    for (let tick = 0; tick < 1600 && !completed; tick++) {
+      await f.step();
+      const entities: import("../../../packages/sim/src").PresentedEntity[] =
+        f.state().snapshot.entities;
+      const builder = entities.find((entity) => entity.force === 1 && entity.buildTarget);
+      if (builder) {
+        const site = entities.find((entity) => entity.handle === builder.buildTarget);
+        if (
+          !site?.constructionSite ||
+          site.force !== 1 ||
+          site.construction ||
+          builder.constructionOrder
+        )
+          throw new Error("Public work revealed invalid or private construction data");
+        target ??= site.handle;
+        observed = true;
+      }
+      if (target)
+        completed = entities.some((entity) => entity.handle === target && !entity.constructionSite);
+    }
+    return { observed, completed };
+  });
+  expect(result).toEqual({ observed: true, completed: true });
+  for (const clip of ["field-technician.build-", "field-technician.build_complete-"])
+    await expect
+      .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").played))
+      .toEqual(expect.arrayContaining([expect.stringContaining(clip)]));
+  await page.evaluate(() => Reflect.get(window, "combatAudio").dispose());
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").engine.state))
+    .toBe("closed");
+  expect(errors).toEqual([]);
+});
+
 test("original construction and hauling audio follows real build, mine and unload work", async ({
   page,
 }) => {

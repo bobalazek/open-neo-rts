@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
 import type { Grant } from "../commands";
 import {
+  BuilderConstruction,
+  ConstructionApproach,
   ConstructionProgress,
   ConstructionSite,
   constructionStage,
@@ -128,6 +130,60 @@ function fixture(shared = false) {
   const projection = createProjection(setup, 1, "controlled");
   return { kernel, setup, scout, ally, enemy, hidden, factory, spawn, refresh, projection };
 }
+
+test("visible active builders expose only a public tool target, never private work or hidden associations", () => {
+  const f = fixture();
+  const world = f.kernel.world;
+  world.add(f.factory, ConstructionSite);
+  world.add(f.factory, ConstructionProgress, { completedTicks: 3, buildersWorking: 1 });
+  world.add(f.enemy, BuilderConstruction, { target: f.factory });
+  world.add(f.enemy, ConstructionApproach, {
+    site: f.factory,
+    state: 1,
+    x: world.get(f.enemy, Transform, "x"),
+    y: world.get(f.enemy, Transform, "y"),
+  });
+  const pose = () => {
+    const view = f.projection.snapshot(f.kernel);
+    const builder = view.entities.find(
+      (entity) => entity.force === 3 && entity.definition === definitions[1]!.id,
+    );
+    const site = view.entities.find((entity) => entity.definition === definitions[2]!.id);
+    expect(builder?.constructionOrder).toBeUndefined();
+    expect(site?.construction).toBeUndefined();
+    return { view, builder, site };
+  };
+  const first = pose();
+  expect(first.builder?.buildTarget).toBe(first.site?.handle);
+  expect(first.builder?.buildTarget).toBeDefined();
+  const hash = checkpointHash(f.kernel);
+  pose();
+  expect(checkpointHash(f.kernel)).toBe(hash);
+  world.set(f.factory, ConstructionProgress, "buildersWorking", 0);
+  expect(pose().builder?.buildTarget).toBeUndefined();
+  world.set(f.factory, ConstructionProgress, "buildersWorking", 1);
+  world.set(f.enemy, ConstructionApproach, "state", 0);
+  expect(pose().builder?.buildTarget).toBeUndefined();
+  world.set(f.enemy, ConstructionApproach, "state", 1);
+  world.add(f.enemy, MoveIntent, { x: 12 * 1024, y: 8 * 1024 });
+  expect(pose().builder?.buildTarget).toBeUndefined();
+  world.remove(f.enemy, MoveIntent);
+  world.set(f.enemy, ConstructionApproach, "x", 12 * 1024);
+  expect(pose().builder?.buildTarget).toBeUndefined();
+  world.set(f.enemy, ConstructionApproach, "x", world.get(f.enemy, Transform, "x"));
+  world.set(f.factory, Transform, "x", 35 * 1024);
+  world.set(f.factory, Transform, "y", 35 * 1024);
+  f.refresh();
+  const hiddenSite = pose();
+  expect(hiddenSite.builder).toBeDefined();
+  expect(hiddenSite.builder?.buildTarget).toBeUndefined();
+  expect(hiddenSite.site).toBeUndefined();
+  expect(hiddenSite.view.ghosts?.some((ghost) => "buildTarget" in ghost)).toBe(false);
+  world.set(f.scout, Transform, "x", 20 * 1024 + 512);
+  world.set(f.scout, Transform, "y", 20 * 1024 + 512);
+  f.refresh();
+  expect(pose().builder).toBeUndefined();
+});
 
 test("normal controlled snapshots expose only own and sight-visible entities, copied group fog, and scoped private data", () => {
   const f = fixture(true);

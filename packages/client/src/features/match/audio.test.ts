@@ -329,3 +329,54 @@ test("construction clicks follow actual site progress once per site and chime on
   expect(f.played.filter((p) => p.source === "/complete.ogg")).toHaveLength(1);
   f.audio.dispose();
 });
+
+test("public visible construction needs no private order/progress, deduplicates builders and revokes stopped or hidden work", () => {
+  const f = workFixture();
+  const builders = ["b1", "b2"].map((id) => ({
+    ...worker(id, "builder"),
+    force: 1,
+    buildTarget: "s1",
+  }));
+  const site = {
+    ...worker("s1", "structure"),
+    force: 1,
+    x: 1536,
+    constructionSite: true as const,
+    constructionStage: 20,
+  };
+  const complete = { ...worker("s1", "structure"), force: 1, x: 1536 };
+  f.accept(0, [...builders, site]);
+  f.accept(1, [...builders, site]);
+  f.accept(1, [...builders, site]);
+  f.accept(12, [...builders, site]);
+  f.accept(13, [...builders, { ...site, constructionStage: 30 }]);
+  expect(f.played.map((cue) => cue.source)).toEqual(["/build.ogg", "/build.ogg"]);
+  expect(f.played[0]?.options.position).toEqual({ x: 3, y: 0, z: 1 });
+  f.accept(14, [...builders.map(({ buildTarget: _, ...builder }) => builder), site]);
+  expect(f.disposed).toContain(1);
+  f.accept(15, [complete]);
+  expect(f.played).toHaveLength(2);
+  f.accept(16, [...builders, site]);
+  f.accept(17, [complete]);
+  f.accept(17, [complete]);
+  expect(f.played.map((cue) => cue.source)).toEqual([
+    "/build.ogg",
+    "/build.ogg",
+    "/build.ogg",
+    "/complete.ogg",
+  ]);
+  f.accept(18, [...builders, site]);
+  f.accept(18, [...builders, site], true, false);
+  expect(f.disposed).toContain(3);
+  f.accept(19, [complete]);
+  expect(f.played.filter((cue) => cue.source === "/complete.ogg")).toHaveLength(1);
+  f.accept(20, [...builders, site]);
+  f.accept(21, [{ ...complete, force: 2 }]);
+  f.accept(22, [...builders, site]);
+  f.accept(23, [complete], false);
+  f.accept(24, [...builders, site]);
+  f.accept(24, [...builders.map(({ buildTarget: _, ...builder }) => builder), site]);
+  f.accept(25, [complete]);
+  expect(f.played.filter((cue) => cue.source === "/complete.ogg")).toHaveLength(1);
+  f.audio.dispose();
+});
