@@ -3,7 +3,7 @@
 version: 1
 slug: "src-features-content-editor-index-ts"
 primary_target: "src/features/content-editor/index.ts"
-related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/content-editor/skirmish-playtest.ts", "src/features/match/session.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts"]
+related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/content-editor/skirmish-playtest.ts", "src/features/match/session.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts", "../render/src/units/preview-actions.ts", "src/locales/en.json"]
 ---
 
 # Model-first content tools
@@ -45,7 +45,7 @@ input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
 Full runtime audio, source freshness and exact formatter parity remain explicit
 2-38b2 work before the whole 2-38b task can close. Broader authored opponent/map
-presets and isolated weapon/destruction previews remain 2-38c2;
+presets remain 2-38c2;
 asset editing remains 2-38d.
 
 ## Sibling-definition creation extension
@@ -101,8 +101,8 @@ definitions and commands. Copy initial setup link is disabled because a URL
 cannot carry the unsaved draft or models; export is a simulation reproduction,
 not an asset pack.
 
-Broader authored opponent/map presets and isolated weapon/destruction previews
-remain 2-38c2; the whole 2-38c task is unfinished. Native debug conversion,
+Broader authored opponent/map presets remain 2-38c2; the whole 2-38c task is
+unfinished. Native debug conversion,
 2-38b2 parity and asset editing retain their separate scope. The decision is
 `../../../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 
@@ -138,7 +138,44 @@ actor stats, recipes and help use the draft catalog.
 
 Chrome and WebKit journeys and their desktop/narrow captures support this
 bounded integration. Full runtime audio/source/formatter parity remains 2-38b2;
-broader authored opponent/map presets and isolated weapon/destruction previews
-remain 2-38c2, and asset gizmos remain 2-38d. This does not close the whole
+broader authored opponent/map presets remain 2-38c2, and asset gizmos remain
+2-38d. This does not close the whole
 editor/playtest task. The decision is
 `../../../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
+
+## Isolated model-action extension
+
+Fire, Destroy and Restore model extend the same code-led Operate pane so authors
+can check an original model's socket direction, recoil and destruction without
+entering a match. The story is selected/Preview model snapshot → Fire or Destroy
+→ Restore model or failed-pair Retry. The incumbent model-left/native-pane-right
+desktop layout stacks when narrow. Framed actions remain visible while editing;
+hover/focus explains their limits. Original brick geometry and the existing
+Graphite Command Stations palette, Arial ramp and controls remain authoritative.
+There is no new seed, composition, raster, font or decorative motion; the requested
+effects are functional and explicit. Editing a field alone does not apply it:
+unsaved data enters these actions only through Preview model.
+
+Fire resolves raw weapon-assigned socket names and their suffixed nodes, or muzzle
+sockets for standalone art, then uses available `fire_recoil`/`attack`. A short
+flash and fixed model-relative +Z tracer show actual socket direction without
+audio, gameplay range or simulation. Destroy plays the full authored death clip
+or scatters at most 32 visible original geometry pieces before revealing the
+paired wreck. Matching driven turret/barrel aiming carries relative to rest,
+preserving the wreck's authored tilt and non-part geometry. Unpaired standalone
+art disappears after its effect. Restore clears effects and returns to rest,
+retaining team, LOD and damage choices.
+
+The bounded self-contained inspections gate both live and wreck bytes. Staged
+model/wreck loads replace the view together; failed or superseded pairs preserve
+the last good model and Retry. Replacement/disposal releases owned meshes,
+materials and containers. Retained draft playtests pause the effect clock rather
+than letting it advance offscreen. Shared no-options preview callers remain
+compatible. No source, save, normal match or simulation state changes.
+
+This closes only isolated firing/destruction within 2-38c2. Broader authored
+opponent/map presets, full 2-38b2 validation/formatter parity and 2-38d socket/part
+gizmos, GLB export and damage-socket smoke/fire previews remain open. Current
+Chrome/WebKit browser checks do not qualify Firefox, physical touch/IME, screen
+readers or hardware FPS. The decision is
+`../../../../docs/project/decisions/2026-11-04-model-action-previews.md`.

@@ -208,8 +208,27 @@ source.
   validation-kind help use contextual hover/focus descriptions, and the model
   canvas names orbit, zoom and drop interactions. Existing interface scale and
   semantic HTML/fallback remain in use. Grid/scale reference, gizmos, material
-  mappings and weapon effects/destruction remain follow-up work. This does not complete the
+  mappings remain follow-up work. This does not complete the
   content editor; see `../../docs/project/decisions/2026-11-04-model-inspection-tools.md`.
+- Fire, Destroy and Restore model provide the isolated firing/destruction slice
+  of 2-38c2 in the same native pane, including while editing. Actions use the
+  loaded snapshot; unsaved fields apply only after Preview model. Fire resolves
+  authored assigned sockets (or standalone muzzle sockets), plays available
+  `fire_recoil`/`attack` and shows a short flash plus fixed model-relative +Z
+  tracer. It demonstrates socket direction without audio, gameplay range or
+  combat simulation. Destroy plays the complete authored death clip or scatters
+  at most 32 visible original geometry pieces before showing the paired wreck.
+  Matching driven turret/barrel pivots carry aiming relative to rest, preserving
+  authored wreck tilt and other geometry. Standalone art without a wreck
+  disappears after its effect. Restore returns to rest with team, LOD and damage
+  choices retained. The inspected model/wreck pair replaces the old view only
+  together; failure or supersession retains the last good view and Retry.
+  Replacement/disposal releases owned effects and paired containers; retained
+  editor playtests pause the effect clock. No sources, saves, normal matches or
+  simulation state change. Broader authored opponent/map presets remain 2-38c2;
+  full 2-38b2 validation/formatter parity and 2-38d socket/part gizmos, GLB export
+  and damage-socket smoke/fire previews stay open. See
+  `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 - The same model-first tool includes 2-38b1 editing of existing unit, structure
   and prop definitions from owner-selected pack folders. Opened packs supply
   dependencies. Schema-derived scalar, enum, boolean, nested object, record and
@@ -298,8 +317,8 @@ source.
   Launch eligibility does not guarantee every edited recipe or movement domain
   can execute: normal engine validation still rejects incompatible commands.
   Focused Chrome and WebKit journeys cover this bounded flow; they do not close
-  the whole 2-38c task. Broader authored opponent/map presets and isolated
-  weapon/destruction previews remain 2-38c2; full 2-38b2 parity and 2-38d asset
+  the whole 2-38c task. Broader authored opponent/map presets remain 2-38c2;
+  full 2-38b2 parity and 2-38d asset
   gizmos remain open. See
   `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,

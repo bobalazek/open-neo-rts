@@ -1,6 +1,70 @@
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { contentToolsFixture } from "./content-tools-fixture";
+import { nativeFrame } from "./native-paint";
+
+test("model actions fire, destroy and restore original paired models while retaining good art after a failed pair", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto("/tools/content?model=core.unit:eastern-collective/dragon-tank");
+  const world = page.locator("#game");
+  await expect(world).toHaveAttribute("data-model", "Dragon Tank", { timeout: 30000 });
+  const fire = page.getByRole("button", { name: "Fire", exact: true });
+  const destroy = page.getByRole("button", { name: "Destroy", exact: true });
+  const restore = page.getByRole("button", { name: "Restore model", exact: true });
+  await expect(fire).toBeEnabled();
+  const live = await world.screenshot();
+  await destroy.press("Enter");
+  await expect(fire).toBeDisabled();
+  await expect(destroy).toBeDisabled();
+  await page.waitForTimeout(850);
+  expect(await world.screenshot()).not.toEqual(live);
+  await restore.press("Enter");
+  await expect(fire).toBeEnabled();
+  expect(await world.screenshot()).toEqual(live);
+  await fire.press("Enter");
+  await page.waitForTimeout(350);
+  await restore.press("Enter");
+  await world.click();
+  await expect(world).toBeFocused();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("model-actions-desktop.png") });
+  await destroy.press("Enter");
+  // Bun serves hashed asset names; fail the paired wreck after the new live model request.
+  const rubble = /\.glb(?:\?|$)/;
+  let requested = 0;
+  await page.route(rubble, (route) =>
+    ++requested === 2 ? route.fulfill({ body: "broken" }) : route.continue(),
+  );
+  await page
+    .getByLabel("Installed definition", { exact: true })
+    .selectOption("core.structure:eastern-collective/industrial-reactor");
+  await expect(page.getByRole("alert")).toContainText("previous model");
+  expect(requested).toBe(2);
+  await expect(world).toHaveAttribute("data-model", "Dragon Tank");
+  await expect(fire).toBeDisabled();
+  await expect(destroy).toBeDisabled();
+  await restore.press("Enter");
+  await expect(fire).toBeEnabled();
+  await page.unroute(rubble);
+  const retry = page.getByRole("button", { name: "Retry loading", exact: true });
+  await expect(retry).toBeEnabled();
+  await retry.press("Enter");
+  await expect(world).toHaveAttribute("data-model", "Industrial Reactor");
+  await expect(fire).toBeDisabled();
+  await destroy.press("Enter");
+  await page.waitForTimeout(850);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await restore.focus();
+  await world.click();
+  await expect(world).toBeFocused();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("model-actions-mobile.png") });
+  await restore.press("Enter");
+  await expect(destroy).toBeEnabled();
+  await expect(page.getByRole("alert")).toBeEmpty();
+});
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
