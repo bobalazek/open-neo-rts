@@ -4,6 +4,7 @@ import { createModelPreview } from "@open-neo-rts/render";
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
 import { applyInterfaceScale, readDeviceSettings } from "../settings";
+import { mountDefinitionEditor } from "./definition-editor";
 import { inspectModel, installedModel, MODEL_FILE_LIMIT } from "./model";
 
 /** Model-first content tools; definition writes and draft playtests have separate owners. */
@@ -14,7 +15,7 @@ export function startContentTools(canvas: HTMLCanvasElement) {
   root.className = "content-tools";
   root.innerHTML = `<!-- THESIS: inspect original model behaviour and actual validator output before entering a match.
 OWN-WORLD: inherited graphite command stations, original brick subjects, native framed controls.
-STORY: find an installed asset or open a local GLB, change team/clip/LOD/health, inspect checks.
+STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery and explicit save/download.
 FIRST VIEWPORT: the model owns the desktop left; a scrolling native tool pane sits right, below the model when narrow.
 FORM: code-led Operate extension of existing native panels and the documented model-first tool.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
@@ -63,6 +64,45 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     help.hidden = true;
   const checks = root.querySelector<HTMLElement>("[data-model-checks]")!;
   checks.setAttribute("data-panel-content", "");
+  const semantics = root.querySelector("section")!;
+  const edit = document.createElement("button");
+  edit.type = "button";
+  edit.textContent = text("ui.editor.edit");
+  edit.setAttribute("data-panel-footer", "");
+  semantics.append(edit);
+  let editor: ReturnType<typeof mountDefinitionEditor> | undefined;
+  let restoreEditor: (() => void) | undefined;
+  edit.addEventListener(
+    "click",
+    () => {
+      if (editor) return;
+      const previous = [...semantics.children].map(
+        (element) => [element as HTMLElement, (element as HTMLElement).hidden] as const,
+      );
+      for (const [element] of previous)
+        if (element.tagName !== "HEADER" && element !== error) element.hidden = true;
+      checks.removeAttribute("data-panel-content");
+      editor = mountDefinitionEditor(semantics, {
+        initialId: opened?.raw?.id as string | undefined,
+        update: () => panel.update(),
+        preview: async (value) => {
+          selected = undefined;
+          definition.selectedIndex = -1;
+          await load(async () => value);
+        },
+      });
+      restoreEditor = () => {
+        editor?.dispose();
+        editor = undefined;
+        checks.setAttribute("data-panel-content", "");
+        for (const [element, hidden] of previous) element.hidden = hidden;
+        restoreEditor = undefined;
+        panel.update();
+      };
+      panel.update();
+    },
+    { signal: events.signal },
+  );
   const entries = builtins
     .map((entry) => {
       const raw = entry.raw as Record<string, unknown>;
@@ -241,6 +281,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     panel.update();
   }
   function open(file: File) {
+    if (editor) return;
     pending = () =>
       load(async () => {
         if (!file.name.toLowerCase().endsWith(".glb") || file.size > MODEL_FILE_LIMIT)
@@ -256,6 +297,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   root.querySelector("[data-back]")!.addEventListener(
     "click",
     () => {
+      if (editor) {
+        if (editor.canReplace()) restoreEditor?.();
+        return;
+      }
       location.href = "/";
     },
     { signal: events.signal },
@@ -335,6 +380,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       disposed = true;
       request++;
       events.abort();
+      editor?.dispose();
       fetching?.abort();
       preview?.dispose();
       panel.dispose();

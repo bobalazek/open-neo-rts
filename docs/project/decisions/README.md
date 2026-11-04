@@ -1,5 +1,7 @@
 # Decisions
 
+- [Browser definition authoring](./2026-11-04-browser-definition-authoring.md)
+
 - [2026-11-04 — Model-first content tools](./2026-11-04-model-inspection-tools.md) — Inspect installed/local models, actual presentation controls and shared project checks; editing and draft playtests remain named follow-ups.
 
 - [2026-11-04 — Contextual guidance](./2026-11-04-contextual-guidance.md) — Once-per-browser-profile hints, native HUD help, contextual manual links and implemented concept/control pages.

@@ -101,6 +101,7 @@ export function mountNativePanel(
     });
     const notices = (role: string) =>
       [...semantics.querySelectorAll(`[role="${role}"]`)]
+        .filter(visiblePanelElement)
         .map((node) => node.textContent?.trim())
         .filter(Boolean)
         .join(" · ");

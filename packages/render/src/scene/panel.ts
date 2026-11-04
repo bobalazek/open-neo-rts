@@ -202,10 +202,16 @@ export async function createPanelScene(
     const width = Math.min(340 * scale, canvas.clientWidth - 24);
     const height = textHeight(value, width - 24, 13 * scale) + 24;
     const below = anchor.centerY + anchor.heightInPixels / 2 + 8;
+    const bottom =
+      anchor.parent === body
+        ? scroll.topInPixels + scroll.heightInPixels
+        : canvas.clientHeight - 12;
+    const top =
+      below + height <= bottom ? below : anchor.centerY - anchor.heightInPixels / 2 - height - 8;
     place(
       tooltip,
       Math.max(12, Math.min(canvas.clientWidth - width - 12, anchor.centerX - width / 2)),
-      Math.max(12, Math.min(canvas.clientHeight - height - 12, below)),
+      Math.max(12, Math.min(canvas.clientHeight - height - 12, top)),
       width,
       height,
     );
@@ -662,13 +668,17 @@ export async function createPanelScene(
   function focus(id?: string) {
     gui.focusedControl = null;
     highlight(id);
-    const widget = widgets.find((widget) => widget.field.id === id);
-    if (widget) describe(widget.field.tooltip, widget.input);
-    else {
-      const index = actions.findIndex((action) => action.name === id);
-      if (index >= 0) describe(content.actions[index]?.tooltip, actions[index]!);
-      else tooltip.isVisible = false;
-    }
+    tooltip.isVisible = false;
+    // Reveal changes scroll position; focus help needs the next measured control bounds.
+    scene.onAfterRenderObservable.addOnce(() => {
+      if (disposed || focused !== id) return;
+      const widget = widgets.find((widget) => widget.field.id === id);
+      if (widget) describe(widget.field.tooltip, widget.input);
+      else {
+        const index = actions.findIndex((action) => action.name === id);
+        if (index >= 0) describe(content.actions[index]?.tooltip, actions[index]!);
+      }
+    });
   }
   function highlight(id?: string) {
     focused = id;
