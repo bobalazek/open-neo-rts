@@ -25,7 +25,6 @@ import {
   saveCompatibility,
   saveMapHash,
   saveStore,
-  saveThumbnail,
 } from "../load-game";
 import { createMatchGuidance } from "../onboarding/match";
 import { postMatchScreen } from "../post-match";
@@ -132,7 +131,8 @@ export function createNormalSession(
     try {
       const snapshot = await match.exportMatchSnapshot();
       if (disposed) return;
-      renderer.scene.render();
+      const thumbnail = await renderer.thumbnail();
+      if (disposed) return;
       const file: SavedGame = {
         format: 1,
         id:
@@ -145,7 +145,7 @@ export function createNormalSession(
         kind,
         createdAt: Date.now(),
         config: { ...config },
-        thumbnail: saveThumbnail(canvas),
+        thumbnail,
         packs: content.packs,
         cosmeticHash: content.cosmeticHash,
         mapHash: saveMapHash(snapshot),

@@ -164,6 +164,7 @@ test("saved and live-edited shortcuts drive the actual match, map, camera, group
   const tick = await world.getAttribute("data-tick");
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  await expect(menu.getByRole("button", { name: "Current controls", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Current controls", exact: true }).press("Enter");
   await expect(menu).toContainText("P pauses or resumes");
   await menu.getByRole("button", { name: "Edit shortcuts", exact: true }).press("Enter");
@@ -238,6 +239,7 @@ test("saved and live-edited shortcuts drive the actual match, map, camera, group
   await expect(world).toHaveAttribute("data-session", "ready");
   await page.screenshot({ path: info.outputPath("bound-match-desktop.png") });
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  await expect(menu.getByRole("button", { name: "Settings", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Settings", exact: true }).press("Enter");
   await menu.getByRole("button", { name: "Controls", exact: true }).press("Enter");
   await menu.getByLabel("Preset to apply", { exact: true }).selectOption("wasd");

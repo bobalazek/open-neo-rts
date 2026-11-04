@@ -141,6 +141,7 @@ test("content tools preview installed models and local team/clip/LOD/damage chan
   await page.evaluate(() => Reflect.get(window, "contentToolPaint").clear());
   const nodeRegion = page.getByRole("region", { name: "Nodes and parts", exact: true });
   await nodeRegion.focus();
+  await nativeFrame(page);
   await nodeRegion.press("End");
   await expect
     .poll(() =>
@@ -152,6 +153,7 @@ test("content tools preview installed models and local team/clip/LOD/damage chan
     )
     .toBe(true);
   await page.setViewportSize({ width: 1280, height: 720 });
+  await nativeFrame(page);
   await page.evaluate(() => Reflect.get(window, "contentToolPaint").clear());
   await page.getByLabel("Team colour", { exact: true }).focus();
   for (const label of ["Red", "Blue"]) {

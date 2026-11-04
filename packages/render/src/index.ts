@@ -1,6 +1,7 @@
 // Babylon renderer: scene, RTS camera and terrain. Reads sim presentation, never writes sim state.
 
 import { DirectionalLight, Viewport } from "@babylonjs/core";
+import { CreateScreenshotAsync } from "@babylonjs/core/Misc/screenshotTools";
 import type { TerrainGrid } from "@open-neo-rts/content";
 import { createRtsCamera } from "./camera";
 import { createEngine, createScene } from "./scene";
@@ -83,6 +84,32 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: Rendere
     camera,
     terrain,
     setQuality,
+    thumbnail(): Promise<string> {
+      return new Promise((resolve, reject) => {
+        if (scene.isDisposed) {
+          reject(new Error("Save preview renderer was disposed"));
+          return;
+        }
+        const disposed = engine.onDisposeObservable.addOnce(() =>
+          reject(new Error("Save preview renderer was disposed")),
+        );
+        scene
+          .whenReadyAsync()
+          .then(() => {
+            if (scene.isDisposed) throw new Error("Save preview renderer was disposed");
+            // WebGPU submits the canvas at end-of-frame, after scene.render() returns.
+            return CreateScreenshotAsync(
+              engine,
+              camera,
+              { width: 320, height: 180 },
+              "image/jpeg",
+              0.75,
+            );
+          })
+          .then(resolve, reject)
+          .finally(() => engine.onDisposeObservable.remove(disposed));
+      });
+    },
     /** Keep the camera's target in the playable area rather than behind fixed HUD panels. */
     setViewInsets(top: number, bottom: number) {
       const height = Math.max(1, canvas.clientHeight);

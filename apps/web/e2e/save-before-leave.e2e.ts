@@ -76,6 +76,7 @@ test("native save-before-leave preserves the paused world through cancellation, 
   expect(await original!.evaluate((element) => element.isConnected)).toBe(true);
 
   await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
+  await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Leave match", exact: true }).press("Enter");
   await expect(save).toBeEnabled();
   await page.keyboard.press("Escape");
@@ -129,6 +130,21 @@ test("restart and load save the current game before replacing its worker, and Ca
   test.setTimeout(150_000);
   let workers = 0;
   page.on("worker", () => workers++);
+  await page.addInitScript(() => {
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (message: unknown) {
+      if (
+        message &&
+        typeof message === "object" &&
+        Reflect.get(message, "type") === "pause" &&
+        Reflect.get(window, "holdCancelRestore")
+      ) {
+        Reflect.set(window, "releaseCancelRestore", () => post.call(this, message));
+        return;
+      }
+      return post.call(this, message);
+    };
+  });
   await observeNativePaint(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -138,6 +154,7 @@ test("restart and load save the current game before replacing its worker, and Ca
   await expect(page.locator("[data-save-notice]")).toHaveText("Game saved in this browser.");
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  await expect(menu.getByRole("button", { name: "Restart match", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
   const restart = page.getByRole("dialog", { name: "Restart match?", exact: true });
   await expect(
@@ -145,7 +162,20 @@ test("restart and load save the current game before replacing its worker, and Ca
   ).toBeEnabled();
   await nativeFrame(page);
   await page.screenshot({ path: info.outputPath("restart-desktop.png") });
+  await page.evaluate(() => Reflect.set(window, "holdCancelRestore", true));
   await restart.getByRole("button", { name: "Cancel", exact: true }).press("Enter");
+  await expect
+    .poll(() => page.evaluate(() => typeof Reflect.get(window, "releaseCancelRestore")))
+    .toBe("function");
+  await expect(restart).toHaveCount(1);
+  await expect(restart.getByRole("button", { name: "Cancel", exact: true })).toBeDisabled();
+  await expect(menu.getByRole("button", { name: "Restart match", exact: true })).toBeDisabled();
+  await page.evaluate(() => {
+    Reflect.set(window, "holdCancelRestore", false);
+    Reflect.get(window, "releaseCancelRestore")();
+  });
+  await expect(menu.getByRole("button", { name: "Restart match", exact: true })).toBeEnabled();
+  await expect(restart).toHaveCount(0);
   await expect(menu.getByRole("button", { name: "Restart match", exact: true })).toBeFocused();
   expect(workers).toBe(1);
   await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
@@ -159,6 +189,7 @@ test("restart and load save the current game before replacing its worker, and Ca
   expect(workers).toBe(2);
   expect((await manualSaves(page)).map((file) => file.name)).toEqual(["Before restart"]);
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  await expect(menu.getByRole("button", { name: "Load game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Before restart" }).press("Enter");
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
@@ -170,6 +201,7 @@ test("restart and load save the current game before replacing its worker, and Ca
   await load.getByRole("button", { name: "Cancel", exact: true }).press("Enter");
   await expect(menu.locator(".save-row[aria-pressed=true]")).toContainText("Before restart");
   expect(workers).toBe(2);
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
   await load.getByLabel("Save name", { exact: true }).fill("Before load");
   const replacement = await world.elementHandle();
@@ -179,6 +211,35 @@ test("restart and load save the current game before replacing its worker, and Ca
     .toBe(false);
   await expect(world).toHaveAttribute("data-session", "ready");
   expect(workers).toBe(3);
+  const restoredTick = await world.getAttribute("data-tick");
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  await expect(menu.getByRole("button", { name: "Load game", exact: true })).toBeEnabled();
+  await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
+  await menu.locator(".save-row").filter({ hasText: "Before restart" }).press("Enter");
+  await page.goBack();
+  const leaving = page.getByRole("dialog", { name: "Leave match?", exact: true });
+  await expect(leaving.getByRole("button", { name: "Cancel", exact: true })).toBeEnabled();
+  await page.evaluate(() => {
+    Reflect.deleteProperty(window, "releaseCancelRestore");
+    Reflect.set(window, "holdCancelRestore", true);
+  });
+  await leaving.getByRole("button", { name: "Cancel", exact: true }).press("Enter");
+  await expect
+    .poll(() => page.evaluate(() => typeof Reflect.get(window, "releaseCancelRestore")))
+    .toBe("function");
+  await expect(leaving).toHaveCount(1);
+  await expect(leaving.getByRole("button", { name: "Cancel", exact: true })).toBeDisabled();
+  await page.evaluate(() => {
+    Reflect.set(window, "holdCancelRestore", false);
+    Reflect.get(window, "releaseCancelRestore")();
+  });
+  await expect(leaving).toHaveCount(0);
+  await expect(world).toHaveAttribute("data-tick", restoredTick!);
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeEnabled();
+  await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await expect(load.getByRole("button", { name: "Save and load", exact: true })).toBeEnabled();
+  await load.getByRole("button", { name: "Cancel", exact: true }).press("Enter");
+  await expect(load).toHaveCount(0);
   const files = await manualSaves(page);
   expect(files.map((file) => file.name).sort()).toEqual(["Before load", "Before restart"]);
   for (const file of files)

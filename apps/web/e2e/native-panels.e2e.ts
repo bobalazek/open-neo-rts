@@ -105,7 +105,9 @@ test("native save gallery keeps typed search focused, imports files and opens re
   await draw(page);
   await page.screenshot({ path: info.outputPath("native-load-mobile.png") });
   await menu.getByRole("button", { name: "Back", exact: true }).press("Enter");
+  await expect(menu.getByRole("button", { name: "Resume match", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
+  await expect(menu).not.toBeVisible();
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   const result = page.getByRole("dialog", { name: "Defeat", exact: true });

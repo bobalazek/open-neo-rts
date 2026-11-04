@@ -77,7 +77,7 @@ export function createInGameMenu(
       for (const control of dialog.querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
         "button,select",
       ))
-        control.disabled = pending || control.hasAttribute("data-unavailable");
+        control.disabled = pending || !!exit || control.hasAttribute("data-unavailable");
     const speed = dialog.querySelector<HTMLSelectElement>("[data-game-speed]");
     if (speed) speed.value = String(options.state()?.speed ?? 1);
     present();
@@ -95,7 +95,7 @@ export function createInGameMenu(
     options.controls(true);
   }
   async function run(action: () => Promise<unknown>) {
-    if (pending || disposed || ended()) return;
+    if (pending || exit || disposed || ended()) return;
     pending = true;
     error!.textContent = "";
     update();
@@ -318,6 +318,7 @@ export function createInGameMenu(
         name: options.saveName?.() ?? "",
       });
       exit = prompt;
+      update();
       const accepted = await prompt.result;
       if (disposed || ended() || exit !== prompt) return false;
       if (!accepted) {
@@ -325,6 +326,7 @@ export function createInGameMenu(
           await options.pause(paused);
         } catch {
           if (disposed || ended() || exit !== prompt) return false;
+          prompt.dispose();
           if (!dialog.open) {
             menu();
             dialog.showModal();
@@ -346,6 +348,8 @@ export function createInGameMenu(
         }
       }
       if (exit === prompt) exit = undefined;
+      prompt.dispose();
+      update();
       return accepted;
     },
   };

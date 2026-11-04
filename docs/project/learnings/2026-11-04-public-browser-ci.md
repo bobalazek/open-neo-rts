@@ -90,3 +90,62 @@ trace expires inside its bounded death-step loop, before the work assertions,
 and cleanup masks that original location. Keep all tick bounds and assertions
 and allow this full worker/HUD/replay integration case 240 seconds. A longer
 deadline requires a complete passing rerun before qualification.
+
+The later Linux Chrome run [41930066905](https://github.com/bobalazek/open-neo-rts/actions/runs/41930066905)
+timed out waiting for the cloned definition to appear while its original fields
+remained disabled. This proves an incomplete operation at the deadline, not a
+wrongly committed clone. Previous runs also stalled in screenshot and page
+evaluation calls; do not infer one application bug from these different waits.
+Chrome now uses the same standard macOS runner as WebKit, removing the Linux
+Xvfb/Mesa/PulseAudio setup. This is a smaller qualification environment, not a
+repair claim for Linux. It retains both complete suites and all their assertions;
+a complete hosted run is required for qualification. Playwright supports the real
+[Chrome stable channel](https://playwright.dev/docs/browsers#google-chrome--microsoft-edge),
+and GitHub supplies [standard macOS runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
+
+The macOS candidate WebKit run 41934141324 passed 88 journeys, with only the
+initial autosave read failing. Its trace starts a read before the first save
+commits: that read returns an empty snapshot after ten seconds, and the next
+read is still pending when the 15-second polling window closes. The final page
+already reports a committed save. Wait for that existing commit notice before
+opening the independent test read; retain the saved-slot, rotation, failed-write
+and restoration assertions and all existing deadlines.
+
+The local current-Chrome save journey also produced a real one-colour thumbnail.
+The old code called `scene.render()` and immediately copied the canvas, before
+WebGPU's end-of-frame submission. The renderer now waits for scene readiness and
+uses Babylon's [completed-frame screenshot API](https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG/).
+Disposing the renderer rejects a pending capture; persistence rechecks session
+disposal before writing the image and snapshot. Keep the existing varied-pixel
+thumbnail assertion, rather than accepting an empty image. Save capture no longer
+manually renders between ordinary frames or changes backbuffer preservation.
+
+The same Chrome batch completed all 113 cases (101 passed, 12 failed). Several
+keyboard journeys sent Enter while the menu or exit prompt was still disabling
+its actions for a pause acknowledgement. Waiting for a dialog to exist, or for
+the worker's Paused projection, does not prove those actions are enabled. Wait
+for the intended button's enabled state before pressing it; after the top-level
+Pause action, wait for its Resume state before asking to leave. The model-tools
+End-key check also waits for the resized table to draw before scrolling it.
+
+One failure was an actual native-input bug: clicking an empty field left a
+Babylon pointer coordinate awaiting the next draw. Typing before that draw gave
+the stale coordinate a new string to reposition, moving subsequent characters
+into the middle. An empty field has only one valid caret position; clear that
+pending coordinate before processing its first key. Existing nonempty pointer
+editing and semantic Unicode-selection behavior stay in place.
+
+The final restart/cancel probe exposed a real action-state gap. Closing the
+confirmation returns browser focus before the controller finishes its awaited
+pause restoration. The parent Restart action looked enabled but its activation
+was discarded by the still-owned exit transaction. Parent menu actions now stay
+disabled, and the action runner stays guarded, until that transaction finishes;
+the existing cancel path still restores pause, controls and focus. A held worker
+acknowledgement proves the disabled interval before permitting a second restart.
+
+An independent browser-Back probe found that gating the main menu alone did not
+cover an idle Load gallery. Cancel now leaves its existing decision modal busy
+and open until the owner finishes restoration and disposes it. This keeps every
+underlying pane blocked by the same modal, including when no gallery-owned action
+is running. Held acknowledgements cover both main-menu restart and browser-Back
+from the idle gallery, preserving the selected save and paused tick.

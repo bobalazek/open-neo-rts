@@ -80,6 +80,14 @@ export function createExitPrompt(
     dialog.remove();
     resolve(accepted);
   }
+  function cancelExit() {
+    if (disposed || pending) return;
+    pending = true;
+    status.textContent = text("ui.saves.working");
+    update();
+    // Keep the modal until its owner acknowledges restoration of the previous pause state.
+    resolve(false);
+  }
   form.addEventListener(
     "submit",
     (event) => {
@@ -121,18 +129,12 @@ export function createExitPrompt(
     },
     { signal: events.signal },
   );
-  cancel.addEventListener(
-    "click",
-    () => {
-      if (!pending) finish(false);
-    },
-    { signal: events.signal },
-  );
+  cancel.addEventListener("click", cancelExit, { signal: events.signal });
   dialog.addEventListener(
     "cancel",
     (event) => {
       event.preventDefault();
-      if (!pending) finish(false);
+      cancelExit();
     },
     { signal: events.signal },
   );
