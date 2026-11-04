@@ -389,3 +389,166 @@ test("unsaved drafts reach the debug worker and return intact after play and wor
     terminated: 2,
   });
 });
+
+test("draft skirmishes use edited recipes and health in a temporary normal match with the bot", async ({
+  page,
+}, info) => {
+  test.setTimeout(240000);
+  await page.addInitScript(() => {
+    const WorkerBase = window.Worker;
+    const probe = {
+      created: 0,
+      terminated: 0,
+      writes: 0,
+      audioCreated: 0,
+      audioClosed: 0,
+      setups: [] as unknown[],
+    };
+    Reflect.set(window, "draftSkirmishProbe", probe);
+    const Context = window.AudioContext;
+    if (Context)
+      window.AudioContext = class extends Context {
+        constructor(...args: ConstructorParameters<typeof Context>) {
+          super(...args);
+          probe.audioCreated++;
+        }
+        override async close() {
+          await super.close();
+          probe.audioClosed++;
+        }
+      };
+    window.Worker = class extends WorkerBase {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        probe.created++;
+        this.addEventListener("message", ({ data }) => {
+          if (data.state) Reflect.set(window, "draftSkirmishState", data.state);
+        });
+      }
+      override postMessage(
+        message: unknown,
+        options: StructuredSerializeOptions | Transferable[] = [],
+      ) {
+        if (message && typeof message === "object" && "type" in message && message.type === "init")
+          probe.setups.push(Reflect.get(message, "options").setup);
+        if (Array.isArray(options)) super.postMessage(message, options);
+        else super.postMessage(message, options);
+      }
+      override terminate() {
+        probe.terminated++;
+        super.terminate();
+      }
+    };
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args: Parameters<typeof put>) {
+      if (this.transaction.db.name === "open-neo-rts.saves") probe.writes++;
+      return Reflect.apply(put, this, args);
+    };
+  });
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  const technicianPath = "factions/eastern-collective/units/field-technician/unit.json";
+  await expect(page.getByLabel("health", { exact: true })).toHaveValue("900", { timeout: 30000 });
+  await page.getByLabel("Pack definition", { exact: true }).selectOption(`core/${technicianPath}`);
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("100");
+  await health.fill("1901");
+  await page.getByRole("tab", { name: "Production", exact: true }).press("Enter");
+  await page.getByLabel("cost.credits", { exact: true }).fill("17");
+  await page.getByLabel("buildTime", { exact: true }).fill("1");
+  await page.getByRole("button", { name: "Skirmish draft", exact: true }).press("Enter");
+  const canvas = page.locator("[data-draft-playtest]");
+  await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60000 });
+  await expect(canvas).toHaveAttribute("data-mode", "controlled");
+  await expect(canvas).toHaveAttribute("data-hud", "native");
+  const state = () =>
+    page.evaluate(() => Reflect.get(window, "draftSkirmishState") as OfflineState);
+  expect(
+    (await state()).snapshot.entities
+      .filter((entity) => entity.definition.endsWith("/field-technician"))
+      .every((entity) => entity.maxHealth === 1901),
+  ).toBe(true);
+  const setup = await page.evaluate(() => Reflect.get(window, "draftSkirmishProbe").setups[0]);
+  expect(setup.debug).toBe(false);
+  expect(setup.normal.bots).toEqual([{ seat: 2, kind: "basic-skirmish", force: 1 }]);
+  await page.getByRole("button", { name: /Idle producers 1/ }).press("Enter");
+  const recipe = page.locator('[data-definition="core.unit:eastern-collective/field-technician"]');
+  await expect(recipe).toBeEnabled();
+  await recipe.press("Enter");
+  await expect(page.locator("[data-credits]")).toHaveText("Credits 4983");
+  // Clear the real starting-unit exit blockers through an ordinary selection and move order.
+  const bounds = (await canvas.boundingBox())!;
+  await page.mouse.move(bounds.x + 30, bounds.y + 100);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width * 0.8, bounds.y + bounds.height * 0.7, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await page.mouse.click(bounds.x + bounds.width * 0.8, bounds.y + bounds.height * 0.52, {
+    button: "right",
+  });
+  await expect
+    .poll(
+      async () =>
+        (await state()).snapshot.entities.filter(
+          (entity) => entity.force === 0 && entity.definition.endsWith("/field-technician"),
+        ).length,
+    )
+    .toBe(3);
+  await page.getByRole("button", { name: /Idle builders/ }).press("Enter");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-skirmish-desktop.png") });
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeDisabled();
+  await expect(menu.getByRole("button", { name: "Load game", exact: true })).toBeDisabled();
+  await expect(
+    menu.getByRole("button", { name: "Installed Field Manual", exact: true }),
+  ).toBeEnabled();
+  await page.evaluate(async (path) => {
+    const fixture = Reflect.get(window, "editorFixture"),
+      raw = JSON.parse(await fixture.files.get(path).text());
+    raw.health = 44;
+    fixture.files.set(path, new File([JSON.stringify(raw)], "unit.json"));
+  }, technicianPath);
+  await menu.getByRole("button", { name: "Restart match", exact: true }).press("Enter");
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "draftSkirmishProbe").setups.length))
+    .toBe(2);
+  await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60000 });
+  expect(
+    (await state()).snapshot.entities
+      .filter((entity) => entity.definition.endsWith("/field-technician"))
+      .every((entity) => entity.maxHealth === 1901),
+  ).toBe(true);
+  await expect(page.locator("[data-credits]")).toHaveText("Credits 5000");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-skirmish-mobile.png") });
+  await page.getByRole("button", { name: "Return to draft", exact: true }).press("Enter");
+  await expect(page.getByRole("button", { name: "Skirmish draft", exact: true })).toBeFocused();
+  await expect(page.getByLabel("cost.credits", { exact: true })).toHaveValue("17");
+  await page.getByRole("tab", { name: "General", exact: true }).press("Enter");
+  await expect(health).toHaveValue("1901");
+  await expect(page.locator("[data-draft-skirmish]")).toHaveCount(0);
+  expect(await page.evaluate(() => Reflect.get(window, "draftSkirmishProbe").writes)).toBe(0);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const probe = Reflect.get(window, "draftSkirmishProbe");
+        return probe.audioCreated === probe.audioClosed;
+      }),
+    )
+    .toBe(true);
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await page.route("**/sim-worker.js", (route) => route.abort());
+  await page.getByRole("button", { name: "Skirmish draft", exact: true }).press("Enter");
+  await expect(page.locator(".content-tools section > [role=alert]")).toContainText(
+    "Simulation worker failed",
+    { timeout: 60000 },
+  );
+  await expect(health).toHaveValue("1901");
+  expect(await page.evaluate(() => Reflect.get(window, "draftSkirmishProbe").terminated)).toBe(3);
+  expect(await page.evaluate(() => Reflect.get(window, "draftSkirmishProbe").writes)).toBe(0);
+});

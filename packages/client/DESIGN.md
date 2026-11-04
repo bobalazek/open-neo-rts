@@ -111,12 +111,17 @@ pinned Create definition, Download changes ZIP and Cancel creation actions. The
 original model and source identity remain visible. Playtest draft beside Save
 opens the retained HTML debug controls over real terrain, with Return to draft
 first in a bounded scrolling pane. The validated unsaved definition and checked
-local model snapshot support movement, health and placement; returning restores
-the retained native editor. This records model inspection (2-38a),
+local model snapshot support movement, health and placement. Skirmish draft
+beside it opens the native loading panel and normal Training Grounds match with
+an Eastern Collective mirror and basic bot. Its existing HUD exposes actual draft
+stats and recipes; Installed Field Manual identifies the installed reference.
+Return to draft restores the retained native editor and initiating action focus.
+This records model inspection (2-38a),
 existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debug
-checks (2-38c1). Full runtime audio, source freshness and exact formatter parity
-remain 2-38b2; combat/economy integration, authored opponent presets and
-weapon/destruction effects remain 2-38c2. Asset editing remains open.
+checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
+Full runtime audio, source freshness and exact formatter parity remain 2-38b2;
+broader authored opponent/map presets and isolated weapon/destruction previews
+remain 2-38c2. Asset editing remains open.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -125,7 +130,8 @@ palette, font or asset accompanies the gesture; empty selection leaves no statio
 
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
 results, local Replays, Field Manual, content-model inspection, definition
-authoring, sibling creation and draft debug checks, and native normal match HUD. Debug retains HTML/CSS presentation; native
+authoring, sibling creation, draft debug checks and temporary normal skirmishes,
+and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -149,7 +155,7 @@ Content tools' local contract is in `src/features/content-editor/index.ts` and
 `.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
 also uses `src/features/content-editor/content-tools.css`, `model.ts`,
 `definition-editor.ts`, `definition-form.ts`, `definition-pack.ts`, `creation.ts`,
-`creation-write.ts`, `archive.ts` and `playtest.ts`, plus
+`creation-write.ts`, `archive.ts`, `playtest.ts` and `skirmish-playtest.ts`, plus
 `src/features/debug/session.ts`, `catalog.ts`, `palette.ts` and `reproduction.ts`.
 Existing
 definition boundaries are recorded in
@@ -158,6 +164,8 @@ Sibling creation is recorded in
 `../../docs/project/decisions/2026-11-04-definition-creation.md`.
 Draft debug checks are recorded in
 `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
+Temporary normal skirmishes are recorded in
+`../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -190,6 +198,7 @@ Pending route editing follows the WAYPOINTS EXTENSION in
 - Native existing-definition fields with contextual schema help, guarded saves/downloads and explicit disk-conflict review.
 - Native sibling creation from authored templates with two framed name fields, guarded publication and a changes ZIP fallback.
 - Validated unsaved draft checks in the existing HTML debug pane, with Return to draft first and the native editor retained.
+- Temporary normal draft matches reuse native loading, HUD and menus, with retained editor recovery.
 - Pending route hover diamonds and terrain-aligned previews with the existing native keyboard queue alternative.
 
 ## Colors
@@ -431,6 +440,11 @@ terrain canvas and bounded scrolling HTML controls. Return to draft comes first,
 followed by the explicit movement/health/placement scope notice. Existing map,
 Force, palette and inspection controls stay in that pane on desktop and narrow
 screens. This retained debug layout introduces no native tokens or components.
+Skirmish draft instead reuses the normal native match layout: objective and
+clock above, global controls at top right, economy beside the bottom-left
+selection station and a circular minimap at right. Narrow views retain the
+existing stacked economy and station behavior. The editor's model-left/pane-right
+or narrow stacked arrangement resumes on return.
 
 ## Elevation & Depth
 
@@ -601,8 +615,8 @@ the text leaves space for that disclosure mark.
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model checks gate saving, while
   full runtime audio, source freshness and exact formatter parity remain 2-38b2;
-  combat/economy, authored opponent presets and weapon/destruction effects remain
-  2-38c2, and asset editing remains open.
+  broader authored opponent/map presets and isolated weapon/destruction previews
+  remain 2-38c2, and asset editing remains open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source
@@ -629,6 +643,19 @@ the text leaves space for that disclosure mark.
   commands; Copy initial setup link is disabled because URLs cannot carry the
   draft or its models. This 2-38c1 transition adds no tokens or native components
   and does not change sources, normal matches or simulation behavior.
+- **Draft normal skirmish:** Skirmish draft reuses the native action, loading
+  progress, normal HUD and match menu for a supported checked unsaved snapshot.
+  Training Grounds, an Eastern Collective mirror and basic bot retain normal
+  combat, economy, fog and command permissions. Unsupported content keeps its
+  debug path and a readable restriction without losing edits. Native Return to
+  draft and loading Cancel restore the retained editor; initialization or worker
+  failure returns with an error. Restarts reuse the same checked metadata and
+  model/wreck/icon/sound bytes and preview audio mixer. Return/failure disposes
+  the worker, renderer, mixer, decoded buffers and temporary asset URLs, resumes
+  editor rendering and restores focus to Skirmish draft. Save/Load, autosaves,
+  replay storage and contextual guidance writes are unavailable for this preview.
+  Installed Field Manual labels the installed baseline; selected-actor stats,
+  recipes and help read the draft catalog. No new visual primitives are needed.
 - **Settings preview and feedback:** quality, UI scale, keyboard/edge camera pan
   speed, mouse sensitivity, drag inversion, edge scroll and reduced motion use the
   shared native fields, validation and device storage. Mouse camera sensitivity

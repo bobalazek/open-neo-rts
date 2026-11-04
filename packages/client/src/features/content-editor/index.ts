@@ -16,7 +16,7 @@ export function startContentTools(canvas: HTMLCanvasElement) {
   root.className = "content-tools";
   root.innerHTML = `<!-- THESIS: inspect original model behaviour and actual validator output before entering a match.
 OWN-WORLD: inherited graphite command stations, original brick subjects, native framed controls.
-STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks.
+STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks or a temporary normal skirmish.
 FIRST VIEWPORT: the model owns the desktop left; a scrolling native tool pane sits right, below the model when narrow.
 FORM: code-led Operate extension of existing native panels and the documented model-first tool.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
@@ -91,12 +91,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           definition.selectedIndex = -1;
           await load(async () => value);
         },
-        playtest: async (packs, packId, path, draft) => {
+        playtest: async (packs, packId, path, draft, mode) => {
           const { startDebugSession } = await import("../debug/session");
+          const { startDraftSkirmish } = await import("./skirmish-playtest");
           const prepared = await prepareDraftPlaytest(packs, packId, path, draft);
           if (disposed) {
             prepared.dispose();
             return;
+          }
+          if (mode === "skirmish" && !prepared.supportsSkirmish) {
+            prepared.dispose();
+            throw new Error(text("ui.editor.skirmish-unsupported"));
           }
           const display = canvas.style.display;
           const target = document.createElement("canvas");
@@ -108,7 +113,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           canvas.style.display = "none";
           document.body.classList.remove("content-tools-page");
           document.body.append(target);
-          let active: ReturnType<typeof startDebugSession> | undefined;
+          let active: { dispose(): void } | undefined;
           const close = () => {
             if (!closePlaytest) return;
             closePlaytest = undefined;
@@ -121,11 +126,23 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             root.hidden = false;
             panel = mountPanel();
             preview?.setPaused(false);
-            root.querySelector<HTMLButtonElement>("[data-playtest]")?.focus();
+            root
+              .querySelector<HTMLButtonElement>(
+                mode === "movement" ? "[data-playtest]" : "[data-skirmish-playtest]",
+              )
+              ?.focus();
           };
           closePlaytest = close;
           try {
-            active = startDebugSession(target, { ...prepared, back: close });
+            active =
+              mode === "movement"
+                ? startDebugSession(target, { ...prepared, back: close })
+                : startDraftSkirmish(target, prepared.skirmish, close, (failure) => {
+                    close();
+                    error.textContent =
+                      failure instanceof Error ? failure.message : text("ui.loading.failed");
+                    panel.update();
+                  });
           } catch (error) {
             close();
             throw error;

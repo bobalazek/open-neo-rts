@@ -1,5 +1,5 @@
-import { builtins } from "virtual:debug-builtins";
-import { content } from "virtual:normal-catalog";
+import { builtins as installedAssets } from "virtual:debug-builtins";
+import { content as installedContent } from "virtual:normal-catalog";
 import {
   CELL_SIZE,
   cameraGroundView,
@@ -45,6 +45,13 @@ import { createMinimap } from "./minimap";
 import { mountNativeMatchHud } from "./native-hud";
 import { bindWaypointInput } from "./waypoints";
 
+/** Validated authoring snapshots are temporary; they never enter normal save slots. */
+export interface DraftSkirmishSource {
+  content: typeof installedContent;
+  assets: readonly ((typeof installedAssets)[number] & { id: string })[];
+  roster: ReadonlySet<string>;
+}
+
 /** A screen owns this session immediately, including resources that finish loading after cancellation. */
 export function createNormalSession(
   canvas: HTMLCanvasElement,
@@ -61,16 +68,22 @@ export function createNormalSession(
     replay?: (id: string) => void;
   },
   audio?: ReturnType<typeof createAudioMixer>,
+  draft?: DraftSkirmishSource,
 ) {
+  const content = draft?.content ?? installedContent;
+  const assets =
+    draft?.assets ??
+    installedAssets.map((entry) => ({
+      ...entry,
+      id: `core.${(entry.raw as { id: string }).id}`,
+    }));
   const signal = new AbortController();
   let disposed = false,
     ready = false,
     busy = false;
   let renderer: Awaited<ReturnType<typeof createRenderer>> | undefined;
   let presentation: ReturnType<typeof createMatchPresentation> | undefined;
-  const sounds = new Map(
-    builtins.map((entry) => [`core.${(entry.raw as { id: string }).id}`, entry.sounds ?? {}]),
-  );
+  const sounds = new Map(assets.map((entry) => [entry.id, entry.sounds ?? {}]));
   const matchAudio = audio && createMatchAudio(audio, sounds);
   let art: ReturnType<typeof createMapPresentation> | undefined;
   let match: ReturnType<typeof createOfflineMatch> | undefined;
@@ -108,6 +121,7 @@ export function createNormalSession(
   const saveName = () =>
     `${map.name} · ${Math.floor((latest?.snapshot.tick ?? 0) / 1200)}:${String(Math.floor((latest?.snapshot.tick ?? 0) / 20) % 60).padStart(2, "0")}`;
   async function persist(kind: SaveKind, name: string) {
+    if (draft) throw new Error(text("ui.editor.skirmish-no-saves"));
     if (saving) throw new Error(text("ui.saves.busy"));
     if (!match || !renderer || disposed || !content.cosmeticHash)
       throw new Error(text("ui.saves.failed"));
@@ -361,11 +375,11 @@ export function createNormalSession(
       );
       await art.ready;
       if (disposed) return;
-      const catalog = builtins.map(({ raw, model, wreck }) => catalogEntry(raw, model, wreck));
+      const catalog = assets.map(({ raw, model, wreck, id }) =>
+        catalogEntry(raw, model, wreck, id.slice(0, id.indexOf("."))),
+      );
       const uiCatalog: HudDefinition[] = content.catalog.definitions.map((gameplay) => {
-        const entry = builtins.find(
-          ({ raw }) => `core.${(raw as { id: string }).id}` === gameplay.id,
-        );
+        const entry = assets.find((entry) => entry.id === gameplay.id);
         const raw = entry?.raw as { name: string; description: string } | undefined;
         return {
           gameplay,
@@ -419,6 +433,10 @@ export function createNormalSession(
       if (disposed) return;
       root.classList.add("match-shell");
       root.innerHTML = `<section class="match-top" aria-label="${text("ui.match.title")}"><strong>${map.name}</strong><span data-credits></span><span data-materials></span><span data-industrial></span><span data-salvage></span><span data-power></span><span data-population></span><span data-time></span><span data-speed></span><button type="button" data-pause>${text("ui.match.pause")}</button><button type="button" data-menu>${text("ui.menu.title")}</button><button type="button" data-leave>${text("ui.match.leave")}</button></section>`;
+      if (draft) {
+        root.querySelector(".match-top strong")!.textContent = text("ui.editor.skirmish-title");
+        root.querySelector("[data-leave]")!.textContent = text("ui.editor.skirmish-return");
+      }
       const activeMatch = match,
         activeRenderer = renderer;
       for (const [attribute, icon] of [
@@ -508,7 +526,7 @@ export function createNormalSession(
         root,
         {
           catalog: uiCatalog,
-          roster: firstPlayableRoster,
+          roster: draft?.roster ?? firstPlayableRoster,
           resources: setup.map?.resources ?? [],
           force: 0,
           forceIdentity: (force) => ({
@@ -583,20 +601,21 @@ export function createNormalSession(
         },
         signal.signal,
       );
-      guidance = createMatchGuidance(
-        root,
-        {
-          force: 0,
-          definitions: content.catalog.definitions,
-          selection: activePresentation.selection,
-          manual: (definition) => {
-            hud?.cancel();
-            void menu?.openManual(definition);
+      if (!draft)
+        guidance = createMatchGuidance(
+          root,
+          {
+            force: 0,
+            definitions: content.catalog.definitions,
+            selection: activePresentation.selection,
+            manual: (definition) => {
+              hud?.cancel();
+              void menu?.openManual(definition);
+            },
+            present: () => nativeHud?.update(),
           },
-          present: () => nativeHud?.update(),
-        },
-        signal.signal,
-      );
+          signal.signal,
+        );
       nativeHud = mountNativeMatchHud(
         root,
         canvas,
@@ -676,10 +695,11 @@ export function createNormalSession(
           leave: leaveMatch,
           surrender: surrenderMatch,
           focus: () => canvas.focus({ preventScroll: true }),
-          save: (name) => persist("manual", name),
+          save: draft ? undefined : (name) => persist("manual", name),
           saveName,
+          manualLabel: draft ? text("ui.editor.skirmish-installed-manual") : undefined,
           load: persistence?.load,
-          quicksave: () => persist("quick", text("ui.saves.quick")),
+          quicksave: draft ? undefined : () => persist("quick", text("ui.saves.quick")),
           quickload:
             persistence &&
             (async () => {
@@ -822,8 +842,10 @@ export function createNormalSession(
         });
       };
       // shortcut: three wall-clock slots every three minutes; expose cadence with future save preferences.
-      autosave = setInterval(auto, 3 * 60 * 1000);
-      if (!persistence?.saved) auto();
+      if (!draft) {
+        autosave = setInterval(auto, 3 * 60 * 1000);
+        if (!persistence?.saved) auto();
+      }
     } catch (error) {
       if (!disposed) {
         release();

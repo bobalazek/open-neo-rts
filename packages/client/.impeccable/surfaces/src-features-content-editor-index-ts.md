@@ -3,7 +3,7 @@
 version: 1
 slug: "src-features-content-editor-index-ts"
 primary_target: "src/features/content-editor/index.ts"
-related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts"]
+related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/content-editor/skirmish-playtest.ts", "src/features/match/session.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts"]
 ---
 
 # Model-first content tools
@@ -44,8 +44,8 @@ conflict without losing a draft. Busy operations lock editable controls; invalid
 input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
 Full runtime audio, source freshness and exact formatter parity remain explicit
-2-38b2 work before the whole 2-38b task can close. Combat/economy integration,
-authored opponent presets and weapon/destruction effects remain 2-38c2;
+2-38b2 work before the whole 2-38b task can close. Broader authored opponent/map
+presets and isolated weapon/destruction previews remain 2-38c2;
 asset editing remains 2-38d.
 
 ## Sibling-definition creation extension
@@ -101,7 +101,44 @@ definitions and commands. Copy initial setup link is disabled because a URL
 cannot carry the unsaved draft or models; export is a simulation reproduction,
 not an asset pack.
 
-Combat/economy integration, authored opponent presets and weapon/destruction
-effects remain 2-38c2; the whole 2-38c task is unfinished. Native debug conversion,
+Broader authored opponent/map presets and isolated weapon/destruction previews
+remain 2-38c2; the whole 2-38c task is unfinished. Native debug conversion,
 2-38b2 parity and asset editing retain their separate scope. The decision is
 `../../../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
+
+## Temporary normal skirmish extension
+
+Skirmish draft beside the debug action extends the same code-led Operate flow:
+inspect model/validator → edit → checked frozen snapshot → normal Training
+Grounds Eastern Collective mirror/basic bot → Return to retained draft. Native
+loading, HUD and match menus inherit Graphite Command Stations and original brick
+models. Objective, clock and global controls stay above; economy and selection
+occupy the lower left and the circular minimap stays right, with existing narrow
+stacking. No new composition, seed, cards, assets or tokens define this extension.
+
+Supported drafts are existing core first-playable definitions, compatible
+prerequisite-free priced units trained by their producers, and prerequisite-free
+priced Eastern Collective or neutral structures. Compatible cloned units join
+only the temporary roster. Other packs, factions, props and definitions outside
+this compatibility gate retain the debug path; a restriction preserves edits.
+Launch does not guarantee every edited recipe or movement domain can execute;
+normal engine validation still rejects incompatible commands. Normal starter-kit
+and map checks still gate launch. Combat, construction, production, resources
+and fog use normal commands and permissions without debug spawning.
+
+Checked metadata and model/wreck/icon/sound bytes remain fixed across restarts;
+later source-file changes do not replace them. Each preview owns a worker,
+renderer and audio mixer. Restarts reuse its mixer; Cancel, Return or failure
+releases preview resources, decoded buffers and temporary URLs, resumes the
+retained model/panel and focuses the initiating action for that mode. Failure
+also exposes a readable editor error. Save/Load, quicksave, autosaves, replay
+storage and contextual guidance writes are unavailable; sources and manifest
+are untouched. Installed Field Manual identifies the installed reference while
+actor stats, recipes and help use the draft catalog.
+
+Chrome and WebKit journeys and their desktop/narrow captures support this
+bounded integration. Full runtime audio/source/formatter parity remains 2-38b2;
+broader authored opponent/map presets and isolated weapon/destruction previews
+remain 2-38c2, and asset gizmos remain 2-38d. This does not close the whole
+editor/playtest task. The decision is
+`../../../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
