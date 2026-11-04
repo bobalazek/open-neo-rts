@@ -105,8 +105,8 @@ export function panelBlocks(
 }
 
 export function saveGallery(scope: HTMLElement, identify: (element: HTMLElement) => string) {
-  const list = scope.querySelector<HTMLElement>("[data-save-list]");
-  const detail = scope.querySelector<HTMLElement>("[data-save-detail]");
+  const list = scope.querySelector<HTMLElement>("[data-save-list],[data-panel-list]");
+  const detail = scope.querySelector<HTMLElement>("[data-save-detail],[data-panel-detail]");
   if (!list || !detail) return undefined;
   const nodes: HTMLElement[] = [];
   const items: PanelBlock[] = [...list.children].flatMap((element): PanelBlock[] => {

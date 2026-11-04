@@ -1,34 +1,30 @@
 import { expect, test } from "@playwright/test";
+import { clickNativeText, nativeFrame, observeNativePaint } from "./native-paint";
 
 test("native Home canvas buttons, keyboard submenu and resize keep navigation working", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await observeNativePaint(page);
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
   await expect(page.locator("#game")).toHaveAttribute("data-menu", "ready", { timeout: 30_000 });
   await expect(page.locator("main")).toHaveClass(/home-native/);
   await expect(page.locator("#game")).toHaveAttribute("tabindex", "-1");
   await expect(page.locator("#game")).toHaveAttribute("aria-hidden", "true");
-  // Coordinates hit the visible Babylon buttons, not the clipped semantic controls.
-  await page.mouse.click(180, 354);
+  await clickNativeText(page, "Single player");
   await expect(page.getByRole("button", { name: "Skirmish setup", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Single player", exact: true })).toBeFocused();
   await expect(page.locator("#game")).toHaveAttribute("data-menu", "ready");
-  await page.mouse.click(180, 412);
+  await clickNativeText(page, "Settings");
   await expect(page).toHaveURL(/\/settings$/);
   await page.keyboard.press("Escape");
   await expect(page.locator("#game")).toHaveAttribute("data-menu", "ready", { timeout: 30_000 });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-  );
-  await page.mouse.click(180, 582);
+  await nativeFrame(page);
+  await clickNativeText(page, "Single player");
   await expect(page.getByRole("button", { name: "Skirmish setup", exact: true })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/skirmish$/);

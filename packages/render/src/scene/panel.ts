@@ -534,22 +534,25 @@ export async function createPanelScene(
     y = layoutBlocks(mainBlocks, 0, y, inner);
     let detailY = y;
     const galleryWide = !!content.gallery && inner >= 760 * scale;
-    const galleryWidth = galleryWide ? (inner - 32 * scale) / 2 : inner;
-    const detailX = galleryWide ? galleryWidth + 32 * scale : 0;
+    const listWidth = galleryWide
+      ? (inner - 32 * scale) * (content.id === "manual" ? 0.32 : 0.5)
+      : inner;
+    const detailWidth = galleryWide ? inner - 32 * scale - listWidth : inner;
+    const detailX = galleryWide ? listWidth + 32 * scale : 0;
     if (content.gallery) {
-      const listEnd = layoutBlocks(galleryItems, 0, y, galleryWidth);
+      const listEnd = layoutBlocks(galleryItems, 0, y, listWidth);
       detailY = layoutBlocks(
         detailBlocks,
         detailX,
         galleryWide ? y : listEnd + 16 * scale,
-        galleryWidth,
+        detailWidth,
       );
       y = Math.max(listEnd, detailY);
     }
     actions.forEach((control, i) => {
       if (!content.actions[i]?.detail) return;
       control.fontSize = 15 * scale;
-      place(control, detailX, detailY, galleryWidth, 44 * scale);
+      place(control, detailX, detailY, detailWidth, 44 * scale);
       detailY += 52 * scale;
     });
     y = Math.max(y, detailY);

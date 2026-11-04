@@ -63,9 +63,10 @@ export function mountNativePanel(
       control.dataset.nativeField = control.name || `native-field-${i}`;
     });
     buttons.forEach((control, i) => {
-      control.dataset.nativeAction = control.classList.contains("save-row")
-        ? identify(control)
-        : `native-action-${i}`;
+      control.dataset.nativeAction =
+        control.classList.contains("save-row") || control.hasAttribute("data-panel-entry")
+          ? identify(control)
+          : `native-action-${i}`;
     });
     const gallery = saveGallery(
       semantics,
@@ -87,7 +88,7 @@ export function mountNativePanel(
         control.getAttribute("aria-selected") === "true",
       back: control.hasAttribute("data-back"),
       resume: control.hasAttribute("data-resume"),
-      detail: !!control.closest("[data-save-detail]"),
+      detail: !!control.closest("[data-save-detail],[data-panel-detail]"),
       disabled:
         control.disabled ||
         (control.type === "submit" && !!control.form && !control.form.checkValidity()),
@@ -152,7 +153,9 @@ export function mountNativePanel(
         ...buttons
           .filter(
             (control) =>
-              !control.classList.contains("save-row") && control.getAttribute("role") !== "tab",
+              !control.classList.contains("save-row") &&
+              !control.hasAttribute("data-panel-entry") &&
+              control.getAttribute("role") !== "tab",
           )
           .map(action),
         ...allFields

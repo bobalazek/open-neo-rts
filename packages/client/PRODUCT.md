@@ -141,6 +141,24 @@ source.
   failure alerts retain recovery to the library without deleting its record;
   navigation cancels the candidate worker and ignores late replies. Details:
   `../../docs/project/decisions/2026-11-03-native-replay-viewer.md`.
+- Field Manual is available at `/manual`, from Home and in the paused match
+  menu. Its shared native gallery searches and filters Units/Structures across
+  the current 15 entries: the 14-entry Eastern Collective roster and the neutral
+  Resource Extractor. Original icons accompany installed compiled statistics,
+  costs, requirements, weapon facts and expandable armour multipliers. Target
+  restrictions still apply; multipliers do not promise final damage. Produces
+  and Builds relationships show only the current roster.
+  Desktop gives more space to the selected details; narrow layouts stack.
+  Selecting an entry reveals and focuses its heading; Return to roster focuses
+  search. Inspect model opens the actual installed GLB in an isolated orbit/zoom
+  scene with native controls, loading status and fetch-failure Retry. Escape
+  returns focus to its initiating control; closing cancels/disposes pending work.
+  Idle animation honors both device and operating-system reduced motion. The
+  preview uses the current blue color without a color control. Embedded browsing
+  and inspection preserve the paused world. HTML retains semantics and the
+  gallery's usable graphics fallback. Profile hints, HUD help/contextual More
+  links and training/playtest work remain under tasks 2-37b/2-38; this does not
+  complete those tasks or all first-playable guidance.
 - Loading presents the existing five initialization stages and actual progress,
   with Cancel using the same dismissal as Escape. A separate dialog and canvas
   keep feedback intact while the world initializes or redraws its root. Failure
