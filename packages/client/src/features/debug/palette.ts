@@ -100,6 +100,11 @@ export function createSpawnPalette(
   return {
     result,
     models,
+    choose(id: string) {
+      search.value = "";
+      filter();
+      definitions.value = id;
+    },
     preview,
     previewCells,
     spawning: () => action.value === "spawn",

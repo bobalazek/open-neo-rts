@@ -74,9 +74,13 @@ export function createReproductionControls(
     bind(active?: ReturnType<typeof createOfflineMatch>, initial = "") {
       match = active;
       section.disabled = !active;
+      copy.disabled = !initial;
+      link.parentElement!.hidden = !initial;
       link.value = initial;
       status.textContent = active
-        ? "Initial setup link ready. Export includes the current worker command log."
+        ? initial
+          ? "Initial setup link ready. Export includes the current worker command log."
+          : "Draft session: export includes edited definitions. A URL cannot carry this unsaved draft."
         : "Start a session to export or copy its initial setup.";
     },
   };

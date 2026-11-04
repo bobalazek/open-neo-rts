@@ -76,6 +76,12 @@ export function mountDefinitionEditor(
     initialId?: string;
     update(): void;
     preview(value: { bytes: Uint8Array; raw: Data; name: string; kind: Kind }): Promise<void>;
+    playtest(
+      packs: readonly EditorPack[],
+      packId: string,
+      path: string,
+      draft: Data,
+    ): Promise<void>;
   },
 ) {
   const section = document.createElement("div");
@@ -155,6 +161,10 @@ export function mountDefinitionEditor(
   const open = action("ui.editor.open-pack", () => void openPack(), true);
   const save = action("ui.editor.download", () => void saveDraft(), true);
   const preview = action("ui.editor.preview", () => void validateDraft(true));
+  const playtest = action("ui.editor.playtest", () => void startPlaytest(), true);
+  playtest.setAttribute("data-playtest", "");
+  playtest.title = text("ui.editor.playtest-help");
+  playtest.setAttribute("data-contextual-help", "");
   const clone = action("ui.editor.clone", () => {
     if (!current || !canReplace()) return;
     creating = true;
@@ -255,6 +265,8 @@ export function mountDefinitionEditor(
     save.disabled = !current || busy || inputErrors.size > 0;
     preview.disabled = !current || busy || inputErrors.size > 0;
     save.hidden = preview.hidden = !current || reviewing || creating;
+    playtest.hidden = save.hidden;
+    playtest.disabled = save.disabled;
     open.hidden = reviewing || creating;
     clone.hidden = !current || reviewing || creating;
     clone.disabled = busy || dirty();
@@ -530,6 +542,34 @@ export function mountDefinitionEditor(
     refresh();
     try {
       return await checkDraft(structuredClone(draft), showPreview);
+    } finally {
+      busy = false;
+      if (!disposed) refresh();
+    }
+  }
+  async function startPlaytest() {
+    if (!current || busy || creating || inputErrors.size || diskConflict !== undefined) return;
+    busy = true;
+    error.textContent = "";
+    refresh();
+    try {
+      const candidate = structuredClone(draft);
+      const fresh = await Promise.all(
+        packs.map((pack) =>
+          pack.directory
+            ? readEditorDirectory(
+                pack.directory,
+                pack.input.id === current!.pack.input.id
+                  ? new Map([[current!.file, candidate]])
+                  : undefined,
+              )
+            : pack,
+        ),
+      );
+      if (!disposed) await options.playtest(fresh, current.pack.input.id, current.file, candidate);
+    } catch (failure) {
+      error.textContent =
+        failure instanceof Error ? failure.message : text("ui.editor.validation-failed");
     } finally {
       busy = false;
       if (!disposed) refresh();

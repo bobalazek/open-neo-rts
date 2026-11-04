@@ -1,5 +1,7 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+import type { OfflineState } from "../../../packages/client/src/worker";
 import { installEditorPack } from "./definition-editor-fixture";
 import { nativeFrame } from "./native-paint";
 
@@ -262,4 +264,128 @@ test("read-only creation downloads a coordinated changes archive without touchin
   expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
   await page.getByRole("button", { name: "Cancel creation", exact: true }).press("Enter");
   await expect(page.getByLabel("name", { exact: true })).toHaveValue("Dragon Tank");
+});
+
+test("unsaved drafts reach the debug worker and return intact after play and worker failure", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    const WorkerBase = window.Worker;
+    const counts = { created: 0, terminated: 0 };
+    Reflect.set(window, "draftWorkers", counts);
+    window.Worker = class extends WorkerBase {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        counts.created++;
+        this.addEventListener("message", ({ data }) => {
+          if (data.state) Reflect.set(window, "draftWorkerState", data.state);
+        });
+      }
+      override terminate() {
+        counts.terminated++;
+        super.terminate();
+      }
+    };
+  });
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("900", { timeout: 30000 });
+  await health.fill("bad");
+  await expect(page.getByRole("button", { name: "Playtest draft", exact: true })).toBeDisabled();
+  await health.fill("1901");
+  await page.getByRole("button", { name: "Playtest draft", exact: true }).press("Enter");
+  const canvas = page.locator("[data-draft-playtest]");
+  await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 30000 });
+  await expect(page.getByRole("listbox", { name: "Definition", exact: true })).toHaveValue(
+    "core.unit:eastern-collective/dragon-tank",
+  );
+  await expect(
+    page.getByRole("button", { name: "Copy initial setup link", exact: true }),
+  ).toBeDisabled();
+  const bounds = (await canvas.boundingBox())!;
+  await page.mouse.click(bounds.x + bounds.width * 0.4, bounds.y + bounds.height * 0.55);
+  await expect(page.getByRole("status", { name: "Model status", exact: true })).toContainText(
+    "Models ready · 1",
+  );
+  const state = () => page.evaluate(() => Reflect.get(window, "draftWorkerState") as OfflineState);
+  expect((await state()).snapshot.entities[0]?.maxHealth).toBe(1901);
+  await page.getByLabel("Inspect entity", { exact: true }).selectOption({ index: 1 });
+  await page.getByLabel("Map action", { exact: true }).selectOption("select");
+  const before = (await state()).snapshot.entities[0]!;
+  await page.mouse.click(bounds.x + bounds.width * 0.6, bounds.y + bounds.height * 0.55, {
+    button: "right",
+  });
+  await expect(page.getByRole("status", { name: "Order mode", exact: true })).toContainText(
+    "accepted",
+  );
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const entity = (await state()).snapshot.entities[0]!;
+      return entity.x !== before.x || entity.y !== before.y;
+    })
+    .toBe(true);
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.locator(".debug-session").evaluate((panel) => {
+    panel.scrollTop = 0;
+  });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-playtest-desktop.png") });
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export command log", exact: true }).click();
+  const download = await downloading;
+  const file = (await download.path())!;
+  const scenario = JSON.parse(readFileSync(file, "utf8"));
+  expect(
+    scenario.setup.definitions.find(
+      (definition: { id: string }) => definition.id === "core.unit:eastern-collective/dragon-tank",
+    ).health,
+  ).toBe(1901);
+  const tick = (await state()).snapshot.tick;
+  const replay = execFileSync(
+    "bun",
+    ["apps/cli/src/index.ts", "run", file, "--ticks", String(tick)],
+    { cwd: process.cwd(), encoding: "utf8" },
+  );
+  expect(replay).toContain((await state()).hash!);
+  await page.getByRole("button", { name: "Return to draft", exact: true }).click();
+  await expect(health).toHaveValue("1901");
+  await expect(page.locator(".content-tools-controls")).toHaveAttribute(
+    "data-panel",
+    "content-tools",
+  );
+  await expect(canvas).toHaveCount(0);
+  expect(await page.evaluate(() => Reflect.get(window, "draftWorkers"))).toEqual({
+    created: 1,
+    terminated: 1,
+  });
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  expect(
+    await page.evaluate(
+      async (path) =>
+        JSON.parse(await Reflect.get(window, "editorFixture").files.get(path).text()).health,
+      path,
+    ),
+  ).toBe(900);
+  await page.route("**/sim-worker.js", (route) => route.abort());
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Playtest draft", exact: true }).press("Enter");
+  await expect(canvas).toHaveAttribute("data-session", "error", { timeout: 30000 });
+  await expect(page.locator(".debug-session [role=alert]")).toContainText(
+    "Simulation worker failed",
+    {
+      timeout: 30000,
+    },
+  );
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-playtest-mobile.png") });
+  await page.getByRole("button", { name: "Return to draft", exact: true }).click();
+  await expect(health).toHaveValue("1901");
+  expect(await page.evaluate(() => Reflect.get(window, "draftWorkers"))).toEqual({
+    created: 2,
+    terminated: 2,
+  });
 });

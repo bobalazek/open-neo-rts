@@ -14,7 +14,7 @@ interface RawDefinition {
 }
 
 /** Original schema validation precedes both metadata access and sim-unit conversion. */
-export function catalogEntry(raw: unknown, model?: string, wreck?: string) {
+export function catalogEntry(raw: unknown, model?: string, wreck?: string, pack = "core") {
   if (typeof raw !== "object" || raw === null || !("id" in raw) || typeof raw.id !== "string")
     throw new Error("Definition ID missing");
   const kind = raw.id.split(":")[0];
@@ -29,7 +29,7 @@ export function catalogEntry(raw: unknown, model?: string, wreck?: string) {
   return {
     name: content.name,
     kind,
-    definition: toDefinition({ ...content, id: `core.${content.id}` }),
+    definition: toDefinition({ ...content, id: `${pack}.${content.id}` }),
     movementDomain: content.movement?.domain ?? null,
     model,
     wreck,

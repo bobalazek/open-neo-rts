@@ -108,10 +108,15 @@ Conflict review temporarily replaces fields with changed-value rows and pinned
 Reload/Keep choices. A clean selected definition also supplies an authored
 template for a sibling: two framed name fields replace the editing form, with
 pinned Create definition, Download changes ZIP and Cancel creation actions. The
-original model and source identity remain visible. This records model inspection
-(2-38a), existing-definition authoring (2-38b1) and sibling creation (2-38b3);
-full runtime audio, source freshness, exact formatter parity, draft playtests and
-asset editing remain open.
+original model and source identity remain visible. Playtest draft beside Save
+opens the retained HTML debug controls over real terrain, with Return to draft
+first in a bounded scrolling pane. The validated unsaved definition and checked
+local model snapshot support movement, health and placement; returning restores
+the retained native editor. This records model inspection (2-38a),
+existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debug
+checks (2-38c1). Full runtime audio, source freshness and exact formatter parity
+remain 2-38b2; combat/economy integration, authored opponent presets and
+weapon/destruction effects remain 2-38c2. Asset editing remains open.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -120,7 +125,7 @@ palette, font or asset accompanies the gesture; empty selection leaves no statio
 
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
 results, local Replays, Field Manual, content-model inspection, definition
-authoring and sibling creation, and native normal match HUD. Debug retains HTML/CSS presentation; native
+authoring, sibling creation and draft debug checks, and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -144,11 +149,15 @@ Content tools' local contract is in `src/features/content-editor/index.ts` and
 `.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
 also uses `src/features/content-editor/content-tools.css`, `model.ts`,
 `definition-editor.ts`, `definition-form.ts`, `definition-pack.ts`, `creation.ts`,
-`creation-write.ts` and `archive.ts`. Existing
+`creation-write.ts`, `archive.ts` and `playtest.ts`, plus
+`src/features/debug/session.ts`, `catalog.ts`, `palette.ts` and `reproduction.ts`.
+Existing
 definition boundaries are recorded in
 `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
 Sibling creation is recorded in
 `../../docs/project/decisions/2026-11-04-definition-creation.md`.
+Draft debug checks are recorded in
+`../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -180,6 +189,7 @@ Pending route editing follows the WAYPOINTS EXTENSION in
 - Native model-first content inspection with real presentation controls and expandable project checks.
 - Native existing-definition fields with contextual schema help, guarded saves/downloads and explicit disk-conflict review.
 - Native sibling creation from authored templates with two framed name fields, guarded publication and a changes ZIP fallback.
+- Validated unsaved draft checks in the existing HTML debug pane, with Return to draft first and the native editor retained.
 - Pending route hover diamonds and terrain-aligned previews with the existing native keyboard queue alternative.
 
 ## Colors
@@ -416,6 +426,12 @@ original model remains left/above. This
 arrangement belongs to content tools rather than changing the other galleries'
 column proportions.
 
+Draft playtesting temporarily replaces the editor view with the existing debug
+terrain canvas and bounded scrolling HTML controls. Return to draft comes first,
+followed by the explicit movement/health/placement scope notice. Existing map,
+Force, palette and inspection controls stay in that pane on desktop and narrow
+screens. This retained debug layout introduces no native tokens or components.
+
 ## Elevation & Depth
 
 The native match HUD is flat: opaque graphite frames and thin steel seams
@@ -584,8 +600,9 @@ the text leaves space for that disclosure mark.
   File System Access saves the selected existing file after validation; the
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model checks gate saving, while
-  full runtime audio, source freshness, exact formatter parity, draft playtests
-  and asset editing remain open.
+  full runtime audio, source freshness and exact formatter parity remain 2-38b2;
+  combat/economy, authored opponent presets and weapon/destruction effects remain
+  2-38c2, and asset editing remains open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source
@@ -601,6 +618,17 @@ the text leaves space for that disclosure mark.
   returns to the original definition. Busy work locks the controls. The workflow
   reuses the graphite fields, ivory focus and warm-metal actions without new
   tokens, artwork or decorative motion.
+- **Draft debug playtest:** Playtest draft reuses the editor's native action
+  treatment beside Save. Shared checks gate a copied unsaved definition and
+  checked local Blob-backed models before opening the existing HTML debug worker.
+  Return to draft leads the scrolling pane and survives worker failure. Existing
+  map, Force and palette controls support manual movement, health and placement
+  checks. The editor retains its fields while its rendering is suspended;
+  returning disposes the session/temporary URLs, resumes the model and restores
+  focus. Export command log includes the actual copied simulation definitions and
+  commands; Copy initial setup link is disabled because URLs cannot carry the
+  draft or its models. This 2-38c1 transition adds no tokens or native components
+  and does not change sources, normal matches or simulation behavior.
 - **Settings preview and feedback:** quality, UI scale, keyboard/edge camera pan
   speed, mouse sensitivity, drag inversion, edge scroll and reduced motion use the
   shared native fields, validation and device storage. Mouse camera sensitivity

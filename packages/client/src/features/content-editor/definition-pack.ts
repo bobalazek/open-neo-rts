@@ -139,6 +139,16 @@ export async function checkDefinitionDraft(
   path: string,
   draft: unknown,
 ) {
+  return (await resolveDefinitionDraft(packs, packId, path, draft)).issues;
+}
+
+/** Share the exact validated snapshot with authoring previews instead of resolving different inputs. */
+export async function resolveDefinitionDraft(
+  packs: readonly EditorPack[],
+  packId: string,
+  path: string,
+  draft: unknown,
+) {
   // shortcut: runtime audio, source freshness and formatting parity remain 2-38b2.
   if (new TextEncoder().encode(JSON.stringify(draft)).byteLength > 2 * 1024 * 1024)
     throw new Error("Definition JSON exceeds 2 MiB");
@@ -194,8 +204,9 @@ export async function checkDefinitionDraft(
           ...(await validateAssetGlb(data, file, model)).map((issue) => ({ ...issue, file })),
         );
     }
+    let gameplay: ReturnType<typeof compileGameplayCatalog> | undefined;
     try {
-      compileGameplayCatalog(catalog);
+      gameplay = compileGameplayCatalog(catalog);
     } catch (error) {
       issues.push({
         level: "error",
@@ -203,9 +214,10 @@ export async function checkDefinitionDraft(
         message: error instanceof Error ? error.message : "Gameplay compilation failed",
       });
     }
-    return issues;
+    return { issues, catalog, gameplay, bytes };
   } catch (error) {
-    if (error instanceof PackResolutionError) return [...error.issues];
+    if (error instanceof PackResolutionError)
+      return { issues: [...error.issues], catalog: undefined, gameplay: undefined, bytes };
     throw error;
   }
 }
