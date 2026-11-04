@@ -14,6 +14,7 @@ import {
   safeEditorPath,
   writeDefinition,
 } from "./definition-pack";
+import { MODEL_FILE_LIMIT } from "./model";
 
 type Data = Record<string, unknown>;
 type Kind = "unit" | "structure" | "prop";
@@ -75,7 +76,13 @@ export function mountDefinitionEditor(
   options: {
     initialId?: string;
     update(): void;
-    preview(value: { bytes: Uint8Array; raw: Data; name: string; kind: Kind }): Promise<void>;
+    preview(value: {
+      bytes: Uint8Array;
+      wreck?: Uint8Array;
+      raw: Data;
+      name: string;
+      kind: Kind;
+    }): Promise<void>;
     playtest(
       packs: readonly EditorPack[],
       packId: string,
@@ -384,7 +391,7 @@ export function mountDefinitionEditor(
   async function previewDraft(candidate = draft) {
     if (!current) return;
     const ticket = selection;
-    const presentation = candidate.presentation as { model?: unknown } | undefined;
+    const presentation = candidate.presentation as { model?: unknown; wreck?: string } | undefined;
     const source = current.pack.files.get(
       safeEditorPath(
         current.file.slice(0, current.file.lastIndexOf("/") + 1) +
@@ -392,8 +399,22 @@ export function mountDefinitionEditor(
       ),
     );
     if (!source) throw new Error(text("ui.editor.model-unavailable"));
+    const wreck = presentation?.wreck
+      ? current.pack.files.get(
+          safeEditorPath(
+            current.file.slice(0, current.file.lastIndexOf("/") + 1) + presentation.wreck,
+          ),
+        )
+      : undefined;
+    if (
+      source.size > MODEL_FILE_LIMIT ||
+      (presentation?.wreck && !wreck) ||
+      (wreck && wreck.size > MODEL_FILE_LIMIT)
+    )
+      throw new Error(text("ui.editor.model-unavailable"));
     const value = {
       bytes: new Uint8Array(await source.arrayBuffer()),
+      wreck: wreck && new Uint8Array(await wreck.arrayBuffer()),
       raw: structuredClone(candidate),
       name: String(candidate.name),
       kind: current.kind,

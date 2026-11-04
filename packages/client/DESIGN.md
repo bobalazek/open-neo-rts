@@ -116,12 +116,15 @@ beside it opens the native loading panel and normal Training Grounds match with
 an Eastern Collective mirror and basic bot. Its existing HUD exposes actual draft
 stats and recipes; Installed Field Manual identifies the installed reference.
 Return to draft restores the retained native editor and initiating action focus.
+Fire, Destroy and Restore model extend the retained pane with explicit isolated
+socket, recoil and destruction checks; unsaved fields apply only through Preview
+model. Functional model effects reuse original geometry without decorative motion.
 This records model inspection (2-38a),
 existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debug
 checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
 Full runtime audio, source freshness and exact formatter parity remain 2-38b2;
-broader authored opponent/map presets and isolated weapon/destruction previews
-remain 2-38c2. Asset editing remains open.
+broader authored opponent/map presets remain 2-38c2. Asset editing remains open,
+including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -166,6 +169,8 @@ Draft debug checks are recorded in
 `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 Temporary normal skirmishes are recorded in
 `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
+Isolated model actions use `../render/src/units/preview-actions.ts` and follow
+`../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -597,6 +602,18 @@ the text leaves space for that disclosure mark.
   controls and diagnostics retained after a failed candidate. Local success
   clears the installed selection. These controls inspect presentation and never
   write content or alter simulation state.
+- **Isolated model actions:** Fire, Destroy and Restore model reuse native framed
+  actions with contextual hover/focus descriptions and remain visible while
+  editing. They act on the loaded snapshot; unsaved changes require Preview
+  model. Fire uses assigned muzzle sockets, `fire_recoil`/`attack`, a short flash
+  and fixed model-relative direction tracer, without audio or combat simulation.
+  Destroy plays the complete authored death clip or scatters at most 32 original
+  geometry pieces, then shows the paired wreck when available. Matching driven
+  turret/barrel pivots carry aiming relative to rest, preserving authored wreck
+  tilt and other geometry. Restore returns to rest with team, LOD and damage
+  choices retained. Candidate model/wreck replacement succeeds together; failed
+  or superseded pairs retain the last good view. Replacement/disposal releases
+  owned effects and art; draft playtests pause the effect clock.
 - **Existing-definition authoring:** owner-selected packs supply unit, structure
   and prop definitions and their dependencies. Schema-derived fields reuse the
   native square inputs and choices, ivory focus and warm-metal actions. Only
@@ -615,8 +632,8 @@ the text leaves space for that disclosure mark.
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model checks gate saving, while
   full runtime audio, source freshness and exact formatter parity remain 2-38b2;
-  broader authored opponent/map presets and isolated weapon/destruction previews
-  remain 2-38c2, and asset editing remains open.
+  broader authored opponent/map presets remain 2-38c2, and asset editing remains
+  open, including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source

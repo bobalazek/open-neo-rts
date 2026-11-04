@@ -232,6 +232,14 @@ export function mountNativePanel(
     { signal: abort.signal },
   );
   semantics.addEventListener("change", update, { signal: abort.signal });
+  semantics.addEventListener(
+    "focusout",
+    (event) => {
+      const next = event.relatedTarget;
+      if (!(next instanceof Node) || !semantics.contains(next)) gui?.focus();
+    },
+    { signal: abort.signal },
+  );
   semantics.addEventListener("input", update, { signal: abort.signal });
   semantics.addEventListener("click", update, { signal: abort.signal });
   semantics.addEventListener("submit", update, { signal: abort.signal });

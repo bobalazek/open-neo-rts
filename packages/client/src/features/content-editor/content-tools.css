@@ -62,6 +62,11 @@
   background: #18262e;
   font: inherit;
 }
+.content-tools .model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .content-tools button {
   color: #ddc382;
   cursor: pointer;

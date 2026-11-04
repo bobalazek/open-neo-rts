@@ -2,6 +2,7 @@ import { AbstractMesh, ArcRotateCamera, Vector3 } from "@babylonjs/core";
 import { createEngine, createScene } from "../scene";
 import { loadModel } from ".";
 import { createModelLod, MODEL_LOD_DISTANCE } from "./lod";
+import { createModelActions, type ModelPreviewAssets } from "./preview-actions";
 
 /** An isolated asset scene for checking colours and clips before the match client exists. */
 export async function createModelPreview(canvas: HTMLCanvasElement) {
@@ -18,11 +19,20 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
   camera.attachControl(canvas, true);
   camera.minZ = 0.01;
   let current: Awaited<ReturnType<typeof loadModel>> | undefined;
+  let wreck: Awaited<ReturnType<typeof loadModel>> | undefined;
+  let actions: ReturnType<typeof createModelActions> | undefined;
+  let wreckLod: ReturnType<typeof createModelLod>;
   let lod: ReturnType<typeof createModelLod>;
   let lodMode: "auto" | "0" | "1" = "auto";
   let health = 100;
+  let lastFrame = performance.now();
   const render = () => {
-    lod?.setDistant(lodMode === "1" || (lodMode === "auto" && camera.radius >= MODEL_LOD_DISTANCE));
+    const now = performance.now();
+    actions?.update(now - lastFrame);
+    lastFrame = now;
+    const distant = lodMode === "1" || (lodMode === "auto" && camera.radius >= MODEL_LOD_DISTANCE);
+    lod?.setDistant(distant);
+    wreckLod?.setDistant(distant);
     scene.render();
   };
   engine.runRenderLoop(render);
@@ -58,6 +68,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
     setPaused(paused: boolean) {
       if (paused) engine.stopRenderLoop(render);
       else {
+        lastFrame = performance.now();
         resize();
         engine.runRenderLoop(render);
       }
@@ -65,21 +76,44 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
     cancelLoad: () => {
       request++;
     },
-    async load(bytes: Uint8Array, teamColor: string) {
+    async load(bytes: Uint8Array, teamColor: string, assets: ModelPreviewAssets = {}) {
       const ticket = ++request;
       const next = await loadModel(scene, bytes);
       if (ticket !== request) {
         next.dispose();
         return undefined;
       }
+      let nextWreck: typeof wreck;
+      let nextActions: typeof actions;
       try {
         next.setTeamColor(teamColor);
+        // Hide staged art while its paired wreck loads; failed pairs retain the previous model.
+        for (const node of next.nodes)
+          if (!next.nodes.some((parent) => parent === node.parent)) node.setEnabled(false);
+        if (assets.wreck) {
+          nextWreck = await loadModel(scene, assets.wreck);
+          nextWreck.setTeamColor(teamColor);
+        }
+        if (ticket !== request) {
+          next.dispose();
+          nextWreck?.dispose();
+          return undefined;
+        }
+        nextActions = createModelActions(scene, next, nextWreck, assets.weapons);
       } catch (error) {
+        nextActions?.dispose();
         next.dispose();
+        nextWreck?.dispose();
         throw error;
       }
+      actions?.dispose();
       current?.dispose();
+      wreck?.dispose();
       current = next;
+      wreck = nextWreck;
+      actions = nextActions;
+      actions.reset();
+      wreckLod = wreck && createModelLod(wreck.nodes, wreck.meshes);
       // Health uses enablement; establish visible state geometry before LOD owns its visibility mask.
       for (const node of next.nodes)
         if (node instanceof AbstractMesh && ["state_damaged", "state_critical"].includes(node.name))
@@ -90,8 +124,19 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
       frame();
       return next.clips;
     },
-    setTeamColor: (hex: string) => current?.setTeamColor(hex),
-    play: (name: string) => current?.play(name),
+    canFire: () => actions?.canFire ?? false,
+    canDestroy: () => actions?.canDestroy ?? false,
+    fire: () => actions?.fire(),
+    destroy: () => actions?.destroy(),
+    reset() {
+      actions?.reset();
+      showHealth();
+    },
+    setTeamColor: (hex: string) => actions?.setTeamColor(hex),
+    play(name: string) {
+      actions?.reset();
+      current?.play(name);
+    },
     setLod(mode: "auto" | "0" | "1") {
       if (!["auto", "0", "1"].includes(mode)) throw new RangeError("Invalid LOD");
       lodMode = mode;
@@ -101,11 +146,14 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
       if (!Number.isFinite(percent) || percent < 0 || percent > 100)
         throw new RangeError("Invalid preview health");
       health = percent;
+      actions?.reset();
       showHealth();
     },
     dispose() {
       request++;
+      actions?.dispose();
       current?.dispose();
+      wreck?.dispose();
       window.removeEventListener("resize", resize);
       scene.dispose();
       engine.dispose();

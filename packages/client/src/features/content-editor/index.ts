@@ -64,6 +64,22 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   for (const help of root.querySelectorAll<HTMLElement>("p:not([role]):not([data-empty])"))
     help.hidden = true;
   const checks = root.querySelector<HTMLElement>("[data-model-checks]")!;
+  const actions = document.createElement("div");
+  actions.className = "model-actions";
+  const action = (key: "fire" | "destroy" | "restore") => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = text(`ui.tools.${key}`);
+    button.title = text(`ui.tools.${key}-help`);
+    button.setAttribute("data-contextual-help", "");
+    button.disabled = true;
+    actions.append(button);
+    return button;
+  };
+  const fire = action("fire"),
+    destroy = action("destroy"),
+    restore = action("restore");
+  health.closest("label")!.after(actions);
   checks.setAttribute("data-panel-content", "");
   const semantics = root.querySelector("section")!;
   const edit = document.createElement("button");
@@ -81,7 +97,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         (element) => [element as HTMLElement, (element as HTMLElement).hidden] as const,
       );
       for (const [element] of previous)
-        if (element.tagName !== "HEADER" && element !== error) element.hidden = true;
+        if (element.tagName !== "HEADER" && element !== error && element !== actions)
+          element.hidden = true;
       checks.removeAttribute("data-panel-content");
       editor = mountDefinitionEditor(semantics, {
         initialId: opened?.raw?.id as string | undefined,
@@ -180,7 +197,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   let fetching: AbortController | undefined;
   let closePlaytest: (() => void) | undefined;
   let opened:
-    | { bytes: Uint8Array; name: string; kind: ModelKind; raw?: Record<string, unknown> }
+    | {
+        bytes: Uint8Array;
+        wreck?: Uint8Array;
+        name: string;
+        kind: ModelKind;
+        raw?: Record<string, unknown>;
+      }
     | undefined;
   let pending: (() => Promise<void>) | undefined;
   const mountPanel = () =>
@@ -259,7 +282,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     const ticket = ++request;
     fetching?.abort();
     preview?.cancelLoad();
-    clip.disabled = lod.disabled = health.disabled = true;
+    clip.disabled =
+      lod.disabled =
+      health.disabled =
+      fire.disabled =
+      destroy.disabled =
+      restore.disabled =
+        true;
     status.textContent = text("ui.tools.loading");
     error.textContent = "";
     retry.hidden = true;
@@ -268,9 +297,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       const candidate = await source();
       if (disposed || ticket !== request) return;
       inspectModel(candidate.bytes, candidate.kind, candidate.raw);
+      if (candidate.wreck) inspectModel(candidate.wreck, "wreck");
       const scene = await viewer();
       if (disposed || ticket !== request) return;
-      const clips = await scene.load(candidate.bytes, team.value);
+      const clips = await scene.load(candidate.bytes, team.value, {
+        wreck: candidate.wreck,
+        weapons: candidate.raw
+          ? ((candidate.raw.weapons ?? []) as { socket?: string }[])
+          : undefined,
+      });
       if (disposed || ticket !== request || !clips) return;
       opened = candidate;
       if (!candidate.raw) {
@@ -288,6 +323,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       clip.disabled = !clips.length;
       lod.disabled = !scene.setLod(lod.value as "auto" | "0" | "1");
       health.disabled = !info.hasDamage;
+      fire.disabled = !scene.canFire();
+      destroy.disabled = restore.disabled = false;
       scene.setTeamColor(team.value);
       scene.setLod(lod.value as "auto" | "0" | "1");
       scene.setHealth(Number(health.value));
@@ -303,6 +340,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         clip.disabled = !info.clips.length;
         lod.disabled = !preview?.setLod(lod.value as "auto" | "0" | "1");
         health.disabled = !info.hasDamage;
+        fire.disabled = !preview?.canFire();
+        destroy.disabled = !preview?.canDestroy();
+        restore.disabled = false;
       }
     } finally {
       if (!disposed && ticket === request) panel.update();
@@ -317,9 +357,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         fetching = new AbortController();
         const response = await fetch(entry.model, { signal: fetching.signal });
         if (!response.ok) throw new Error("Model request failed");
+        let wreck: Uint8Array | undefined;
+        if (entry.wreck) {
+          const response = await fetch(entry.wreck, { signal: fetching.signal });
+          if (!response.ok) throw new Error("Wreck request failed");
+          wreck = new Uint8Array(await response.arrayBuffer());
+        }
         return {
           name: entry.name,
           bytes: new Uint8Array(await response.arrayBuffer()),
+          wreck,
           kind: entry.kind,
           raw: entry.raw,
         };
@@ -387,6 +434,36 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     { signal: events.signal },
   );
   search.addEventListener("input", filter, { signal: events.signal });
+  fire.addEventListener(
+    "click",
+    () => {
+      preview?.fire();
+      clip.value = "";
+      panel.update();
+    },
+    { signal: events.signal },
+  );
+  destroy.addEventListener(
+    "click",
+    () => {
+      preview?.destroy();
+      clip.value = "";
+      fire.disabled = destroy.disabled = true;
+      panel.update();
+    },
+    { signal: events.signal },
+  );
+  restore.addEventListener(
+    "click",
+    () => {
+      preview?.reset();
+      clip.value = "";
+      fire.disabled = !preview?.canFire();
+      destroy.disabled = false;
+      panel.update();
+    },
+    { signal: events.signal },
+  );
   definition.addEventListener(
     "change",
     () => {
@@ -405,6 +482,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       "change",
       () => {
         update();
+        if (control === clip || control === health) {
+          fire.disabled = !preview?.canFire();
+          destroy.disabled = !opened;
+        }
         panel.update();
       },
       { signal: events.signal },
