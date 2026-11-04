@@ -1,0 +1,3 @@
+anoisesrc=color=pink:amplitude=0.55:sample_rate=48000:duration=0.32:seed=3217,highpass=f=450,lowpass=f=6000,afade=t=out:st=0:d=0.22[tip];
+aevalsrc='(0.22*sin(2*PI*210*t)+0.1*sin(2*PI*1360*t))*exp(-32*t)':s=48000:d=0.32[clunk];
+[tip][clunk]amix=inputs=2:normalize=0,volume=0.5,afade=t=in:d=0.002,afade=t=out:st=0.25:d=0.07

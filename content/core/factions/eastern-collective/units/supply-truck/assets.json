@@ -1,5 +1,13 @@
 {
   "files": {
+    "supply-truck.harvest.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/supply-truck.harvest.lavfi"
+    },
+    "supply-truck.unload.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/supply-truck.unload.lavfi"
+    },
     "supply-truck.glb": {
       "author": "Borut Balazek",
       "source": "source/supply-truck.bricks.json"

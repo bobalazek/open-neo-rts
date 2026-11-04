@@ -1,5 +1,13 @@
 {
   "files": {
+    "field-technician.build.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/field-technician.build.lavfi"
+    },
+    "field-technician.build_complete.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/field-technician.build_complete.lavfi"
+    },
     "field-technician.glb": {
       "author": "Borut Balazek",
       "source": "source/field-technician.bricks.json"

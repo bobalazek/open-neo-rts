@@ -40,6 +40,19 @@ test.beforeAll(() => {
   );
 });
 test.afterAll(() => rmSync(output, { recursive: true, force: true }));
+test.beforeEach(async ({ page }) => {
+  await page.route("http://combat-audio.test/**", (route) => {
+    const name = basename(new URL(route.request().url()).pathname);
+    return route.fulfill(
+      name
+        ? {
+            contentType: name.endsWith(".ogg") ? "audio/ogg" : "text/javascript",
+            body: readFileSync(resolve(output, name === "sim-worker.js" ? "entry.js" : name)),
+          }
+        : { contentType: "text/html", body: "<!doctype html><title>Match audio proof</title>" },
+    );
+  });
+});
 
 test("original rifle and cannon clips play from real normal-worker launches, impacts and deaths", async ({
   page,
@@ -79,17 +92,6 @@ test("original rifle and cannon clips play from real normal-worker launches, imp
       }
       return result;
     } as typeof connect;
-  });
-  await page.route("http://combat-audio.test/**", (route) => {
-    const name = basename(new URL(route.request().url()).pathname);
-    return route.fulfill(
-      name
-        ? {
-            contentType: name.endsWith(".ogg") ? "audio/ogg" : "text/javascript",
-            body: readFileSync(resolve(output, name === "sim-worker.js" ? "entry.js" : name)),
-          }
-        : { contentType: "text/html", body: "<!doctype html><title>Combat audio proof</title>" },
-    );
   });
   for (const unit of ["collective-soldier", "dragon-tank"]) {
     const candidate = structuredClone(setup);
@@ -182,5 +184,123 @@ test("original rifle and cannon clips play from real normal-worker launches, imp
       .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").engine.state))
       .toBe("closed");
   }
+  expect(errors).toEqual([]);
+});
+
+test("original construction and hauling audio follows real build, mine and unload work", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const candidate = structuredClone(setup);
+  if (!candidate.normal) throw new Error("Missing original normal setup");
+  candidate.normal = {
+    ...candidate.normal,
+    bots: [],
+    settings: { ...candidate.normal.settings, fog: "off" },
+  };
+  candidate.map = {
+    ...flatMap(48),
+    spawns: [
+      { id: "north-west", position: [12 * 1024, 12 * 1024], facing: 16384 },
+      { id: "south-east", position: [36 * 1024, 36 * 1024], facing: 49152 },
+    ],
+    resources: [{ kind: "ore", position: [16 * 1024, 20 * 1024], amount: 5, radius: 0 }],
+  };
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("http://combat-audio.test/");
+  await page.evaluate(async (setup) => {
+    const url = "/combat-audio-proof.js";
+    const { mount } = (await import(url)) as typeof import("./combat-audio-proof");
+    mount(setup);
+  }, candidate);
+  await page.getByRole("button", { name: "Start combat audio" }).click();
+  await expect(page.getByRole("button", { name: "Combat audio ready" })).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const f = Reflect.get(window, "combatAudio");
+    const builders = f
+      .state()
+      .snapshot.entities.filter(
+        (entity: { force: number; definition: string }) =>
+          entity.force === 0 && entity.definition.endsWith("/field-technician"),
+      );
+    return f.command("economy.build", {
+      force: 0,
+      definition: "core.structure:eastern-collective/supply-depot",
+      builders: builders.map((entity: { handle: string }) => entity.handle),
+      x: 7 * 1024,
+      y: 8 * 1024,
+      facing: 16384,
+    });
+  });
+  expect(result).toBe("accepted");
+  for (const [phase, clip] of [
+    ["harvest", "supply-truck.harvest"],
+    ["build", "field-technician.build"],
+    ["complete", "field-technician.build_complete"],
+    ["unload", "supply-truck.unload"],
+  ]) {
+    expect(
+      await page.evaluate(async (phase) => {
+        const f = Reflect.get(window, "combatAudio");
+        const reached = () =>
+          f
+            .state()
+            .snapshot.entities.some(
+              (entity: import("../../../packages/sim/src").PresentedEntity) =>
+                entity.force === 0 &&
+                (phase === "complete"
+                  ? entity.definition.endsWith("/supply-depot") && !entity.constructionSite
+                  : phase === "build"
+                    ? (entity.construction?.buildersWorking ?? 0) > 0
+                    : entity.workAnimation === phase),
+            );
+        for (let tick = 0; tick < 1600 && !reached(); tick++) await f.step();
+        const result = {
+          reached: reached(),
+          tick: f.state().snapshot.tick,
+          workers: f
+            .state()
+            .snapshot.entities.filter(
+              (entity: import("../../../packages/sim/src").PresentedEntity) =>
+                entity.force === 0 &&
+                (entity.harvesting || entity.definition.endsWith("/supply-depot")),
+            ),
+          power: f.state().snapshot.power,
+        };
+        if (!result.reached) throw new Error(JSON.stringify(result));
+        return result;
+      }, phase),
+      `${phase} work reached`,
+    ).toMatchObject({ reached: true });
+    await expect
+      .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").played))
+      .toEqual(expect.arrayContaining([expect.stringContaining(clip!)]));
+    if (phase === "complete") {
+      // Finished builders may occupy the authored dock/exit; clear them with an ordinary order.
+      expect(
+        await page.evaluate(async () => {
+          const f = Reflect.get(window, "combatAudio");
+          const entities = f
+            .state()
+            .snapshot.entities.filter(
+              (entity: import("../../../packages/sim/src").PresentedEntity) =>
+                entity.force === 0 && entity.definition.endsWith("/field-technician"),
+            );
+          return f.command("unit.move", {
+            entities: entities.map(
+              (entity: import("../../../packages/sim/src").PresentedEntity) => entity.handle,
+            ),
+            x: 5 * 1024 + 512,
+            y: 6 * 1024 + 512,
+          });
+        }),
+      ).toBe("accepted");
+    }
+  }
+  await page.evaluate(() => Reflect.get(window, "combatAudio").dispose());
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").engine.state))
+    .toBe("closed");
   expect(errors).toEqual([]);
 });
