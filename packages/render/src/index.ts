@@ -10,6 +10,14 @@ import { CELL_SIZE, createTerrain } from "./terrain";
 export type { Biome } from "@open-neo-rts/content";
 export { cameraGroundView } from "./camera";
 export { createCombatEffects, eventVisible } from "./effects";
+export {
+  AUDIO_BUSES,
+  type AudioBusName,
+  type AudioPlayOptions,
+  type AudioVolumes,
+  createAudioMixer,
+  createAudioTestCue,
+} from "./effects/audio";
 export { createFogPresentation } from "./fog";
 export { createDebugOverlays, type DebugOverlayVisibility } from "./overlays";
 export { createInteractionOutline } from "./overlays/interaction";

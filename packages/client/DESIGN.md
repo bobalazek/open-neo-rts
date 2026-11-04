@@ -48,6 +48,12 @@ conflict feedback. Applied bindings update the running match's captions while
 command positions stay fixed; graphite controls and warm status/coral alerts
 reuse the existing panel vocabulary.
 
+The Audio pane extends those same Settings from Home and a match with channel
+and integer-percentage choices, live preview, Test sound and explicit Apply or
+Back. Graphite fields, warm-metal actions and coral recovery retain the incumbent
+world. Audio descriptions appear on native hover/focus and in semantic accessible
+descriptions; status and recovery remain visible.
+
 Load and results extend that shared native panel with original match thumbnails,
 selected-slot details, framed tabs, history plots and complete scrollable tables.
 Their existing controllers and semantic HTML remain authoritative; the canvas
@@ -97,6 +103,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
 - Native staged keyboard bindings with explicit conflicts and live match captions.
+- Native Audio preview and testing with contextual help and explicit save/cancel recovery.
 - Native save-before-replacement decisions with explicit cancellation and recovery.
 - Native save galleries with original match thumbnails and selected-slot details.
 - Native results with original plots and complete scrollable match records.
@@ -271,6 +278,14 @@ the footer reserves 20px scaled plus a 16px scaled gap and measured error only
 when present. Action rows use a 52px scaled pitch. Focus reveals its control and
 help when the combined span fits the scroll region.
 
+Audio keeps Back and title in the fixed header, with channel/volume, mute choices
+and Test sound, Defaults and primary Apply in the responsive scrolling body.
+Its contextual descriptions reserve no standing help block; status and errors
+retain their fixed visible areas. Shared choice popups clamp to viewport edges
+and contain an inner scroll viewer. The selected value is initially revealed;
+wheel, scrollbar drag and pointer selection keep every percentage and long
+Controls action list reachable.
+
 Save-before-replacement uses this compact measured layout. Cancel stays in the
 fixed header; primary Save and explicit continue-without-saving actions share
 the responsive body grid. Pending status and failure alerts remain outside its
@@ -410,6 +425,24 @@ the text leaves space for that disclosure mark.
   and reduced motion keep existing validation and storage. Preview applies live;
   Apply saves, Defaults previews defaults and Back/cancel restores saved values.
   Status is warm metal, errors light coral; empty notices reserve no extra block.
+- **Audio controls:** Settings from Home and a match share Master plus Music,
+  Effects, Unit voices, Announcer, Interface and Ambience choices and integer
+  0–100% previews. Test sound plays through the selected channel; Master uses
+  Interface. Mute all and mute when unfocused preserve levels. Defaults previews
+  defaults; primary Apply saves the separate versioned device profile, while
+  Back/cancel restores saved levels. Failed writes retain saved values and the
+  editable preview with a visible coral recovery alert. Only Audio marks
+  title-derived descriptions as contextual: native hover/focus tooltips use the
+  existing graphite, ivory and warm-metal treatment, while hidden semantic text
+  supplies `aria-describedby`. Permanent help outside Audio stays unchanged.
+  One application-owned Babylon Audio V2 mixer activates lazily by gesture and
+  survives navigation. The original procedural PCM interface/test cue and
+  data-resolved normal-match fire/death seam are the present audio scope;
+  authored gameplay clips, effects/music/speech assets, announcements/subtitles/
+  priority queue, playlist/ducking, loudness validation and replay audio remain
+  open. This does not complete first-playable audio or qualify hardware hearing
+  and OS media keys. See
+  `../../docs/project/decisions/2026-11-03-device-audio-mixer.md`.
 - **Keyboard controls:** Settings and the pause menu open the shared native
   panel's editor for 64 implemented normal-match actions. Category/action and
   primary/alternate choice fields expose up to two physical key-code chords or

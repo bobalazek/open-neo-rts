@@ -2,6 +2,7 @@
 import type { GraphicsQuality } from "@open-neo-rts/render";
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
+import { audioScreen } from "./audio-screen";
 import { bindingsScreen } from "./bindings-screen";
 
 export const DEVICE_SETTINGS_KEY = "open-neo-rts.settings.v1";
@@ -104,23 +105,31 @@ export function settingsScreen(
   semantics.append(preferences);
   const controlsHost = document.createElement("div");
   let controls: ReturnType<typeof bindingsScreen> | undefined;
-  const controlsButton = document.createElement("button");
-  controlsButton.type = "button";
-  controlsButton.textContent = text("ui.bindings.title");
-  preferences.querySelector("header")!.after(controlsButton);
-  controlsButton.addEventListener("click", () => {
-    preferences.replaceWith(controlsHost);
-    controls = bindingsScreen(controlsHost, () => {
-      controls?.dispose();
-      controls = undefined;
-      controlsHost.replaceChildren();
-      controlsHost.replaceWith(preferences);
+  let child: "bindings" | "audio" | undefined;
+  for (const [id, editor] of [
+    ["bindings", bindingsScreen],
+    ["audio", audioScreen],
+  ] as const) {
+    const controlsButton = document.createElement("button");
+    controlsButton.type = "button";
+    controlsButton.textContent = text(id === "audio" ? "ui.audio.title" : "ui.bindings.title");
+    preferences.querySelector("header")!.after(controlsButton);
+    controlsButton.addEventListener("click", () => {
+      child = id;
+      preferences.replaceWith(controlsHost);
+      controls = editor(controlsHost, () => {
+        controls?.dispose();
+        controls = undefined;
+        child = undefined;
+        controlsHost.replaceChildren();
+        controlsHost.replaceWith(preferences);
+        panel?.update();
+        controlsButton.focus({ preventScroll: true });
+      });
       panel?.update();
-      controlsButton.focus({ preventScroll: true });
+      controlsHost.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
     });
-    panel?.update();
-    controlsHost.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
-  });
+  }
   const field = (name: string) =>
     form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   const fill = (value: DeviceSettings) => {
@@ -194,8 +203,11 @@ export function settingsScreen(
   root.querySelector("[data-back]")?.addEventListener("click", back);
   if (canvas)
     panel = mountNativePanel(root, semantics, canvas, {
-      id: () => (controls ? "bindings" : "settings"),
-      title: () => text(controls ? "ui.bindings.title" : "ui.settings.title"),
+      id: () => child ?? "settings",
+      title: () =>
+        text(
+          child === "audio" ? "ui.audio.title" : child ? "ui.bindings.title" : "ui.settings.title",
+        ),
       modal: false,
     });
   return {

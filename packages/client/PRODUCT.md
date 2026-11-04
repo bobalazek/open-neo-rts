@@ -58,6 +58,25 @@ source.
 - Settings use the same preferences, validation and storage from Home and in a
   match. Changes preview immediately; Apply persists them, while Back or cancel
   restores the saved preferences. Graphics failure leaves semantic HTML usable.
+- Settings → Audio opens the same native pane from Home and a match. One
+  application-owned Babylon Audio V2 mixer activates lazily through a user
+  gesture and survives navigation, with Master plus Music, Effects, Unit voices,
+  Announcer, Interface and Ambience channels. Integer percentages preview live;
+  Test sound uses the selected channel (Master tests Interface). Mute all and
+  mute when unfocused preserve channel levels. Defaults previews the provisional
+  defaults; Apply saves a separate versioned device profile. Back/cancel restores
+  saved levels; a failed write keeps both the saved profile and editable preview.
+  Only Audio uses title-derived contextual native hover/focus tooltips with hidden
+  semantic `aria-describedby` text; status and errors stay visible, and permanent
+  help elsewhere stays in place. Shared native choice popups fit the viewport,
+  reveal the selected value initially and scroll by wheel or scrollbar drag;
+  pointer selection reaches all 101 percentages and long Controls action lists.
+  The original procedural PCM interface/test cue and data-resolved normal-match
+  fire/death seam establish the initial path. No authored gameplay clips exist
+  yet; effects/music/speech assets, announcements/subtitles/priority queue,
+  playlist/ducking, loudness validation and replay audio remain open. This does
+  not complete first-playable audio. Hardware hearing and OS media keys remain
+  unqualified. See `../../docs/project/decisions/2026-11-03-device-audio-mixer.md`.
 - Keyboard controls in Settings and the pause menu use the same native panel to
   edit a versioned device-local profile for 64 currently implemented normal-match
   actions. Category, action and primary/alternate choices expose up to two

@@ -80,6 +80,7 @@ export function mountNativePanel(
     const action = (control: HTMLButtonElement) => ({
       id: control.dataset.nativeAction!,
       label: control.textContent ?? "",
+      ...(control.hasAttribute("data-contextual-help") && { tooltip: control.title }),
       primary:
         control.classList.contains("primary") ||
         control.hasAttribute("data-resume") ||
@@ -128,7 +129,10 @@ export function mountNativePanel(
       fields: fields.map((control) => ({
         id: control.dataset.nativeField!,
         label: label(control),
-        help: control.closest("label")?.querySelector("small")?.textContent ?? control.title,
+        help: control.hasAttribute("data-contextual-help")
+          ? ""
+          : (control.closest("label")?.querySelector("small")?.textContent ?? control.title),
+        ...(control.hasAttribute("data-contextual-help") && { tooltip: control.title }),
         value:
           control instanceof HTMLInputElement && control.type === "checkbox"
             ? control.checked

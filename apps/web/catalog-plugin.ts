@@ -56,8 +56,23 @@ export default {
             imports.push(`import ${icon} from ${JSON.stringify(iconPath)};`);
           }
         }
+        const sounds = (content.presentation as { sounds?: Record<string, string> }).sounds ?? {};
+        const soundRefs: string[] = [];
+        for (const [event, file] of Object.entries(sounds)) {
+          const soundPath = resolve(dirname(path), file);
+          if (
+            !(await Bun.file(soundPath).exists()) ||
+            (await Bun.file(soundPath).slice(0, 43).text()).startsWith(
+              "version https://git-lfs.github.com/spec/v1",
+            )
+          )
+            continue;
+          const name = `sound${index}_${soundRefs.length}`;
+          imports.push(`import ${name} from ${JSON.stringify(soundPath)};`);
+          soundRefs.push(`${JSON.stringify(event)}:${name}`);
+        }
         entries.push(
-          `{raw:${JSON.stringify(raw)}, model:${urls.model}, wreck:${urls.wreck}, icon:${icon}}`,
+          `{raw:${JSON.stringify(raw)}, model:${urls.model}, wreck:${urls.wreck}, icon:${icon}, sounds:{${soundRefs.join(",")}}}`,
         );
       }
       return {
