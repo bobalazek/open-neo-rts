@@ -24,6 +24,26 @@ test("native Audio previews actual output, saves independently, restores Back an
   test.setTimeout(120_000);
   await observeNativePaint(page);
   await page.addInitScript(() => {
+    // Isolate the UI channel; music playback has its own end-to-end coverage.
+    const key = "open-neo-rts.audio.v1";
+    if (!localStorage.getItem(key))
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          format: 1,
+          volumes: {
+            master: 70,
+            music: 0,
+            effects: 80,
+            voices: 80,
+            announcer: 90,
+            ui: 60,
+            ambience: 50,
+          },
+          muted: false,
+          muteUnfocused: true,
+        }),
+      );
     const probe = { peak: 0, starts: 0, fail: false, contexts: [] as BaseAudioContext[] };
     Reflect.set(window, "audioProbe", probe);
     const connect = AudioNode.prototype.connect;
@@ -261,6 +281,44 @@ test("Babylon audio bounds voices, prioritizes independently positioned sources 
     const after = f.engine.sounds.filter(
       (s: { activeInstancesCount: number }) => s.activeInstancesCount,
     ).length;
+    const music = f.mixer.scope(),
+      announcer = f.mixer.scope();
+    await music.play(f.cue, { bus: "music", loop: true });
+    const musicBus = f.engine.sounds.find(
+      (sound: { outBus?: { name: string } }) => sound.outBus?.name === "music",
+    ).outBus;
+    const brief = new AudioBuffer({ sampleRate: 44100, length: 44100, numberOfChannels: 1 });
+    brief.copyToChannel(f.cue.getChannelData(0).slice(0, 44100), 0);
+    const level = async (target: number) => {
+      const deadline = performance.now() + 3000;
+      while (Math.abs(musicBus.volume - target) > 0.005) {
+        if (performance.now() > deadline) throw new Error(`Music gain did not reach ${target}`);
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      return musicBus.volume;
+    };
+    let completed = 0;
+    let finish: () => void = () => {};
+    const ended = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    await announcer.play(brief, {
+      bus: "announcer",
+      onEnded: () => {
+        completed++;
+        finish();
+      },
+    });
+    const ducked = await level(0.35);
+    await ended;
+    const restoredMusic = await level(1);
+    await announcer.play(f.cue, { bus: "announcer", onEnded: () => completed++ });
+    f.mixer.apply({ ...f.volumes, music: 50 }, false);
+    const previewDucked = await level(0.175);
+    announcer.stop();
+    const previewRestored = await level(0.5);
+    music.dispose();
+    announcer.dispose();
     f.mixer.dispose();
     return {
       distant,
@@ -277,9 +335,19 @@ test("Babylon audio bounds voices, prioritizes independently positioned sources 
       loopPosition,
       culledLoop,
       loopsAfterCull,
+      ducked,
+      restoredMusic,
+      previewDucked,
+      previewRestored,
+      completed,
     };
   });
-  expect(result).toEqual({
+  expect(result.ducked).toBeCloseTo(0.35);
+  expect(result.restoredMusic).toBeCloseTo(1);
+  expect(result.previewDucked).toBeCloseTo(0.175);
+  expect(result.previewRestored).toBeCloseTo(0.5);
+  expect(result.completed).toBe(1);
+  expect(result).toMatchObject({
     distant: [false, false, false, false, false, false],
     first: [true, true, true, true, true, true],
     refused: false,

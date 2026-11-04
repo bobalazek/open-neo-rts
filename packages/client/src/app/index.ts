@@ -203,6 +203,7 @@ export function startApp(canvas: HTMLCanvasElement) {
       session = candidate;
       config = { ...selected };
       committed = true;
+      audio.music("match");
       history.pushState(null, "", "/match");
     } catch (error) {
       candidate.dispose();
@@ -255,6 +256,7 @@ export function startApp(canvas: HTMLCanvasElement) {
     }
   }
   function show(notice = "") {
+    audio.music(location.pathname.startsWith("/replay/") ? undefined : "menu");
     if (location.pathname === "/replays") {
       disposeScreen = replayLibrary(
         root,

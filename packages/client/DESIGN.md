@@ -715,10 +715,11 @@ the text leaves space for that disclosure mark.
   existing graphite, ivory and warm-metal treatment, while hidden semantic text
   supplies `aria-describedby`. Permanent help outside Audio stays unchanged.
   One application-owned Babylon Audio V2 mixer activates lazily by gesture and
-  survives navigation. The original procedural PCM interface/test cue and
-  data-resolved normal-match fire/death seam are the present audio scope;
-  authored gameplay clips, effects/music/speech assets, announcements/subtitles/
-  priority queue, playlist/ducking, loudness validation and replay audio remain
+  survives navigation. Original first-playable effects and menu/match music use
+  this mixer. Music/Master preview, mute and focus behavior govern the current
+  soundtrack; active announcer-bus audio ducks it without replacing saved levels.
+  Speech, announcements/subtitles/priority queue, other-roster clips, full-mix
+  qualification and replay audio remain
   open. This does not complete first-playable audio or qualify hardware hearing
   and OS media keys. See
   `../../docs/project/decisions/2026-11-03-device-audio-mixer.md`.

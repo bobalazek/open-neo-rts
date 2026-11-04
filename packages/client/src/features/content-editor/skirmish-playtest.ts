@@ -102,6 +102,7 @@ export function startDraftSkirmish(
         closeLoading?.();
         root.style.visibility = canvas.style.visibility = "";
         canvas.dataset.session = "ready";
+        audio.music("match");
         canvas.focus({ preventScroll: true });
       })
       .catch((error) => {

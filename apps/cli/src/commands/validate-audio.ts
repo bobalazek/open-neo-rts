@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 
 /** Runtime clips are one complete logical stream; decoders also accept truncated/chained streams. */
 function framingError(bytes: Buffer): string | undefined {
@@ -81,6 +81,7 @@ export function validateAudio(file: string, mono: boolean): string[] {
   }
   if (channels < 1 || channels > 2) return ["runtime audio requires one or two channels"];
   if (mono && channels !== 1) return ["unit, structure and prop sound effects must be mono"];
+  if (basename(dirname(file)) === "music" && channels !== 2) return ["music tracks must be stereo"];
   const executable = Bun.which("ffmpeg");
   if (!executable)
     return ["audio validation requires FFmpeg on PATH (brew install ffmpeg / apt install ffmpeg)"];
