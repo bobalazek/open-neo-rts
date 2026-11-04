@@ -1,5 +1,15 @@
 # Handoff
 
+## SIM59 qualification completed, 2026-11-04
+
+The [twenty-seed result](./learnings/2026-11-04-sim59-complete-matches.md) is now
+complete: forty natural outcomes, no crash/cap/divergence, process exit 0.
+Preserve `/tmp/neo-sim59-qualification-20261104` and its companion `.log`, frozen
+source `601c9596a2d59432ee5c1b87e4a122f1b637082f` in `/tmp/neo-roster-audio`.
+The old process handle is terminal. Earlier running/incomplete statements below
+are historical; do not restart those old batches. The human duration/roster-use
+exit and remaining phase-2 work stay open.
+
 Snapshot on 2026-11-02. Continue the active roadmap goal; all phases are not complete.
 Use [tasks](./tasks.md) and the [phase-2 plan](./phases/2.md).
 

@@ -38,12 +38,16 @@ isolates the pinned Babylon range representation.
 native installed/local model controls and shared validation at `/tools/content`.
 Definition editing, safe saves, draft playtests and asset editing remain below.
 
+The [SIM59 qualification](./learnings/2026-11-04-sim59-complete-matches.md)
+completed all twenty seeded bot mirrors twice without a crash, cap or divergence.
+The real human match, duration, roster-use and other phase-2 exit clauses remain
+open; most AI mirrors exceeded 25 simulated minutes.
+
 - [ ] [2-33b2 · Independent canonical-byte validators](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; complete per-feature invariants before accepting unverified canonical files directly. [Owned keyframes and verified saves](./decisions/2026-11-03-owned-keyframe-restoration.md) now restore canonical state; external imports retain history verification.
 - [ ] [2-38b · Definition editing and safe saving](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; schema-derived edits, complete shared validation, file-access fallback and conflicts.
 - [ ] [2-38c · Draft playtests and effects](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; validated drafts through debug, suitable terrain/opponents and remaining weapon/destruction previews.
 - [ ] [2-38d · Asset editing](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; part/socket gizmos, safe GLB socket export and remaining editor tabs.
 - [ ] [2-17c · World-marker drag/delete interaction](./phases/2.md#2-17--finish-first-playable-context-orders). PR type: engine; later interaction polish for the delivered Shift queues, which already support waypoint editing/removal in the HUD.
-- [ ] [2-40b · Finish seeded complete-match qualification](./phases/2.md#2-40--seeded-ai-vs-ai-match-runner). PR type: tooling at the remaining gameplay integration boundary. The [observed-base search repair](./decisions/2026-11-03-bot-base-perimeter-search.md) completes seed 20 naturally and reproducibly. [Extractor rubble recovery](./decisions/2026-11-04-bot-extractor-recovery.md) addresses a reproduced SIM58 seed-2 economy failure; twenty current-version complete outcomes and the human duration gate remain unqualified.
 - [ ] [2-21b1c · Clipped construction depth passes](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; later visual polish after functional lifecycle work, replacing the current no-shadow policy for partial structures.
 - [ ] [2-21b3a · Diagnose intermittent first-sample debris colors](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine or tooling after diagnosis; parallel browser captures sometimes show white initial debris, while later and independent first-only captures have correct colors. Preserve contrary evidence; polish after builder clearance.
 - [ ] [2-31b · Remaining input settings](./phases/2.md#2-31--in-game-pausemenu-and-device-settings). PR type: engine; native save-before-replacement, current-match keyboard profiles and audio mixer/preferences are implemented. Add remaining mouse/overlay or unimplemented action settings with their actual systems.
