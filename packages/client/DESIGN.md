@@ -91,8 +91,16 @@ individual action descriptions remain on hover/focus. Guidance preferences and
 history reset stay staged until Apply in the shared native panel. Reference links
 reuse the paused menu and manual rather than adding a teaching overlay.
 
+Content tools extend Graphite Command Stations with original models as the main
+subject and a native graphite inspection pane. Existing framed choices change
+actual team materials, authored clips, supported LOD branches and damage-state
+nodes. Expandable tables expose project checks and parsed model inventories.
+The model starts at rest; animation follows an explicit clip choice. This is the
+model-inspection surface of 2-38a; definition editing, safe saves, draft playtests
+and asset editing remain 2-38b/c/d.
+
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
-results, local Replays, Field Manual and native normal match HUD. Debug retains HTML/CSS presentation; native
+results, local Replays, Field Manual, content-model inspection and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -112,6 +120,9 @@ is the emitted comment in `src/features/field-manual/index.ts`; it extends the
 incumbent world rather than defining a new one. Contextual guidance's emitted
 contract is in `src/features/onboarding/match.ts`; its Operate direction is
 recorded in `.impeccable/surfaces/src-features-onboarding-match-ts.md`.
+Content tools' local contract is in `src/features/content-editor/index.ts` and
+`.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
+also uses `src/features/content-editor/content-tools.css` and `model.ts`.
 
 **Key Characteristics:**
 
@@ -133,6 +144,7 @@ recorded in `.impeccable/surfaces/src-features-onboarding-match-ts.md`.
 - Native local Replay library and read-only playback with synchronized keyboard focus.
 - Native Field Manual with original icons, compiled facts and isolated model inspection.
 - Optional native HUD region labels and one observed-context hint with a direct reference link.
+- Native model-first content inspection with real presentation controls and expandable project checks.
 
 ## Colors
 
@@ -354,6 +366,14 @@ alongside it. At widths of 640px or less, controls move above the scene in a reg
 bounded by 320px or 45dvh. The shared panel's existing viewport scale clamp still
 applies; selecting a 150% device preference does not guarantee 150% at every width.
 
+Content tools keep the model on the desktop left and a full-height tool pane on
+the right, bounded by 460px or 42vw. At widths of 760px or less, the model occupies
+the top 42dvh and the controls the remaining 58dvh. The pane uses the existing
+shared-panel type ramp and interface scale. Back and title, status/error feedback
+and pinned Open/Retry stay outside the scrolling body; choices and expandable
+tables scroll within it. This arrangement belongs to model inspection rather
+than changing the other galleries' column proportions.
+
 ## Elevation & Depth
 
 The native match HUD is flat: opaque graphite frames and thin steel seams
@@ -492,6 +512,19 @@ the text leaves space for that disclosure mark.
   cancels/disposes pending work and restores initiating focus. Idle clips play
   only when neither device nor operating-system reduced motion is requested.
   The paused match world remains intact throughout browsing and inspection.
+- **Content-model inspection:** installed-name/ID search and a definition picker
+  accompany local GLB input/drop. Native team, clip, LOD and damage-state choices
+  reflect actual supported model features; unavailable clip/LOD/damage controls
+  are disabled. Installed validation kind is fixed; local kind remains editable.
+  Project checks, materials, nodes and sockets reuse expandable rich tables and
+  synchronized region focus/keyboard scrolling. Counts remain complete while
+  displayed lists disclose their 100-entry cap. Open and validation-kind help use
+  native hover/focus descriptions and semantic accessible descriptions; the
+  focusable model canvas names orbit, zoom and drop controls. Status and coral
+  failure feedback stay visible, with pinned Retry and the last good model,
+  controls and diagnostics retained after a failed candidate. Local success
+  clears the installed selection. These controls inspect presentation and never
+  write content or alter simulation state.
 - **Settings preview and feedback:** quality, UI scale, camera speed, edge scroll
   and reduced motion keep existing validation and storage. Preview applies live;
   Apply saves, Defaults previews defaults and Back/cancel restores saved values.

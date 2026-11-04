@@ -63,10 +63,12 @@ export async function loadModelContainer(scene: Scene, bytes: Uint8Array) {
 export async function loadModel(scene: Scene, bytes: Uint8Array) {
   const container = await loadModelContainer(scene, bytes);
   container.addAllToScene();
+  const nodes = [...container.transformNodes, ...container.meshes];
   return {
     meshes: container.meshes,
+    nodes,
     ...createModelPlayback(
-      [...container.transformNodes, ...container.meshes],
+      nodes,
       container.animationGroups,
       container.skeletons,
       container.morphTargetManagers,

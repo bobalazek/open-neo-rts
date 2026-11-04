@@ -105,6 +105,15 @@ export function homeScreen(
       false,
       true,
     );
+    action(
+      "content-tools",
+      text("ui.tools.title"),
+      () => {
+        location.href = "/tools/content";
+      },
+      false,
+      true,
+    );
     if (gui) {
       const ticket = ++revision;
       canvas.dataset.menu = "drawing";

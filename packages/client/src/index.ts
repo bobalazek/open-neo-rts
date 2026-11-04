@@ -1,6 +1,10 @@
 // Game client: screens, HUD, input, camera, single-player sim worker, editors. apps/web and the desktop shell only mount it.
 
 export async function startClient(canvas: HTMLCanvasElement) {
+  if (location.pathname === "/tools/content") {
+    const { startContentTools } = await import("./features/content-editor");
+    return startContentTools(canvas);
+  }
   if (
     (location.pathname === "/debug" && new URLSearchParams(location.search).has("terrain")) ||
     (location.pathname === "/" && new URLSearchParams(location.search).has("map"))

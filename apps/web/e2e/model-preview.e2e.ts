@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 test("model check previews team colours, clips and file errors", async ({ page, browserName }) => {
   test.skip(browserName !== "chromium", "The WebGL model check is exercised in Chromium.");
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto("http://localhost:4320/debug?models=1");
+  await page.goto("/debug?models=1");
   const file = page.getByLabel("Model", { exact: true });
   const path = (name: string) =>
     fileURLToPath(

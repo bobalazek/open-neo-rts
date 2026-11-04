@@ -129,7 +129,7 @@ export function createPanelBlock(
         root.thickness = focused ? 3 : block.active ? 2 : 1;
       }
     },
-    layout(width: number, scale: number) {
+    layout(width: number, scale: number, maxHeight: number) {
       if (block.kind === "text" && title) {
         const size = (block.heading ? 20 : 14) * scale;
         title.fontSize = size;
@@ -213,7 +213,10 @@ export function createPanelBlock(
         });
         tableBody.widthInPixels = columns.reduce((a, b) => a + b, 0);
         tableBody.heightInPixels = y;
-        const height = Math.min(y + 12 * scale, 340 * scale);
+        const height = Math.max(
+          1,
+          Math.min(y + 12 * scale, 340 * scale, maxHeight - titleHeight - 8 * scale),
+        );
         placePanelControl(table, 0, titleHeight + 8 * scale, width, height);
         return titleHeight + 8 * scale + height;
       }

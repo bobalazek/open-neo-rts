@@ -237,7 +237,7 @@ export function checkPacks(packs: PackInput[]): { issues: PackIssue[]; models: M
           pack: pack.id,
           file: here + pres.model,
           kind,
-          requires: requirements(def, pres, kind),
+          requires: modelRequirements(def, pres, kind),
         });
       }
     }
@@ -337,7 +337,7 @@ function references(def: unknown): string[] {
   return out;
 }
 
-function requirements(def: Def, pres: Def, kind: ModelKind): ModelRequirements {
+export function modelRequirements(def: Def, pres: Def, kind: ModelKind): ModelRequirements {
   const materials =
     isObject(pres.materials) && Object.keys(pres.materials).length > 0
       ? (pres.materials as Record<string, string>)

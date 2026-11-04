@@ -185,6 +185,26 @@ source.
   only while the same navigation generation remains current. Loading a save from
   a match preserves the old world on failure or cancellation and restores focus
   to the initiating Load control.
+- Content tools at `/tools/content` and Home's developer footer provide the
+  model-inspection portion of 2-38a. Search covers the 137 installed model
+  definitions by name or ID; `?model=` accepts only an installed qualified ID or
+  exact registered model URL. Open local GLB and model-canvas drop accept
+  self-contained files up to 16 MiB, without writes or uploads. Successful local
+  loading clears the installed selection. Installed models retain their authored
+  validation kind and requirements; local files use the chosen kind.
+  Real team materials, authored animation clips, supported LOD branches and
+  damage-state nodes respond to their controls; the initial pose rests until a
+  clip is chosen. Project checks share `modelRequirements` and `validateModel`
+  with the CLI. Diagnostics, materials, nodes and sockets use expandable native
+  tables with keyboard scrolling, full counts and a disclosed 100-entry display
+  cap. A failed candidate retains the last good model, controls and diagnostics
+  with Retry. Native Open and Retry stay outside the scrolling body; Open and
+  validation-kind help use contextual hover/focus descriptions, and the model
+  canvas names orbit, zoom and drop interactions. Existing interface scale and
+  semantic HTML/fallback remain in use. Definition forms, safe saves/downloads,
+  disk conflicts, draft playtests, grid/scale reference, gizmos, material mappings
+  and weapon effects/destruction remain 2-38b/c/d work. This does not complete the
+  content editor; see `../../docs/project/decisions/2026-11-04-model-inspection-tools.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual
