@@ -6,6 +6,7 @@ import {
   resolvePacks,
 } from "@open-neo-rts/content";
 import { validateAssetGlb } from "@open-neo-rts/content/asset-validation";
+import { validateAudioContainer } from "@open-neo-rts/content/audio-validation";
 import { compileGameplayCatalog } from "@open-neo-rts/sim";
 
 export interface EditorFile {
@@ -149,7 +150,7 @@ export async function resolveDefinitionDraft(
   path: string,
   draft: unknown,
 ) {
-  // shortcut: runtime audio, source freshness and formatting parity remain 2-38b2.
+  // shortcut: native audio decoding/metering, source freshness and formatting parity remain 2-38b2.
   if (new TextEncoder().encode(JSON.stringify(draft)).byteLength > 2 * 1024 * 1024)
     throw new Error("Definition JSON exceeds 2 MiB");
   const inputs = packs.map((pack) => ({ ...pack.input, json: new Map(pack.input.json) }));
@@ -179,6 +180,22 @@ export async function resolveDefinitionDraft(
   try {
     const catalog = resolvePacks(inputs, "0.1.0", { bytes });
     const issues = [...catalog.issues];
+    for (const pack of packs)
+      for (const file of pack.input.files) {
+        if (!file.endsWith(".ogg")) continue;
+        const name = `${pack.input.id}/${file}`;
+        const data = bytes.get(name);
+        if (!data) continue; // Editable sources are not runtime exports.
+        const folder = file.slice(0, file.lastIndexOf("/") + 1);
+        const mono = ["unit", "structure", "prop"].some((kind) =>
+          pack.input.json.has(`${folder}${kind}.json`),
+        );
+        issues.push(
+          ...validateAudioContainer(data, mono, folder.split("/").at(-2) === "music").map(
+            (message) => ({ level: "error" as const, file: name, message }),
+          ),
+        );
+      }
     for (const input of inputs)
       issues.push(
         ...checkAssetProvenance(input.files, input.json).issues.map((issue) => ({

@@ -76,6 +76,10 @@ output and true-peak headroom. Export at −1.1 dBTP or lower to leave room for 
 meter's 0.1 dB reporting precision against the −1 dBTP limit. It does not rewrite
 or normalise assets. Editable files under `source/` are not runtime exports.
 
+Browser definition saves and draft playtests share the CLI's Ogg framing,
+checksum and channel gate. They do not yet decode/meter samples; full audio
+qualification still requires the CLI command above.
+
 For CC0 audio, preserve the actual creator in `assets.json`, keep the upstream
 source file and license evidence in `source/`, and record the original filename,
 creator's download page, CC0 declaration and any processing in a source note.

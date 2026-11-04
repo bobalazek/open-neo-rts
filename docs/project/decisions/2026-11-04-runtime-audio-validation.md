@@ -34,3 +34,20 @@ Editable files under `source/` are not runtime exports. Retain them for provenan
 without demanding runtime format/model checks or an additional `assets.json`
 beside each original source. Runtime exports retain their existing provenance
 entries and LFS rules. The validator is read-only.
+
+**Browser authoring follow-up (November 5).** The container gate now lives in
+`packages/content/src/assets/validate-audio.ts`, using byte views without Node,
+DOM or decoder dependencies. CLI validation calls that same gate before its
+unchanged full FFmpeg decode/meter. Editor validation applies it to every runtime
+Ogg in all opened packs: complete single-stream framing, CRCs, codec identification
+and channels. Effects beside unit/structure/prop definitions remain mono; music
+folder exports remain stereo. Editable sources stay excluded by the existing
+shared export classification. Diagnostics retain pack/file identity.
+
+The common draft resolver gates writes, JSON/ZIP downloads, sibling creation and
+both draft playtest modes. Failed checks preserve the draft and source files;
+repairing the source permits retry. This closes the container-integrity gap, not
+full browser audio parity: a checksummed container can still contain undecodable,
+silent or over-loud samples. Native codec decoding and true-peak measurement,
+source/schema freshness and exact project formatting remain task 2-38b2. No
+simulation version, source media or built-in content identity changes.

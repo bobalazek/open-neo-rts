@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./asset-validation": "./src/assets/validate-glb.ts"
+    "./asset-validation": "./src/assets/validate-glb.ts",
+    "./audio-validation": "./src/assets/validate-audio.ts"
   },
   "scripts": {
     "typecheck": "tsc && tsc -p tsconfig.test.json",
