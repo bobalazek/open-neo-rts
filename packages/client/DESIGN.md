@@ -634,8 +634,10 @@ the text leaves space for that disclosure mark.
   its 100-row/512-character display caps without truncating the underlying versions.
   File System Access saves the selected existing file after validation; the
   read-only folder fallback downloads a copy and retains dirty state. No uploads
-  or simulation edits occur. Shared definition/model checks gate saving, while
-  full runtime audio, source freshness and exact formatter parity remain 2-38b2;
+  or simulation edits occur. Shared definition/model and runtime Ogg container
+  checks gate saving, creation and draft playtests. Container errors use existing
+  file-specific diagnostics and preserve edits for retry. Native audio decoding/
+  metering, source freshness and exact formatter parity remain 2-38b2;
   asset editing remains open, including socket/part gizmos, GLB export and
   damage-socket smoke/fire previews.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure

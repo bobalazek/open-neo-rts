@@ -309,6 +309,54 @@ test("invalid unreferenced wrecks block saves without changing the draft or disk
   ).toBe(900);
 });
 
+test("corrupt audio in another definition blocks saving and preserves the editable draft", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("900", { timeout: 30000 });
+  await health.fill("901");
+  await page.evaluate(async () => {
+    const files = Reflect.get(window, "editorFixture").files as Map<string, File>;
+    const path = "factions/eastern-collective/units/supply-truck/supply-truck.harvest.ogg";
+    const original = files.get(path)!;
+    Reflect.set(window, "editorOriginalAudio", original);
+    const bytes = new Uint8Array(await original.arrayBuffer());
+    bytes[bytes.length - 1]! ^= 1;
+    files.set(path, new File([bytes], original.name));
+  });
+  await click(page, "Save definition");
+  await expect(page.locator(".definition-editor")).toContainText("Ogg page checksum mismatch", {
+    timeout: 30000,
+  });
+  await expect(health).toHaveValue("901");
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await page.evaluate(() => {
+    Reflect.get(window, "editorFixture").files.set(
+      "factions/eastern-collective/units/supply-truck/supply-truck.harvest.ogg",
+      Reflect.get(window, "editorOriginalAudio"),
+    );
+  });
+  await click(page, "Save definition");
+  await expect(page.getByRole("button", { name: "Save definition", exact: true })).toBeDisabled({
+    timeout: 30000,
+  });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          async (path) =>
+            JSON.parse(await Reflect.get(window, "editorFixture").files.get(path).text()).health,
+          path,
+        ),
+      { timeout: 30000 },
+    )
+    .toBe(901);
+});
+
 test("new definitions copy authored assets, publish the manifest and select the saved result", async ({
   page,
 }, info) => {

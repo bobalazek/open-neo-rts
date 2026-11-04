@@ -72,7 +72,7 @@ The announcer speaks for the player's Force. Every line also appears in the HUD'
 
 ## Formats and loudness
 
-- `.ogg` (Vorbis or Opus) is the primary format. Safari supports Ogg from 18.4, so the minimum Safari version is 18.4; an AAC (`.m4a`) fallback is generated at build time if older Safari support is ever needed.
+- `.ogg` (Vorbis or Opus) is the runtime format. Browser qualification targets [current Chrome stable and current Playwright WebKit](../project/decisions/2026-11-04-browser-support-scope.md).
 - `bun neo validate-assets` checks runtime Ogg framing/checksums, one Vorbis/Opus logical stream, mono unit/structure/prop effects, complete decoding and decoded true peak through FFmpeg. Source originals are excluded from runtime checks. FFmpeg must be on `PATH`.
 - True peak is at most −1 dBTP. The validator requires a reading of −1.1 dBTP or lower because FFmpeg's summary rounds to 0.1 dB; leave that small export margin. Silent or unmeasurable exports fail.
 - The full mix target remains around −24 LUFS integrated. Per-category normalisation, music/stereo metadata and full-mix listening/LUFS qualification remain work with the music/announcer systems. Short effects are judged by peak and short-term loudness rather than applying an integrated music target to every click.
