@@ -931,6 +931,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
       previous = Number(power.force);
     }
   }
+  const entities = snapshot.entities;
   const entityHandles = new Set();
   const targetHandles = new Set(
     [...snapshot.entities, ...(Array.isArray(snapshot.remains) ? snapshot.remains : [])].flatMap(
@@ -997,6 +998,7 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
             "harvesting",
             "workAnimation",
             "workProgressTicks",
+            "buildTarget",
             "constructionSite",
             "constructionStage",
             "construction",
@@ -1038,6 +1040,27 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
     )
       return false;
     if (entity.constructionSite !== undefined && entity.constructionSite !== true) return false;
+    if (entity.buildTarget !== undefined) {
+      const target = entity.buildTarget;
+      if (
+        typeof target !== "string" ||
+        !/^e[1-9][0-9]*$/.test(target) ||
+        !bounded(Number(target.slice(1)), 0xfffffffe) ||
+        target === entity.handle ||
+        entity.disabled === true ||
+        Number(entity.health) <= 0 ||
+        !entities.some(
+          (site: unknown) =>
+            isRecord(site) &&
+            site.handle === target &&
+            site.force === entity.force &&
+            site.constructionSite === true &&
+            typeof site.health === "number" &&
+            site.health > 0,
+        )
+      )
+        return false;
+    }
     if (
       entity.constructionStage !== undefined &&
       (entity.constructionSite !== true || !bounded(entity.constructionStage, 100))

@@ -76,19 +76,29 @@ export function createMatchAudio(
             });
           }
           const order = entity.constructionOrder;
-          const site = order?.state === "working" ? current.get(order.site) : undefined;
+          const target =
+            entity.buildTarget ?? (order?.state === "working" ? order.site : undefined);
+          const site = target ? current.get(target) : undefined;
           const progress = site?.construction;
           if (
             !clips?.build ||
             !site?.constructionSite ||
-            !progress?.buildersWorking ||
+            !(entity.buildTarget || progress?.buildersWorking) ||
             !eventVisible(snapshot, site.x, site.y) ||
             jobs.has(site.handle)
           )
             continue;
           const before = prior.get(site.handle)?.construction;
-          const completed = progress.completedTicks * 4 + progress.quarter;
-          if (fresh && before && completed <= before.completedTicks * 4 + before.quarter) continue;
+          const completed = progress
+            ? progress.completedTicks * 4 + progress.quarter
+            : snapshot.tick * 4;
+          if (
+            fresh &&
+            progress &&
+            before &&
+            completed <= before.completedTicks * 4 + before.quarter
+          )
+            continue;
           jobs.set(site.handle, {
             kind: "build",
             source: clips.build,
@@ -101,7 +111,7 @@ export function createMatchAudio(
       if (active && initialized && fresh) {
         const completed = new Set<string>();
         for (const builder of prior.values()) {
-          const handle = builder.constructionOrder?.site;
+          const handle = builder.buildTarget ?? builder.constructionOrder?.site;
           if (!handle || completed.has(handle)) continue;
           const before = prior.get(handle),
             after = current.get(handle);
@@ -155,6 +165,10 @@ export function createMatchAudio(
         for (const handle of prior.keys()) {
           const entity = current.get(handle);
           if (!entity || !eventVisible(snapshot, entity.x, entity.y)) prior.delete(handle);
+          else if (prior.get(handle)?.buildTarget !== entity.buildTarget) {
+            const { buildTarget: _buildTarget, ...retained } = prior.get(handle)!;
+            prior.set(handle, retained);
+          }
         }
         return;
       }

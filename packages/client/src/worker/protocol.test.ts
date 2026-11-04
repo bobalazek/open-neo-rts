@@ -621,6 +621,25 @@ test("public work poses pass the wire with bounded unload progress and no privat
     expect(isWorkerReply(packet(pose))).toBe(false);
 });
 
+test("public construction targets require an enabled living builder and a present same-Force site", () => {
+  const builder = { ...entity, power: undefined, buildTarget: "e2" };
+  const site = { ...entity, handle: "e2", power: undefined, constructionSite: true };
+  expect(isWorkerReply(powerReply(undefined, [builder, site]))).toBe(true);
+  for (const target of [null, 2, {}, "e0", "e4294967295", "g2", "e1", "e3"])
+    expect(isWorkerReply(powerReply(undefined, [{ ...builder, buildTarget: target }, site]))).toBe(
+      false,
+    );
+  for (const rows of [
+    [builder],
+    [builder, { ...site, constructionSite: undefined }],
+    [builder, { ...site, force: entity.force + 1 }],
+    [builder, { ...site, health: 0 }],
+    [{ ...builder, health: 0 }, site],
+    [{ ...builder, disabled: true }, site],
+  ])
+    expect(isWorkerReply(powerReply(undefined, rows))).toBe(false);
+});
+
 test("worker replies accept only opaque attack target handles", () => {
   expect(
     isWorkerReply(powerReply(undefined, [{ ...entity, power: undefined, attackTarget: "e2" }])),

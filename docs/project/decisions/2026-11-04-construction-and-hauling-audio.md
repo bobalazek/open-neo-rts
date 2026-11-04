@@ -36,7 +36,11 @@ ownership/definition change or resighting as completion. Construction details
 remain subject to their existing economy permissions; this does not disclose
 unavailable enemy work data or add a public construction event.
 
+The later [public construction effects](./2026-11-04-public-construction-effects.md)
+extend tool poses and these clips to currently visible builder/site pairs,
+without disclosing the private progress/orders described above.
+
 **Remaining work.** Vehicle/infantry movement loops, other roster sounds, generic
-impacts, public enemy construction effects where data is available, announcer
+impacts, announcer
 speech/subtitles/priority queue, music and project-wide loudness validation remain
 task 2-36. A finishing tone does not implement the announcer.

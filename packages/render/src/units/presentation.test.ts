@@ -952,6 +952,37 @@ test("salvage uses the original builder tool clip and stops it when work pauses"
   }
 });
 
+test("public construction tool poses animate without private work fields and stop when work ends", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("field-technician"),
+    movementDomain: "foot",
+  }));
+  try {
+    await layer.accept(snapshot(0, [entity("e1", { force: 2, buildTarget: "e2" })]), 0);
+    layer.render(200);
+    const attack = f.scene.animationGroups.find(
+      (clip) =>
+        clip.name === "attack" &&
+        clip.targetedAnimations.some(({ target }) => target.isDescendantOf(root(f.scene, "e1"))),
+    );
+    assert(attack);
+    expect(attack.getCurrentFrame()).toBeGreaterThan(attack.from);
+    await layer.accept(snapshot(1, [entity("e1", { force: 2 })]), 250);
+    layer.render(450);
+    expect(attack.isPlaying).toBe(false);
+    await layer.accept(
+      snapshot(2, [entity("e1", { force: 2, buildTarget: "e2", disabled: true })]),
+      500,
+    );
+    layer.render(700);
+    expect(attack.isPlaying).toBe(false);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
 test("private work/progress and actual health drive presentation; fog revokes retained death models", async () => {
   const f = fixture();
   const layer = createEntityPresentation(f.scene, f.terrain, async () => ({

@@ -8,7 +8,13 @@ import { createProjection } from "../../projection";
 import { parseScenario, runScenario, SCENARIO_FORMAT } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder } from "../combat";
-import { OwnerForce, Template } from "../entities";
+import {
+  BuilderConstruction,
+  ConstructionApproach,
+  ConstructionProgress,
+  ConstructionSite,
+} from "../construction";
+import { OwnerForce, spawnEntity, Template } from "../entities";
 import { ProductionItem } from "../production";
 import { BOT_WORK_BUDGET, type BotSeatState, registerBotSeat, type SeatBotProgram } from "./bots";
 
@@ -104,6 +110,51 @@ function fixture() {
   );
   return { setup, kernel, host };
 }
+
+test("public construction poses preserve field-free handle allocation and hosted-bot canonical hashes", () => {
+  const original = botSetup();
+  const setup: MatchSetup = {
+    ...original,
+    normal: { ...original.normal!, settings: { ...original.normal!.settings, fog: "off" } },
+  };
+  const kernel = createMatch(setup);
+  for (const id of kernel.world.query(Template)) kernel.world.destroy(id);
+  const spawn = (definition: number, x: number) =>
+    spawnEntity(kernel, definition, setup.definitions[definition]!, {
+      definition: setup.definitions[definition]!.id,
+      force: 2,
+      x,
+      y: 8 * 1024,
+      facing: 0,
+    });
+  const builder = spawn(1, 10 * 1024);
+  spawn(1, 11 * 1024);
+  const site = spawn(0, 12 * 1024);
+  kernel.world.add(site, ConstructionSite);
+  kernel.world.add(site, ConstructionProgress, { completedTicks: 1, buildersWorking: 1 });
+  kernel.world.add(builder, ConstructionApproach, { site, state: 1, x: 10 * 1024, y: 8 * 1024 });
+  kernel.vision?.update();
+  kernel.visibility?.update();
+  const baseline = createProjection(setup, 1, "controlled");
+  baseline.snapshot(kernel);
+  kernel.world.add(builder, BuilderConstruction, { target: site });
+  const current = createProjection(setup, 1, "controlled");
+  expect(
+    current.snapshot(kernel).entities.find((entity) => entity.definition.includes("unit:"))
+      ?.buildTarget,
+  ).toBeDefined();
+  expect(current.serialize()).toEqual(baseline.serialize());
+  registerBotSeat(kernel, setup, { seat: 1, program: "fixture-public-work" }, ({ state }) => ({
+    state,
+    commands: [],
+  }));
+  const projections = new Map(kernel.observationProjections);
+  kernel.observationProjections = projections;
+  projections.set(1, baseline);
+  const hash = checkpointHash(kernel);
+  projections.set(1, current);
+  expect(checkpointHash(kernel)).toBe(hash);
+});
 
 test("normal bot settings validate/copy unique granted seats, start passive hosts, and replay deterministically", () => {
   const setup = botSetup(true),

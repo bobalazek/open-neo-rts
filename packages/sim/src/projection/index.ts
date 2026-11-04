@@ -3,6 +3,7 @@ import { arr, int, validate } from "@open-neo-rts/content";
 import { hasGrant, type QUEUED_ORDER_TYPES, type Rejection, type Scope } from "../commands";
 import { AttackMoveOrder, AttackOrder, HoldPosition } from "../features/combat";
 import {
+  BuilderConstruction,
   CONSTRUCTION_REFUSALS,
   CONSTRUCTION_WORK_STATES,
   ConstructionApproach,
@@ -82,6 +83,8 @@ export interface PresentedEntity {
   harvesting?: HarvestSnapshot;
   workAnimation?: "harvest" | "unload";
   workProgressTicks?: number;
+  /** Public tool pose/association only while builder and active site are visible. */
+  buildTarget?: string;
   constructionSite?: true;
   constructionStage?: number;
   construction?: {
@@ -242,6 +245,7 @@ function createSeatProjection(
         return handle;
       };
       const entities: PresentedEntity[] = [];
+      const buildTargets = new Map<string, number>();
       for (const id of kernel.world.query(Template, OwnerForce, Transform, Health)) {
         const world = kernel.world;
         const force = world.get(id, OwnerForce, "force");
@@ -314,6 +318,29 @@ function createSeatProjection(
           inspectBuilder && world.has(id, ConstructionApproach)
             ? world.get(id, ConstructionApproach, "site")
             : 0;
+        const buildTarget =
+          setup.normal &&
+          definition.role === "builder" &&
+          world.has(id, BuilderConstruction) &&
+          world.has(id, ConstructionApproach)
+            ? world.get(id, BuilderConstruction, "target")
+            : 0;
+        const visiblyBuilding =
+          buildTarget &&
+          (mode === "debug-no-fog" || canSee(buildTarget)) &&
+          world.isAlive(buildTarget) &&
+          world.has(buildTarget, ConstructionSite) &&
+          world.has(buildTarget, ConstructionProgress) &&
+          world.get(buildTarget, ConstructionProgress, "buildersWorking") > 0 &&
+          world.get(buildTarget, Health, "current") > 0 &&
+          world.get(buildTarget, OwnerForce, "force") === force &&
+          world.get(id, Health, "current") > 0 &&
+          !kernel.disabled?.(id) &&
+          !world.has(id, MoveIntent) &&
+          world.get(id, ConstructionApproach, "site") === buildTarget &&
+          world.get(id, ConstructionApproach, "state") === 1 &&
+          world.get(id, Transform, "x") === world.get(id, ConstructionApproach, "x") &&
+          world.get(id, Transform, "y") === world.get(id, ConstructionApproach, "y");
         const attackTarget =
           setup.normal && controlled && world.has(id, AttackOrder)
             ? world.get(id, AttackOrder, "target")
@@ -325,6 +352,7 @@ function createSeatProjection(
         const powerDetails = inspectPower ? kernel.power?.details(id) : undefined;
         const veterancy = kernel.veterancy?.snapshot(id, controlled);
         const harvesting = setup.normal ? harvestSnapshot(kernel, id, definition) : undefined;
+        if (visiblyBuilding) buildTargets.set(handle, buildTarget);
         entities.push({
           ...(harvesting?.status === "mining" && { workAnimation: "harvest" as const }),
           ...(harvesting?.status === "unloading" && {
@@ -489,6 +517,12 @@ function createSeatProjection(
               },
             }),
         });
+      }
+      // Bot projection handles are hashed; public poses must not allocate or reorder them.
+      for (const entity of entities) {
+        const target = buildTargets.get(entity.handle);
+        const handle = target ? handles.get(target) : undefined;
+        if (handle && visible.has(handle)) entity.buildTarget = handle;
       }
       const constructionRequests: PresentedConstructionRequest[] = [];
       if (setup.normal)
