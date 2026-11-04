@@ -58,6 +58,11 @@
     "materials": {},
     "parts": [],
     "sockets": ["socket_muzzle"],
-    "animations": ["idle", "move", "attack", "death"]
+    "animations": ["idle", "move", "attack", "death"],
+    "sounds": {
+      "fire": "rocket-trooper.fire.ogg",
+      "impact": "rocket-trooper.impact.ogg",
+      "death": "rocket-trooper.death.ogg"
+    }
   }
 }

@@ -1,5 +1,17 @@
 {
   "files": {
+    "rocket-trooper.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.fire.lavfi"
+    },
+    "rocket-trooper.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.impact.lavfi"
+    },
+    "rocket-trooper.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.death.lavfi"
+    },
     "rocket-trooper.glb": {
       "author": "Borut Balazek",
       "source": "source/rocket-trooper.bricks.json"

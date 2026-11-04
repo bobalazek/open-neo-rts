@@ -1,0 +1,7 @@
+anoisesrc=color=brown:amplitude=0.85:sample_rate=48000:duration=1.12:seed=3319,highpass=f=80,lowpass=f=4500,afade=t=out:st=0:d=0.9[collapse];
+aevalsrc='0.55*sin(2*PI*(48*t+2*(1-exp(-18*t))))*exp(-10*t)':s=48000:d=1.12[body];
+aevalsrc='(0.24*sin(2*PI*610*t)+0.14*sin(2*PI*1470*t))*exp(-32*t)':s=48000:d=1.12[brick];
+[brick]asplit=3[a][b][c];
+[b]adelay=150,volume=0.6[second];
+[c]adelay=350,volume=0.3[third];
+[collapse][body][a][second][third]amix=inputs=5:normalize=0:duration=first,volume=0.6,afade=t=in:d=0.003,afade=t=out:st=0.92:d=0.2

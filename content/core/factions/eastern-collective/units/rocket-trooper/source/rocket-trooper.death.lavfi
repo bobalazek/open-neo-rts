@@ -1,0 +1,6 @@
+anoisesrc=color=brown:amplitude=0.65:sample_rate=48000:duration=0.62:seed=3119,highpass=f=180,lowpass=f=3800,afade=t=out:st=0:d=0.42[fall];
+aevalsrc='(0.28*sin(2*PI*660*t)+0.13*sin(2*PI*1530*t))*exp(-46*t)':s=48000:d=0.62[brick];
+[brick]asplit=3[a][b][c];
+[b]adelay=90,volume=0.6[second];
+[c]adelay=210,volume=0.3[third];
+[fall][a][second][third]amix=inputs=4:normalize=0:duration=first,volume=0.6,afade=t=in:d=0.002,afade=t=out:st=0.48:d=0.14

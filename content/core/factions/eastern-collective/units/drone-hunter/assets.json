@@ -1,5 +1,17 @@
 {
   "files": {
+    "drone-hunter.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.fire.lavfi"
+    },
+    "drone-hunter.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.impact.lavfi"
+    },
+    "drone-hunter.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.death.lavfi"
+    },
     "drone-hunter.glb": {
       "author": "Borut Balazek",
       "source": "source/drone-hunter.bricks.json"

@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — First-playable combat sound library](./2026-11-04-first-playable-combat-library.md) — Original fire, impact and destruction signatures for the four remaining armed first-playable definitions, through existing routing.
+
 - [2026-11-04 — Bot extractor recovery](./2026-11-04-bot-extractor-recovery.md) — Scout known nodes, clear observed rubble and rebuild through ordinary commands after a reproduced economy stall.
 
 - [2026-11-03 — Device audio mixer and native controls](./2026-11-03-device-audio-mixer.md) — One app-owned Babylon mixer, live device levels and initial data-authored match sound routing; original sound library remains open.

@@ -1,0 +1,3 @@
+anoisesrc=color=white:amplitude=0.65:sample_rate=48000:duration=0.24:seed=3211,highpass=f=1800,lowpass=f=9500,afade=t=out:st=0:d=0.08[chip];
+aevalsrc='(0.22*sin(2*PI*2100*t)+0.13*sin(2*PI*3180*t))*exp(-48*t)':s=48000:d=0.24[metal];
+[chip][metal]amix=inputs=2:normalize=0,volume=0.42,afade=t=in:d=0.001,afade=t=out:st=0.17:d=0.07

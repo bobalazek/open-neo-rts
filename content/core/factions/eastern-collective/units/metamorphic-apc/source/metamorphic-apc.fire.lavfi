@@ -1,0 +1,4 @@
+anoisesrc=color=white:amplitude=0.7:sample_rate=48000:duration=0.21:seed=3301,highpass=f=520,lowpass=f=7800,afade=t=out:st=0:d=0.09[report];
+aevalsrc='0.5*sin(2*PI*(145*t+5*(1-exp(-50*t))))*exp(-52*t)':s=48000:d=0.21[body];
+aevalsrc='0.15*sin(2*PI*920*t)*exp(-70*t)':s=48000:d=0.21[bolt];
+[report][body][bolt]amix=inputs=3:normalize=0,volume=0.52,afade=t=in:d=0.001,afade=t=out:st=0.15:d=0.06
