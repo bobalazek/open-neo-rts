@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Canonical component validation](./2026-11-04-canonical-component-validation.md) — Per-feature invariants guard isolated restore candidates while external saves retain history verification.
+
 - [2026-11-04 — Mouse camera device settings](./2026-11-04-mouse-camera-settings.md) — Native sensitivity/inverted rotation, live preview and safe existing-preference migration.
 
 - [2026-11-04 — First-playable movement audio](./2026-11-04-first-playable-movement-audio.md) — Original footsteps and vehicle loops follow visible displacement through the existing mixer.

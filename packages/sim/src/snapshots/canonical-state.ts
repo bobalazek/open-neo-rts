@@ -1,19 +1,29 @@
 import { checkpointHash, type Kernel } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
+import { prepareCanonicalValidation } from "./canonical-validation";
 import type { MatchSnapshot } from "./match-snapshot";
 import { canonicalJson } from "./schema";
+import { canonicalInvariant } from "./validation-context";
 
 /** Internal: caller must have captured or history-verified the snapshot, not merely checked its checksum. */
 export function restoreCanonicalState(saved: MatchSnapshot, setup: MatchSetup): Kernel {
   const kernel = createMatch(setup);
+  const validate = prepareCanonicalValidation(kernel, setup);
   const bytes = new Uint8Array(Math.floor(saved.world.length / 2));
   for (let i = 0; i < bytes.length; i++)
     bytes[i] = Number.parseInt(saved.world.slice(i * 2, i * 2 + 2), 16);
   // Initial map resource rows may exceed the ordinary dynamic-row allowance.
   kernel.world.replace(bytes, kernel.world.query().length + 65536);
   kernel.tick = saved.tick;
+  validate();
   kernel.streams.clear();
-  for (const { name, ...words } of saved.streams) kernel.streams.set(name, { ...words });
+  for (const { name, ...words } of saved.streams) {
+    canonicalInvariant(
+      Object.values(words).some((word) => word !== 0),
+      `stream ${name} has an absorbing zero state`,
+    );
+    kernel.streams.set(name, { ...words });
+  }
   kernel.movement?.load(saved.movement);
   kernel.vision?.load(saved.vision);
   kernel.visibility?.load(saved.visibility);

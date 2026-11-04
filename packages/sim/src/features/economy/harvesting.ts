@@ -12,8 +12,8 @@ import { suspendSalvage } from "../salvage";
 import { mineOreCell, oreCells, readOreCell } from "./ore";
 
 export const HARVEST_UNLOAD_TICKS = 40;
-const RETRY_TICKS = 40;
-const AVOID_TICKS = 200;
+export const RETRY_TICKS = 40;
+export const AVOID_TICKS = 200;
 const NO_CELL = 0xffffffff;
 export const HARVEST_STATUSES = [
   "idle",

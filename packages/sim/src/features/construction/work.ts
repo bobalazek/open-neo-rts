@@ -30,7 +30,7 @@ export function constructionStage(kernel: Kernel, entity: number, definition: De
 }
 
 /** Exterior cell centres along each rotated footprint side, far enough away for this builder's disc. */
-function workPositions(
+export function workPositions(
   kernel: Kernel,
   definitions: readonly Definition[],
   builder: number,

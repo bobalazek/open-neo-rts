@@ -146,6 +146,16 @@ export class World {
     });
   }
 
+  /** Copied registry for canonical-state validation; component definitions themselves are frozen. */
+  components(): readonly Component[] {
+    return this.sortedStorages().map((storage) => storage.component);
+  }
+
+  /** A retained reference may name a retired ID, but must never bind to a future allocation. */
+  wasAllocated(id: number): boolean {
+    return Number.isInteger(id) && id > 0 && id < this.nextId;
+  }
+
   /**
    * Canonical little-endian bytes, independent of slot layout and of history beyond IDs and values:
    * u32 version, u32 nextId, u32 length + ASCII schema, u32 count + ascending IDs, then per component
