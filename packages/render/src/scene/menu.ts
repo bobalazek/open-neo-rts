@@ -161,13 +161,18 @@ export async function createMenuScene(
     place(intro, inset, logoTop + logoHeight + 12, textWidth, 48 * scale);
     let y = menuTop;
     let footerX = inset;
+    const footerCount = actions.filter((action) => action.secondary).length;
+    const footerWidth = Math.min(
+      125 * scale,
+      (width - inset * 2 - Math.max(0, footerCount - 1) * 7 * scale) / Math.max(1, footerCount),
+    );
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i]!,
         button = buttons[i]!;
       button.fontSize = (action.secondary ? 12 : 16) * scale;
       if (action.secondary) {
-        place(button, footerX, height - 52 * scale, 125 * scale, 40 * scale);
-        footerX += 132 * scale;
+        place(button, footerX, height - 52 * scale, footerWidth, 40 * scale);
+        footerX += footerWidth + 7 * scale;
       } else {
         place(button, actionLeft, y, actionWidth, rowHeight);
         y += rowHeight + 8;

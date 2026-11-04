@@ -74,9 +74,10 @@ export function mountNativePanel(
     );
     const activePanel = semantics.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])');
     const result = !!semantics.querySelector("[data-result-summary]");
-    const rich = result
-      ? panelBlocks(activePanel ?? semantics, identify)
-      : { blocks: [], nodes: [] };
+    const richScope =
+      semantics.querySelector("[data-panel-content]") ??
+      (result ? (activePanel ?? semantics) : undefined);
+    const rich = richScope ? panelBlocks(richScope, identify) : { blocks: [], nodes: [] };
     if (activePanel && rich.blocks[0]) activePanel.dataset.nativeBlock = rich.blocks[0].id;
     const action = (control: HTMLButtonElement) => ({
       id: control.dataset.nativeAction!,
@@ -89,6 +90,7 @@ export function mountNativePanel(
       back: control.hasAttribute("data-back"),
       resume: control.hasAttribute("data-resume"),
       detail: !!control.closest("[data-save-detail],[data-panel-detail]"),
+      footer: control.hasAttribute("data-panel-footer"),
       disabled:
         control.disabled ||
         (control.type === "submit" && !!control.form && !control.form.checkValidity()),
@@ -118,6 +120,7 @@ export function mountNativePanel(
           ? ""
           : [...semantics.querySelectorAll("p:not([role])")]
               .filter(visiblePanelElement)
+              .filter((node) => !rich.nodes.includes(node))
               .map((node) => node.textContent?.trim())
               .filter(Boolean)
               .join("\n\n"),

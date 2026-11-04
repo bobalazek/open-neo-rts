@@ -23,7 +23,7 @@ import {
   setConstructionStage,
 } from "../structures/construction";
 import { CELL_SIZE, terrainHeight, waterHeight } from "../terrain";
-import { createModelLod } from "./lod";
+import { createModelLod, MODEL_LOD_DISTANCE } from "./lod";
 import { createModelPlayback, loadModelContainer, setTeamColor } from "./model";
 import { createStatusBars } from "./status";
 
@@ -119,7 +119,7 @@ export function createEntityPresentation(
   let frameAt = 0;
   let disposed = false;
   let playbackRate = 1;
-  let lodDistance = 96;
+  let lodDistance = MODEL_LOD_DISTANCE;
   let accepted = Promise.resolve();
 
   function remove(entity: Entity) {

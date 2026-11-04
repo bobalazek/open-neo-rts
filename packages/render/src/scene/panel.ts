@@ -41,6 +41,7 @@ export interface PanelContent {
     back: boolean;
     resume?: boolean;
     detail?: boolean;
+    footer?: boolean;
     activate: () => void;
   }[];
   tabs?: PanelContent["actions"];
@@ -64,6 +65,8 @@ export async function createPanelScene(
   scene.clearColor = modal ? new Color4(0, 0, 0, 0) : Color4.FromHexString("#10191eff");
   new FreeCamera("panel camera", new Vector3(0, 0, -10), scene);
   const gui = AdvancedDynamicTexture.CreateFullscreenUI("game panel", true, scene);
+  // Nested scroll viewers can retain clipped dirty rectangles and leave inventory text blank.
+  gui.useInvalidateRectOptimization = false;
   gui.disableTabNavigation = true;
   const shade = new Rectangle("modal shade");
   shade.background = "#071018";
@@ -164,6 +167,7 @@ export async function createPanelScene(
     const control = Button.CreateSimpleButton(id, text);
     control.color = "#ddc382";
     control.background = "#18262e";
+    control.disabledColor = "#18262e";
     control.thickness = 1;
     control.tabIndex = -1;
     control.hoverCursor = "pointer";
@@ -389,7 +393,7 @@ export async function createPanelScene(
           const current = content.actions.find((item) => item.id === action.id);
           if (current && !current.disabled) current.activate();
         },
-        action.back || action.resume ? gui : body,
+        action.back || action.resume || action.footer ? gui : body,
       ),
     );
     actions.forEach((control, i) => {
@@ -450,6 +454,14 @@ export async function createPanelScene(
     const x = (width - frameWidth) / 2;
     const pad = width < 600 ? 16 : 28;
     const inner = frameWidth - pad * 2 - 12;
+    const statusHeight = textHeight(content.status, inner, 13 * scale);
+    const errorHeight = textHeight(content.error, inner, 13 * scale);
+    const pinned = actions.flatMap((control, i) => (content.actions[i]?.footer ? [control] : []));
+    const pinnedColumns = Math.min(pinned.length, Math.max(1, Math.floor(inner / (140 * scale))));
+    const pinnedHeight = pinned.length ? Math.ceil(pinned.length / pinnedColumns) * 52 * scale : 0;
+    const headerHeight = 82 * scale + (statusHeight ? 8 * scale + statusHeight : 0);
+    const footerHeight = 20 * scale + pinnedHeight + (errorHeight ? 16 * scale + errorHeight : 0);
+    const tableHeight = Math.max(1, height - inset * 2 - headerHeight - footerHeight - 16 * scale);
     const columns = inner >= 650 * scale ? 2 : 1;
     const columnWidth = (inner - (columns - 1) * 24 * scale) / columns;
     body.widthInPixels = inner;
@@ -525,7 +537,7 @@ export async function createPanelScene(
     const layoutBlocks = (blocks: typeof rich, x: number, top: number, blockWidth: number) => {
       let end = top;
       for (const block of blocks) {
-        const blockHeight = block.layout(blockWidth, scale);
+        const blockHeight = block.layout(blockWidth, scale, tableHeight);
         place(block.root, x, end, blockWidth, blockHeight);
         end += blockHeight + 16 * scale;
       }
@@ -559,7 +571,12 @@ export async function createPanelScene(
     let visible = 0;
     actions.forEach((control, i) => {
       control.fontSize = 15 * scale;
-      if (content.actions[i]?.back || content.actions[i]?.resume || content.actions[i]?.detail)
+      if (
+        content.actions[i]?.back ||
+        content.actions[i]?.resume ||
+        content.actions[i]?.detail ||
+        content.actions[i]?.footer
+      )
         return;
       const rowY = y + Math.floor(visible / columns) * 52 * scale;
       place(
@@ -574,10 +591,6 @@ export async function createPanelScene(
     contentHeight =
       y + (visible ? Math.ceil(visible / columns) * 52 * scale - 8 * scale : 0) + 12 * scale;
     body.heightInPixels = contentHeight;
-    const statusHeight = textHeight(content.status, inner, 13 * scale);
-    const errorHeight = textHeight(content.error, inner, 13 * scale);
-    const headerHeight = 82 * scale + (statusHeight ? 8 * scale + statusHeight : 0);
-    const footerHeight = 20 * scale + (errorHeight ? 16 * scale + errorHeight : 0);
     const frameHeight =
       content.gallery || content.id === "results"
         ? height - inset * 2
@@ -616,10 +629,30 @@ export async function createPanelScene(
       Math.max(1, frameHeight - headerHeight - footerHeight),
     );
     error.isVisible = errorHeight > 0;
+    pinned.forEach((control, i) => {
+      const gap = 8 * scale;
+      const itemWidth = (inner - (pinnedColumns - 1) * gap) / pinnedColumns;
+      place(
+        control,
+        x + pad + (i % pinnedColumns) * (itemWidth + gap),
+        frameY +
+          frameHeight -
+          20 * scale -
+          pinnedHeight +
+          Math.floor(i / pinnedColumns) * 52 * scale,
+        itemWidth,
+        44 * scale,
+      );
+    });
     place(
       error,
       x + pad,
-      frameY + frameHeight - 20 * scale - errorHeight,
+      frameY +
+        frameHeight -
+        20 * scale -
+        pinnedHeight -
+        errorHeight -
+        (pinnedHeight && errorHeight ? 8 * scale : 0),
       inner,
       Math.max(1, errorHeight),
     );
@@ -690,6 +723,7 @@ export async function createPanelScene(
       const field = content.fields.find((item) => item.id === widget.field.id);
       if (!field) continue;
       widget.input.isEnabled = !field.disabled;
+      widget.input.alpha = field.disabled ? 0.65 : 1;
       if (widget.input instanceof Checkbox) widget.input.isChecked = field.value === true;
       else if (widget.input instanceof NativeTextInput) widget.input.text = String(field.value);
       else if (widget.input.textBlock)

@@ -1,5 +1,7 @@
 import type { AbstractMesh, TransformNode } from "@babylonjs/core";
 
+export const MODEL_LOD_DISTANCE = 96;
+
 /** Select disjoint authored branches without reparenting nodes or changing animation targets. */
 export function createModelLod(nodes: readonly TransformNode[], meshes: readonly AbstractMesh[]) {
   const candidates: AbstractMesh[][][] = [];
