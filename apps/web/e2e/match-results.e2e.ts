@@ -53,9 +53,10 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await page.mouse.up();
   await expect(page.locator("[data-summary]")).toHaveText("Selected: 1");
   await page.getByRole("button", { name: "Resume", exact: true }).press("Enter");
-  await page
-    .locator('[data-definition="core.unit:eastern-collective/field-technician"]')
-    .press("Enter");
+  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeEnabled();
+  const train = page.locator('[data-definition="core.unit:eastern-collective/field-technician"]');
+  await expect(train).toBeEnabled();
+  await train.press("Enter");
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
   await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
     timeout: 30_000,

@@ -6,6 +6,8 @@ export default defineConfig({
   testMatch: "**/*.e2e.ts",
   outputDir: "test-results",
   forbidOnly: !!process.env.CI,
+  // Headed Firefox and software WebGL share one runner's display/device resources.
+  workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: { baseURL: "http://localhost:4320" },
   webServer: {

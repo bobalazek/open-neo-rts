@@ -52,6 +52,9 @@ test("native setup edits and validates fields, saves, starts and disposes one re
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
   await expect(page).toHaveURL(/\/match$/);
   await page.goBack();
+  const leave = page.getByRole("button", { name: "Leave without saving", exact: true });
+  await expect(leave).toBeEnabled();
+  await leave.press("Enter");
   await expect(canvas).toHaveAttribute("data-setup", "ready", { timeout: 30_000 });
   await expect(canvas).not.toHaveAttribute("data-session", "ready");
   await expect(canvas).toHaveAttribute("tabindex", "-1");

@@ -14,6 +14,8 @@ File names: `YYYY-MM-DD-short-slug.md`. Add one line to the index for each.
 
 Newest first.
 
+- [2026-11-04 — Public browser CI environment](./2026-11-04-public-browser-ci.md) — Keep actual audio and journey assertions while qualifying the runner's output and resource isolation.
+
 - [2026-11-04 — Repeated replay seeks need an explicit test budget](./2026-11-04-replay-seek-ci-budget.md) — Preserve the full replay fixture and assertions while allowing observed hosted-runner duration.
 
 - [2026-11-03 — Native HUD texture/CSS coordinates](./2026-11-03-native-hud-coordinates.md) — Scale hit guards, tooltip anchors and paint probes consistently; prefer recipe thumbnails before resource pictograms.
