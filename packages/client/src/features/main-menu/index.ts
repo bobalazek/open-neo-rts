@@ -85,6 +85,7 @@ export function homeScreen(
         controls.get("skirmish")?.focus();
       });
       action("settings", text("ui.settings.title"), () => navigate("/settings"));
+      action("manual", text("ui.manual.title"), () => navigate("/manual"));
     }
     action(
       "debug",

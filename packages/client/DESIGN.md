@@ -1,7 +1,7 @@
 ---
 
 name: Open Neo RTS native menus and match HUD
-description: Native Home, setup, game panels, loading, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
+description: Native Home, setup, game panels, Field Manual, loading, Load and results with a battlefield-first native Babylon HUD in graphite steel and warm metal.
 colors: { panel: "#182126", ink: "#eff1e9", muted: "#b5c0bf", accent: "#ddc382", hud-line: "#475354", home-shade: "#10191e", home-control: "#18262e", home-primary: "#3c392d", home-hover: "#35434a", home-pressed: "#4a4535", home-focus: "#fff6db", setup-input-focus: "#25343b", force-you: "#81d4ed", force-opponent: "#efa394", panel-error: "#ffb7a8", modal-shade: "#071018" }
 typography: { body: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, title: { fontFamily: "Arial, sans-serif", fontSize: "13px", fontWeight: 700 }, label: { fontFamily: "Arial, sans-serif", fontSize: "12px" }, hotkey: { fontFamily: "Arial, sans-serif", fontSize: "10px" }, count: { fontFamily: "Arial, sans-serif", fontSize: "11px" }, home-body: { fontFamily: "Arial, sans-serif", fontSize: "17px" }, home-action: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, home-support: { fontFamily: "Arial, sans-serif", fontSize: "13px" }, setup-heading: { fontFamily: "Arial, sans-serif", fontSize: "20px" }, setup-body: { fontFamily: "Arial, sans-serif", fontSize: "14px" }, setup-field: { fontFamily: "Arial, sans-serif", fontSize: "16px" }, setup-action: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-title: { fontSize: "27px", fontWeight: 700 }, panel-body: { fontFamily: "Arial, sans-serif", fontSize: "15px" }, panel-field: { fontSize: "16px" }, panel-help: { fontFamily: "Arial, sans-serif", fontSize: "13px" } }
 rounded: { control: "0px", home-control: "0px" }
@@ -75,8 +75,15 @@ not portable frames, recorded cameras, event markers, analytics or live spectati
 The timeline explicitly participates in sequential keyboard focus after speed and
 vision, retaining its native focus frame.
 
+Field Manual extends the same gallery with original actor icons, searchable
+roster rows and compiled-statistic tables. Desktop gives the selected entry the
+larger reading column; narrow layouts stack. An isolated original-model orbit
+view pairs the real GLB with native controls, using the existing graphite,
+ivory, warm-metal and blue Force tokens. Idle animation respects either reduced
+motion preference. The embedded pane preserves the paused battlefield.
+
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
-results, local Replays and native normal match HUD. Debug retains HTML/CSS presentation; native
+results, local Replays, Field Manual and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -89,7 +96,10 @@ evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `../render/src/scene/battlefield-hud.ts`, `../render/src/scene/battlefield-map.ts`,
 `src/features/match/native-hud.ts`
 and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`,
-`src/features/replays/` and `../render/src/scene/replay-hud.ts`.
+`src/features/replays/`, `../render/src/scene/replay-hud.ts`,
+`src/features/field-manual/` and `src/app/shell.css`. Field Manual's local direction
+is the emitted comment in `src/features/field-manual/index.ts`; it extends the
+incumbent world rather than defining a new one.
 
 **Key Characteristics:**
 
@@ -109,6 +119,7 @@ and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`
 - Native results with original plots and complete scrollable match records.
 - Native loading with actual stage progress, cancellation and explicit recovery.
 - Native local Replay library and read-only playback with synchronized keyboard focus.
+- Native Field Manual with original icons, compiled facts and isolated model inspection.
 
 ## Colors
 
@@ -180,7 +191,7 @@ Setup scales the page title, field captions and text, faction labels, action
 labels and notes with its bounded UI scale. Section headings, Force names, map
 name and checkbox label retain their base font sizes.
 
-Shared Settings, pause, loading, Load and results panels render in Arial. Paragraphs, captions and help
+Shared Settings, pause, loading, Load, results and Field Manual panels render in Arial. Paragraphs, captions and help
 explicitly set Arial; titles, notices, buttons and InputText inherit Babylon's
 current default rather than declaring a separate family. Their base ramp is a bold title
 (27px), text fields (16px), body/captions/actions (15px) and help/status/error
@@ -260,7 +271,7 @@ wide and a two-by-two grid otherwise, with 44px scaled heights. Focused fields,
 spawn options and the veterancy checkbox scroll into view. The square map preview
 is bounded by its column width and 340px times scale.
 
-Shared panels center a frame capped at 1240px times scale for Load/results,
+Shared panels center a frame capped at 1240px times scale for galleries/results,
 920px times scale for Settings or 720px times scale for other panes.
 Viewport edge insets are 12px below 600px width and
 24px otherwise; inner padding is 16px or 28px at the same threshold. Content
@@ -318,6 +329,16 @@ replay scale `min(device UI scale, max(0.8, viewport width / 420))`. Graphite fr
 retain a 12px viewport inset. Production thumbnails occupy only the available row
 width; semantic readouts retain the current production names and progress.
 
+Field Manual alone splits the gallery's available column space 32%/68%, after
+the shared 32px scaled gap, at the same 760px scaled inner-width threshold.
+Narrower views place selected details after the roster. Search and category
+stay before those columns; selection reveals the focused detail heading, while
+Return to roster restores search focus. The full-viewport model inspector places
+native controls in a left region bounded by 400px or 45vw, with the orbit scene
+alongside it. At widths of 640px or less, controls move above the scene in a region
+bounded by 320px or 45dvh. The shared panel's existing viewport scale clamp still
+applies; selecting a 150% device preference does not guarantee 150% at every width.
+
 ## Elevation & Depth
 
 The native match HUD is flat: opaque graphite frames and thin steel seams
@@ -366,6 +387,8 @@ the text leaves space for that disclosure mark.
   surface and press warms it. Synchronized HTML focus lightens text and thickens
   the frame from 1px to 2px. Continue, when available, becomes the primary action.
   The Single player action expands to Skirmish, Load, Replays and Back; Escape returns.
+- **Home Field Manual entry:** a native action opens the standalone `/manual`
+  reference; the paused-match menu opens the same controller in its existing pane.
 - **Home semantic navigation:** real HTML buttons retain accessible names,
   keyboard activation and expansion state while the visible interface is Babylon
   GUI. They are visually clipped only after the GUI has rendered its actions;
@@ -413,7 +436,7 @@ the text leaves space for that disclosure mark.
   at most two characters draw as badges; full Home/Space shortcut names remain
   in hover/focus descriptions instead of crowding compact icons.
 - **Shared native panel:** Settings from Home and the match, pause actions,
-  Objectives, Current controls, named saves, loading, Load and results reuse one native renderer.
+  Objectives, Current controls, named saves, loading, Load, results and Field Manual reuse one native renderer.
   Framed actions use Home's ordinary/primary/hover/pressed fills; disabled actions
   dim to 0.4 alpha. Inputs, selects and checkboxes share semantic values and
   existing handlers. Keyboard focus thickens the corresponding frame to 2px.
@@ -421,6 +444,19 @@ the text leaves space for that disclosure mark.
   option rows; Escape closes the list first.
   Current controls preserves the complete existing help copy, with height derived
   from actual wrapping rather than an estimated character count.
+- **Field Manual gallery:** original-icon roster buttons reuse selected warm wells
+  and synchronized ivory focus frames. Search and Units/Structures choices use
+  the shared editor/choice bridge. Compiled facts use existing rich tables;
+  expandable armour-multiplier controls retain target and final-damage caveats.
+  Produces/Builds relationships are filtered to the current roster. Selecting a
+  row focuses and reveals the detail heading; Return to roster focuses search.
+- **Field Manual model inspector:** the real installed GLB occupies a separate
+  orbit/zoom scene, with square native controls beside or above it. Existing blue
+  Force color is the preview color; there is no color control. Loading and actual
+  fetch failure use status, coral alert and Retry. Escape closes the inspector,
+  cancels/disposes pending work and restores initiating focus. Idle clips play
+  only when neither device nor operating-system reduced motion is requested.
+  The paused match world remains intact throughout browsing and inspection.
 - **Settings preview and feedback:** quality, UI scale, camera speed, edge scroll
   and reduced motion keep existing validation and storage. Preview applies live;
   Apply saves, Defaults previews defaults and Back/cancel restores saved values.
@@ -610,7 +646,7 @@ initialization.
 - **Do** preserve full recipe values and readable unavailable explanations.
 - **Do** retain accessible action names, visible focus and contextual command switching.
 - **Do** keep native Home, setup, panel and match controls synchronized with semantic HTML and preserve the graphics fallback.
-- **Do** honor reduced motion in the Home model display.
+- **Do** honor device and operating-system reduced motion in Home and Field Manual model displays.
 - **Do** use authored terrain, resource positions and selected spawns for the setup preview.
 - **Do** size shared panels from measured content and keep modal rendering separate from the match canvas.
 - **Do** preserve original save thumbnails, plot descriptions and every result-table row through responsive scrolling.

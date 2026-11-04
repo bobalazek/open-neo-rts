@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Native Field Manual](./2026-11-04-native-field-manual.md) — Search compiled roster facts and inspect original models from Home or the paused match, through the existing native panel system.
+
 - [2026-11-04 — First-playable combat sound library](./2026-11-04-first-playable-combat-library.md) — Original fire, impact and destruction signatures for the four remaining armed first-playable definitions, through existing routing.
 
 - [2026-11-04 — Bot extractor recovery](./2026-11-04-bot-extractor-recovery.md) — Scout known nodes, clear observed rubble and rebuild through ordinary commands after a reproduced economy stall.

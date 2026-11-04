@@ -2,6 +2,7 @@
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
 import { NORMAL_GAME_SPEEDS } from "../../worker";
+import { fieldManual } from "../field-manual";
 import { loadGameScreen, type SavedGame } from "../load-game";
 import { type DeviceSettings, settingsScreen } from "../settings";
 import { bindingText, controlsHelp, readBindings } from "../settings/bindings";
@@ -192,6 +193,24 @@ export function createInGameMenu(
       focus();
       present();
     });
+    const manual = document.createElement("button");
+    manual.type = "button";
+    manual.textContent = text("ui.manual.title");
+    manual.addEventListener("click", () => {
+      pane = "manual";
+      cleanupPane = fieldManual(
+        body!,
+        () => {
+          menu();
+          focus();
+        },
+        undefined,
+        present,
+      );
+      focus();
+      present();
+    });
+    body!.querySelector("nav")?.append(manual);
     for (const topic of ["objectives", "keys"] as const)
       body!.querySelector(`[data-${topic}]`)?.addEventListener("click", () => {
         pane = topic;

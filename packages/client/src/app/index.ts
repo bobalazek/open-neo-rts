@@ -2,6 +2,7 @@
 
 import { content } from "virtual:normal-catalog";
 import { SIM_VERSION } from "@open-neo-rts/sim";
+import { fieldManual } from "../features/field-manual";
 import {
   loadGameScreen,
   parseSavedGame,
@@ -276,7 +277,9 @@ export function startApp(canvas: HTMLCanvasElement) {
         },
         canvas,
       );
-    } else if (location.pathname === "/skirmish")
+    } else if (location.pathname === "/manual")
+      disposeScreen = fieldManual(root, () => navigate("/"), canvas);
+    else if (location.pathname === "/skirmish")
       disposeScreen = skirmishScreen(root, canvas, config, start, () => navigate("/"), notice);
     else if (location.pathname === "/match") {
       history.replaceState(null, "", "/skirmish");
