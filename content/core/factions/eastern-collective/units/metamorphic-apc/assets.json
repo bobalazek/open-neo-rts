@@ -1,5 +1,17 @@
 {
   "files": {
+    "metamorphic-apc.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.fire.lavfi"
+    },
+    "metamorphic-apc.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.impact.lavfi"
+    },
+    "metamorphic-apc.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.death.lavfi"
+    },
     "metamorphic-apc.glb": {
       "author": "Borut Balazek",
       "source": "source/metamorphic-apc.bricks.json"

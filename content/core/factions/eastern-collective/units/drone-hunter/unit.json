@@ -48,6 +48,11 @@
     "materials": {},
     "parts": [],
     "sockets": ["socket_muzzle"],
-    "animations": ["idle", "move", "attack", "death"]
+    "animations": ["idle", "move", "attack", "death"],
+    "sounds": {
+      "fire": "drone-hunter.fire.ogg",
+      "impact": "drone-hunter.impact.ogg",
+      "death": "drone-hunter.death.ogg"
+    }
   }
 }

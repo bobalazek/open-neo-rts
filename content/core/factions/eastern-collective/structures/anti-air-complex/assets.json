@@ -1,5 +1,17 @@
 {
   "files": {
+    "anti-air-complex.fire.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.fire.lavfi"
+    },
+    "anti-air-complex.impact.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.impact.lavfi"
+    },
+    "anti-air-complex.death.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/anti-air-complex.death.lavfi"
+    },
     "anti-air-complex.glb": {
       "author": "Borut Balazek",
       "source": "source/anti-air-complex.bricks.json"

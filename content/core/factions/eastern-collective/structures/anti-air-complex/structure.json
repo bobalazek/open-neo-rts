@@ -66,6 +66,11 @@
     "wreck": "anti-air-complex.rubble.glb",
     "materials": {},
     "sockets": ["socket_smoke", "socket_muzzle"],
-    "animations": ["active"]
+    "animations": ["active"],
+    "sounds": {
+      "fire": "anti-air-complex.fire.ogg",
+      "impact": "anti-air-complex.impact.ogg",
+      "death": "anti-air-complex.death.ogg"
+    }
   }
 }

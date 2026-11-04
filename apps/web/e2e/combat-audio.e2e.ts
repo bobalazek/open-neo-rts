@@ -54,7 +54,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("original rifle and cannon clips play from real normal-worker launches, impacts and deaths", async ({
+test("original ground roster clips play from real normal-worker launches, impacts and deaths", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -93,7 +93,7 @@ test("original rifle and cannon clips play from real normal-worker launches, imp
       return result;
     } as typeof connect;
   });
-  for (const unit of ["collective-soldier", "dragon-tank"]) {
+  for (const unit of ["collective-soldier", "dragon-tank", "rocket-trooper", "metamorphic-apc"]) {
     const candidate = structuredClone(setup);
     if (!candidate.normal) throw new Error("Missing original normal setup");
     // Keep this audio-only fixture's battle inside the default listener's culling range.
@@ -116,8 +116,8 @@ test("original rifle and cannon clips play from real normal-worker launches, imp
             {
               unit: `core.unit:eastern-collective/${unit}`,
               count: 1,
-              pop: unit === "dragon-tank" ? 3 : 1,
-              role: "combat",
+              pop: candidate.definitions.find((entry) => entry.id.endsWith(`/${unit}`))!.pop!,
+              role: candidate.definitions.find((entry) => entry.id.endsWith(`/${unit}`))!.role!,
             },
           ],
         },
@@ -185,6 +185,71 @@ test("original rifle and cannon clips play from real normal-worker launches, imp
       .toBe("closed");
   }
   expect(errors).toEqual([]);
+});
+
+test("authored anti-air clips decode and play from permitted presentation fixtures", async ({
+  page,
+}) => {
+  await page.goto("http://combat-audio.test/");
+  await page.evaluate(async (setup) => {
+    const url = "/combat-audio-proof.js";
+    const { mount } = (await import(url)) as typeof import("./combat-audio-proof");
+    mount(setup);
+  }, setup);
+  await page.getByRole("button", { name: "Start combat audio" }).click();
+  await expect(page.getByRole("button", { name: "Combat audio ready" })).toBeVisible();
+  await page.evaluate(() => {
+    const f = Reflect.get(window, "combatAudio");
+    let tick = f.state().snapshot.tick + 1;
+    for (const definition of [
+      "core.unit:eastern-collective/drone-hunter",
+      "core.structure:eastern-collective/anti-air-complex",
+    ]) {
+      // Presentation-only fixtures: normal starting kits deliberately do not support aircraft yet.
+      const snapshot: import("../../../packages/sim/src").SeatSnapshot = {
+        tick: tick++,
+        mode: "controlled",
+        entities: [
+          {
+            handle: "e999",
+            definition,
+            force: 0,
+            x: 512,
+            y: 512,
+            facing: 0,
+            health: 100,
+            maxHealth: 100,
+            order: null,
+          },
+        ],
+        fog: [{ group: 0, width: 1, height: 1, cells: new Uint8Array([2]) }],
+      };
+      f.project(snapshot);
+      f.project({
+        ...snapshot,
+        tick: tick++,
+        combatEvents: [
+          { type: "launch", entity: "e999", handle: "p999", x: 512, y: 512 },
+          { type: "impact", handle: "p999", x: 512, y: 512 },
+        ],
+      });
+      f.project({
+        ...snapshot,
+        tick: tick++,
+        entities: [],
+        combatEvents: [{ type: "death", entity: "e999", x: 512, y: 512 }],
+      });
+    }
+  });
+  for (const actor of ["drone-hunter", "anti-air-complex"])
+    for (const event of ["fire", "impact", "death"])
+      await expect
+        .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").played))
+        .toEqual(expect.arrayContaining([expect.stringContaining(`${actor}.${event}`)]));
+  await page.evaluate(() => Reflect.get(window, "combatAudio").dispose());
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").engine.state))
+    .toBe("closed");
 });
 
 test("original construction and hauling audio follows real build, mine and unload work", async ({

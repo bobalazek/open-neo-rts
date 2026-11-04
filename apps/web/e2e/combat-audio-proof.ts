@@ -42,6 +42,7 @@ export function mount(setup: MatchSetup) {
     await match.init({ setup, seat: 1, mode: "controlled" });
     Reflect.set(window, "combatAudio", {
       played,
+      project: (snapshot: OfflineState["snapshot"]) => audio.accept(snapshot, true),
       state: () => state,
       async step() {
         await match.step();
