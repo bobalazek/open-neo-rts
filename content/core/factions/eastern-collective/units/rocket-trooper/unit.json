@@ -60,6 +60,7 @@
     "sockets": ["socket_muzzle"],
     "animations": ["idle", "move", "attack", "death"],
     "sounds": {
+      "move_loop": "rocket-trooper.move-loop.ogg",
       "fire": "rocket-trooper.fire.ogg",
       "impact": "rocket-trooper.impact.ogg",
       "death": "rocket-trooper.death.ogg"

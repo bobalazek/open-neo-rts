@@ -1,0 +1,1 @@
+anoisesrc=color=brown:amplitude=0.3:sample_rate=48000:duration=2:seed=4102,highpass=f=130,lowpass=f=2100,aeval='val(0)*pow(max(0,1-mod(t,0.5)/0.065),3)',volume=0.32,afade=t=in:d=0.004,afade=t=out:st=1.992:d=0.008

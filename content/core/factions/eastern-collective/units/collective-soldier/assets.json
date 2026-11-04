@@ -1,5 +1,9 @@
 {
   "files": {
+    "collective-soldier.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/collective-soldier.move-loop.lavfi"
+    },
     "collective-soldier.fire.ogg": {
       "author": "Borut Balazek",
       "source": "source/collective-soldier.fire.lavfi"

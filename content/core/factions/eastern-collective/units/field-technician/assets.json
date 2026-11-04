@@ -1,5 +1,9 @@
 {
   "files": {
+    "field-technician.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/field-technician.move-loop.lavfi"
+    },
     "field-technician.build.ogg": {
       "author": "Borut Balazek",
       "source": "source/field-technician.build.lavfi"

@@ -1,5 +1,9 @@
 {
   "files": {
+    "metamorphic-apc.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/metamorphic-apc.move-loop.lavfi"
+    },
     "metamorphic-apc.fire.ogg": {
       "author": "Borut Balazek",
       "source": "source/metamorphic-apc.fire.lavfi"

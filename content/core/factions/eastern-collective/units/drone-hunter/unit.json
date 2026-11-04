@@ -50,6 +50,7 @@
     "sockets": ["socket_muzzle"],
     "animations": ["idle", "move", "attack", "death"],
     "sounds": {
+      "move_loop": "drone-hunter.move-loop.ogg",
       "fire": "drone-hunter.fire.ogg",
       "impact": "drone-hunter.impact.ogg",
       "death": "drone-hunter.death.ogg"

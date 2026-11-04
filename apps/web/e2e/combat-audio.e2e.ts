@@ -54,6 +54,123 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+test("first-playable movement loops decode, follow real normal-worker movement and stop with the units", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  test.setTimeout(120000);
+  const candidate = structuredClone(setup);
+  if (!candidate.normal) throw new Error("Missing original normal setup");
+  const roster = [
+    "field-technician",
+    "collective-soldier",
+    "rocket-trooper",
+    "drone-hunter",
+    "supply-truck",
+    "dragon-tank",
+    "metamorphic-apc",
+  ];
+  candidate.map = {
+    ...flatMap(48),
+    resources: [{ kind: "ore", position: [24 * 1024, 24 * 1024], amount: 5000, radius: 1024 }],
+    spawns: [
+      { id: "north-west", position: [12 * 1024, 12 * 1024], facing: 16384 },
+      { id: "south-east", position: [36 * 1024, 36 * 1024], facing: 49152 },
+    ],
+  };
+  candidate.normal = {
+    ...candidate.normal,
+    bots: [],
+    settings: { ...candidate.normal.settings, fog: "off" },
+    forces: candidate.normal.forces.map((force) => ({
+      ...force,
+      start: {
+        ...force.start,
+        units: (force.index === 0 ? roster : ["collective-soldier"]).map((unit) => {
+          const definition = candidate.definitions.find(
+            (entry) => entry.id === `core.unit:eastern-collective/${unit}`,
+          )!;
+          return { unit: definition.id, count: 1, pop: definition.pop!, role: definition.role! };
+        }),
+      },
+    })),
+  };
+  await page.goto("http://combat-audio.test/");
+  await page.evaluate(async (setup) => {
+    const url = "/combat-audio-proof.js";
+    const { mount } = (await import(url)) as { mount: typeof import("./combat-audio-proof").mount };
+    mount(setup);
+  }, candidate);
+  await page.getByRole("button", { name: "Start combat audio" }).click();
+  await expect
+    .poll(async () => errors[0] ?? (await page.locator("button").textContent()))
+    .toBe("Combat audio ready");
+  expect(
+    await page.evaluate(async () => {
+      const f = Reflect.get(window, "combatAudio");
+      const entities = f
+        .state()
+        .snapshot.entities.filter(
+          (entity: { force: number; definition: string }) =>
+            entity.force === 0 && entity.definition.startsWith("core.unit:"),
+        );
+      const accepted = await f.command("unit.move", {
+        entities: entities.map((entity: { handle: string }) => entity.handle),
+        x: 30 * 1024,
+        y: 12 * 1024,
+      });
+      for (let tick = 0; tick < 60; tick++) await f.step();
+      return accepted;
+    }),
+  ).toBe("accepted");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Set(
+            Reflect.get(window, "combatAudio").played.filter((source: string) =>
+              source.includes("move-loop"),
+            ),
+          ).size,
+      ),
+    )
+    .toBe(7);
+  // Every original loop is two seconds; it must still be active after one full cycle.
+  await page.waitForTimeout(2100);
+  const result = await page.evaluate(async () => {
+    const f = Reflect.get(window, "combatAudio");
+    const active = () =>
+      f.engine.sounds.filter(
+        (sound: { loop: boolean; activeInstancesCount: number }) =>
+          sound.loop && sound.activeInstancesCount,
+      );
+    const entities = f
+      .state()
+      .snapshot.entities.filter(
+        (entity: { force: number; definition: string }) =>
+          entity.force === 0 && entity.definition.startsWith("core.unit:"),
+      );
+    const loops = active();
+    const follows = loops.every((sound: { spatial: { position: { x: number; z: number } } }) =>
+      entities.some(
+        (entity: { x: number; y: number }) =>
+          sound.spatial.position.x === entity.x / 512 &&
+          sound.spatial.position.z === entity.y / 512,
+      ),
+    );
+    const count = loops.length;
+    const stopped = await f.command("unit.stop", {
+      entities: entities.map((entity: { handle: string }) => entity.handle),
+    });
+    const after = active().length;
+    f.dispose();
+    return { count, follows, stopped, after };
+  });
+  expect(result).toEqual({ count: 7, follows: true, stopped: "accepted", after: 0 });
+  expect(errors).toEqual([]);
+});
+
 test("original ground roster clips play from real normal-worker launches, impacts and deaths", async ({
   page,
 }) => {
@@ -178,7 +295,10 @@ test("original ground roster clips play from real normal-worker launches, impact
     await expect
       .poll(() => page.evaluate(() => Reflect.get(window, "combatAudioProbe").peak))
       .toBeGreaterThan(0.0001);
-    expect(await page.evaluate(() => Reflect.get(window, "combatAudioProbe").decoded)).toBe(3);
+    await expect
+      .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").played))
+      .toEqual(expect.arrayContaining([expect.stringContaining(`${unit}.move-loop`)]));
+    expect(await page.evaluate(() => Reflect.get(window, "combatAudioProbe").decoded)).toBe(4);
     await page.evaluate(() => Reflect.get(window, "combatAudio").dispose());
     await expect
       .poll(() => page.evaluate(() => Reflect.get(window, "combatAudio").engine.state))

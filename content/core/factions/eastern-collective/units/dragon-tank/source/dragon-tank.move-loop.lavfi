@@ -1,0 +1,3 @@
+aevalsrc='0.04*(sin(2*PI*36*t)+0.5*sin(2*PI*72*t))*(0.8+0.2*sin(2*PI*6*t))':s=48000:d=2[motor];
+anoisesrc=color=brown:amplitude=0.2:sample_rate=48000:duration=2:seed=4106,highpass=f=180,lowpass=f=2400,tremolo=f=20:d=0.65,volume=0.25[tracks];
+[motor][tracks]amix=inputs=2:normalize=0,afade=t=in:d=0.008,afade=t=out:st=1.992:d=0.008
