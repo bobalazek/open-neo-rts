@@ -28,14 +28,15 @@ Every unit, structure, faction, map and asset (with the weapons, abilities and r
 
 **Assets:**
 
-| Check            | Catches                                                                                                                                        |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| glTF conformance | Unreadable or invalid GLB files (Khronos glTF validator)                                                                                       |
-| Structure        | Required part nodes present and named as declared; origin at ground centre; Y-up; scale in metres within the expected bounds for its footprint |
-| Budgets          | Triangle counts, LOD count, texture sizes, material count (palette material only)                                                              |
-| Animations       | Clip names match what the definition references; skeletons within joint and influence limits                                                   |
-| Provenance       | Every file has an `assets.json` entry                                                                                                          |
-| Formats          | Allowed extensions only; binaries tracked by Git LFS                                                                                           |
+| Check            | Catches                                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| glTF conformance | Unreadable or invalid GLB files (Khronos glTF validator)                                                                                                |
+| Structure        | Required part nodes present and named as declared; origin at ground centre; Y-up; scale in metres within the expected bounds for its footprint          |
+| Budgets          | Triangle counts, LOD count, texture sizes, material count (palette material only)                                                                       |
+| Animations       | Clip names match what the definition references; skeletons within joint and influence limits                                                            |
+| Provenance       | Every file has an `assets.json` entry                                                                                                                   |
+| Runtime audio    | Complete checksummed Ogg pages, one Vorbis/Opus stream, mono unit/structure/prop effects, successful decoding, non-silent output and true-peak headroom |
+| Formats          | Allowed extensions only; binaries tracked by Git LFS                                                                                                    |
 
 **Staleness:**
 
@@ -60,6 +61,7 @@ Every unit, structure, faction, map and asset (with the weapons, abilities and r
 - `compileGameplayCatalog` converts validated raw definitions into integer gameplay inputs: subcells, ticks, per-mille modifiers and explicit rate quantities. It reuses the existing spawn definition conversion and dependency reference order. Missing headquarters/extractor construction prices and times remain unavailable recipes; omissions cannot become free or instant builds. CLI content validation runs compilation before model validation. Compilation supplies data to later economy/combat systems; it does not implement those systems or make the whole roster playable.
 - The browser preview registry reads unit/structure/prop paths from the validated core manifest. It still permits unavailable LFS artwork and does not claim full match identity. A real match loader must supply actual runtime bytes to `resolvePacks`; missing bytes cannot produce a trusted catalog. Shared resolution and mismatch refusal are checked in Bun and browsers.
 - **glTF conformance** uses the official Khronos validator (tooling, not a game dependency). Our own checks for parts, budgets and clips read the GLB with a small parser in `packages/content`.
+- **Audio** uses a small Ogg framing/checksum check and the installed FFmpeg decoder/EBU R128 meter in CLI tooling. FFmpeg is required on `PATH` when runtime Ogg clips are present; CI installs it for tooling tests and content validation. Source originals are excluded from runtime format/provenance checks. Full-mix/category loudness qualification remains part of the music/announcer work.
 - The same validators run in the map editor, in the game when loading mods, and on the server when accepting custom content.
 
 The normal browser build adapter reads the full original core inventory, resolves

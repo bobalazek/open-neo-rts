@@ -54,6 +54,14 @@ for the single-clip rebuild command. Keep each graph, its `.ogg`, the presentati
 reference and provenance entry together. Future recorded/editable sources can use
 the same co-located provenance convention.
 
+`bun neo validate-assets` (also part of `bun neo validate`) decodes runtime Ogg
+clips with FFmpeg. Install it on `PATH` (`brew install ffmpeg` on macOS or
+`sudo apt install ffmpeg` on Ubuntu). It checks complete, checksummed single-stream
+Vorbis/Opus framing, mono co-located unit/structure/prop effects, non-silent decoded
+output and true-peak headroom. Export at −1.1 dBTP or lower to leave room for the
+meter's 0.1 dB reporting precision against the −1 dBTP limit. It does not rewrite
+or normalise assets. Editable files under `source/` are not runtime exports.
+
 For CC0 audio, preserve the actual creator in `assets.json`, keep the upstream
 source file and license evidence in `source/`, and record the original filename,
 creator's download page, CC0 declaration and any processing in a source note.

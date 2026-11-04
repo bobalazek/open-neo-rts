@@ -12,6 +12,9 @@ bun install
 bun run dev              # web client
 ```
 
+Install FFmpeg on `PATH` for audio asset validation and the CLI tests:
+`brew install ffmpeg` on macOS or `sudo apt install ffmpeg` on Ubuntu.
+
 | Command                                                        | What                                                                                                                                               |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bun run check` / `bun run fix`                                | Biome lint and format (check only / apply fixes)                                                                                                   |

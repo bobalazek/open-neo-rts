@@ -45,6 +45,8 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
       - run: bun install --frozen-lockfile
+      - name: Install audio validation tool
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: bun run check
       - run: bun run typecheck
       - run: bun run test
@@ -109,4 +111,6 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
+      - name: Install audio validation tool
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: bun neo validate
