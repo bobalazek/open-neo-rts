@@ -1,13 +1,14 @@
 # Open Neo RTS
 
-A browser real-time strategy game with original factions and an integer,
-deterministic TypeScript simulation. Inspired by classic RTS games, with original
-models and content.
+A real-time strategy game for the browser, with original factions, brick-style
+models and a deterministic TypeScript simulation.
 
 **Early playable · work in progress.** You can run a local skirmish against a basic
 bot. The game is still being built and is not a finished or balanced release.
 
-![A local Eastern Collective skirmish on Training Grounds](docs/screenshots/skirmish.png)
+[Get started](#run-locally) · [Roadmap](docs/project/roadmap.md) · [Contribute](CONTRIBUTING.md)
+
+![The native Home menu with the original Dragon Tank display](docs/screenshots/home.png)
 
 ## What works today
 
@@ -17,17 +18,23 @@ bot. The game is still being built and is not a finished or balanced release.
   terrain navigation and fog of war.
 - Combat, queued orders, deployed vehicle modes, transports, repairs, wrecks and
   salvage, with win/lose results and rematches.
-- Browser save slots, import/export, and terminal match-record export. Final
+- Versioned browser saves, import/export and a local replay library/viewer. Final
   results include per-type totals, controller order APM and economy/army histories.
+- Native Babylon menus and match HUD, contextual commands, a circular minimap,
+  keyboard bindings, Field Manual and optional guidance.
+- Initial combat, construction and hauling sounds, with an audio mixer.
 - Debug maps, spawning and model inspection, with first-pass original animated
   models for the Alliance of Free Nations, Eastern Collective and Phoenix
   Initiative. Normal skirmishes currently use the Eastern Collective tier-one
   roster.
 
-Online PvP and Shared Command, the full three-faction game, replay playback,
-audio, training/campaigns, and desktop releases are still roadmap work. Balance,
-visual polish, performance and full-match bot qualification remain unfinished. See the
-[current tasks](docs/project/tasks.md) and [roadmap](docs/project/roadmap.md).
+Online PvP and Shared Command, the full three-faction game, training/campaigns,
+music/announcer coverage and desktop releases are still roadmap work. Balance,
+visual polish and performance remain unfinished. The SIM59 headless bot run
+[completed all 20 seeds twice](docs/project/learnings/2026-11-04-sim59-complete-matches.md)
+without a crash, cap or divergence; this does not establish human match quality,
+balance or browser performance. See the [current tasks](docs/project/tasks.md)
+and [roadmap](docs/project/roadmap.md).
 Save/replay compatibility follows the simulation version; older files may need
 their matching build.
 
@@ -40,7 +47,7 @@ git lfs install
 git clone https://github.com/bobalazek/open-neo-rts.git
 cd open-neo-rts
 git lfs pull
-bun install
+bun install --frozen-lockfile
 bun run dev
 ```
 
@@ -59,16 +66,23 @@ Use the idle-builder/producer buttons to start building and training units.
 ## Screenshots
 
 Actual captures from the development build, using the original project assets.
-The image above is a normal local match; the developer views below inspect assets
-and terrain independently of skirmish progression.
+The image above shows the native Home menu. Below are the start of a normal
+local match and the independent model inspection tool, using first-pass art.
 
-![Sandbox water and shorelines in the terrain inspector](docs/screenshots/terrain.png)
+![A local Eastern Collective skirmish on Training Grounds](docs/screenshots/skirmish.png)
 
-_Sandbox: Water terrain inspector, showing shallow and deep water and shorelines._
+_Starting base on Training Grounds, with a Field Technician selected and its build commands visible._
 
 ![The original Eastern Collective Dragon Tank in the model inspector](docs/screenshots/model-preview.png)
 
 _Dragon Tank model inspector: team colour and authored animation clips._
+
+## Help build it
+
+Play a local match and [report bugs or feedback](https://github.com/bobalazek/open-neo-rts/issues).
+For a reproducible bug, include the browser, map/seed, steps and any console error
+or compatible save/replay. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md);
+the [task list](docs/project/tasks.md) distinguishes delivered work from remaining scope.
 
 ## Development
 
@@ -81,8 +95,9 @@ bun neo validate    # schemas, gameplay definitions and original assets
 bun neo             # available CLI commands
 ```
 
-Developer tools are at `/debug`, terrain inspection at `/debug?terrain=1`, and the
-local GLB viewer at `/debug?models=1`. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+Developer tools are at `/debug`, terrain inspection at `/debug?terrain=1`, and
+model inspection at `/tools/content` (also available from Home). The legacy
+standalone GLB view remains at `/debug?models=1`. See [CONTRIBUTING.md](CONTRIBUTING.md) for
 workflow and checks, and [docs/](docs/README.md) for the design and engineering docs.
 
 ## Stack
