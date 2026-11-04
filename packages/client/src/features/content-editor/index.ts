@@ -6,6 +6,7 @@ import { mountNativePanel } from "../../shared/native-panel";
 import { applyInterfaceScale, readDeviceSettings } from "../settings";
 import { mountDefinitionEditor } from "./definition-editor";
 import { inspectModel, installedModel, MODEL_FILE_LIMIT } from "./model";
+import { prepareDraftPlaytest } from "./playtest";
 
 /** Model-first content tools; definition writes and draft playtests have separate owners. */
 export function startContentTools(canvas: HTMLCanvasElement) {
@@ -15,7 +16,7 @@ export function startContentTools(canvas: HTMLCanvasElement) {
   root.className = "content-tools";
   root.innerHTML = `<!-- THESIS: inspect original model behaviour and actual validator output before entering a match.
 OWN-WORLD: inherited graphite command stations, original brick subjects, native framed controls.
-STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery and explicit save/download.
+STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks.
 FIRST VIEWPORT: the model owns the desktop left; a scrolling native tool pane sits right, below the model when narrow.
 FORM: code-led Operate extension of existing native panels and the documented model-first tool.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
@@ -90,6 +91,46 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           definition.selectedIndex = -1;
           await load(async () => value);
         },
+        playtest: async (packs, packId, path, draft) => {
+          const { startDebugSession } = await import("../debug/session");
+          const prepared = await prepareDraftPlaytest(packs, packId, path, draft);
+          if (disposed) {
+            prepared.dispose();
+            return;
+          }
+          const display = canvas.style.display;
+          const target = document.createElement("canvas");
+          target.className = "editor-playtest-canvas";
+          target.setAttribute("data-draft-playtest", "");
+          panel.dispose();
+          preview?.setPaused(true);
+          root.hidden = true;
+          canvas.style.display = "none";
+          document.body.classList.remove("content-tools-page");
+          document.body.append(target);
+          let active: ReturnType<typeof startDebugSession> | undefined;
+          const close = () => {
+            if (!closePlaytest) return;
+            closePlaytest = undefined;
+            active?.dispose();
+            prepared.dispose();
+            target.remove();
+            canvas.style.display = display;
+            if (disposed) return;
+            document.body.classList.add("content-tools-page");
+            root.hidden = false;
+            panel = mountPanel();
+            preview?.setPaused(false);
+            root.querySelector<HTMLButtonElement>("[data-playtest]")?.focus();
+          };
+          closePlaytest = close;
+          try {
+            active = startDebugSession(target, { ...prepared, back: close });
+          } catch (error) {
+            close();
+            throw error;
+          }
+        },
       });
       restoreEditor = () => {
         editor?.dispose();
@@ -120,16 +161,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   let preview: Awaited<ReturnType<typeof createModelPreview>> | undefined;
   let creating: Promise<Awaited<ReturnType<typeof createModelPreview>>> | undefined;
   let fetching: AbortController | undefined;
+  let closePlaytest: (() => void) | undefined;
   let opened:
     | { bytes: Uint8Array; name: string; kind: ModelKind; raw?: Record<string, unknown> }
     | undefined;
   let pending: (() => Promise<void>) | undefined;
-  const panel = mountNativePanel(
-    root,
-    root.querySelector("section")!,
-    root.querySelector<HTMLCanvasElement>(".content-tools-controls")!,
-    { id: () => "content-tools", title: () => text("ui.tools.title"), modal: false },
-  );
+  const mountPanel = () =>
+    mountNativePanel(
+      root,
+      root.querySelector("section")!,
+      root.querySelector<HTMLCanvasElement>(".content-tools-controls")!,
+      { id: () => "content-tools", title: () => text("ui.tools.title"), modal: false },
+    );
+  let panel = mountPanel();
   function table(title: string, values: readonly string[]) {
     const details = document.createElement("details");
     const summary = document.createElement("summary");
@@ -378,6 +422,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     dispose() {
       if (disposed) return;
       disposed = true;
+      closePlaytest?.();
       request++;
       events.abort();
       editor?.dispose();

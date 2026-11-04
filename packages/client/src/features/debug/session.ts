@@ -25,14 +25,23 @@ import { oppositeBase } from "./performance-scene";
 import { bindPlacementPreview } from "./placement";
 import { createReproductionControls } from "./reproduction";
 
-const catalog = builtins.map(({ raw, model, wreck }) => catalogEntry(raw, model, wreck));
+const installedCatalog = builtins.map(({ raw, model, wreck }) => catalogEntry(raw, model, wreck));
 const linkMaps = MAPS.map(({ definition }) => ({
   id: `core.${definition.id}`,
   ...definition.size,
 }));
 
 /** Owns one rendered, worker-hosted session; replaced loads never regain ownership. */
-export function startDebugSession(canvas: HTMLCanvasElement) {
+export function startDebugSession(
+  canvas: HTMLCanvasElement,
+  draft?: {
+    catalog: readonly ReturnType<typeof catalogEntry>[];
+    initial: DebugLink;
+    definition: string;
+    back(): void;
+  },
+) {
+  const catalog = draft?.catalog ?? installedCatalog;
   const panel = document.createElement("section");
   panel.className = "model-check debug-session";
   panel.setAttribute("aria-label", "Debug session controls");
@@ -63,9 +72,21 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   if (!statusElement || !reload || !map || !seed || !forceRows || !controlled || !addForce)
     throw new Error("Debug controls missing");
   const status = statusElement;
+  if (draft) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.textContent = "Return to draft";
+    back.addEventListener("click", draft.back);
+    const notice = document.createElement("p");
+    notice.textContent =
+      "Unsaved draft snapshot · movement, health and placement playtest. Combat and economy are not active in this debug session. Returning preserves your edits.";
+    panel.prepend(back, notice);
+    for (const link of panel.querySelectorAll("a")) link.hidden = true;
+  }
   const controls = { forceRows, controlled, addForce };
   const signal = new AbortController();
   const palette = createSpawnPalette(panel, catalog, signal.signal);
+  if (draft) palette.choose(draft.definition);
   let updateSelection: (handles: readonly string[]) => void = () => {};
   const inspector = createInspector(panel, catalog, signal.signal, (handles) =>
     updateSelection(handles),
@@ -77,7 +98,7 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
   let initial: DebugLink;
   let linkError: string | undefined;
   try {
-    initial = parseDebugLink(location.search, linkMaps, catalog);
+    initial = draft?.initial ?? parseDebugLink(location.search, linkMaps, catalog);
   } catch (error) {
     linkError = error instanceof Error ? error.message : "Invalid debug link";
     initial = parseDebugLink("", linkMaps, catalog);
@@ -372,14 +393,16 @@ export function startDebugSession(canvas: HTMLCanvasElement) {
       if (latestState) receive(latestState);
       reproduction.bind(
         activeMatch,
-        debugLink(location.href, {
-          map: mapId,
-          seed: selectedSeed,
-          forces: selectedForces,
-          controlled: selectedControlled,
-          spawns: initial.spawns,
-          ...(initial.scene ? { scene: initial.scene } : {}),
-        }),
+        draft
+          ? ""
+          : debugLink(location.href, {
+              map: mapId,
+              seed: selectedSeed,
+              forces: selectedForces,
+              controlled: selectedControlled,
+              spawns: initial.spawns,
+              ...(initial.scene ? { scene: initial.scene } : {}),
+            }),
       );
       overlayControls.bind(activeMatch);
       const activeRenderer = renderer;

@@ -21,6 +21,8 @@
   "ui.editor.save-or-discard": "Save or discard your edits before leaving this definition.",
   "ui.editor.discard": "Discard edits",
   "ui.editor.preview": "Validate and preview",
+  "ui.editor.playtest": "Playtest draft",
+  "ui.editor.playtest-help": "Test a validated snapshot's movement, health and placement in debug. Return keeps unsaved edits. Combat and economy previews remain separate.",
   "ui.editor.reload-disk": "Reload disk version",
   "ui.editor.keep-edits": "Keep my edits",
   "ui.editor.invalid-disk": "The disk file is not a valid definition object. Keep your edits or repair the file before reloading.",

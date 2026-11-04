@@ -21,10 +21,11 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
   let lod: ReturnType<typeof createModelLod>;
   let lodMode: "auto" | "0" | "1" = "auto";
   let health = 100;
-  engine.runRenderLoop(() => {
+  const render = () => {
     lod?.setDistant(lodMode === "1" || (lodMode === "auto" && camera.radius >= MODEL_LOD_DISTANCE));
     scene.render();
-  });
+  };
+  engine.runRenderLoop(render);
   const showHealth = () => {
     for (const node of current?.nodes ?? []) {
       if (node.name !== "state_damaged" && node.name !== "state_critical") continue;
@@ -54,6 +55,13 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
   window.addEventListener("resize", resize);
 
   return {
+    setPaused(paused: boolean) {
+      if (paused) engine.stopRenderLoop(render);
+      else {
+        resize();
+        engine.runRenderLoop(render);
+      }
+    },
     cancelLoad: () => {
       request++;
     },

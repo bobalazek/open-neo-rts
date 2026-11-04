@@ -235,8 +235,7 @@ source.
   are 2 MiB per JSON, 256 MiB combined runtime data, 10,000 directory entries and
   32 directory levels. Output currently uses two-space JSON and a final newline.
   Full runtime audio, source freshness and exact formatter parity remain
-  2-38b2. The whole 2-38b task,
-  draft worker playtests (2-38c) and asset editing (2-38d) remain open. See
+  2-38b2. The whole 2-38b task and asset editing (2-38d) remain open. See
   `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
 - New from selected completes 2-38b3 sibling creation from a clean unit,
   structure or prop in an opened pack. Authors enter a new display name and
@@ -256,8 +255,28 @@ source.
   lock while busy. Template copies including editable sources are bounded to
   256 MiB. Browser writes remain optimistic, without atomic multi-file isolation.
   This authors drafts without changing the built-in roster or simulation; it
-  does not close 2-38b2, draft playtests or asset editing. See
+  does not close 2-38b2 or asset editing. See
   `../../docs/project/decisions/2026-11-04-definition-creation.md`.
+- Playtest draft beside Save opens the existing HTML debug worker with a validated
+  copy of the selected existing definition, including unsaved edits. This 2-38c1
+  slice checks movement, health and placement; combat/economy integration,
+  authored opponent presets and weapon/destruction effects remain 2-38c2, so
+  the whole 2-38c task remains open. Writable packs are refreshed and the draft
+  is substituted only in copied validation inputs. Shared resolution, gameplay
+  compilation, provenance and GLB checks gate launch. Checked model bytes become
+  local Blob URLs for that session; neither source files nor normal matches change.
+  The draft starts selected in the spawn palette. Node structures start on
+  Sandbox: Resources; naval units and shore/water footprints use Sandbox: Water;
+  other definitions use Sandbox: Flat. Existing map, palette and Force controls
+  remain manual, with no opponent AI. Return to draft leads the bounded scrolling
+  debug pane and remains available after worker failure. The editor retains its
+  fields while model/panel rendering is suspended; returning disposes the worker,
+  scene and temporary URLs, restores the native pane and resumes the model.
+  Canonical command-log export includes the copied simulation definitions and
+  commands. Copy initial setup link is disabled because URLs cannot carry this
+  draft and its models; export reproduces simulation, not an asset pack. Native
+  debug conversion and full 2-38b2 validation parity remain separate work. See
+  `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual
