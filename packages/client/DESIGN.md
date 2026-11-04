@@ -112,8 +112,9 @@ original model and source identity remain visible. Playtest draft beside Save
 opens the retained HTML debug controls over real terrain, with Return to draft
 first in a bounded scrolling pane. The validated unsaved definition and checked
 local model snapshot support movement, health and placement. Skirmish draft
-beside it opens the native loading panel and normal Training Grounds match with
-an Eastern Collective mirror and basic bot. Its existing HUD exposes actual draft
+beside it first opens a native graphite scenario modal with framed map, opponent,
+spawn and seed fields and pinned Cancel/Start actions, then the native loading
+panel and selected authored-map match. Its existing HUD exposes actual draft
 stats and recipes; Installed Field Manual identifies the installed reference.
 Return to draft restores the retained native editor and initiating action focus.
 Fire, Destroy and Restore model extend the retained pane with explicit isolated
@@ -122,9 +123,9 @@ model. Functional model effects reuse original geometry without decorative motio
 This records model inspection (2-38a),
 existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debug
 checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
-Full runtime audio, source freshness and exact formatter parity remain 2-38b2;
-broader authored opponent/map presets remain 2-38c2. Asset editing remains open,
-including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
+The six-map scenario presets complete the remaining 2-38c2 slice. Full runtime
+audio, source freshness and exact formatter parity remain 2-38b2. Asset editing
+remains open, including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -158,7 +159,8 @@ Content tools' local contract is in `src/features/content-editor/index.ts` and
 `.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
 also uses `src/features/content-editor/content-tools.css`, `model.ts`,
 `definition-editor.ts`, `definition-form.ts`, `definition-pack.ts`, `creation.ts`,
-`creation-write.ts`, `archive.ts`, `playtest.ts` and `skirmish-playtest.ts`, plus
+`creation-write.ts`, `archive.ts`, `playtest.ts`, `skirmish-playtest.ts`,
+`scenario-panel.ts` and `scenarios.ts`, plus
 `src/features/debug/session.ts`, `catalog.ts`, `palette.ts` and `reproduction.ts`.
 Existing
 definition boundaries are recorded in
@@ -169,6 +171,8 @@ Draft debug checks are recorded in
 `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 Temporary normal skirmishes are recorded in
 `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
+Scenario configuration follows
+`../../docs/project/decisions/2026-11-04-draft-scenario-presets.md`.
 Isolated model actions use `../render/src/units/preview-actions.ts` and follow
 `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
@@ -632,8 +636,8 @@ the text leaves space for that disclosure mark.
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model checks gate saving, while
   full runtime audio, source freshness and exact formatter parity remain 2-38b2;
-  broader authored opponent/map presets remain 2-38c2, and asset editing remains
-  open, including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
+  asset editing remains open, including socket/part gizmos, GLB export and
+  damage-socket smoke/fire previews.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source
@@ -662,12 +666,23 @@ the text leaves space for that disclosure mark.
   and does not change sources, normal matches or simulation behavior.
 - **Draft normal skirmish:** Skirmish draft reuses the native action, loading
   progress, normal HUD and match menu for a supported checked unsaved snapshot.
-  Training Grounds, an Eastern Collective mirror and basic bot retain normal
-  combat, economy, fog and command permissions. Unsupported content keeps its
-  debug path and a readable restriction without losing edits. Native Return to
+  Its content-sized graphite modal first collects one of six authored maps,
+  opponent preset, distinct spawn sides and an unsigned 32-bit integer seed.
+  Framed fields retain ivory focus and warm-metal actions; Cancel and Start stay
+  pinned while content scrolls on narrow screens. Named semantic fields own
+  keyboard editing, native focus mirrors them, and the HTML dialog owns modal
+  focus and Escape. Map receives initial focus; invalid seeds or duplicate spawns
+  expose an alert and disable Start. Cancel/Escape returns to the unchanged editor
+  without a worker; leaving tools removes the panel. Basic bot and idle faction
+  openings keep the Eastern Collective mirror; the draft mirror adds one supported
+  ground unit per Force with an idle controller and ordinary automatic combat.
+  Structures use faction openings; dry maps omit starting harvesters and harvester
+  mirrors require ore. Normal combat, economy, fog and command permissions remain.
+  Unsupported content keeps its debug path and a readable restriction without
+  losing edits. Native Return to
   draft and loading Cancel restore the retained editor; initialization or worker
-  failure returns with an error. Restarts reuse the same checked metadata and
-  model/wreck/icon/sound bytes and preview audio mixer. Return/failure disposes
+  failure returns with an error. Restarts reuse the same frozen scenario, checked
+  metadata and model/wreck/icon/sound bytes and preview audio mixer. Return/failure disposes
   the worker, renderer, mixer, decoded buffers and temporary asset URLs, resumes
   editor rendering and restores focus to Skirmish draft. Save/Load, autosaves,
   replay storage and contextual guidance writes are unavailable for this preview.

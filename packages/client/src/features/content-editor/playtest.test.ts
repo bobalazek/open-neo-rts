@@ -1,7 +1,10 @@
 import { expect, spyOn, test } from "bun:test";
 import { resolve } from "node:path";
+import { parseTerrain, type TerrainLayers } from "@open-neo-rts/content";
 import {
+  checkpointHash,
   createMatch,
+  createMatchKeyframe,
   createMatchRecord,
   createNormalMatchSetup,
   createProjection,
@@ -14,9 +17,13 @@ import {
 import { flatMap } from "@open-neo-rts/sim/testing";
 import soldier from "../../../../../content/core/factions/eastern-collective/units/collective-soldier/unit.json";
 import technician from "../../../../../content/core/factions/eastern-collective/units/field-technician/unit.json";
+import resourceMap from "../../../../../content/core/maps/sandbox-resources/map.json";
+import trainingMap from "../../../../../content/core/maps/training-grounds/map.json";
+import { defaultSkirmish, normalSkirmish } from "../skirmish/setup";
 import { prepareDefinitionClone } from "./creation";
 import { type EditorFile, readEditorPack } from "./definition-pack";
 import { prepareDraftPlaytest } from "./playtest";
+import { defaultDraftScenario, draftScenarioSetup } from "./scenarios";
 
 const root = resolve(import.meta.dir, "../../../../../content/core");
 async function core() {
@@ -31,6 +38,128 @@ async function core() {
   );
 }
 const path = "factions/eastern-collective/units/dragon-tank/unit.json";
+
+test("draft scenarios preserve normal defaults, authored maps and legal mirrored starting kits", async () => {
+  const pack = await core();
+  const prepared = await prepareDraftPlaytest([pack], "core", path, pack.input.json.get(path));
+  try {
+    const catalog = prepared.skirmish.content.catalog!;
+    const trainingGrid = parseTerrain(128, 128, {});
+    expect(
+      draftScenarioSetup(
+        defaultDraftScenario(),
+        trainingMap,
+        trainingGrid,
+        catalog,
+        prepared.definition,
+      ),
+    ).toEqual(normalSkirmish(defaultSkirmish(), trainingGrid, catalog));
+    const grid = parseTerrain(64, 64, {});
+    const config = {
+      ...defaultDraftScenario(),
+      map: `core.${resourceMap.id}`,
+      yourSpawn: "east",
+      otherSpawn: "west",
+      seed: 77,
+      opponent: "draft-mirror" as const,
+    };
+    const setup = draftScenarioSetup(config, resourceMap, grid, catalog, prepared.definition);
+    const kernel = createMatch(setup);
+    expect(setup.map.id).toBe("core.map:sandbox-resources");
+    expect(setup.map.resources).toHaveLength(resourceMap.resources.length);
+    expect(setup.normal!.bots).toEqual([{ seat: 2, kind: "idle" }]);
+    expect(setup.debug).toBe(false);
+    expect(
+      setup.normal!.forces.map(
+        (force) => force.start.units.find((unit) => unit.unit === prepared.definition)?.count,
+      ),
+    ).toEqual([1, 1]);
+    step(kernel, []);
+    expect(setup.seed).toBe(77);
+    const twin = createMatchKeyframe(kernel, setup).restore(setup);
+    for (let tick = 0; tick < 20; tick++) {
+      step(kernel, []);
+      step(twin, []);
+    }
+    expect(checkpointHash(twin)).toBe(checkpointHash(kernel));
+    expect(() =>
+      createMatch(
+        draftScenarioSetup(
+          { ...config, yourSpawn: "west" },
+          resourceMap,
+          grid,
+          catalog,
+          prepared.definition,
+        ),
+      ),
+    ).toThrow();
+    expect(() =>
+      draftScenarioSetup({ ...config, seed: -1 }, resourceMap, grid, catalog, prepared.definition),
+    ).toThrow();
+    expect(() =>
+      draftScenarioSetup(
+        config,
+        resourceMap,
+        grid,
+        catalog,
+        "core.structure:eastern-collective/command-center",
+      ),
+    ).toThrow("requires");
+    expect(() =>
+      draftScenarioSetup(config, trainingMap, trainingGrid, catalog, prepared.definition),
+    ).toThrow("Invalid draft scenario");
+    const idle = draftScenarioSetup(
+      { ...config, opponent: "idle" },
+      resourceMap,
+      grid,
+      catalog,
+      prepared.definition,
+    );
+    expect(
+      idle.normal!.forces.every(
+        (force) => !force.start.units.some((unit) => unit.unit === prepared.definition),
+      ),
+    ).toBe(true);
+    const repeat = await prepareDraftPlaytest(
+      [pack],
+      "core",
+      path,
+      pack.input.json.get(path),
+      config,
+    );
+    try {
+      config.seed = 99;
+      expect(repeat.skirmish.scenario.seed).toBe(77);
+    } finally {
+      repeat.dispose();
+    }
+    for (const [file, raw] of pack.input.json) {
+      if (!file.startsWith("maps/") || !file.endsWith("/map.json")) continue;
+      const map = raw as typeof trainingMap;
+      const folder = file.slice(0, file.lastIndexOf("/") + 1);
+      const layers = Object.fromEntries(
+        Object.entries(map.layers ?? {}).map(([key, path]) => [
+          key,
+          pack.input.layers?.get(folder + path),
+        ]),
+      ) as TerrainLayers;
+      const grid = parseTerrain(map.size.width, map.size.height, layers, map.biome);
+      const scenario = {
+        ...defaultDraftScenario(),
+        map: `core.${map.id}`,
+        yourSpawn: map.spawns[0]!.id,
+        otherSpawn: map.spawns.at(-1)!.id,
+      };
+      const match = createMatch(
+        draftScenarioSetup(scenario, map, grid, catalog, prepared.definition),
+      );
+      for (let tick = 0; tick < 20; tick++) step(match, []);
+      expect(match.tick).toBe(20);
+    }
+  } finally {
+    prepared.dispose();
+  }
+});
 
 function skirmish(prepared: Awaited<ReturnType<typeof prepareDraftPlaytest>>) {
   return createNormalMatchSetup({

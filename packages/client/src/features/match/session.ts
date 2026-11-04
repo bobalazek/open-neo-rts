@@ -12,6 +12,7 @@ import {
 } from "@open-neo-rts/render";
 import { setText, text } from "../../shared";
 import { createOfflineMatch, NORMAL_GAME_SPEEDS, type OfflineState } from "../../worker";
+import { type DraftScenario, draftScenarioSetup } from "../content-editor/scenarios";
 import { catalogEntry, resolveEntityModel } from "../debug/catalog";
 import { createPresentationClock } from "../debug/clock";
 import { mapDecorations, resolveMapModel } from "../debug/map-visuals";
@@ -50,6 +51,8 @@ export interface DraftSkirmishSource {
   content: typeof installedContent;
   assets: readonly ((typeof installedAssets)[number] & { id: string })[];
   roster: ReadonlySet<string>;
+  scenario: DraftScenario;
+  definition: string;
 }
 
 /** A screen owns this session immediately, including resources that finish loading after cancellation. */
@@ -329,9 +332,17 @@ export function createNormalSession(
           throw new Error(text("ui.saves.invalid"));
       }
       progress(1);
-      const loaded = await loadMap(`core.${map.id}`);
+      const loaded = await loadMap(draft?.scenario.map ?? `core.${map.id}`);
       if (disposed) return;
-      const setup = normalSkirmish(config, loaded.grid, content.catalog);
+      const setup = draft
+        ? draftScenarioSetup(
+            draft.scenario,
+            loaded.definition,
+            loaded.grid,
+            content.catalog,
+            draft.definition,
+          )
+        : normalSkirmish(config, loaded.grid, content.catalog);
       progress(2);
       canvas.hidden = false;
       const nextRenderer = await createRenderer(canvas, {
@@ -355,7 +366,7 @@ export function createNormalSession(
         return undefined;
       });
       applyPreferences(preferences);
-      const spawn = map.spawns.find((spawn) => spawn.id === config.yourSpawn);
+      const spawn = loaded.definition.spawns.find((spawn) => spawn.id === config.yourSpawn);
       if (!spawn) throw new Error(text("ui.skirmish.spawn-error"));
       const x = spawn.position[0] as number,
         y = spawn.position[1] as number;

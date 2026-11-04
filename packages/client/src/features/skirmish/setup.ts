@@ -5,6 +5,17 @@ import map from "../../../../../content/core/maps/training-grounds/map.json";
 import { text } from "../../shared";
 
 export { faction, map };
+export interface SkirmishMap {
+  readonly id: string;
+  readonly players: { readonly min: number; readonly max: number };
+  readonly spawns: readonly {
+    readonly id: string;
+    readonly position: readonly number[];
+    readonly facing: number;
+  }[];
+  readonly resources: Parameters<typeof toMatchResources>[0];
+  readonly objects: readonly unknown[];
+}
 export const SETUP_STORAGE_KEY = "open-neo-rts.skirmish.v1";
 export const numericSettings = ["startingCredits", "popCap", "structureCap"] as const;
 export function rule(id: (typeof numericSettings)[number]) {
@@ -38,7 +49,10 @@ export function defaultSkirmish(): SkirmishSetup {
     veterancy: true,
   };
 }
-export function validateSkirmish(value: unknown): SkirmishSetup {
+export function validateSkirmish(
+  value: unknown,
+  selectedMap: Pick<SkirmishMap, "spawns"> = map,
+): SkirmishSetup {
   if (
     !value ||
     typeof value !== "object" ||
@@ -89,7 +103,9 @@ export function validateSkirmish(value: unknown): SkirmishSetup {
   }
   if (
     input.yourSpawn === input.otherSpawn ||
-    ![input.yourSpawn, input.otherSpawn].every((id) => map.spawns.some((spawn) => spawn.id === id))
+    ![input.yourSpawn, input.otherSpawn].every((id) =>
+      selectedMap.spawns.some((spawn) => spawn.id === id),
+    )
   )
     throw new Error(text("ui.skirmish.spawn-error"));
   return {
@@ -105,8 +121,16 @@ export function validateSkirmish(value: unknown): SkirmishSetup {
 }
 
 /** Quick start and the setup form assemble exactly the same normal, non-debug match. */
-export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: GameplayCatalog) {
-  const config = validateSkirmish(value);
+export function normalSkirmish(
+  value: unknown,
+  grid: TerrainGrid,
+  catalog: GameplayCatalog,
+  previewMap?: SkirmishMap,
+) {
+  const selectedMap = previewMap ?? map;
+  const config = validateSkirmish(value, selectedMap);
+  if (selectedMap.objects.length)
+    throw new Error("Normal skirmishes do not yet support placed map objects");
   return createNormalMatchSetup({
     catalog,
     seed: config.seed,
@@ -117,9 +141,10 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
       fog: "standard",
       veterancy: config.veterancy,
     },
-    mapSupport: { start: map.start as "faction", players: map.players },
+    // Empty sandbox maps receive faction starts only in temporary authoring previews.
+    mapSupport: { start: "faction", players: selectedMap.players },
     map: {
-      id: `core.${map.id}`,
+      id: `core.${selectedMap.id}`,
       terrain: {
         width: grid.width,
         height: grid.height,
@@ -129,7 +154,7 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
         water: [...grid.water],
         biome: [...grid.biome],
       },
-      spawns: map.spawns.map((spawn) => ({
+      spawns: selectedMap.spawns.map((spawn) => ({
         id: spawn.id,
         position: [
           Math.round((spawn.position[0] as number) * 1024),
@@ -137,7 +162,7 @@ export function normalSkirmish(value: unknown, grid: TerrainGrid, catalog: Gamep
         ] as const,
         facing: Math.round((spawn.facing * 65536) / 360) & 0xffff,
       })),
-      resources: toMatchResources(map.resources),
+      resources: toMatchResources(selectedMap.resources),
       objects: [],
     },
     forces: [

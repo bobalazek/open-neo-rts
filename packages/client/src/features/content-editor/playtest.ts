@@ -5,6 +5,7 @@ import type { DraftSkirmishSource } from "../match/session";
 import { firstPlayableRoster } from "../skirmish/roster";
 import { type EditorPack, resolveDefinitionDraft, safeEditorPath } from "./definition-pack";
 import { MODEL_FILE_LIMIT } from "./model";
+import { type DraftScenario, defaultDraftScenario } from "./scenarios";
 
 /** A validated, device-local snapshot: URLs never point back to mutable files or remote assets. */
 export async function prepareDraftPlaytest(
@@ -12,6 +13,7 @@ export async function prepareDraftPlaytest(
   packId: string,
   path: string,
   draft: unknown,
+  scenario: DraftScenario = defaultDraftScenario(),
 ) {
   const checked = await resolveDefinitionDraft(packs, packId, path, structuredClone(draft));
   if (
@@ -94,6 +96,8 @@ export async function prepareDraftPlaytest(
       },
       assets,
       roster: new Set([...firstPlayableRoster, id]),
+      scenario: Object.freeze({ ...scenario }),
+      definition: id,
     };
     const faction =
       FACTIONS.find((faction) =>

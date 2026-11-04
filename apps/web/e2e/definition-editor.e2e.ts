@@ -23,6 +23,128 @@ async function click(page: import("@playwright/test").Page, name: string) {
     .evaluate((button: HTMLButtonElement) => button.click());
 }
 
+test("draft scenario controls launch authored terrain and a frozen unit mirror without saving", async ({
+  page,
+}, info) => {
+  test.setTimeout(150000);
+  await page.addInitScript(() => {
+    const Base = window.Worker;
+    const probe = { setups: [] as unknown[], created: 0, terminated: 0 };
+    Reflect.set(window, "draftScenarioProbe", probe);
+    window.Worker = class extends Base {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        probe.created++;
+        this.addEventListener("message", ({ data }) => {
+          if (data.state) Reflect.set(window, "draftScenarioState", data.state);
+        });
+      }
+      override postMessage(
+        message: unknown,
+        options: StructuredSerializeOptions | Transferable[] = [],
+      ) {
+        if (message && typeof message === "object" && Reflect.get(message, "type") === "init")
+          probe.setups.push(Reflect.get(message, "options").setup);
+        if (Array.isArray(options)) super.postMessage(message, options);
+        else super.postMessage(message, options);
+      }
+      override terminate() {
+        probe.terminated++;
+        super.terminate();
+      }
+    };
+  });
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("900", { timeout: 30000 });
+  await health.fill("1901");
+  const launch = page.getByRole("button", { name: "Skirmish draft", exact: true });
+  await launch.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Set up draft skirmish" });
+  await expect(dialog).toHaveClass(/native-panel/);
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).press("Enter");
+  await expect(health).toHaveValue("1901");
+  expect(await page.evaluate(() => Reflect.get(window, "draftScenarioProbe").created)).toBe(0);
+  await launch.press("Enter");
+  await dialog.getByLabel("Map", { exact: true }).selectOption("core.map:sandbox-resources");
+  await dialog.getByLabel("Opponent", { exact: true }).selectOption("draft-mirror");
+  await dialog.getByLabel("Your spawn", { exact: true }).evaluate((select: HTMLSelectElement) => {
+    select.value = "east";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  const start = dialog.getByRole("button", { name: "Start skirmish", exact: true });
+  await expect(start).toBeDisabled();
+  await dialog.getByLabel("Bot spawn", { exact: true }).selectOption("west");
+  const seed = dialog.getByLabel("Seed", { exact: true });
+  await seed.fill("4294967296");
+  await expect(start).toBeDisabled();
+  await seed.fill("77");
+  await expect(start).toBeEnabled();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-scenario-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("draft-scenario-mobile.png") });
+  await start.press("Enter");
+  const canvas = page.locator("[data-draft-playtest]");
+  await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60000 });
+  const setup = await page.evaluate(() => Reflect.get(window, "draftScenarioProbe").setups[0]);
+  expect(setup.seed).toBe(77);
+  expect(setup.map).toMatchObject({
+    id: "core.map:sandbox-resources",
+    terrain: { width: 64, height: 64 },
+  });
+  expect(setup.normal.bots).toEqual([{ seat: 2, kind: "idle" }]);
+  expect(setup.normal.forces.map((force: { spawn: string }) => force.spawn)).toEqual([
+    "east",
+    "west",
+  ]);
+  expect(
+    setup.normal.forces.every((force: { start: { units: { unit: string; count: number }[] } }) =>
+      force.start.units.some((unit) => unit.unit.endsWith("/dragon-tank") && unit.count === 1),
+    ),
+  ).toBe(true);
+  expect(
+    (
+      await page.evaluate(() => Reflect.get(window, "draftScenarioState") as OfflineState)
+    ).snapshot.entities.some(
+      (entity) =>
+        entity.force === 0 &&
+        entity.definition.endsWith("/dragon-tank") &&
+        entity.maxHealth === 1901,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  await expect(
+    page.getByRole("dialog", { name: "Match menu", exact: true }).locator("canvas"),
+  ).toHaveAttribute("data-panel", "menu");
+  await page
+    .getByRole("dialog", { name: "Match menu", exact: true })
+    .getByRole("button", { name: "Restart match", exact: true })
+    .press("Enter");
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "draftScenarioProbe").setups.length))
+    .toBe(2);
+  await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60000 });
+  expect(
+    await page.evaluate(() => {
+      const setups = Reflect.get(window, "draftScenarioProbe").setups;
+      return JSON.stringify(setups[0]) === JSON.stringify(setups[1]);
+    }),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Return to draft", exact: true }).press("Enter");
+  await expect(health).toHaveValue("1901");
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await launch.press("Enter");
+  await expect(dialog.getByLabel("Map", { exact: true })).toHaveValue("core.map:sandbox-resources");
+  await expect(seed).toHaveValue("77");
+  await page.goto("/");
+  await expect(dialog).toHaveCount(0);
+  expect(await page.evaluate(() => document.querySelectorAll("dialog[open]").length)).toBe(0);
+});
+
 test("schema form edits save validated JSON, preserve invalid input and resolve disk conflicts", async ({
   page,
 }) => {
@@ -458,6 +580,10 @@ test("draft skirmishes use edited recipes and health in a temporary normal match
   await page.getByLabel("cost.credits", { exact: true }).fill("17");
   await page.getByLabel("buildTime", { exact: true }).fill("1");
   await page.getByRole("button", { name: "Skirmish draft", exact: true }).press("Enter");
+  await page
+    .getByRole("dialog", { name: "Set up draft skirmish" })
+    .getByRole("button", { name: "Start skirmish", exact: true })
+    .press("Enter");
   const canvas = page.locator("[data-draft-playtest]");
   await expect(canvas).toHaveAttribute("data-session", "ready", { timeout: 60000 });
   await expect(canvas).toHaveAttribute("data-mode", "controlled");
@@ -544,6 +670,10 @@ test("draft skirmishes use edited recipes and health in a temporary normal match
   expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
   await page.route("**/sim-worker.js", (route) => route.abort());
   await page.getByRole("button", { name: "Skirmish draft", exact: true }).press("Enter");
+  await page
+    .getByRole("dialog", { name: "Set up draft skirmish" })
+    .getByRole("button", { name: "Start skirmish", exact: true })
+    .press("Enter");
   await expect(page.locator(".content-tools section > [role=alert]")).toContainText(
     "Simulation worker failed",
     { timeout: 60000 },

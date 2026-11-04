@@ -44,9 +44,7 @@ conflict without losing a draft. Busy operations lock editable controls; invalid
 input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
 Full runtime audio, source freshness and exact formatter parity remain explicit
-2-38b2 work before the whole 2-38b task can close. Broader authored opponent/map
-presets remain 2-38c2;
-asset editing remains 2-38d.
+2-38b2 work before the whole 2-38b task can close. Asset editing remains 2-38d.
 
 ## Sibling-definition creation extension
 
@@ -101,18 +99,25 @@ definitions and commands. Copy initial setup link is disabled because a URL
 cannot carry the unsaved draft or models; export is a simulation reproduction,
 not an asset pack.
 
-Broader authored opponent/map presets remain 2-38c2; the whole 2-38c task is
-unfinished. Native debug conversion,
+Normal scenario presets are recorded below. Native debug conversion,
 2-38b2 parity and asset editing retain their separate scope. The decision is
 `../../../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
 
 ## Temporary normal skirmish extension
 
 Skirmish draft beside the debug action extends the same code-led Operate flow:
-inspect model/validator → edit → checked frozen snapshot → normal Training
-Grounds Eastern Collective mirror/basic bot → Return to retained draft. Native
-loading, HUD and match menus inherit Graphite Command Stations and original brick
-models. Objective, clock and global controls stay above; economy and selection
+inspect model/validator → edit → choose scenario → checked frozen snapshot →
+normal authored-map match → Return to retained draft. A content-sized native
+graphite modal offers six installed authored maps, their spawn sides, an unsigned
+32-bit integer seed and basic-bot, idle faction-opening or draft-unit-mirror
+presets. Framed choices and seed input use the existing ivory focus and warm-metal
+actions; Cancel and Start stay pinned while the body scrolls when narrow.
+Named semantic fields own keyboard input and mirror native focus; HTML owns modal
+focus and Escape. Map receives initial focus. Invalid seeds and duplicate spawns
+show an alert and disable Start. Cancel, Escape or leaving tools removes the panel
+without losing edits or starting a worker. Native loading, HUD and match menus
+inherit Graphite Command Stations and original brick models. Objective, clock and
+global controls stay above; economy and selection
 occupy the lower left and the circular minimap stays right, with existing narrow
 stacking. No new composition, seed, cards, assets or tokens define this extension.
 
@@ -122,26 +127,34 @@ priced Eastern Collective or neutral structures. Compatible cloned units join
 only the temporary roster. Other packs, factions, props and definitions outside
 this compatibility gate retain the debug path; a restriction preserves edits.
 Launch does not guarantee every edited recipe or movement domain can execute;
-normal engine validation still rejects incompatible commands. Normal starter-kit
-and map checks still gate launch. Combat, construction, production, resources
-and fog use normal commands and permissions without debug spawning.
+normal engine validation still rejects incompatible commands. Basic bot and idle
+openings use the Eastern Collective mirror. Draft mirror adds one instance of the
+supported ground unit to each Force's normal starting kit, incrementing an
+existing entry rather than duplicating it, with an idle opponent controller and
+ordinary automatic combat. Structures use faction-opening presets; aircraft and
+naval mirrors are outside scope. Dry authored maps omit starting harvesters;
+harvester mirrors require ore. Normal starter-kit and map checks still gate
+launch without invented resources or relaxed reachability. Combat, construction,
+production, resources and fog use normal commands and permissions without debug spawning.
 
-Checked metadata and model/wreck/icon/sound bytes remain fixed across restarts;
-later source-file changes do not replace them. Each preview owns a worker,
+The selected scenario, checked metadata and model/wreck/icon/sound bytes remain
+fixed across restarts; later source-file changes do not replace them. Each preview owns a worker,
 renderer and audio mixer. Restarts reuse its mixer; Cancel, Return or failure
 releases preview resources, decoded buffers and temporary URLs, resumes the
 retained model/panel and focuses the initiating action for that mode. Failure
 also exposes a readable editor error. Save/Load, quicksave, autosaves, replay
 storage and contextual guidance writes are unavailable; sources and manifest
-are untouched. Installed Field Manual identifies the installed reference while
-actor stats, recipes and help use the draft catalog.
+are untouched. Normal quick play and saved setup defaults retain their installed
+Training Grounds mirror. Installed Field Manual identifies the installed reference
+while actor stats, recipes and help use the draft catalog.
 
 Chrome and WebKit journeys and their desktop/narrow captures support this
 bounded integration. Full runtime audio/source/formatter parity remains 2-38b2;
-broader authored opponent/map presets remain 2-38c2, and asset gizmos remain
-2-38d. This does not close the whole
-editor/playtest task. The decision is
-`../../../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
+scenario presets complete the remaining 2-38c2 slice, and asset gizmos remain
+2-38d. This does not close the whole editor task or qualify physical touch/IME,
+screen readers, Firefox or hardware FPS. Decisions are
+`../../../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md` and
+`../../../../docs/project/decisions/2026-11-04-draft-scenario-presets.md`.
 
 ## Isolated model-action extension
 
@@ -173,8 +186,8 @@ materials and containers. Retained draft playtests pause the effect clock rather
 than letting it advance offscreen. Shared no-options preview callers remain
 compatible. No source, save, normal match or simulation state changes.
 
-This closes only isolated firing/destruction within 2-38c2. Broader authored
-opponent/map presets, full 2-38b2 validation/formatter parity and 2-38d socket/part
+This records isolated firing/destruction within 2-38c2. Full 2-38b2
+validation/formatter parity and 2-38d socket/part
 gizmos, GLB export and damage-socket smoke/fire previews remain open. Current
 Chrome/WebKit browser checks do not qualify Firefox, physical touch/IME, screen
 readers or hardware FPS. The decision is

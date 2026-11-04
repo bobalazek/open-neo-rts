@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Draft skirmish scenarios](./2026-11-04-draft-scenario-presets.md) — Authored terrain/spawn/seed choice and basic, idle or draft-unit mirror opponents in temporary previews.
+
 - [2026-11-04 — Canonical component validation](./2026-11-04-canonical-component-validation.md) — Per-feature invariants guard isolated restore candidates while external saves retain history verification.
 
 - [2026-11-04 — Mouse camera device settings](./2026-11-04-mouse-camera-settings.md) — Native sensitivity/inverted rotation, live preview and safe existing-preference migration.
