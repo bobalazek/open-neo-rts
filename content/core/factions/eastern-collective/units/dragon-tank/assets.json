@@ -1,5 +1,9 @@
 {
   "files": {
+    "dragon-tank.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/dragon-tank.move-loop.lavfi"
+    },
     "dragon-tank.fire.ogg": {
       "author": "Borut Balazek",
       "source": "source/dragon-tank.fire.lavfi"

@@ -58,6 +58,7 @@
     "animations": ["idle", "move", "attack", "harvest", "unload"],
     "wreck": "supply-truck.wreck.glb",
     "sounds": {
+      "move_loop": "supply-truck.move-loop.ogg",
       "harvest": "supply-truck.harvest.ogg",
       "unload": "supply-truck.unload.ogg"
     }

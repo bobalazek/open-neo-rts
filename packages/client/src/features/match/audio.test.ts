@@ -22,6 +22,9 @@ test("match audio deduplicates ticks, refuses unseen events, revokes tails and d
     retain(allowed) {
       retained = played.filter((p) => allowed(p.options.position)).length;
     },
+    move() {
+      return false;
+    },
   };
   const audio = createMatchAudio(
     { scope: () => scope },
@@ -90,6 +93,9 @@ test("impacts follow only continuously visible launches, including instant shots
         },
         stop() {},
         retain() {},
+        move() {
+          return false;
+        },
         dispose() {},
       }),
     },
@@ -178,6 +184,107 @@ test("impacts follow only continuously visible launches, including instant shots
   audio.dispose();
 });
 
+test("movement loops follow visible displacement, retry stolen voices and retire on stop, fog and pause", () => {
+  const voices: {
+    playing: boolean;
+    disposed: boolean;
+    position?: { x: number };
+    plays: AudioPlayOptions[];
+  }[] = [];
+  const audio = createMatchAudio(
+    {
+      scope() {
+        const voice = {
+          playing: false,
+          disposed: false,
+          position: undefined as { x: number } | undefined,
+          plays: [] as AudioPlayOptions[],
+        };
+        voices.push(voice);
+        return {
+          async play(_source, options) {
+            voice.playing = true;
+            voice.plays.push(options);
+            return true;
+          },
+          move(position) {
+            voice.position = position;
+            return voice.playing;
+          },
+          retain() {},
+          stop() {
+            voice.playing = false;
+          },
+          dispose() {
+            voice.disposed = true;
+            voice.playing = false;
+          },
+        };
+      },
+    },
+    new Map([["truck", { move_loop: "/engine.ogg" }]]),
+  );
+  const entity: PresentedEntity = {
+    handle: "e1",
+    definition: "truck",
+    force: 0,
+    x: 512,
+    y: 512,
+    facing: 0,
+    health: 10,
+    maxHealth: 10,
+    order: null,
+  };
+  const accept = (tick: number, x: number, active = true, visible = true) => {
+    entity.x = x;
+    audio.accept(
+      {
+        tick,
+        mode: "controlled",
+        entities: [{ ...entity }],
+        fog: [{ group: 0, width: 2, height: 1, cells: new Uint8Array(visible ? [2, 2] : [1, 1]) }],
+      },
+      active,
+    );
+  };
+  accept(0, 512);
+  accept(1, 512);
+  expect(voices).toHaveLength(1);
+  accept(2, 544);
+  const moving = voices[1]!;
+  expect(moving.plays).toEqual([
+    { bus: "effects", priority: -1, loop: true, position: { x: 544 / 512, y: 0, z: 1 } },
+  ]);
+  accept(2, 544);
+  accept(3, 576);
+  expect(moving.plays).toHaveLength(1);
+  expect(moving.position?.x).toBe(576 / 512);
+  moving.playing = false;
+  accept(3, 576);
+  expect(moving.plays).toHaveLength(2);
+  accept(4, 576);
+  expect(moving.disposed).toBe(true);
+  accept(5, 608);
+  accept(5, 608, true, false);
+  expect(voices.at(-1)?.disposed).toBe(true);
+  accept(6, 640);
+  expect(voices).toHaveLength(3);
+  accept(7, 672);
+  accept(7, 672, false);
+  expect(voices.at(-1)?.disposed).toBe(true);
+  accept(7, 672);
+  expect(voices).toHaveLength(4);
+  entity.disabled = true;
+  accept(8, 704);
+  expect(voices).toHaveLength(4);
+  delete entity.disabled;
+  accept(9, 736);
+  accept(0, 512);
+  expect(voices.at(-1)?.disposed).toBe(true);
+  audio.dispose();
+  expect(voices.every((voice) => voice.disposed)).toBe(true);
+});
+
 function workFixture() {
   const played: { source: string | AudioBuffer; owner: number; options: AudioPlayOptions }[] = [];
   const disposed: number[] = [];
@@ -196,6 +303,9 @@ function workFixture() {
           },
           stop() {},
           retain() {},
+          move() {
+            return false;
+          },
         };
       },
     },

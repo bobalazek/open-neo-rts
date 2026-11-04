@@ -1,5 +1,9 @@
 {
   "files": {
+    "rocket-trooper.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/rocket-trooper.move-loop.lavfi"
+    },
     "rocket-trooper.fire.ogg": {
       "author": "Borut Balazek",
       "source": "source/rocket-trooper.fire.lavfi"

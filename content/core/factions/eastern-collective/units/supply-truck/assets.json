@@ -1,5 +1,9 @@
 {
   "files": {
+    "supply-truck.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/supply-truck.move-loop.lavfi"
+    },
     "supply-truck.harvest.ogg": {
       "author": "Borut Balazek",
       "source": "source/supply-truck.harvest.lavfi"

@@ -221,6 +221,20 @@ test("Babylon audio bounds voices, prioritizes independently positioned sources 
       (s: { activeInstancesCount: number }) => s.activeInstancesCount,
     ).length;
     scope.stop();
+    const looping = await scope.play(f.cue, {
+      bus: "effects",
+      loop: true,
+      position: { x: 1, y: 0, z: 0 },
+    });
+    const following = scope.move({ x: 40, y: 0, z: 0 });
+    const loop = f.engine.sounds.find(
+      (s: { loop: boolean; activeInstancesCount: number }) => s.loop && s.activeInstancesCount,
+    );
+    const loopPosition = loop?.spatial.position.x;
+    const culledLoop = scope.move({ x: 10000, y: 0, z: 0 });
+    const loopsAfterCull = f.engine.sounds.filter(
+      (s: { loop: boolean; activeInstancesCount: number }) => s.loop && s.activeInstancesCount,
+    ).length;
     const originalDecode = f.engine.createSoundBufferAsync.bind(f.engine);
     let release: () => void = () => {};
     f.engine.createSoundBufferAsync = async (source: AudioBuffer) => {
@@ -255,6 +269,11 @@ test("Babylon audio bounds voices, prioritizes independently positioned sources 
       canceled,
       mutedCanceled,
       after,
+      looping,
+      following,
+      loopPosition,
+      culledLoop,
+      loopsAfterCull,
     };
   });
   expect(result).toEqual({
@@ -267,6 +286,11 @@ test("Babylon audio bounds voices, prioritizes independently positioned sources 
     canceled: false,
     mutedCanceled: false,
     after: 0,
+    looping: true,
+    following: true,
+    loopPosition: 40,
+    culledLoop: false,
+    loopsAfterCull: 0,
   });
   await expect
     .poll(() => page.evaluate(() => Reflect.get(window, "audioFixture").engine.state))

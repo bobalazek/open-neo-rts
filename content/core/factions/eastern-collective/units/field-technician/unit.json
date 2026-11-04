@@ -36,6 +36,7 @@
     "sockets": [],
     "animations": ["idle", "move", "attack", "death"],
     "sounds": {
+      "move_loop": "field-technician.move-loop.ogg",
       "build": "field-technician.build.ogg",
       "build_complete": "field-technician.build_complete.ogg"
     }

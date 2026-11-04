@@ -1,5 +1,9 @@
 {
   "files": {
+    "drone-hunter.move-loop.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/drone-hunter.move-loop.lavfi"
+    },
     "drone-hunter.fire.ogg": {
       "author": "Borut Balazek",
       "source": "source/drone-hunter.fire.lavfi"

@@ -17,10 +17,13 @@ export function createMatchAudio(
   sounds: ReadonlyMap<string, Readonly<Record<string, string>>>,
 ) {
   const scope = mixer.scope();
+  const movement = new Map<string, { source: string; scope: AudioScope }>();
   const work = new Map<string, { cue: WorkCue; scope: AudioScope; played: number }>();
   function stopWork() {
     for (const job of work.values()) job.scope.dispose();
     work.clear();
+    for (const job of movement.values()) job.scope.dispose();
+    movement.clear();
   }
   function play(owner: AudioScope, source: string, x: number, y: number, priority = 0) {
     void owner
@@ -50,6 +53,48 @@ export function createMatchAudio(
       const fresh = snapshot.tick > tick;
       const initialized = tick >= 0;
       const current = new Map(snapshot.entities.map((entity) => [entity.handle, entity]));
+      for (const [handle, job] of movement) {
+        const entity = current.get(handle),
+          before = prior.get(handle);
+        if (
+          !active ||
+          !entity ||
+          entity.disabled ||
+          !eventVisible(snapshot, entity.x, entity.y) ||
+          sounds.get(entity.definition)?.move_loop !== job.source ||
+          (fresh && (!before || (before.x === entity.x && before.y === entity.y)))
+        ) {
+          job.scope.dispose();
+          movement.delete(handle);
+        }
+      }
+      if (active && initialized && fresh)
+        for (const entity of snapshot.entities) {
+          const before = prior.get(entity.handle),
+            source = sounds.get(entity.definition)?.move_loop;
+          if (
+            !source ||
+            !before ||
+            entity.disabled ||
+            !eventVisible(snapshot, entity.x, entity.y) ||
+            (entity.x === before.x && entity.y === before.y) ||
+            movement.has(entity.handle)
+          )
+            continue;
+          movement.set(entity.handle, { source, scope: mixer.scope() });
+        }
+      for (const [handle, job] of movement) {
+        const entity = current.get(handle)!;
+        const position = {
+          x: (entity.x * CELL_SIZE) / 1024,
+          y: 0,
+          z: (entity.y * CELL_SIZE) / 1024,
+        };
+        if (!job.scope.move(position))
+          void job.scope
+            .play(job.source, { bus: "effects", priority: -1, loop: true, position })
+            .catch(() => {});
+      }
       const jobs = new Map<string, WorkCue>();
       if (active)
         for (const entity of snapshot.entities) {

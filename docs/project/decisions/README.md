@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — First-playable movement audio](./2026-11-04-first-playable-movement-audio.md) — Original footsteps and vehicle loops follow visible displacement through the existing mixer.
+
 - [2026-11-04 — Current Chrome and WebKit only](./2026-11-04-browser-support-scope.md) — Two standard browser setups replace the broader compatibility matrix.
 
 - [2026-11-04 — World waypoint editing](./2026-11-04-world-waypoint-editing.md) — Drag or remove pending route markers through existing queue commands, preserving native controls and camera gestures.

@@ -13,6 +13,7 @@ export type AudioVolumes = Record<AudioBusName | "master", number>;
 export interface AudioPlayOptions {
   bus: AudioBusName;
   priority?: number;
+  loop?: boolean;
   position?: { x: number; y: number; z: number };
 }
 interface Voice {
@@ -173,6 +174,7 @@ export function createAudioMixer() {
             const sound = await current.createSoundAsync("presentation cue", decoded, {
               outBus: buses.get(options.bus)!,
               maxInstances: 1,
+              loop: options.loop ?? false,
               ...(voice.position && {
                 spatialEnabled: true,
                 spatialPosition: new Vector3(voice.position.x, voice.position.y, voice.position.z),
@@ -194,6 +196,12 @@ export function createAudioMixer() {
               sound.dispose();
               return false;
             }
+            if (voice.position)
+              sound.spatial.position = new Vector3(
+                voice.position.x,
+                voice.position.y,
+                voice.position.z,
+              );
             voice.sound = sound;
             sound.onEndedObservable.addOnce(() => remove(voice));
             sound.play();
@@ -204,6 +212,20 @@ export function createAudioMixer() {
         },
         stop() {
           for (const voice of [...voices]) if (voice.scope === scope) remove(voice);
+        },
+        move(position: NonNullable<Voice["position"]>) {
+          let playing = false;
+          for (const voice of [...voices]) {
+            if (voice.scope !== scope) continue;
+            voice.position = { ...position };
+            if (!audible(position)) remove(voice);
+            else {
+              if (voice.sound)
+                voice.sound.spatial.position = new Vector3(position.x, position.y, position.z);
+              playing = true;
+            }
+          }
+          return playing;
         },
         retain(allowed: (position: Voice["position"]) => boolean) {
           for (const voice of [...voices])

@@ -79,6 +79,7 @@
     "animations": ["idle", "move", "attack", "deploy"],
     "wreck": "metamorphic-apc.wreck.glb",
     "sounds": {
+      "move_loop": "metamorphic-apc.move-loop.ogg",
       "fire": "metamorphic-apc.fire.ogg",
       "impact": "metamorphic-apc.impact.ogg",
       "death": "metamorphic-apc.death.ogg"
