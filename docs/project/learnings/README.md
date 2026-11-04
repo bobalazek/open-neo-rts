@@ -1,5 +1,7 @@
 # Learnings
 
+- [2026-11-04 — Twenty complete SIM59 bot mirrors](./2026-11-04-sim59-complete-matches.md) — All twenty seeds finish and reproduce; most exceed the separate human-duration target.
+
 - [Native and semantic selection use different offsets](./2026-11-03-native-selection-indices.md)
 
 - [Observe short-lived orders at the worker boundary](./2026-11-02-observe-short-lived-orders.md) — A completed minimap order can legitimately disappear before a slow UI assertion starts.
