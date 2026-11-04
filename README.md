@@ -49,6 +49,9 @@ Choose **Quick start local match**, or **Single player → Skirmish** for setup.
 The original core assets are required; a checkout containing only LFS pointers
 will explain which assets are missing instead of starting a match.
 
+Asset validation and CLI tests also need FFmpeg on `PATH`: `brew install ffmpeg`
+on macOS or `sudo apt install ffmpeg` on Ubuntu. The game client does not need it.
+
 Click or drag to select, right-click to issue context orders, and hold Shift to
 queue. Arrow keys pan, the mouse wheel zooms, and the HUD shows available commands.
 Use the idle-builder/producer buttons to start building and training units.

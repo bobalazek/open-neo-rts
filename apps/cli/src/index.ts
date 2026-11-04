@@ -48,7 +48,8 @@ const commands: Record<string, Command> = {
     run: validateContent,
   },
   "validate-assets": {
-    summary: "Check asset files: glTF validity, model conventions, provenance",
+    summary:
+      "Check asset files: glTF validity, model conventions, audio decoding/peaks, provenance",
     run: validateAssets,
   },
   "make-placeholders": {

@@ -26,5 +26,6 @@ The [Eastern Collective tier-1 mirror and its existing numbers](./decisions/2026
 
 ## Pending actions
 
+- [ ] Restore GitHub Actions billing/spending capacity. Jobs in [CI run 41799606413](https://github.com/bobalazek/open-neo-rts/actions/runs/41799606413) did not start because GitHub reported failed payments or a spending-limit block. Local implementation and checks can continue — Owner: Borut — Unblocks: hosted CI qualification
 - [ ] Choose hosting for PR previews (needs per-PR URLs) and create the account — Owner: Borut — Unblocks: preview deploy workflow
 - [ ] Create the GitHub repository settings: branch protection on `main`, required CI checks, labels from [pull-requests.md](../contributing/pull-requests.md#labels) — Owner: Borut — Unblocks: contributor PRs
