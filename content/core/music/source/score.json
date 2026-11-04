@@ -1,0 +1,41 @@
+{
+  "author": "Borut Balazek",
+  "approach": "programmatic",
+  "ai_involvement": "none",
+  "production": "Original notes and synthesis code made by a coding agent at the owner's direction; no generated audio model, recording or external sample.",
+  "tracks": {
+    "command-board": {
+      "title": "Command Board",
+      "role": "menu",
+      "bpm": 80,
+      "bars": 16,
+      "roots": [40, 36, 45, 47],
+      "chords": [[52, 55, 59], [48, 52, 55], [45, 48, 52], [47, 50, 54]],
+      "motif": [12, 19, 15, 14, 10, 15, 19, 12],
+      "drive": 0.35,
+      "seed": 5101
+    },
+    "assembly-line": {
+      "title": "Assembly Line",
+      "role": "match",
+      "bpm": 100,
+      "bars": 20,
+      "roots": [45, 50, 43, 40],
+      "chords": [[57, 60, 64], [50, 53, 57], [55, 59, 62], [52, 55, 59]],
+      "motif": [0, 7, 12, 3, 10, 7, 5, 3],
+      "drive": 0.8,
+      "seed": 5102
+    },
+    "steel-march": {
+      "title": "Steel March",
+      "role": "match",
+      "bpm": 96,
+      "bars": 16,
+      "roots": [40, 36, 45, 47],
+      "chords": [[52, 55, 59], [48, 52, 55], [45, 48, 52], [47, 50, 54]],
+      "motif": [0, 12, 7, 10, 3, 7, 5, 2],
+      "drive": 0.95,
+      "seed": 5103
+    }
+  }
+}

@@ -120,7 +120,7 @@ open-neo-rts/
 ├── content/                       game data (see content-format.md)
 │   ├── schemas/                   generated from packages/content
 │   └── core/                      the base game: factions/<faction>/{units,structures}/<name>/,
-│                                  neutral/structures/<name>/, maps/
+│                                  neutral/structures/<name>/, maps/, music/ (shared tracks and sources)
 ├── tools/biome/                   lint plugin enforcing the determinism rules
 ├── docs/                          design, engineering, contributing
 └── .github/                       PR template and CI workflow

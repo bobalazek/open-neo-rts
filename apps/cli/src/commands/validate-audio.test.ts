@@ -31,6 +31,12 @@ test("original Vorbis and encoded Opus decode; stereo is allowed only outside mo
   expect(validateAudio(stereo, true)).toContain(
     "unit, structure and prop sound effects must be mono",
   );
+  const music = join(root, "music");
+  mkdirSync(music);
+  copyFileSync(original, join(music, "mono.ogg"));
+  expect(validateAudio(join(music, "mono.ogg"), false)).toEqual(["music tracks must be stereo"]);
+  copyFileSync(stereo, join(music, "stereo.ogg"));
+  expect(validateAudio(join(music, "stereo.ogg"), false)).toEqual([]);
 });
 
 test("decoded peaks and silent exports fail rather than passing on an Ogg extension", () => {

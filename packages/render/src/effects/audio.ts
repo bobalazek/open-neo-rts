@@ -15,6 +15,7 @@ export interface AudioPlayOptions {
   priority?: number;
   loop?: boolean;
   position?: { x: number; y: number; z: number };
+  onEnded?: () => void;
 }
 interface Voice {
   source: string | AudioBuffer;
@@ -59,7 +60,11 @@ export function createAudioMixer() {
   function levels() {
     if (!engine) return;
     engine.volume = muted ? 0 : volumes.master / 100;
-    for (const [name, bus] of buses) bus.volume = volumes[name] / 100;
+    const announcing = [...voices].some(
+      (voice) => voice.bus === "announcer" && voice.sound?.activeInstancesCount,
+    );
+    for (const [name, bus] of buses)
+      bus.volume = (volumes[name] / 100) * (name === "music" && announcing ? 0.35 : 1);
   }
   function start(): Promise<AudioEngineV2> {
     if (disposed) return Promise.reject(new Error("Audio mixer is disposed"));
@@ -98,9 +103,15 @@ export function createAudioMixer() {
     voice.canceled = true;
     voices.delete(voice);
     voice.sound?.dispose();
+    if (voice.bus === "announcer") levels();
   };
   return {
     start,
+    canPlay(bus: AudioBusName) {
+      return (
+        !disposed && !muted && volumes.master > 0 && volumes[bus] > 0 && engine?.state === "running"
+      );
+    },
     async unlock() {
       const current = await start();
       await current.unlockAsync();
@@ -203,8 +214,13 @@ export function createAudioMixer() {
                 voice.position.z,
               );
             voice.sound = sound;
-            sound.onEndedObservable.addOnce(() => remove(voice));
+            sound.onEndedObservable.addOnce(() => {
+              const completed = !voice.canceled;
+              remove(voice);
+              if (completed) options.onEnded?.();
+            });
             sound.play();
+            if (voice.bus === "announcer") levels();
             return true;
           } finally {
             if (!voice.sound || voice.sound.activeInstancesCount === 0) remove(voice);

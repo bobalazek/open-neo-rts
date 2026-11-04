@@ -6,22 +6,30 @@ import {
   readAudioSettings,
   validateAudioSettings,
 } from "../features/settings/audio";
+import { createMusicPlayer } from "./music";
+import { MUSIC } from "./music-library";
 
 /** One app-owned engine survives navigation. Screens only own their playback scopes. */
 export function createClientAudio() {
   const mixer = createAudioMixer(),
     ui = mixer.scope(),
     events = new AbortController();
+  const music = createMusicPlayer(mixer, MUSIC);
   let settings = readAudioSettings(),
     cue: AudioBuffer | undefined;
   let disposed = false;
-  const apply = () =>
+  const apply = () => {
     mixer.apply(
       settings.volumes,
       settings.muted || (settings.muteUnfocused && (document.hidden || !document.hasFocus())),
     );
+    music.refresh();
+  };
   const unlock = () => {
-    void mixer.unlock().catch(() => {});
+    void mixer
+      .unlock()
+      .then(music.refresh)
+      .catch(() => {});
   };
   for (const name of ["pointerdown", "keydown"])
     window.addEventListener(name, unlock, { capture: true, signal: events.signal });
@@ -77,10 +85,12 @@ export function createClientAudio() {
   apply();
   return {
     mixer,
+    music: music.set,
     dispose() {
       disposed = true;
       events.abort();
       ui.dispose();
+      music.dispose();
       mixer.dispose();
     },
   };

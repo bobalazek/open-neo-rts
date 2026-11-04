@@ -77,10 +77,11 @@ source.
   help elsewhere stays in place. Shared native choice popups fit the viewport,
   reveal the selected value initially and scroll by wheel or scrollbar drag;
   pointer selection reaches all 101 percentages and long Controls action lists.
-  The original procedural PCM interface/test cue and data-resolved normal-match
-  fire/death seam establish the initial path. No authored gameplay clips exist
-  yet; effects/music/speech assets, announcements/subtitles/priority queue,
-  playlist/ducking, loudness validation and replay audio remain open. This does
+  Original first-playable weapon, movement and construction clips use this mixer.
+  Original menu music and a two-track match playlist follow committed scene
+  ownership and Music/Master levels; active announcer-bus audio ducks music.
+  Speech, announcements/subtitles/priority queue, other-roster clips, full-mix
+  qualification and replay audio remain open. This does
   not complete first-playable audio. Hardware hearing and OS media keys remain
   unqualified. See `../../docs/project/decisions/2026-11-03-device-audio-mixer.md`.
 - Keyboard controls in Settings and the pause menu use the same native panel to

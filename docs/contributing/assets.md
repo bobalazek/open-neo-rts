@@ -55,6 +55,11 @@ Structures are the same, with `structure.json` and `<name>.rubble.glb`. Neutral 
 
 ## Sound sources
 
+Shared tracks live in `content/core/music/`, with the same provenance/source
+convention. Music-folder exports must be stereo. The original score and
+single-track rebuild command are in that folder's README; meter the encoded
+output rather than assuming an encoder's requested level was achieved.
+
 The first Collective Soldier and Dragon Tank sounds use editable FFmpeg `.lavfi`
 filter graphs in their unit's `source/` folder. Seeded noise, oscillator envelopes
 and delayed resonances supply the complete signal without external samples. See

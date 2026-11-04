@@ -9,7 +9,9 @@
         "src/features/settings/audio.ts",
         "src/shared/audio.ts",
         "../render/src/effects/audio.ts",
-        "../render/src/scene/panel.ts"
+        "../render/src/scene/panel.ts",
+        "src/shared/music.ts",
+        "src/shared/music-library.ts"
       ],
       "decision": "../../docs/project/decisions/2026-11-03-device-audio-mixer.md",
       "world": "Local extension of Graphite Command Stations: incumbent square graphite fields, ivory labels, warm-metal actions and coral alerts; no new tokens, palette, artwork or motion.",
@@ -18,8 +20,9 @@
       "persistence": "Apply saves a separate versioned device profile. Back/cancel restores saved levels. Failed writes preserve both the saved profile and editable preview, with visible recovery.",
       "help": "Only Audio marks title-derived descriptions as contextual native hover/focus tooltips and hidden semantic aria-describedby text. Status and errors remain visible; incumbent permanent help outside Audio remains unchanged.",
       "layout": "Back/title stay in the fixed header; responsive body content and actions scroll. Shared native dropdowns clamp to the viewport and contain an inner ScrollViewer, initially revealing the selected value. Wheel, scrollbar drag and pointer selection reach all 101 percentages and long Controls action lists.",
-      "scope": "Original procedural PCM interface/test cue and the data-resolved normal-match fire/death seam only. No authored gameplay clips yet; effects/music/speech assets, announcements/subtitles/priority queue, playlist/ducking, loudness validation and replay audio remain open. This does not complete first-playable audio.",
-      "qualification": "Implementation evidence does not qualify hardware hearing, OS media keys, physical touch/IME, screen readers, Firefox or hardware FPS."
+      "scope": "Original first-playable effects and menu/match music are implemented. Announcer speech/subtitles/queue, other-roster clips, full-mix qualification and replay audio remain open; this does not complete first-playable audio.",
+      "qualification": "Implementation evidence does not qualify hardware hearing, OS media keys, physical touch/IME, screen readers, Firefox or hardware FPS.",
+      "music": "Original menu and in-match tracks use committed scene ownership, presentation-only shuffle, Music/Master levels, mute/focus handling and announcer-bus ducking. Speech and queue/subtitles remain unfinished. See ../../docs/project/decisions/2026-11-05-first-playable-music.md."
     },
     "matchInputBindings": {
       "source": "src/features/settings/bindings-screen.ts",

@@ -1,0 +1,7 @@
+{
+  "files": {
+    "command-board.ogg": { "author": "Borut Balazek", "source": "source/score.json" },
+    "assembly-line.ogg": { "author": "Borut Balazek", "source": "source/score.json" },
+    "steel-march.ogg": { "author": "Borut Balazek", "source": "source/score.json" }
+  }
+}

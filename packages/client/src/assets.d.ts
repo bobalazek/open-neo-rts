@@ -12,6 +12,10 @@ declare module "*.png" {
   const url: string;
   export default url;
 }
+declare module "*.ogg" {
+  const url: string;
+  export default url;
+}
 
 declare module "virtual:debug-builtins" {
   export const builtins: readonly {
