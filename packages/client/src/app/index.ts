@@ -240,8 +240,10 @@ export function startApp(canvas: HTMLCanvasElement) {
       // Restore focus after the modal's inert state has cleared in every browser.
       requestAnimationFrame(() => {
         if (!current()) return;
-        if (committed) canvas.focus({ preventScroll: true });
-        else if (!previous) root.querySelector<HTMLElement>("h1")?.focus({ preventScroll: true });
+        if (committed) {
+          canvas.focus({ preventScroll: true });
+          canvas.dataset.session = "ready";
+        } else if (!previous) root.querySelector<HTMLElement>("h1")?.focus({ preventScroll: true });
       });
       if (generation === ticket) {
         loading = false;

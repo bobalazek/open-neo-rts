@@ -62,6 +62,7 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       - name: Pull original core content for normal catalog identity and browser models
@@ -80,20 +81,20 @@ jobs:
           pactl set-default-sink neo_ci
           pactl info
       - run: bunx tsc -p apps/web/e2e/tsconfig.json
-      - run: xvfb-run -a bun run test:browsers --project=${{ matrix.browser }}
+      - run: xvfb-run -a bun run test:browsers --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: key-capture-evidence-${{ matrix.browser }}
+          name: key-capture-evidence-${{ matrix.browser }}-${{ matrix.shard }}
           path: test-results/**/key-capture-*.json
           if-no-files-found: ignore
           retention-days: 14
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: determinism-traces-${{ matrix.browser }}
+          name: determinism-traces-${{ matrix.browser }}-${{ matrix.shard }}
           path: test-results/
           retention-days: 14
 

@@ -1015,7 +1015,15 @@ export function createMatchHud(
       definitions
         .get(surgeProvider.definition)
         ?.gameplay.abilities.find((ability) => ability.id === surge?.id)?.name;
-    actionText(surgeButton, surgeName ?? text("ui.hud.surge"));
+    for (const [control, action, label] of [
+      [unloadButton, "unload", "ui.hud.unload"],
+      [holdButton, "hold", "ui.hud.hold"],
+      [loadButton, "load", "ui.hud.load"],
+      [deployButton, "deploy", "ui.hud.deploy-toggle"],
+      [salvageButton, "salvage", "ui.hud.clear-remains"],
+      [surgeButton, "surge", "ui.hud.surge"],
+    ] as const)
+      hint(control, action, control === surgeButton ? (surgeName ?? text(label)) : text(label));
     const surgeBank = snapshot.banks?.find((bank) => bank.force === options.force)?.resources;
     const funded =
       !surgeBank ||
@@ -1124,15 +1132,6 @@ export function createMatchHud(
         String(mode !== undefined && mode.type === targetingTypes[index]),
       );
     });
-    for (const [control, action, label] of [
-      [unloadButton, "unload", "ui.hud.unload"],
-      [holdButton, "hold", "ui.hud.hold"],
-      [loadButton, "load", "ui.hud.load"],
-      [deployButton, "deploy", "ui.hud.deploy-toggle"],
-      [salvageButton, "salvage", "ui.hud.clear-remains"],
-      [surgeButton, "surge", "ui.hud.surge"],
-    ] as const)
-      hint(control, action, control === surgeButton ? (surgeName ?? text(label)) : text(label));
     const buildIds = selectedBuilders[0]
       ? (definitions
           .get(selectedBuilders[0].definition)

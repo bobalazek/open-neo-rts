@@ -9,7 +9,10 @@ export default defineConfig({
   // Headed Firefox and software WebGL share one runner's display/device resources.
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
-  use: { baseURL: "http://localhost:4320" },
+  use: {
+    baseURL: "http://localhost:4320",
+    trace: process.env.CI ? "retain-on-failure" : "off",
+  },
   webServer: {
     command: "bun --cwd apps/web ./dev.ts",
     url: "http://localhost:4320",
