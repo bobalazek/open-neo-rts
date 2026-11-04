@@ -66,7 +66,7 @@ async function replaceStored(page: Page, save: SavedGame) {
 test("real match save slots survive failed writes and canceled loads, import/export and resume", async ({
   page,
 }, info) => {
-  test.setTimeout(150_000);
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {

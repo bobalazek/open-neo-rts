@@ -44,6 +44,9 @@ test("guidance is staged in native Settings and once-only hints link to the paus
   expect(await world.getAttribute("data-tick")).toBe(tick);
   await page.keyboard.press("Escape");
   await menu.getByRole("button", { name: "Resume match", exact: true }).press("Enter");
+  await expect(menu).not.toBeVisible();
+  await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
+  await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "HUD help", exact: true }).press("Enter");
   await expect
     .poll(() =>
@@ -60,7 +63,6 @@ test("guidance is staged in native Settings and once-only hints link to the paus
   await page.getByRole("button", { name: "Dismiss hint", exact: true }).press("Enter");
   await expect(hint).toHaveAttribute("hidden", "");
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Pause", exact: true }).press("Enter");
   await page.getByRole("button", { name: /Idle producers/ }).press("Enter");
   const selected = await page.locator("[data-summary]").getAttribute("data-name");
   expect(selected).toBeTruthy();

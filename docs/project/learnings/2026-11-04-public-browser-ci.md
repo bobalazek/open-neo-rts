@@ -10,8 +10,9 @@ fixtures never reached audio readiness. Supply a clocked PulseAudio null output
 on the runner and retain the real Babylon/WebAudio decoding, playback and
 analyser assertions. The [upstream module documentation](https://wiki.freedesktop.org/www/Software/PulseAudio/Documentation/User/Modules/#module-null-sink)
 describes this output backend; it does not substitute application audio or prove
-physical speaker playback. Missing device service is a hypothesis until the
-hosted startup log and affected tests establish the result.
+physical speaker playback. The later candidate initialized `neo_ci` and passed
+the affected Firefox audio journeys. This qualifies the combined audio/resource
+environment correction, rather than isolating PulseAudio as the sole cause.
 
 Two journey corrections follow observed application state. The setup Back case
 must choose Leave without saving in the actual save-before-leave dialog, then
@@ -24,9 +25,12 @@ Use one worker per CI browser job so the headed Firefox display and software
 WebGL workloads are isolated. [Playwright recommends this CI configuration](https://playwright.dev/docs/ci#workers)
 for stability and resource isolation. The next candidate passed 77 Firefox cases
 with only autosave rotation failing; WebKit still failed ten cases. Chromium
-reached only case 88 before its 25-minute job deadline. Split every engine into
-two [file-level shards](https://playwright.dev/docs/test-sharding), retain the
-individual deadlines and keep failed traces. Local parallelism is unchanged.
+reached only case 88 before its 25-minute job deadline. The two-shard candidate
+then passed both Firefox jobs, but Chromium's UI-heavy second half still reached
+the aggregate limit. Split every engine into four
+[file-level shards](https://playwright.dev/docs/test-sharding). Keep failed or
+canceled traces, without trace screencasts; explicit visual-proof screenshots
+remain. Local parallelism is unchanged.
 
 Startup had a reproducible ordering bug: `data-session=ready` appeared before
 the initial unpause completed, and application focus restoration happened in a
@@ -48,12 +52,30 @@ The local Chromium save trace then reached the later deletion checks before its
 150-second case deadline, with repeated full-record reads taking 1–3 seconds
 each. Metadata-only assertions now transfer only slot identity, name, kind and
 date from the browser. Thumbnail, content, failed-write equality and restored
-hash checks still request full saves. The test deadline and assertions remain.
+hash checks still request full saves. Hosted Chromium again reached the later
+deletion checks at 150 seconds; this one long save/import/restore journey now
+allows 240 seconds. All its individual data and failure assertions remain.
 
 The Surge tooltip failure was an actual HUD bug: the final shortcut-label pass
 overwrote the authored price and deployment cooldown descriptions. Refresh those
 labels first, then assign the richer descriptions; preserve their existing
 cost/cooldown assertions.
 
+Hosted WebKit diagnostics distinguish actual delay from missing completion:
+the snapshot export acknowledged, simulation updates continued, and a read
+transaction eventually completed after about seven seconds. A later explicit
+commit experiment still took about six seconds from the test's open request to
+completion; request success and transaction completion arrived together. Do not
+ship an autocommit workaround from this evidence. Headed mode also failed, so
+keep WebKit's existing headless mode.
+
+The CI-only default assertion budget is now 15 seconds rather than five, after
+observed database event delivery exceeded five seconds; other worker/UI failures
+still need qualification. Explicit readiness and per-case budgets retain their
+own limits. Local defaults stay unchanged. This
+does not qualify physical input latency, FPS or audio. The guidance journey
+pauses the actual simulation while inspecting help and dismissal, so its
+400-tick hint cannot expire during slow remote-control round trips.
+
 These fixes do not establish a common cause for every hosted failure. The full
-six-job browser matrix must qualify the final candidate before merge.
+twelve-job browser matrix must qualify the final candidate before merge.
