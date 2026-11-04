@@ -2,7 +2,8 @@
 
 **Route:** `/settings`, or as an overlay from the [in-game menu](in-game-menu.md)
 
-The implemented graphics preset, interface scale, camera speed, edge scrolling
+The implemented graphics preset, interface scale, camera speed, mouse camera
+sensitivity, inverted drag rotation, edge scrolling
 and reduced camera motion controls now use native Babylon GUI at both entry
 points. Their existing validation and versioned device storage remain unchanged.
 Changes preview live; Back or closing the match menu restores the last saved
@@ -30,6 +31,11 @@ does not supply the remaining original gameplay, music or speech library.
 Audio field explanations appear on hover/focus and remain semantic accessible
 descriptions; statuses/errors stay visible. Long native choices scroll within a
 bounded popup that opens at the selected value.
+
+Mouse camera sensitivity scales wheel zoom and right/middle drag, independently
+of keyboard/edge pan speed. Invert drag rotation reverses middle-drag rotation.
+Both preview and cancel with the other device fields. Existing saved settings
+migrate with neutral mouse defaults and keep their prior choices.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐

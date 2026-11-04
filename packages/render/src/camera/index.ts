@@ -50,6 +50,8 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   let enabled = true;
   let blocksPointer: (x: number, y: number) => boolean = () => false;
   let panSpeed = 1,
+    mouseSensitivity = 1,
+    invertDragRotate = false,
     edgeScroll = true,
     reducedMotion = false;
 
@@ -137,14 +139,14 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       drag.x = e.clientX;
       drag.y = e.clientY;
       if (drag.button === 1) {
-        camera.alpha -= dx * DRAG_ROTATE;
+        camera.alpha -= dx * DRAG_ROTATE * mouseSensitivity * (invertDragRotate ? -1 : 1);
         return;
       }
       // Grab the ground: metres per pixel at the target, stretched along the view by the pitch.
       const m =
         (2 * camera.radius * Math.tan(camera.fov / 2)) /
         (canvas.clientHeight * camera.viewport.height);
-      pan(-dx * m, (dy * m) / Math.cos(camera.beta));
+      pan(-dx * m * mouseSensitivity, (dy * m * mouseSensitivity) / Math.cos(camera.beta));
     },
     { signal },
   );
@@ -166,7 +168,11 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     (e) => {
       if (!enabled || blocksPointer(e.clientX, e.clientY)) return;
       e.preventDefault();
-      goal = clamp(goal * Math.exp(e.deltaY * ZOOM_STEP), MIN_DISTANCE, MAX_DISTANCE);
+      goal = clamp(
+        goal * Math.exp(e.deltaY * ZOOM_STEP * mouseSensitivity),
+        MIN_DISTANCE,
+        MAX_DISTANCE,
+      );
     },
     { signal, passive: false },
   );
@@ -205,10 +211,21 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       release();
       goal = camera.radius;
     },
-    setControls(options: { panSpeed: number; edgeScroll: boolean; reducedMotion: boolean }) {
+    setControls(options: {
+      panSpeed: number;
+      edgeScroll: boolean;
+      reducedMotion: boolean;
+      mouseSensitivity?: number;
+      invertDragRotate?: boolean;
+    }) {
       if (!Number.isFinite(options.panSpeed) || options.panSpeed < 0.5 || options.panSpeed > 2)
         throw new RangeError("Invalid camera speed");
+      const sensitivity = options.mouseSensitivity ?? 1;
+      if (!Number.isFinite(sensitivity) || sensitivity < 0.5 || sensitivity > 2)
+        throw new RangeError("Invalid mouse sensitivity");
       panSpeed = options.panSpeed;
+      mouseSensitivity = sensitivity;
+      invertDragRotate = options.invertDragRotate ?? false;
       edgeScroll = options.edgeScroll;
       reducedMotion = options.reducedMotion;
       pointer = null;

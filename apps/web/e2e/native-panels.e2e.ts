@@ -163,7 +163,7 @@ test("native save gallery keeps typed search focused, imports files and opens re
 
 test("native settings pointer controls save preferences and Back cancels reset preview", async ({
   page,
-}) => {
+}, info) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/settings");
   await expect(page.locator("#game")).toHaveAttribute("data-panel", "settings", {
@@ -172,6 +172,17 @@ test("native settings pointer controls save preferences and Back cancels reset p
   await clickNative(page, "Medium");
   await clickNative(page, "Low");
   await expect(page.getByLabel("Graphics preset", { exact: true })).toHaveValue("low");
+  await page.getByLabel("Mouse camera sensitivity", { exact: true }).selectOption("150");
+  await clickNative(page, "Invert drag rotation");
+  await expect(page.getByLabel("Invert drag rotation", { exact: true })).toBeChecked();
+  await draw(page);
+  await page.screenshot({ path: info.outputPath("mouse-settings-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel("Mouse camera sensitivity", { exact: true }).focus();
+  await draw(page);
+  await page.screenshot({ path: info.outputPath("mouse-settings-mobile.png") });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await draw(page);
   await clickNative(page, "Edge scrolling");
   await expect(page.getByLabel("Edge scrolling", { exact: true })).not.toBeChecked();
   await clickNative(page, "Apply and save");
@@ -181,13 +192,19 @@ test("native settings pointer controls save preferences and Back cancels reset p
     timeout: 30_000,
   });
   await expect(page.getByLabel("Graphics preset", { exact: true })).toHaveValue("low");
+  await expect(page.getByLabel("Mouse camera sensitivity", { exact: true })).toHaveValue("150");
+  await expect(page.getByLabel("Invert drag rotation", { exact: true })).toBeChecked();
   await expect(page.getByLabel("Edge scrolling", { exact: true })).not.toBeChecked();
   await clickNative(page, "Reset to defaults");
   await expect(page.getByLabel("Graphics preset", { exact: true })).toHaveValue("medium");
+  await expect(page.getByLabel("Mouse camera sensitivity", { exact: true })).toHaveValue("100");
+  await expect(page.getByLabel("Invert drag rotation", { exact: true })).not.toBeChecked();
   await clickNative(page, "Back");
   await expect(page).toHaveURL(/\/$/);
   await page.getByRole("button", { name: "Settings", exact: true }).press("Enter");
   await expect(page.getByLabel("Graphics preset", { exact: true })).toHaveValue("low");
+  await expect(page.getByLabel("Mouse camera sensitivity", { exact: true })).toHaveValue("150");
+  await expect(page.getByLabel("Invert drag rotation", { exact: true })).toBeChecked();
 });
 
 test("native pause canvas saves a match, previews settings and resumes with modal Escape priority", async ({
@@ -226,6 +243,8 @@ test("native pause canvas saves a match, previews settings and resumes with moda
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
     .toBe("150%");
+  await menu.getByLabel("Mouse camera sensitivity", { exact: true }).selectOption("200");
+  await menu.getByLabel("Invert drag rotation", { exact: true }).press("Space");
   await page.setViewportSize({ width: 390, height: 844 });
   await menu.getByLabel("Reduced camera motion", { exact: true }).press("Space");
   await expect(menu.getByLabel("Reduced camera motion", { exact: true })).toBeChecked();
@@ -235,6 +254,12 @@ test("native pause canvas saves a match, previews settings and resumes with moda
     .poll(() => page.evaluate(() => document.documentElement.style.fontSize))
     .toBe("100%");
   expect(await world.getAttribute("data-tick")).toBe(tick);
+  await menu.getByRole("button", { name: "Settings", exact: true }).press("Enter");
+  await expect(gui).toHaveAttribute("data-panel", "settings");
+  await expect(menu.getByLabel("Mouse camera sensitivity", { exact: true })).toHaveValue("100");
+  await expect(menu.getByLabel("Invert drag rotation", { exact: true })).not.toBeChecked();
+  await page.keyboard.press("Escape");
+  await expect(gui).toHaveAttribute("data-panel", "menu");
   await menu.getByRole("button", { name: "Current controls", exact: true }).press("Enter");
   await expect(gui).toHaveAttribute("data-panel", "keys");
   await expect(menu).toContainText("the Set group and Add selection buttons store them.");
