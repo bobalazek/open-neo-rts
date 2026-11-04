@@ -56,7 +56,7 @@ For model checks, run `bun run dev` and open `/debug?models=1`. Choose a GLB to 
 - **Boundaries.** The renderer never mutates the sim. The sim never imports the renderer, React, the network or the DOM. AI only emits commands.
 - **Our own core.** No new dependencies for gameplay systems (ECS, physics, pathfinding, AI…). See [build vs. use](docs/engineering/architecture.md#build-vs-use). Any new dependency needs a reason in the PR.
 - **Content is data.** If a unit needs engine code, add a general capability, not a special case.
-- **Assets** are original work with an `assets.json` entry. Binaries go through Git LFS.
+- **Assets** are original work, with an exception for verified CC0 audio under the [audio policy](docs/project/decisions/2026-11-04-cc0-audio.md). Every runtime asset has an `assets.json` provenance entry. Binaries go through Git LFS.
 
 ## Pull request checks
 
@@ -74,8 +74,8 @@ Reviewers use these links to try new content without checking out the branch. Th
 
 ## Using coding agents
 
-Agents are welcome. [AGENTS.md](AGENTS.md) holds the repo rules for them. Step-by-step contributor tooling for agents (adding a unit, adding a sim feature) will ship as a plugin once the first sim features exist. You're responsible for what you submit: review agent output like your own code, and make sure assets are original.
+Agents are welcome. [AGENTS.md](AGENTS.md) holds the repo rules for them. Step-by-step contributor tooling for agents (adding a unit, adding a sim feature) will ship as a plugin once the first sim features exist. You're responsible for what you submit: review agent output like your own code, and make sure assets follow the original-work or CC0 audio provenance rules.
 
 ## Licence
 
-Everything in this repository (code and assets) is [MIT-licensed](LICENSE). By contributing, you agree to license your contribution under MIT.
+Code and original assets are [MIT-licensed](LICENSE). By contributing original work, you agree to license it under MIT. Imported audio approved under the [CC0 audio policy](docs/project/decisions/2026-11-04-cc0-audio.md) retains its upstream CC0 dedication and provenance.

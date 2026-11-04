@@ -26,7 +26,7 @@ What a reviewer checks on every PR, whether the reviewer is a person or an agent
 - [ ] **CI:** schema, references, asset validation and provenance pass.
 - [ ] The definition matches its design doc (faction roster, role, counters), or the PR explains the change.
 - [ ] **Balance changes** state the reason; once available, the balance report and AI-vs-AI diff are attached.
-- [ ] **Assets are original work**; `assets.json` names a real author and source file.
+- [ ] **Assets are original work or owner-approved CC0 audio**; `assets.json` names the actual author and source file. Imported audio preserves its upstream CC0 evidence and processing notes.
 - [ ] The model was checked in the [content editor](../design/screens/content-editor.md): sockets point the right way, team colour lands on the right parts, damage states and destruction look right.
 - [ ] The English name and description are present and read well.
 - [ ] The debug mode preview link from the PR bot was opened, and the unit behaves as described.

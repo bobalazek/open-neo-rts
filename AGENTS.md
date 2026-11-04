@@ -14,7 +14,7 @@ Rules for coding agents (Claude Code, Codex, etc.) working in this repo. Humans:
 2. **Boundaries.** The sim never imports render, React, networking or DOM code. The renderer never mutates sim state. AI only emits commands.
 3. **Build vs. use.** Don't add libraries for gameplay systems (ECS, physics, pathfinding, AI, protocol); we write those. Any new dependency must be justified in the PR. [Details](docs/engineering/architecture.md#build-vs-use).
 4. **Content is data.** Units, structures, weapons, abilities and techs are JSON definitions, never classes or special cases.
-5. **Assets.** Original work only, never downloaded or third-party. Never invent authorship. Binaries go through Git LFS.
+5. **Assets.** Original work only, except audio may also use verified CC0 assets under the [owner's audio decision](docs/project/decisions/2026-11-04-cc0-audio.md). Preserve the actual creator, upstream source and license evidence; never invent authorship. Binaries go through Git LFS.
 6. **Outcome changes** to the sim require updating golden hashes and bumping the simulation version.
 7. **Feature folders.** Code is split by feature; components live with the feature that owns them. Every folder in the [documented layout](docs/engineering/architecture.md#3-monorepo-layout) already exists, with an `index.ts` stating its purpose and phase (the layout lists the exceptions); fill those, and don't invent new top-level folders without updating that layout. Apps stay thin: logic goes in packages.
 8. **Phase scope.** Build only what the current phase lists in [roadmap.md](docs/project/roadmap.md#what-each-phase-builds), and pick work from [tasks.md](docs/project/tasks.md). The other docs describe the whole game; they are reference, not a to-do list.

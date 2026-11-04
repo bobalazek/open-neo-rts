@@ -1,0 +1,5 @@
+anoisesrc=color=brown:amplitude=0.9:sample_rate=48000:duration=0.85:seed=2111,highpass=f=70,lowpass=f=5000,afade=t=out:st=0:d=0.7[blast];
+aevalsrc='0.5*sin(2*PI*(46*t+1.8*(1-exp(-19*t))))*exp(-9*t)':s=48000:d=0.85[body];
+aevalsrc='(0.16*sin(2*PI*1370*t)+0.1*sin(2*PI*2290*t))*exp(-38*t)':s=48000:d=0.85[debris];
+[debris]adelay=80[scatter];
+[blast][body][scatter]amix=inputs=3:normalize=0:duration=first,volume=0.65,afade=t=in:d=0.002,afade=t=out:st=0.7:d=0.15
