@@ -17,10 +17,12 @@ import { applyInterfaceScale, readDeviceSettings, settingsScreen } from "../feat
 import { skirmishScreen } from "../features/skirmish";
 import { defaultSkirmish, type SkirmishSetup } from "../features/skirmish/setup";
 import { text } from "../shared";
+import { createClientAudio } from "../shared/audio";
 import { mountNativePanel } from "../shared/native-panel";
 
 /** URL navigation and ownership only: gameplay stays in one disposable normal worker. */
 export function startApp(canvas: HTMLCanvasElement) {
+  const audio = createClientAudio();
   const originalCanvas = canvas;
   const previousScale = document.documentElement.style.fontSize;
   applyInterfaceScale(readDeviceSettings());
@@ -182,6 +184,7 @@ export function startApp(canvas: HTMLCanvasElement) {
         load: (save) => begin(save.config, save),
         replay: (id) => navigate(`/replay/${id}`),
       },
+      audio.mixer,
     );
     try {
       await Promise.race([candidate.ready, cancelled]);
@@ -381,6 +384,7 @@ export function startApp(canvas: HTMLCanvasElement) {
       disposed = true;
       stop();
       signal.abort();
+      audio.dispose();
       root.remove();
       if (canvas !== originalCanvas) {
         canvas.replaceWith(originalCanvas);

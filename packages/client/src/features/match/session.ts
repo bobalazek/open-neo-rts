@@ -3,6 +3,7 @@ import { content } from "virtual:normal-catalog";
 import {
   CELL_SIZE,
   cameraGroundView,
+  type createAudioMixer,
   createMapPresentation,
   createPlacementOverlay,
   createRenderer,
@@ -33,6 +34,7 @@ import { BINDINGS_CHANGED, bindingText, matchesBinding, readBindings } from "../
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
+import { createMatchAudio } from "./audio";
 import { createMatchHud } from "./hud";
 import type { HudDefinition } from "./hud-model";
 import { actionText, decorateAction, hudIcon } from "./icons";
@@ -56,6 +58,7 @@ export function createNormalSession(
     load: (save: SavedGame) => Promise<void>;
     replay?: (id: string) => void;
   },
+  audio?: ReturnType<typeof createAudioMixer>,
 ) {
   const signal = new AbortController();
   let disposed = false,
@@ -63,6 +66,10 @@ export function createNormalSession(
     busy = false;
   let renderer: Awaited<ReturnType<typeof createRenderer>> | undefined;
   let presentation: ReturnType<typeof createMatchPresentation> | undefined;
+  const sounds = new Map(
+    builtins.map((entry) => [`core.${(entry.raw as { id: string }).id}`, entry.sounds ?? {}]),
+  );
+  const matchAudio = audio && createMatchAudio(audio, sounds);
   let art: ReturnType<typeof createMapPresentation> | undefined;
   let match: ReturnType<typeof createOfflineMatch> | undefined;
   let latest: OfflineState | undefined;
@@ -156,6 +163,7 @@ export function createNormalSession(
     interaction?.dispose();
     nativeHud?.dispose();
     match?.dispose();
+    matchAudio?.dispose();
     presentation?.dispose();
     footprint?.dispose();
     art?.dispose();
@@ -182,6 +190,11 @@ export function createNormalSession(
     latest = state;
     clock.update(performance.now(), state.paused, state.speed);
     presentation?.setPlaybackRate(state.paused ? 0 : state.speed);
+    if (ready && root.style.visibility !== "hidden" && renderer) audio?.listen(renderer.camera);
+    matchAudio?.accept(
+      state.snapshot,
+      ready && !state.paused && root.style.visibility !== "hidden",
+    );
     if (!ready) return;
     canvas.dataset.tick = String(state.snapshot.tick);
     canvas.dataset.entities = String(state.snapshot.entities.length);
@@ -372,6 +385,7 @@ export function createNormalSession(
       presentation.setForceColor(1, "#3c93d9");
       const activePresentation = presentation;
       renderer.scene.onBeforeRenderObservable.add(() => {
+        if (ready && root.style.visibility !== "hidden") audio?.listen(renderer!.camera);
         activePresentation.render(clock.now(performance.now()));
         interaction?.frame(performance.now());
         hud?.frame();

@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-03 — Device audio mixer and native controls](./2026-11-03-device-audio-mixer.md) — One app-owned Babylon mixer, live device levels and initial data-authored match sound routing; original sound library remains open.
+
 - [2026-11-03 — Current match input bindings](./2026-11-03-match-input-bindings.md) — Native staged profiles, real runtime hints/controls and a provisional F1-free WASD preset.
 
 - [2026-11-03 — Save before leaving or replacing a match](./2026-11-03-save-before-leave.md) — Native paused save/discard/cancel decisions preserve the old world until persistence commits.

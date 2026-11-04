@@ -21,6 +21,16 @@ the prior profile, including when a write fails. Current controls in a match
 shows actual assignments and links to the same editor. Mouse/overlay options
 and unimplemented action categories remain later work.
 
+Audio now previews separate master/music/effects/unit-voice/announcer/interface/
+ambience levels in the same native panel. Choose a channel and percentage,
+test playback, mute all, or mute when unfocused. Apply and save persists its own
+device profile; Back/cancel restores saved levels. A failed write preserves saved
+preferences and the editable preview. The current procedural interface/test cue
+does not supply the remaining original gameplay, music or speech library.
+Audio field explanations appear on hover/focus and remain semantic accessible
+descriptions; statuses/errors stay visible. Long native choices scroll within a
+bounded popup that opens at the selected value.
+
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ ◂ Back                         SETTINGS                                     │

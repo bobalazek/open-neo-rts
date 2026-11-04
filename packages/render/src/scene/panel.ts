@@ -16,6 +16,7 @@ export interface PanelField {
   id: string;
   label: string;
   help: string;
+  tooltip?: string;
   value: string | boolean;
   disabled: boolean;
   choices?: readonly { value: string; label: string }[];
@@ -34,6 +35,7 @@ export interface PanelContent {
   actions: readonly {
     id: string;
     label: string;
+    tooltip?: string;
     disabled: boolean;
     primary: boolean;
     back: boolean;
@@ -100,6 +102,19 @@ export async function createPanelScene(
   body.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
   body.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
   scroll.addControl(body);
+  const tooltip = new Rectangle("panel tooltip");
+  tooltip.background = "#182126";
+  tooltip.color = "#ddc382";
+  tooltip.isHitTestVisible = false;
+  tooltip.isVisible = false;
+  tooltip.zIndex = 10;
+  gui.addControl(tooltip);
+  const tooltipText = new TextBlock("panel tooltip text");
+  tooltipText.color = "#eff1e9";
+  tooltipText.textWrapping = true;
+  tooltipText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+  tooltipText.isHitTestVisible = false;
+  tooltip.addControl(tooltipText);
   let content = initial;
   let widgets: {
     field: PanelField;
@@ -172,8 +187,28 @@ export async function createPanelScene(
     return control;
   };
   function closeChoices() {
+    tooltip.isVisible = false;
     popup?.dispose();
     popup = undefined;
+  }
+  function describe(value: string | undefined, anchor: Control) {
+    tooltip.isVisible = false;
+    if (!value || popup) return;
+    const scale = Math.min(content.scale, Math.max(0.85, canvas.clientWidth / 390));
+    const width = Math.min(340 * scale, canvas.clientWidth - 24);
+    const height = textHeight(value, width - 24, 13 * scale) + 24;
+    const below = anchor.centerY + anchor.heightInPixels / 2 + 8;
+    place(
+      tooltip,
+      Math.max(12, Math.min(canvas.clientWidth - width - 12, anchor.centerX - width / 2)),
+      Math.max(12, Math.min(canvas.clientHeight - height - 12, below)),
+      width,
+      height,
+    );
+    tooltipText.text = value;
+    tooltipText.fontSize = 13 * scale;
+    place(tooltipText, 12, 12, width - 24, height - 24);
+    tooltip.isVisible = true;
   }
   function reveal(control: Control) {
     const range = contentHeight - scroll.heightInPixels;
@@ -241,17 +276,49 @@ export async function createPanelScene(
             return;
           }
           focused = field.id;
+          tooltip.isVisible = false;
           popup = new Rectangle("choices");
           popup.background = "#182126";
           popup.color = "#ddc382";
-          body.addControl(popup);
+          popup.isPointerBlocker = true;
+          gui.addControl(popup);
+          const scale = Math.min(content.scale, Math.max(0.85, canvas.clientWidth / 390));
+          const rowHeight = 44 * scale;
+          const popupHeight = Math.min(
+            field.choices!.length * rowHeight + 2,
+            264 * scale,
+            canvas.clientHeight - 24,
+          );
+          const below = input.centerY + input.heightInPixels / 2;
+          const popupTop =
+            below + popupHeight <= canvas.clientHeight - 12
+              ? below
+              : Math.max(12, input.centerY - input.heightInPixels / 2 - popupHeight);
           place(
             popup,
-            input.leftInPixels,
-            input.topInPixels + input.heightInPixels,
+            Math.max(
+              12,
+              Math.min(
+                canvas.clientWidth - input.widthInPixels - 12,
+                input.centerX - input.widthInPixels / 2,
+              ),
+            ),
+            popupTop,
             input.widthInPixels,
-            field.choices!.length * 44,
+            popupHeight,
           );
+          const options = new ScrollViewer("panel choices scroll");
+          options.thickness = 0;
+          options.barSize = 8 * scale;
+          options.barColor = "#ddc382";
+          options.barBackground = "#10191e";
+          options.wheelPrecision = 0.08;
+          popup.addControl(options);
+          const list = new Container("panel choices list");
+          list.heightInPixels = field.choices!.length * rowHeight;
+          list.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+          list.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+          options.addControl(list);
           field.choices?.forEach((choice, i) => {
             const option = button(
               choice.value,
@@ -260,11 +327,20 @@ export async function createPanelScene(
                 closeChoices();
                 content.change(field.id, choice.value);
               },
-              popup,
+              list,
             );
-            place(option, 0, i * 44, input.widthInPixels, 44);
+            // Let pointer entry reach the scroller; the popup itself blocks controls beneath it.
+            option.isPointerBlocker = false;
+            place(option, 0, i * rowHeight, input.widthInPixels - 10 * scale, rowHeight);
           });
-          reveal(popup);
+          const selected =
+            field.choices?.findIndex(
+              (choice) =>
+                choice.value === content.fields.find((item) => item.id === field.id)?.value,
+            ) ?? 0;
+          const range = list.heightInPixels - popupHeight + 2;
+          options.verticalBar.value =
+            range > 0 ? Math.max(0, Math.min(1, (selected * rowHeight - rowHeight) / range)) : 0;
         });
         chevron = new Image(
           `${field.id} disclosure`,
@@ -296,6 +372,12 @@ export async function createPanelScene(
         body.addControl(input);
       }
       input.tabIndex = -1;
+      for (const control of [input, caption]) {
+        control.onPointerEnterObservable.add(() => describe(field.tooltip, input));
+        control.onPointerOutObservable.add(() => {
+          tooltip.isVisible = false;
+        });
+      }
       widgets.push({ field, caption, help, input, chevron });
     }
     actions = content.actions.map((action) =>
@@ -310,6 +392,12 @@ export async function createPanelScene(
         action.back || action.resume ? gui : body,
       ),
     );
+    actions.forEach((control, i) => {
+      control.onPointerEnterObservable.add(() => describe(content.actions[i]?.tooltip, control));
+      control.onPointerOutObservable.add(() => {
+        tooltip.isVisible = false;
+      });
+    });
     tabs = (content.tabs ?? []).map((action) =>
       button(action.id, action.label, () => {
         content.tabs?.find((tab) => tab.id === action.id)?.activate();
@@ -538,6 +626,13 @@ export async function createPanelScene(
   function focus(id?: string) {
     gui.focusedControl = null;
     highlight(id);
+    const widget = widgets.find((widget) => widget.field.id === id);
+    if (widget) describe(widget.field.tooltip, widget.input);
+    else {
+      const index = actions.findIndex((action) => action.name === id);
+      if (index >= 0) describe(content.actions[index]?.tooltip, actions[index]!);
+      else tooltip.isVisible = false;
+    }
   }
   function highlight(id?: string) {
     focused = id;
