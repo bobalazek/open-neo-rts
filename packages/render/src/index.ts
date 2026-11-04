@@ -45,7 +45,7 @@ export {
 } from "./terrain/objects";
 export { createEntityPresentation } from "./units";
 export { createModelPreview } from "./units/preview";
-export { createOrderWaypoints } from "./units/waypoints";
+export { createOrderWaypoints, type OrderWaypoint } from "./units/waypoints";
 
 export interface RendererOptions {
   terrain: TerrainGrid;

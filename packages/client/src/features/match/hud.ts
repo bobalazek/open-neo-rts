@@ -693,6 +693,7 @@ export function createMatchHud(
       const down = right;
       right = undefined;
       if (
+        event.defaultPrevented ||
         !down ||
         options.blocksPointer?.(event.clientX, event.clientY) ||
         down.id !== event.pointerId ||
@@ -899,6 +900,7 @@ export function createMatchHud(
             void issue("unit.cancelQueued", { item: queued.handle });
           },
           row,
+          text("ui.hud.waypoint-remove-help"),
         );
         if (queued.x !== undefined)
           button(
@@ -910,6 +912,7 @@ export function createMatchHud(
                 grid: queued.type === "economy.build",
               }),
             row,
+            text("ui.hud.waypoint-drag-help"),
           );
         orderPanel.append(row);
       }
@@ -1649,6 +1652,23 @@ export function createMatchHud(
       update();
     },
     targeting: () => mode !== undefined,
+    waypointReady: () => !busy && !mode && !options.paused(),
+    async changeWaypoint(handle: string, cell?: Point) {
+      if (busy || mode || options.paused()) return;
+      const item = own()
+        .flatMap((entity) => entity.queuedOrders ?? [])
+        .find((item) => item.handle === handle);
+      if (!item || (cell && (item.x === undefined || item.y === undefined))) return;
+      const offset = item.type === "economy.build" ? 0 : 512;
+      await issue(
+        cell ? "unit.editQueued" : "unit.cancelQueued",
+        {
+          item: handle,
+          ...(cell && { x: cell.x * 1024 + offset, y: cell.y * 1024 + offset }),
+        },
+        false,
+      );
+    },
     cancel,
     frame: preview,
     armAttackMove: () => activate(4),

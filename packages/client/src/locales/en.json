@@ -351,6 +351,8 @@
   "ui.hud.unload-blocked": "Waiting for clear exits to unload remaining cargo.",
   "ui.hud.remove-order": "Remove queued order",
   "ui.hud.edit-waypoint": "Move queued waypoint",
+  "ui.hud.waypoint-drag-help": "Drag to move this queued destination. Right-click to remove its order. Queue controls also support keyboard editing.",
+  "ui.hud.waypoint-remove-help": "Right-click to remove this queued target order. Queue controls also support keyboard removal.",
   "ui.hud.queued-refused": "Queued order could not start: {reason}",
   "ui.hud.holding": "Holding position",
   "ui.hud.pick-remains": "Pick visible wreckage or rubble.",

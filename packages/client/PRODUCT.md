@@ -262,6 +262,23 @@ source.
 - Icon mode controls switch Commands and Build / train; recipes use at most six
   columns and queue entries retain actual progress. Only short shortcut badges
   appear on compact buttons; full Home/Space labels remain in tooltips.
+- Selected controlled actors' published pending route markers can be edited on
+  the battlefield (2-17c). Hover identifies a pending marker with a small diamond;
+  dragging previews a move/attack-move cell centre or a grid-aligned build origin,
+  and release invokes the same grant-checked HUD queue edit. Right-click removes
+  the pending item; right-drag retains camera panning. Shared build-group rows
+  follow the authoritative edit/removal without paying before execution.
+  Escape, blur, lost marker/selection, pointer cancellation or an invalid/HUD drop
+  cancels the preview. Current orders and selection remain intact; empty selection
+  adds no station. Existing queue buttons retain keyboard editing/removal, with
+  localized help carried by their titles into native Babylon hover/focus tooltips;
+  the world canvas gains no browser HTML title. Only permitted copied markers
+  participate, including target-based items only while their position is exposed.
+  The real-worker browser journey passed Chromium and WebKit, with independent
+  renderer/controller checks and a ship visual disposition across seven desktop
+  and narrow captures. This does not qualify physical touch, Firefox or hardware
+  FPS, or add patrol/factory-route gameplay. The emitted direction is the
+  WAYPOINTS EXTENSION in `../../apps/web/index.html`.
 - The whole rotated square map fits within the circular minimap, including all
   corner cells. Existing navigation, orders, pings, zoom and keyboard controls
   keep their command handlers. Pause keeps Resume fixed in the header while the

@@ -43,6 +43,7 @@ import { bindSelectionInput } from "./input";
 import { bindWorldInteraction } from "./interaction";
 import { createMinimap } from "./minimap";
 import { mountNativeMatchHud } from "./native-hud";
+import { bindWaypointInput } from "./waypoints";
 
 /** A screen owns this session immediately, including resources that finish loading after cancellation. */
 export function createNormalSession(
@@ -80,6 +81,7 @@ export function createNormalSession(
   let minimap: ReturnType<typeof createMinimap> | undefined;
   let nativeHud: ReturnType<typeof mountNativeMatchHud> | undefined;
   let interaction: ReturnType<typeof bindWorldInteraction> | undefined;
+  let waypointInput: ReturnType<typeof bindWaypointInput> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
   let guidance: ReturnType<typeof createMatchGuidance> | undefined;
   let preferences = readDeviceSettings();
@@ -396,6 +398,7 @@ export function createNormalSession(
         if (ready && root.style.visibility !== "hidden") audio?.listen(renderer!.camera);
         activePresentation.render(clock.now(performance.now()));
         interaction?.frame(performance.now());
+        waypointInput?.frame();
         hud?.frame();
         if (minimap?.frame(performance.now())) nativeHud?.frame();
       });
@@ -613,6 +616,24 @@ export function createNormalSession(
         signal.signal,
       );
       activeRenderer.camera.setPointerBlocker((x, y) => nativeHud?.blocksPointer(x, y) ?? false);
+      waypointInput = bindWaypointInput(
+        canvas,
+        {
+          waypoints: activePresentation.waypoints,
+          enabled: () =>
+            ready &&
+            !disposed &&
+            !busy &&
+            !menu?.isOpen() &&
+            !latest?.snapshot.victory?.result &&
+            (hud?.waypointReady() ?? false),
+          blocksPointer: (x, y) => nativeHud?.blocksPointer(x, y) ?? false,
+          pickCell: (x, y) => activeRenderer.pickCell(x, y),
+          commit: (marker, cell) => hud?.changeWaypoint(marker.handle, cell) ?? Promise.resolve(),
+          fail: failed,
+        },
+        signal.signal,
+      );
       const topBar = root.querySelector<HTMLElement>(".match-top");
       const bottomHud = root.querySelector<HTMLElement>(".match-hud");
       if (topBar && bottomHud) {

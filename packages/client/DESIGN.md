@@ -104,6 +104,11 @@ Reload/Keep choices. This records model inspection (2-38a) and existing-definiti
 authoring (2-38b1); full asset validation/formatting, creation templates, draft
 playtests and asset editing remain open.
 
+Pending route editing extends the existing cyan battlefield overlay with a small
+hover diamond and a terrain-aligned drag preview. The native selection station
+retains its keyboard queue controls and localized hover/focus help. No new panel,
+palette, font or asset accompanies the gesture; empty selection leaves no station.
+
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
 results, local Replays, Field Manual, content-model inspection, existing-definition
 authoring and native normal match HUD. Debug retains HTML/CSS presentation; native
@@ -132,6 +137,12 @@ also uses `src/features/content-editor/content-tools.css`, `model.ts`,
 `definition-editor.ts`, `definition-form.ts` and `definition-pack.ts`. Existing
 definition boundaries are recorded in
 `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
+Pending route editing follows the WAYPOINTS EXTENSION in
+`../../apps/web/index.html` and
+`.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
+`src/features/match/waypoints.ts`, `src/features/match/session.ts`,
+`src/features/match/hud.ts`, `src/features/match/native-hud.ts` and
+`../render/src/units/waypoints.ts`.
 
 **Key Characteristics:**
 
@@ -155,6 +166,7 @@ definition boundaries are recorded in
 - Optional native HUD region labels and one observed-context hint with a direct reference link.
 - Native model-first content inspection with real presentation controls and expandable project checks.
 - Native existing-definition fields with contextual schema help, guarded saves/downloads and explicit disk-conflict review.
+- Pending route hover diamonds and terrain-aligned previews with the existing native keyboard queue alternative.
 
 ## Colors
 
@@ -724,6 +736,22 @@ the text leaves space for that disclosure mark.
   its cargo bed follows completed unload work. Pause freezes mining motion and
   suspended dock work holds the bed pose. Idle restores authored rest. Work on one
   actor does not move its peer's rig or change either actor's team-color materials.
+- **Pending route editing:** existing cyan strokes and crosses stay in the world;
+  only a published pending marker gains the small hover diamond. Route segments
+  and the drag preview follow terrain rather than drawing a floating chord.
+  Picking uses CSS pixels so graphics scaling preserves the marker hit area.
+  Spatial move/attack-move items preview at cell centres; build items preview at
+  grid origins. Release uses the same HUD queue commands, grants and feedback;
+  shared build-group rows follow the authoritative edit/removal without early
+  payment. Right-click deletes a pending item, while right-drag pans the camera.
+  Escape, blur, lost marker/selection, pointer cancellation and invalid/HUD drops
+  discard the preview. Current orders and selection remain intact; empty
+  selection keeps the station and its hit area absent. Existing queue buttons
+  retain keyboard editing/removal; localized button titles feed native Babylon
+  hover/focus descriptions. Do not put a browser HTML title on the world canvas.
+  Target-based pending markers use only already-permitted copied positions and
+  offer removal rather than spatial dragging. Patrol/factory-route gameplay is
+  outside this extension.
 - **Match semantics and fallback:** the world scene owns visible Babylon controls;
   semantic HTML keeps accessible names, keyboard command handling and live state.
   Controls are visually clipped only after the native HUD draws. Native activation
@@ -761,6 +789,13 @@ initialization.
 This records implementation evidence rather than test qualification; it does not
 qualify physical touch, physical IME, screen readers, Firefox or hardware FPS.
 Incumbent palette advisories and one-off review previews are not design tokens.
+The pending-route extension separately received a ship finish disposition from
+seven actual desktop (1440×900) and narrow (390×844) hover/preview/removal/empty
+captures under `.impeccable/review/`. Its real-worker journey passed Chromium and
+WebKit, with independent renderer/controller checks; this bounded evidence does
+not extend the physical touch, Firefox or hardware FPS qualification above.
+Unrelated stale Audio scope wording remains deferred to its own documentation
+refresh and is not a new design rule.
 The current `../render/src/scene/text-input.ts` adapter maps DOM UTF-16 offsets to
 Babylon code-point offsets and isolates private cursor fields because Babylon
 9.33 has no public range setter. That version-specific dependency is an
