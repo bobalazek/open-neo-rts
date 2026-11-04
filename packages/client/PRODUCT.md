@@ -234,10 +234,30 @@ source.
   prevent another program writing after the final comparison. Provisional bounds
   are 2 MiB per JSON, 256 MiB combined runtime data, 10,000 directory entries and
   32 directory levels. Output currently uses two-space JSON and a final newline.
-  Full asset/provenance/audio/glTF conformance and exact formatter parity remain
-  2-38b2; templates and multi-file creation remain 2-38b3. The whole 2-38b task,
+  Full runtime audio, source freshness and exact formatter parity remain
+  2-38b2. The whole 2-38b task,
   draft worker playtests (2-38c) and asset editing (2-38d) remain open. See
   `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
+- New from selected completes 2-38b3 sibling creation from a clean unit,
+  structure or prop in an opened pack. Authors enter a new display name and
+  sibling folder name; the original model and source identity stay visible
+  beside/above the two native fields and pinned actions. The copied co-located
+  folder preserves models, editable sources, asset metadata and credits. Kind
+  and namespace stay intact; exact self-references are remapped. Shared checks
+  gate creation. Writable folders are re-read, payloads are written and verified,
+  and the updated manifest is published last; destination/manifest conflicts stop
+  creation. Failed writes remove only unchanged files created by the operation,
+  preserve changed or inaccessible files with recovery feedback and retain the
+  entered names. Successful creation selects and previews the result. Read-only
+  folders offer Download changes ZIP, also available for writable folders. It
+  contains the new folder and updated manifest as a changes bundle to extract
+  into a copy of the selected pack, not a standalone pack; downloading leaves the
+  source intact. Cancel creation returns to the original definition. Controls
+  lock while busy. Template copies including editable sources are bounded to
+  256 MiB. Browser writes remain optimistic, without atomic multi-file isolation.
+  This authors drafts without changing the built-in roster or simulation; it
+  does not close 2-38b2, draft playtests or asset editing. See
+  `../../docs/project/decisions/2026-11-04-definition-creation.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { installEditorPack } from "./definition-editor-fixture";
+import { nativeFrame } from "./native-paint";
 
 const path = "factions/eastern-collective/units/dragon-tank/unit.json";
 async function edit(page: import("@playwright/test").Page) {
@@ -182,4 +183,83 @@ test("invalid unreferenced wrecks block saves without changing the draft or disk
       path,
     ),
   ).toBe(900);
+});
+
+test("new definitions copy authored assets, publish the manifest and select the saved result", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  await expect(page.getByLabel("health", { exact: true })).toHaveValue("900", { timeout: 30000 });
+  await page.getByRole("button", { name: "New from selected", exact: true }).press("Enter");
+  await page.getByLabel("New display name", { exact: true }).fill("Test Tank");
+  await page.getByLabel("New folder name", { exact: true }).fill("test-tank");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("create-definition-desktop.png") });
+  await page.getByRole("button", { name: "Create definition", exact: true }).press("Enter");
+  await expect(page.getByLabel("name", { exact: true })).toHaveValue("Test Tank", {
+    timeout: 30000,
+  });
+  expect(await page.getByLabel("Pack definition", { exact: true }).inputValue()).toBe(
+    `core/${path.replace("/dragon-tank/", "/test-tank/")}`,
+  );
+  const snapshot = await page.evaluate(async (path) => {
+    const state = Reflect.get(window, "editorFixture");
+    const target = path.replace("/dragon-tank/", "/test-tank/");
+    const manifest = JSON.parse(await state.files.get("manifest.json").text());
+    return {
+      listed: manifest.files.units.includes(target),
+      source: JSON.parse(await state.files.get(path).text()).name,
+      copy: JSON.parse(await state.files.get(target).text()).id,
+      metadata:
+        (await state.files.get(target.replace("unit.json", "assets.json")).text()) ===
+        (await state.files.get(path.replace("unit.json", "assets.json")).text()),
+    };
+  }, path);
+  expect(snapshot).toEqual({
+    listed: true,
+    source: "Dragon Tank",
+    copy: "unit:eastern-collective/test-tank",
+    metadata: true,
+  });
+  await page.getByRole("button", { name: "New from selected", exact: true }).press("Enter");
+  await page.getByLabel("New display name", { exact: true }).fill("Collision");
+  await page.getByLabel("New folder name", { exact: true }).fill("dragon-tank");
+  await page.getByRole("button", { name: "Create definition", exact: true }).press("Enter");
+  await expect(page.locator(".definition-editor [role=alert]")).toContainText("already exists");
+  await expect(page.getByLabel("New display name", { exact: true })).toHaveValue("Collision");
+});
+
+test("read-only creation downloads a coordinated changes archive without touching the source", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await installEditorPack(page, false);
+  await edit(page);
+  await page.locator(".definition-editor input[type=file]").evaluate((input: HTMLInputElement) => {
+    const transfer = new DataTransfer();
+    for (const file of Reflect.get(window, "editorFolderFiles")) transfer.items.add(file);
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(page.getByLabel("health", { exact: true })).toHaveValue("900", { timeout: 30000 });
+  await page.getByRole("button", { name: "New from selected", exact: true }).press("Enter");
+  await page.getByLabel("New display name", { exact: true }).fill("Archive Tank");
+  await page.getByLabel("New folder name", { exact: true }).fill("archive-tank");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("create-definition-mobile.png") });
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download changes ZIP", exact: true }).press("Enter");
+  const download = await downloading;
+  expect(download.suggestedFilename()).toBe("core-archive-tank-changes.zip");
+  await download.saveAs(info.outputPath("creation-changes.zip"));
+  await expect(page.locator(".definition-editor [role=alert]")).toContainText(
+    "not a standalone pack",
+  );
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await page.getByRole("button", { name: "Cancel creation", exact: true }).press("Enter");
+  await expect(page.getByLabel("name", { exact: true })).toHaveValue("Dragon Tank");
 });

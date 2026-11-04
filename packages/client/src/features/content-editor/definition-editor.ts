@@ -1,5 +1,8 @@
 import { SCHEMAS, validate } from "@open-neo-rts/content";
 import { text } from "../../shared";
+import { definitionArchive } from "./archive";
+import { prepareDefinitionClone } from "./creation";
+import { writeDefinitionClone } from "./creation-write";
 import { definitionForm } from "./definition-form";
 import {
   checkDefinitionDraft,
@@ -92,6 +95,25 @@ export function mountDefinitionEditor(
   const tabs = document.createElement("div");
   tabs.setAttribute("role", "tablist");
   const formHost = document.createElement("div");
+  const creationHost = document.createElement("div");
+  const creationHelp = document.createElement("p");
+  creationHelp.textContent = text("ui.editor.clone-help");
+  creationHost.append(creationHelp);
+  const creationField = (key: Message, name: string) => {
+    const row = document.createElement("label");
+    row.append(text(key));
+    const field = document.createElement("input");
+    field.type = "text";
+    field.name = name;
+    field.setAttribute("aria-label", text(key));
+    row.append(field);
+    creationHost.append(row);
+    return field;
+  };
+  const cloneName = creationField("ui.editor.clone-name", "clone-name");
+  cloneName.maxLength = 96;
+  const cloneFolder = creationField("ui.editor.clone-folder", "clone-folder");
+  cloneFolder.maxLength = 96;
   const status = document.createElement("p");
   status.setAttribute("role", "status");
   const error = document.createElement("p");
@@ -103,7 +125,7 @@ export function mountDefinitionEditor(
   input.type = "file";
   input.hidden = true;
   input.setAttribute("webkitdirectory", "");
-  section.append(tabs, formHost, status, error, diagnostics, conflict, input);
+  section.append(tabs, formHost, creationHost, status, error, diagnostics, conflict, input);
   host.append(section);
   let packs: EditorPack[] = [],
     current: { pack: EditorPack; file: string; kind: Kind } | undefined;
@@ -115,7 +137,8 @@ export function mountDefinitionEditor(
   let group: Group = "general";
   let diskConflict: string | undefined,
     selection = 0,
-    folderDialog = false;
+    folderDialog = false,
+    creating = false;
   const inputErrors = new Map<string, string>();
   const inputValues = new Map<string, string>();
   const events = new AbortController();
@@ -132,6 +155,29 @@ export function mountDefinitionEditor(
   const open = action("ui.editor.open-pack", () => void openPack(), true);
   const save = action("ui.editor.download", () => void saveDraft(), true);
   const preview = action("ui.editor.preview", () => void validateDraft(true));
+  const clone = action("ui.editor.clone", () => {
+    if (!current || !canReplace()) return;
+    creating = true;
+    cloneName.value = "";
+    cloneFolder.value = "";
+    error.textContent = "";
+    diagnostics.replaceChildren();
+    refresh();
+    cloneName.focus();
+  });
+  const create = action("ui.editor.create", () => void createDefinition(false), true);
+  const archive = action("ui.editor.download-changes", () => void createDefinition(true), true);
+  const cancelCreate = action(
+    "ui.editor.cancel-create",
+    () => {
+      if (busy) return;
+      creating = false;
+      error.textContent = "";
+      refresh();
+      clone.focus();
+    },
+    true,
+  );
   open.title = text("ui.editor.open-help");
   for (const button of [open, save, preview]) button.setAttribute("data-contextual-help", "");
   save.title = preview.title = text("ui.editor.check-scope");
@@ -190,9 +236,10 @@ export function mountDefinitionEditor(
   }
   function refresh() {
     const reviewing = diskConflict !== undefined;
-    tabs.hidden = !current || reviewing;
-    picker.parentElement!.hidden = !current || reviewing;
-    formHost.hidden = reviewing;
+    tabs.hidden = !current || reviewing || creating;
+    picker.parentElement!.hidden = !current || reviewing || creating;
+    formHost.hidden = reviewing || creating;
+    creationHost.hidden = !creating;
     for (const control of section.querySelectorAll<
       HTMLInputElement | HTMLSelectElement | HTMLButtonElement
     >('input:not([type="file"]),select,button'))
@@ -207,11 +254,15 @@ export function mountDefinitionEditor(
     }
     save.disabled = !current || busy || inputErrors.size > 0;
     preview.disabled = !current || busy || inputErrors.size > 0;
-    save.hidden = preview.hidden = !current || reviewing;
-    open.hidden = reviewing;
+    save.hidden = preview.hidden = !current || reviewing || creating;
+    open.hidden = reviewing || creating;
+    clone.hidden = !current || reviewing || creating;
+    clone.disabled = busy || dirty();
+    create.hidden = !creating || !current?.pack.directory;
+    archive.hidden = cancelCreate.hidden = !creating;
     open.disabled = busy;
     picker.disabled = busy || !current;
-    discard.hidden = !current || !dirty() || reviewing;
+    discard.hidden = !current || !dirty() || reviewing || creating;
     discard.disabled = busy;
     reload.hidden = keep.hidden = diskConflict === undefined;
     save.textContent = text(current?.pack.directory ? "ui.editor.save" : "ui.editor.download");
@@ -258,8 +309,10 @@ export function mountDefinitionEditor(
     refresh();
   }
   function canReplace() {
-    if (busy || dirty() || diskConflict !== undefined) {
-      error.textContent = text("ui.editor.save-or-discard");
+    if (busy || dirty() || creating || diskConflict !== undefined) {
+      error.textContent = text(
+        creating ? "ui.editor.finish-creation" : "ui.editor.save-or-discard",
+      );
       options.update();
       return false;
     }
@@ -328,7 +381,7 @@ export function mountDefinitionEditor(
     };
     if (!disposed && ticket === selection) await options.preview(value);
   }
-  async function accept(pack: EditorPack) {
+  async function accept(pack: EditorPack, preferredPath?: string) {
     if (disposed) return;
     packs = [...packs.filter((other) => other.input.id !== pack.input.id), pack];
     const available = entries();
@@ -341,11 +394,66 @@ export function mountDefinitionEditor(
           ),
       ),
     );
-    const initial = available.find((entry) => entry.raw.id === options.initialId) ?? available[0];
+    const initial =
+      available.find(
+        (entry) => entry.pack.input.id === pack.input.id && entry.file === preferredPath,
+      ) ??
+      available.find((entry) => entry.raw.id === options.initialId) ??
+      available[0];
     if (initial) {
       picker.value = `${initial.pack.input.id}/${initial.file}`;
       await select(picker.value);
     } else throw new Error(text("ui.editor.no-definitions"));
+  }
+  async function createDefinition(download: boolean) {
+    if (!current || !creating || busy || disposed) return;
+    busy = true;
+    error.textContent = "";
+    refresh();
+    try {
+      const fresh = await Promise.all(
+        packs.map((pack) => (pack.directory ? readEditorDirectory(pack.directory) : pack)),
+      );
+      const source = fresh.find((pack) => pack.input.id === current!.pack.input.id)!;
+      if ((await source.files.get(current.file)!.text()) !== baseline)
+        throw new Error(text("ui.editor.template-changed"));
+      const plan = await prepareDefinitionClone(
+        fresh,
+        source.input.id,
+        current.file,
+        cloneFolder.value,
+        cloneName.value,
+      );
+      if (disposed) return;
+      diagnostics.replaceChildren(
+        ...plan.issues.map((issue) => {
+          const line = document.createElement("p");
+          line.textContent = `${issue.level}: ${issue.file}: ${issue.message}`;
+          return line;
+        }),
+      );
+      if (plan.issues.some((issue) => issue.level === "error"))
+        throw new Error(text("ui.editor.validation-failed"));
+      if (download) {
+        const url = URL.createObjectURL(definitionArchive(plan.files));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${plan.packId}-${cloneFolder.value}-changes.zip`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        error.textContent = text("ui.editor.archive-copy");
+      } else {
+        const pack = await writeDefinitionClone(fresh, plan);
+        creating = false;
+        await accept(pack, plan.path);
+      }
+    } catch (failure) {
+      error.textContent =
+        failure instanceof Error ? failure.message : text("ui.editor.save-failed");
+    } finally {
+      busy = false;
+      if (!disposed) refresh();
+    }
   }
   async function openPack() {
     if (!canReplace()) return;
@@ -594,7 +702,7 @@ export function mountDefinitionEditor(
   window.addEventListener(
     "beforeunload",
     (event) => {
-      if (dirty() || busy) event.preventDefault();
+      if (dirty() || busy || creating) event.preventDefault();
     },
     { signal: events.signal },
   );

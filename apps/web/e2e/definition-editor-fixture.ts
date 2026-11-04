@@ -45,9 +45,51 @@ export async function installEditorPack(page: Page, writable = true) {
         release: null as (() => void) | null,
       };
       Reflect.set(window, "editorFixture", state);
+      const fileHandle = (path: string, child: string) => ({
+        kind: "file",
+        name: child,
+        async getFile() {
+          if (state.delayPath === path) {
+            state.delayPath = null;
+            await new Promise<void>((resolve) => {
+              state.release = resolve;
+            });
+            state.release = null;
+          }
+          return stored.get(path)!;
+        },
+        async createWritable() {
+          let next: string | Uint8Array<ArrayBuffer> = "";
+          return {
+            async write(value: string | Uint8Array<ArrayBuffer>) {
+              if (state.fail) throw new Error("Test write failure");
+              next = value;
+            },
+            async close() {
+              stored.set(path, new File([next], child));
+              state.writes++;
+            },
+            async abort() {},
+          };
+        },
+      });
       const directory = (name: string, prefix: string): object => ({
         kind: "directory",
         name,
+        async getDirectoryHandle(child: string) {
+          return directory(child, prefix + child + "/");
+        },
+        async getFileHandle(child: string, options?: { create?: boolean }) {
+          const path = prefix + child;
+          if (!stored.has(path)) {
+            if (!options?.create) throw new DOMException("Missing", "NotFoundError");
+            stored.set(path, new File([], child));
+          }
+          return fileHandle(path, child);
+        },
+        async removeEntry(child: string) {
+          stored.delete(prefix + child);
+        },
         async *values() {
           const children = [
             ...new Set(
@@ -59,35 +101,7 @@ export async function installEditorPack(page: Page, writable = true) {
           for (const child of children) {
             const path = prefix + child;
             if (!stored.has(path)) yield directory(child, path + "/");
-            else
-              yield {
-                kind: "file",
-                name: child,
-                async getFile() {
-                  if (state.delayPath === path) {
-                    state.delayPath = null;
-                    await new Promise<void>((resolve) => {
-                      state.release = resolve;
-                    });
-                    state.release = null;
-                  }
-                  return stored.get(path)!;
-                },
-                async createWritable() {
-                  let next = "";
-                  return {
-                    async write(value: string) {
-                      if (state.fail) throw new Error("Test write failure");
-                      next = value;
-                    },
-                    async close() {
-                      stored.set(path, new File([next], child));
-                      state.writes++;
-                    },
-                    async abort() {},
-                  };
-                },
-              };
+            else yield fileHandle(path, child);
           }
         },
       });

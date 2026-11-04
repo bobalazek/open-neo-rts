@@ -18,7 +18,7 @@ export interface EditorFileHandle {
   name: string;
   getFile(): Promise<EditorFile>;
   createWritable(): Promise<{
-    write(data: string): Promise<void>;
+    write(data: string | Uint8Array<ArrayBuffer>): Promise<void>;
     close(): Promise<void>;
     abort(): Promise<void>;
   }>;
@@ -27,6 +27,9 @@ export interface EditorDirectory {
   kind: "directory";
   name: string;
   values(): AsyncIterable<EditorFileHandle | EditorDirectory>;
+  getDirectoryHandle?(name: string, options?: { create?: boolean }): Promise<EditorDirectory>;
+  getFileHandle?(name: string, options?: { create?: boolean }): Promise<EditorFileHandle>;
+  removeEntry?(name: string): Promise<void>;
 }
 export interface EditorPack {
   input: PackInput;

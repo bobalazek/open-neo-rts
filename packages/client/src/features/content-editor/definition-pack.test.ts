@@ -135,7 +135,7 @@ describe("definition authoring", () => {
         let next = disk;
         return {
           async write(value) {
-            next = value;
+            next = typeof value === "string" ? value : new TextDecoder().decode(value);
             if (fail) throw new Error("Disk full");
           },
           async close() {

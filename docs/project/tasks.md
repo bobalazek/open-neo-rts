@@ -38,8 +38,9 @@ isolates the pinned Babylon range representation.
 native installed/local model controls and shared validation at `/tools/content`.
 [Browser definition authoring](./decisions/2026-11-04-browser-definition-authoring.md)
 now adds schema-derived edits, guarded existing-file writes/downloads and disk
-conflict review. Full asset/formatter parity, new-definition creation, draft
-playtests and asset editing remain below; the whole editor task is still open.
+conflict review. [Template creation](./decisions/2026-11-04-definition-creation.md)
+adds guarded multi-file saves and ZIP changes downloads. Full asset/formatter
+parity, draft playtests and asset editing remain below; the whole editor task is still open.
 
 The [SIM59 qualification](./learnings/2026-11-04-sim59-complete-matches.md)
 completed all twenty seeded bot mirrors twice without a crash, cap or divergence.
@@ -48,7 +49,6 @@ open; most AI mirrors exceeded 25 simulated minutes.
 
 - [ ] [2-33b2 · Independent canonical-byte validators](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; complete per-feature invariants before accepting unverified canonical files directly. [Owned keyframes and verified saves](./decisions/2026-11-03-owned-keyframe-restoration.md) now restore canonical state; external imports retain history verification.
 - [ ] [2-38b2 · Full save-validation and formatter parity](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine/tooling; shared export/provenance metadata and GLB conformance checks are implemented in 2-38b2a. Finish runtime audio validation, source/schema freshness and exact project formatting before closing the whole definition-editing task.
-- [ ] [2-38b3 · New-definition templates and multi-file creation](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; clone/template creation with valid IDs, references/assets and safe coordinated definition/manifest writes or browser downloads.
 - [ ] [2-38c · Draft playtests and effects](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; validated drafts through debug, suitable terrain/opponents and remaining weapon/destruction previews.
 - [ ] [2-38d · Asset editing](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; part/socket gizmos, safe GLB socket export and remaining editor tabs.
 - [ ] [2-21b1c · Clipped construction depth passes](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; later visual polish after functional lifecycle work, replacing the current no-shadow policy for partial structures.

@@ -43,6 +43,28 @@ decorative motion or new identity. The safety interaction is reviewing a disk
 conflict without losing a draft. Busy operations lock editable controls; invalid
 input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
-External asset/audio/conformance and exact formatter parity remain explicit work
-before the whole 2-38b task can close. This extension does not complete draft
-playtests, new-definition templates or asset editing.
+Full runtime audio, source freshness and exact formatter parity remain explicit
+2-38b2 work before the whole 2-38b task can close. Draft playtests and asset
+editing remain 2-38c and 2-38d follow-ups.
+
+## Sibling-definition creation extension
+
+New from selected uses a clean unit, structure or prop as the authored template
+for a sibling. The story is template → new display/folder names → create or
+download → cancel/recovery. This code-led Operate extension inherits Graphite
+Command Stations; the original brick model remains the subject, left of the
+native form on desktop and above it when narrow. Two framed fields temporarily
+replace the definition form; Create definition, Download changes ZIP and Cancel
+creation stay pinned. Read-only folders omit Create definition. No new palette,
+tokens, assets or motion accompany the workflow.
+
+Shared checks gate creation. Writable folders copy the complete co-located
+folder with credits intact, verify the payloads and publish the manifest last.
+Conflicts stop creation. Errors retain entered names; cleanup preserves changed
+or inaccessible new files with recovery feedback. Success selects and previews
+the new definition. The ZIP is a changes bundle containing the new folder and
+updated manifest, for extraction into a copy of the selected pack; it is not a
+standalone pack and downloading never changes the source. Cancel returns to the
+original definition. Busy work locks the controls. Browser writes retain their
+optimistic concurrency limits. The creation decision is
+`../../../../docs/project/decisions/2026-11-04-definition-creation.md`.
