@@ -164,7 +164,7 @@ export function basicSkirmishProgram(
         if (result === null) break;
         command = result;
         cursor++;
-        memory.placement = (memory.placement + 1) % 1089;
+        if (result?.type !== "unit.move") memory.placement = (memory.placement + 1) % 1089;
       }
       if (command) commands.push(command);
       memory.stage = 2;

@@ -4,6 +4,7 @@ import { type PackInput, resolvePacks, schemaRef } from "@open-neo-rts/content";
 import { checkpointHash, step } from "../../kernel";
 import { createMatch, type MatchSetup } from "../../match";
 import { createProjection } from "../../projection";
+import { createMatchKeyframe } from "../../snapshots";
 import { flatMap } from "../../testing/maps";
 import { AttackOrder } from "../combat";
 import { ConstructionSite } from "../construction";
@@ -16,6 +17,7 @@ import {
   Template,
   Transform,
 } from "../entities";
+import { Remains, SalvageOrder } from "../salvage";
 import { createNormalMatchSetup } from "./normal-match";
 
 const root = new URL("../../../../../content/core/", import.meta.url);
@@ -44,7 +46,12 @@ for (const file of files) {
   groups[`${kind}s`] ??= [];
   groups[`${kind}s`]?.push(file);
   // Asset validation belongs to the content suite; these tests compile original gameplay JSON only.
-  for (const asset of [data.presentation?.model, data.presentation?.icon, data.presentation?.wreck])
+  for (const asset of [
+    data.presentation?.model,
+    data.presentation?.icon,
+    data.presentation?.wreck,
+    ...Object.values(data.presentation?.sounds ?? {}),
+  ])
     if (asset) layers.set(file.slice(0, file.lastIndexOf("/") + 1) + asset, new Uint8Array([1]));
 }
 json.set("manifest.json", {
@@ -170,6 +177,60 @@ test("original tier-one bot pays/builds its base, harvests, extracts materials a
   // Existing completed structures + paid Dragon exceed the 5,000 initial credits; income was necessary.
   expect(kernel.economy?.balance(1)?.materials).toBeGreaterThanOrEqual(0);
 }, 30000);
+
+test("a hosted bot scouts and clears a destroyed remote extractor, then rebuilds and extracts after restore", () => {
+  const value = setup();
+  value.map = {
+    ...value.map,
+    resources: [
+      { kind: "ore", position: [18 * 1024, 15 * 1024], radius: 2 * 1024, amount: 50000 },
+      { kind: "materials", position: [30 * 1024, 10 * 1024], amount: 5000 },
+    ],
+  };
+  const kernel = createMatch(value);
+  const spawn = (id: string, x: number, y: number) => {
+    const index = catalog.definitions.findIndex((definition) => definition.id === id);
+    return spawnEntity(kernel, index, catalog.definitions[index]!, {
+      definition: id,
+      force: 1,
+      x: x * 1024,
+      y: y * 1024,
+      facing: 0x4000,
+    });
+  };
+  // Fixture only: completed original base buildings isolate recovery from the full opening build order.
+  spawn(structure("industrial-reactor"), 6, 10);
+  spawn(structure("supply-depot"), 10, 4);
+  spawn(structure("barracks-complex"), 17, 10);
+  spawn(structure("war-factory"), 10, 17);
+  const extractor = "core.structure:neutral/resource-extractor";
+  const target = spawn(extractor, 30, 10);
+  step(kernel, []);
+  kernel.world.set(target, Health, "current", 0);
+  step(kernel, []);
+  const rubble = kernel.world.query(Remains)[0]!;
+  expect(rubble).toBeDefined();
+  expect(createProjection(value, 1, "controlled").snapshot(kernel).remains).toEqual([]);
+  while (!kernel.world.query(SalvageOrder).length && kernel.tick < 1500) step(kernel, []);
+  expect(kernel.world.query(SalvageOrder).length).toBeGreaterThan(0);
+  const twin = createMatchKeyframe(kernel, value).restore(value);
+  while (kernel.tick < 2000) {
+    step(kernel, []);
+    step(twin, []);
+  }
+  expect(checkpointHash(kernel)).toBe(checkpointHash(twin));
+  expect(kernel.world.isAlive(rubble)).toBe(false);
+  expect(ids(kernel, extractor).some((id) => !kernel.world.has(id, ConstructionSite))).toBe(true);
+  expect(
+    kernel.log.some(
+      (entry) =>
+        entry.source === "controller" &&
+        entry.result === "accepted" &&
+        (entry.command as { type: string }).type === "economy.salvage",
+    ),
+  ).toBe(true);
+  expect(kernel.economy?.balance(1)?.materials).toBeGreaterThan(10);
+}, 30_000);
 
 test("bot decision memory, private mappings, random stream and queues restore with deterministic twin continuation", () => {
   const value = setup(),

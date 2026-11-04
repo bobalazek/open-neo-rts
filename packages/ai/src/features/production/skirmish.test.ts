@@ -2,12 +2,14 @@ import { expect, test } from "bun:test";
 import { createStream } from "@open-neo-rts/deterministic";
 import { type DecisionState, runDecision } from "../..";
 import type {
+  PlanningView,
   PolicyCommand,
   PolicyEntity,
   PolicyObservation,
   SkirmishMemory,
   SkirmishPolicy,
 } from "../economy";
+import { placement } from "../economy";
 import { basicSkirmishProgram, initialSkirmishMemory } from ".";
 
 const policy: SkirmishPolicy = {
@@ -63,6 +65,122 @@ const state = (): DecisionState<PolicyCommand, SkirmishMemory> => ({
   cursor: 0,
   target: null,
   pending: [],
+});
+
+const recoveryPolicy: SkirmishPolicy = {
+  ...policy,
+  buildOrder: [],
+  definitions: [
+    ...policy.definitions.filter((definition) => definition.id !== "builder"),
+    { id: "builder", role: "builder", speed: 1024, builds: ["extractor"] },
+    {
+      id: "extractor",
+      role: "extractor",
+      footprint: [2, 2],
+      construction: { cost: { credits: 800 }, buildTicks: 400 },
+    },
+  ],
+};
+function recoveryView(visible = true): PlanningView {
+  const own = [entity("e1", "hq"), entity("e2", "builder")];
+  return {
+    policy: recoveryPolicy,
+    memory: initialSkirmishMemory(),
+    own,
+    definitions: new Map(
+      recoveryPolicy.definitions.map((definition) => [definition.id, definition]),
+    ),
+    observation: {
+      ...observation(own),
+      banks: [{ force: 1, resources: { credits: 800 } }],
+      fog: [{ width: 32, height: 32, cells: new Uint8Array(32 * 32).fill(visible ? 2 : 1) }],
+      resourceNodes: [{ kind: "materials", x: 20 * 1024, y: 20 * 1024 }],
+    },
+  };
+}
+test("an observed rubble-blocked node is cleared once through a legal builder order before rebuilding", () => {
+  const view = recoveryView();
+  view.observation = { ...view.observation, banks: [{ force: 1, resources: { credits: 0 } }] };
+  const rubble = {
+    handle: "e9",
+    definition: "extractor",
+    kind: "rubble" as const,
+    x: 20 * 1024,
+    y: 20 * 1024,
+    facing: 0x4000,
+  };
+  view.observation = { ...view.observation, remains: [rubble] };
+  expect(placement(view, 0)).toEqual({
+    type: "economy.salvage",
+    payload: { entity: "e9", builders: ["e2"] },
+  });
+  view.observation = { ...view.observation, tick: 40 };
+  const working = { ...view.own[1]!, salvageOrder: { target: "e9", state: "working" } };
+  view.own = [view.own[0]!, working];
+  expect(placement(view, 0)).toBeNull();
+  view.own = [
+    view.own[0]!,
+    { ...working, salvageOrder: { target: "e9", state: "blocked" } },
+    entity("e3", "builder"),
+  ];
+  expect(placement(view, 0)).toEqual({
+    type: "economy.salvage",
+    payload: { entity: "e9", builders: ["e3"] },
+  });
+  view.own = view.observation.entities.filter((actor) => actor.force === 1);
+  view.observation = { ...view.observation, tick: 80, remains: [] };
+  expect(placement(view, 0)).toBeNull();
+  view.observation = { ...view.observation, banks: [{ force: 1, resources: { credits: 800 } }] };
+  expect(placement(view, 0)).toMatchObject({
+    type: "economy.build",
+    payload: { definition: "extractor", x: rubble.x, y: rubble.y },
+  });
+});
+
+test("a lone unreachable known node cannot reset the builder travel deadline", () => {
+  const known = recoveryView(false).observation;
+  const decide = basicSkirmishProgram(recoveryPolicy);
+  let result = runDecision(decide, known, state(), createStream(1, "ai:1"), 64);
+  const deadline = result.state.memory!.orders[0]!.until;
+  for (const tick of [deadline + 1, deadline + 100, deadline + 1000]) {
+    result = runDecision(decide, { ...known, tick }, result.state, result.random, 64);
+    expect(result.commands.some((command) => command.type === "unit.move")).toBe(false);
+    expect(result.state.memory!.orders[0]!.until).toBe(deadline);
+  }
+});
+
+test("a discovered unseen node is scouted without hidden rubble data, retaining its candidate until travel expires", () => {
+  const view = recoveryView(false);
+  const decide = basicSkirmishProgram(recoveryPolicy);
+  const known = {
+    ...view.observation,
+    resourceNodes: [
+      ...view.observation.resourceNodes!,
+      { kind: "materials" as const, x: 20 * 1024, y: 25 * 1024 },
+    ],
+  };
+  const first = runDecision(decide, known, state(), createStream(1, "ai:1"), 64);
+  const move = first.commands.find((command) => command.type === "unit.move");
+  expect(move).toEqual({
+    type: "unit.move",
+    payload: { entities: ["e2"], x: 20 * 1024 - 512, y: 20 * 1024 - 512 },
+  });
+  expect(
+    first.commands.some(
+      (command) => command.type === "economy.salvage" || command.type === "economy.build",
+    ),
+  ).toBe(false);
+  expect(first.state.memory?.placement).toBe(0);
+  const until = first.state.memory!.orders.find((order) => order.handle === "e2")!.until;
+  const next = runDecision(decide, { ...known, tick: 50 }, first.state, first.random, 64);
+  expect(next.commands.some((command) => command.type === "unit.move")).toBe(false);
+  expect(next.state.memory?.orders.find((order) => order.handle === "e2")?.until).toBe(until);
+  const expired = runDecision(decide, { ...known, tick: until + 1 }, next.state, next.random, 64);
+  expect(expired.commands).toContainEqual({
+    type: "unit.move",
+    payload: { entities: ["e2"], x: 20 * 1024 - 512, y: 25 * 1024 - 512 },
+  });
+  expect(expired.state.memory?.placement).toBe(1);
 });
 test("a one-work-unit policy resumes candidate/placement stages and emits a real builder command", () => {
   const decide = basicSkirmishProgram(policy);

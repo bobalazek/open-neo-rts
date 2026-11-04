@@ -31,6 +31,7 @@ export interface PolicyEntity {
   readonly constructionSite?: true;
   readonly construction?: { readonly completedTicks: number; readonly buildersWorking: number };
   readonly constructionOrder?: { readonly site: string; readonly state: string };
+  readonly salvageOrder?: { readonly target: string; readonly state: string };
   readonly harvesting?: { readonly status: string; readonly cargo: number };
   readonly power?: { readonly enabled: boolean };
   readonly extraction?: { readonly status: string };
@@ -61,6 +62,14 @@ export interface PolicyObservation {
     readonly handle: string;
     readonly force: number;
     readonly status: string;
+  }[];
+  readonly remains?: readonly {
+    readonly handle: string;
+    readonly definition: string;
+    readonly kind: "wreck" | "rubble";
+    readonly x: number;
+    readonly y: number;
+    readonly facing: number;
   }[];
   /** Discovered immutable node origins only; no hidden stock or ownership. */
   readonly resourceNodes?: readonly {
@@ -93,6 +102,7 @@ export type PolicyCommand =
       };
     }
   | { type: "economy.assistConstruction"; payload: { entity: string; builders: string[] } }
+  | { type: "economy.salvage"; payload: { entity: string; builders: string[] } }
   | { type: "economy.cancelConstruction"; payload: { entity: string } }
   | { type: "economy.power"; payload: { entity: string; enabled: number } }
   | { type: "production.enqueue"; payload: { entity: string; definition: string } }
@@ -215,6 +225,7 @@ export function economy(view: PlanningView): PolicyCommand | undefined {
         !view.definitions.get(entity.definition)?.footprint &&
         !entity.order &&
         !entity.constructionOrder &&
+        !entity.salvageOrder &&
         !entity.harvesting &&
         distance(entity, blockedProducer) < (6 * 1024) ** 2,
     );
@@ -260,6 +271,7 @@ export function economy(view: PlanningView): PolicyCommand | undefined {
   const builder = own.find(
     (entity) =>
       view.definitions.get(entity.definition)?.role === "builder" &&
+      !entity.salvageOrder &&
       (!entity.constructionOrder || entity.constructionOrder.state === "blocked"),
   );
   if (builder && !site.construction?.buildersWorking) {
@@ -290,11 +302,12 @@ export function placement(view: PlanningView, candidate: number): PolicyCommand 
   const node = nodes[candidate % Math.max(1, nodes.length)];
   const id = nextStructure(view);
   const definition = id ? view.definitions.get(id) : undefined;
-  if (!definition?.footprint || !affordable(view, definition) || !prerequisites(view, definition))
+  if (!definition?.footprint || !definition.construction || !prerequisites(view, definition))
     return null;
   const builder = own.find(
     (entity) =>
       !entity.constructionOrder &&
+      !entity.salvageOrder &&
       view.definitions.get(entity.definition)?.builds?.includes(definition.id),
   );
   const base = baseOf(view),
@@ -318,6 +331,104 @@ export function placement(view: PlanningView, candidate: number): PolicyCommand 
     y + depth * 1024 > grid.height * 1024
   )
     return;
+  const overlaps = (
+    entity: Pick<PolicyEntity, "definition" | "facing" | "x" | "y">,
+    margin: number,
+  ) => {
+    const footprint = view.definitions.get(entity.definition)?.footprint;
+    if (!footprint) return false;
+    const turned = (Math.floor((entity.facing + 0x2000) / 0x4000) & 1) === 0;
+    const w = (turned ? footprint[1] : footprint[0]) * 1024,
+      d = (turned ? footprint[0] : footprint[1]) * 1024;
+    return (
+      x < entity.x + w + margin &&
+      x + width * 1024 + margin > entity.x &&
+      y < entity.y + d + margin &&
+      y + depth * 1024 + margin > entity.y
+    );
+  };
+  if (definition.id === policy.extractor && node) {
+    const rubble = observation.remains?.find(
+      (remain) => remain.kind === "rubble" && overlaps(remain, 0),
+    );
+    if (rubble) {
+      if (
+        own.some(
+          (actor) =>
+            actor.salvageOrder?.target === rubble.handle && actor.salvageOrder.state !== "blocked",
+        )
+      )
+        return null;
+      memory.buildAfter = observation.tick + 40;
+      return {
+        type: "economy.salvage",
+        payload: { entity: rubble.handle, builders: [builder.handle] },
+      };
+    }
+    let visible = true;
+    for (let row = 0; row < depth; row++)
+      for (let column = 0; column < width; column++)
+        visible &&=
+          observation.fog?.some(
+            (fog) =>
+              fog.cells[
+                (Math.floor(y / 1024) + row) * fog.width + Math.floor(x / 1024) + column
+              ] === 2,
+          ) ?? false;
+    if (!visible) {
+      const previous = memory.orders.find(
+        (order) =>
+          order.handle === builder.handle &&
+          !order.retreat &&
+          order.x >= x - 512 &&
+          order.x <= x + width * 1024 + 512 &&
+          order.y >= y - 512 &&
+          order.y <= y + depth * 1024 + 512,
+      );
+      if (previous) {
+        if (previous.until > observation.tick) return null;
+        return;
+      }
+      const point = {
+        x: Math.max(
+          512,
+          Math.min(
+            grid.width * 1024 - 512,
+            builder.x < x
+              ? x - 512
+              : builder.x >= x + width * 1024
+                ? x + width * 1024 + 512
+                : Math.floor(builder.x / 1024) * 1024 + 512,
+          ),
+        ),
+        y: Math.max(
+          512,
+          Math.min(
+            grid.height * 1024 - 512,
+            builder.y < y
+              ? y - 512
+              : builder.y >= y + depth * 1024
+                ? y + depth * 1024 + 512
+                : Math.floor(builder.y / 1024) * 1024 + 512,
+          ),
+        ),
+      };
+      const travel = Math.floor(
+        (2 * isqrt(distance(builder, point))) /
+          Math.max(1, view.definitions.get(builder.definition)?.speed ?? 1),
+      );
+      memory.orders = memory.orders.filter((order) => order.handle !== builder.handle);
+      memory.orders.push({
+        handle: builder.handle,
+        ...point,
+        until: Math.min(0xffffffff, observation.tick + travel + 200),
+        retreat: false,
+      });
+      memory.buildAfter = observation.tick + 40;
+      return { type: "unit.move", payload: { entities: [builder.handle], ...point } };
+    }
+  }
+  if (!affordable(view, definition)) return null;
   // Reserve discovered node footprints and approach lanes for their future extractor.
   if (
     definition.id !== policy.extractor &&
@@ -340,22 +451,7 @@ export function placement(view: PlanningView, candidate: number): PolicyCommand 
         )
       )
         return;
-  if (
-    own.some((entity) => {
-      const footprint = view.definitions.get(entity.definition)?.footprint;
-      if (!footprint) return false;
-      const turned = (Math.floor((entity.facing + 0x2000) / 0x4000) & 1) === 0;
-      const w = (turned ? footprint[1] : footprint[0]) * 1024,
-        d = (turned ? footprint[0] : footprint[1]) * 1024;
-      return (
-        x < entity.x + w + 3 * 1024 &&
-        x + width * 1024 + 3 * 1024 > entity.x &&
-        y < entity.y + d + 3 * 1024 &&
-        y + depth * 1024 + 3 * 1024 > entity.y
-      );
-    })
-  )
-    return;
+  if (own.some((entity) => overlaps(entity, 3 * 1024))) return;
   memory.buildAfter = observation.tick + 40;
   return {
     type: "economy.build",

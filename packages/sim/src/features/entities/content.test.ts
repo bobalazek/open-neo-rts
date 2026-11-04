@@ -39,7 +39,7 @@ const roster = [
   extractor,
 ];
 
-/** Definition identity uses placeholder artwork bytes; model validation is outside this test. */
+/** Definition identity uses placeholder presentation bytes; asset validation is outside this test. */
 function pack(
   id = "core",
   definitions: readonly Data[] = roster,
@@ -64,8 +64,12 @@ function pack(
     copy.$schema = schemaRef(file, kind as "unit" | "structure" | "faction");
     json.set(file, copy);
     const presentation = copy.presentation as Data | undefined;
-    for (const field of ["model", "icon", "wreck"]) {
-      const asset = presentation?.[field];
+    for (const asset of [
+      presentation?.model,
+      presentation?.icon,
+      presentation?.wreck,
+      ...Object.values((presentation?.sounds ?? {}) as Data),
+    ]) {
       if (typeof asset === "string")
         layers.set(file.slice(0, file.lastIndexOf("/") + 1) + asset, new Uint8Array([1]));
     }

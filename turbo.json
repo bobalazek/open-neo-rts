@@ -19,5 +19,5 @@
       "persistent": true
     }
   },
-  "globalDependencies": ["tsconfig.base.json", "biome.json", "tools/biome/**"]
+  "globalDependencies": ["tsconfig.base.json", "biome.json", "tools/biome/**", "content/**"]
 }
