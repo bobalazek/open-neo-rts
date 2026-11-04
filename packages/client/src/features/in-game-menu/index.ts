@@ -27,6 +27,7 @@ export function createInGameMenu(
     load?: (save: SavedGame) => Promise<void>;
     quicksave?: () => Promise<void>;
     quickload?: () => Promise<void>;
+    manualLabel?: string;
   },
   signal: AbortSignal,
 ) {
@@ -195,7 +196,7 @@ export function createInGameMenu(
     });
     const manual = document.createElement("button");
     manual.type = "button";
-    manual.textContent = text("ui.manual.title");
+    manual.textContent = options.manualLabel ?? text("ui.manual.title");
     manual.addEventListener("click", () => manualPane());
     body!.querySelector("nav")?.append(manual);
     for (const topic of ["objectives", "keys"] as const)

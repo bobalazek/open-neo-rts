@@ -259,9 +259,7 @@ source.
   `../../docs/project/decisions/2026-11-04-definition-creation.md`.
 - Playtest draft beside Save opens the existing HTML debug worker with a validated
   copy of the selected existing definition, including unsaved edits. This 2-38c1
-  slice checks movement, health and placement; combat/economy integration,
-  authored opponent presets and weapon/destruction effects remain 2-38c2, so
-  the whole 2-38c task remains open. Writable packs are refreshed and the draft
+  slice checks movement, health and placement. Writable packs are refreshed and the draft
   is substituted only in copied validation inputs. Shared resolution, gameplay
   compilation, provenance and GLB checks gate launch. Checked model bytes become
   local Blob URLs for that session; neither source files nor normal matches change.
@@ -277,6 +275,33 @@ source.
   draft and its models; export reproduces simulation, not an asset pack. Native
   debug conversion and full 2-38b2 validation parity remain separate work. See
   `../../docs/project/decisions/2026-11-04-draft-debug-playtest.md`.
+- Skirmish draft adds bounded 2-38c2 combat/economy integration through the actual
+  normal-session worker on Training Grounds, with an Eastern Collective mirror
+  and basic bot. Normal construction, production, resources, combat and fog
+  retain normal commands and permissions. Supported content is existing core
+  first-playable definitions, compatible prerequisite-free priced units trained
+  by their producers, and prerequisite-free priced Eastern Collective or neutral
+  structures. Compatible cloned units join only the temporary roster. Other
+  packs, factions, props and definitions outside this compatibility gate retain
+  debug checks; a rejected normal draft keeps edits and explains the restriction.
+  Shared checks
+  gate copied inputs and freeze metadata plus checked model, wreck, icon and
+  sound bytes for the preview and every restart. Later source edits do not
+  replace that snapshot. Native loading Cancel or Return to draft restores the
+  retained editor and initiating action focus; initialization/worker failure
+  returns with an error. Each preview owns its worker, renderer and audio mixer;
+  restarts reuse the mixer, while return/failure releases it, decoded buffers and
+  temporary asset URLs and resumes editor rendering. It writes no sources,
+  manifest, save slots, autosaves, replay storage or contextual guidance history.
+  Save/Load and quicksave are unavailable. Installed Field Manual labels the
+  installed baseline; actor stats, recipes and help use the draft catalog.
+  Launch eligibility does not guarantee every edited recipe or movement domain
+  can execute: normal engine validation still rejects incompatible commands.
+  Focused Chrome and WebKit journeys cover this bounded flow; they do not close
+  the whole 2-38c task. Broader authored opponent/map presets and isolated
+  weapon/destruction previews remain 2-38c2; full 2-38b2 parity and 2-38d asset
+  gizmos remain open. See
+  `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual

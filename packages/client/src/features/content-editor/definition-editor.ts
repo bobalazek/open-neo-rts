@@ -81,6 +81,7 @@ export function mountDefinitionEditor(
       packId: string,
       path: string,
       draft: Data,
+      mode: "movement" | "skirmish",
     ): Promise<void>;
   },
 ) {
@@ -161,10 +162,14 @@ export function mountDefinitionEditor(
   const open = action("ui.editor.open-pack", () => void openPack(), true);
   const save = action("ui.editor.download", () => void saveDraft(), true);
   const preview = action("ui.editor.preview", () => void validateDraft(true));
-  const playtest = action("ui.editor.playtest", () => void startPlaytest(), true);
+  const playtest = action("ui.editor.playtest", () => void startPlaytest("movement"), true);
   playtest.setAttribute("data-playtest", "");
   playtest.title = text("ui.editor.playtest-help");
   playtest.setAttribute("data-contextual-help", "");
+  const skirmish = action("ui.editor.skirmish", () => void startPlaytest("skirmish"), true);
+  skirmish.setAttribute("data-skirmish-playtest", "");
+  skirmish.title = text("ui.editor.skirmish-help");
+  skirmish.setAttribute("data-contextual-help", "");
   const clone = action("ui.editor.clone", () => {
     if (!current || !canReplace()) return;
     creating = true;
@@ -267,6 +272,8 @@ export function mountDefinitionEditor(
     save.hidden = preview.hidden = !current || reviewing || creating;
     playtest.hidden = save.hidden;
     playtest.disabled = save.disabled;
+    skirmish.hidden = playtest.hidden;
+    skirmish.disabled = playtest.disabled;
     open.hidden = reviewing || creating;
     clone.hidden = !current || reviewing || creating;
     clone.disabled = busy || dirty();
@@ -547,7 +554,7 @@ export function mountDefinitionEditor(
       if (!disposed) refresh();
     }
   }
-  async function startPlaytest() {
+  async function startPlaytest(mode: "movement" | "skirmish") {
     if (!current || busy || creating || inputErrors.size || diskConflict !== undefined) return;
     busy = true;
     error.textContent = "";
@@ -566,7 +573,8 @@ export function mountDefinitionEditor(
             : pack,
         ),
       );
-      if (!disposed) await options.playtest(fresh, current.pack.input.id, current.file, candidate);
+      if (!disposed)
+        await options.playtest(fresh, current.pack.input.id, current.file, candidate, mode);
     } catch (failure) {
       error.textContent =
         failure instanceof Error ? failure.message : text("ui.editor.validation-failed");
