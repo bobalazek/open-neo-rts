@@ -201,10 +201,37 @@ source.
   with Retry. Native Open and Retry stay outside the scrolling body; Open and
   validation-kind help use contextual hover/focus descriptions, and the model
   canvas names orbit, zoom and drop interactions. Existing interface scale and
-  semantic HTML/fallback remain in use. Definition forms, safe saves/downloads,
-  disk conflicts, draft playtests, grid/scale reference, gizmos, material mappings
-  and weapon effects/destruction remain 2-38b/c/d work. This does not complete the
+  semantic HTML/fallback remain in use. Grid/scale reference, gizmos, material
+  mappings and weapon effects/destruction remain follow-up work. This does not complete the
   content editor; see `../../docs/project/decisions/2026-11-04-model-inspection-tools.md`.
+- The same model-first tool includes 2-38b1 editing of existing unit, structure
+  and prop definitions from owner-selected pack folders. Opened packs supply
+  dependencies. Schema-derived scalar, enum, boolean, nested object, record and
+  array fields use applicable General/Combat/Visuals/Production/Upgrades/Eras
+  tabs, contextual descriptions/units and one optional/collection-change menu;
+  opaque values retain a JSON field. Compact status names the definition, pack
+  and unsaved state; the picker exposes its full source path through contextual
+  help. The original model remains left on desktop and above controls when narrow.
+  File System Access writes only the selected existing file; the read-only
+  folder-input fallback downloads a copy and keeps the source dirty. No file is
+  uploaded, and the installed built-in catalog and simulation state stay intact.
+  Save/download checks copied drafts through shared schemas, pack resolution,
+  references/identity, gameplay compilation and model requirements. Writable
+  folders are re-read; only the target JSON is replaced for validation. Loading,
+  validation and saving lock competing controls. Invalid numeric/JSON text
+  survives tab changes, and failed selection restores the actual picker identity.
+  Back/replacement retain save-or-discard guards; unload retains the browser guard.
+  Latest target text is compared before validation and before writing. A conflict
+  replaces fields with changed-leaf comparisons and pinned Reload/Keep choices;
+  failed writes retain the draft. The comparison discloses its 100-row/512-character
+  display caps while preserving both versions. These optimistic checks cannot
+  prevent another program writing after the final comparison. Provisional bounds
+  are 2 MiB per JSON, 256 MiB combined runtime data, 10,000 directory entries and
+  32 directory levels. Output currently uses two-space JSON and a final newline.
+  Full asset/provenance/audio/glTF conformance and exact formatter parity remain
+  2-38b2; templates and multi-file creation remain 2-38b3. The whole 2-38b task,
+  draft worker playtests (2-38c) and asset editing (2-38d) remain open. See
+  `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
 - Browser review does not qualify physical touch, physical IME, screen readers,
   Firefox or hardware FPS.
 - The match follows the owner's Age of Empires IV regional reference: actual

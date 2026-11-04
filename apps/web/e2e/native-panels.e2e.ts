@@ -63,6 +63,8 @@ test("native save gallery keeps typed search focused, imports files and opens re
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   const gui = menu.locator(".native-menu-canvas");
   await expect(gui).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
+  await draw(page);
   await clickNative(page, "Save game");
   await menu.getByLabel("Save name", { exact: true }).fill("Native gallery proof");
   await clickNative(page, "Save game");

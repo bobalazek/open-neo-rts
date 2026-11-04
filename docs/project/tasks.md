@@ -36,7 +36,10 @@ isolates the pinned Babylon range representation.
 
 [Model inspection](./decisions/2026-11-04-model-inspection-tools.md) now provides
 native installed/local model controls and shared validation at `/tools/content`.
-Definition editing, safe saves, draft playtests and asset editing remain below.
+[Browser definition authoring](./decisions/2026-11-04-browser-definition-authoring.md)
+now adds schema-derived edits, guarded existing-file writes/downloads and disk
+conflict review. Full asset/formatter parity, new-definition creation, draft
+playtests and asset editing remain below; the whole editor task is still open.
 
 The [SIM59 qualification](./learnings/2026-11-04-sim59-complete-matches.md)
 completed all twenty seeded bot mirrors twice without a crash, cap or divergence.
@@ -44,7 +47,8 @@ The real human match, duration, roster-use and other phase-2 exit clauses remain
 open; most AI mirrors exceeded 25 simulated minutes.
 
 - [ ] [2-33b2 · Independent canonical-byte validators](./phases/2.md#2-33--restore-versioned-canonical-snapshots). PR type: engine; complete per-feature invariants before accepting unverified canonical files directly. [Owned keyframes and verified saves](./decisions/2026-11-03-owned-keyframe-restoration.md) now restore canonical state; external imports retain history verification.
-- [ ] [2-38b · Definition editing and safe saving](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; schema-derived edits, complete shared validation, file-access fallback and conflicts.
+- [ ] [2-38b2 · Full save-validation and formatter parity](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine/tooling; finish asset/provenance/audio/glTF conformance, source/schema freshness and exact project formatting before closing the whole definition-editing task.
+- [ ] [2-38b3 · New-definition templates and multi-file creation](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; clone/template creation with valid IDs, references/assets and safe coordinated definition/manifest writes or browser downloads.
 - [ ] [2-38c · Draft playtests and effects](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; validated drafts through debug, suitable terrain/opponents and remaining weapon/destruction previews.
 - [ ] [2-38d · Asset editing](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; part/socket gizmos, safe GLB socket export and remaining editor tabs.
 - [ ] [2-17c · World-marker drag/delete interaction](./phases/2.md#2-17--finish-first-playable-context-orders). PR type: engine; later interaction polish for the delivered Shift queues, which already support waypoint editing/removal in the HUD.

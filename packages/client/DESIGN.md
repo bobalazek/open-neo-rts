@@ -95,12 +95,18 @@ Content tools extend Graphite Command Stations with original models as the main
 subject and a native graphite inspection pane. Existing framed choices change
 actual team materials, authored clips, supported LOD branches and damage-state
 nodes. Expandable tables expose project checks and parsed model inventories.
-The model starts at rest; animation follows an explicit clip choice. This is the
-model-inspection surface of 2-38a; definition editing, safe saves, draft playtests
-and asset editing remain 2-38b/c/d.
+The model starts at rest; animation follows an explicit clip choice. Existing
+definition authoring extends this same pane with schema-derived fields, applicable
+tabs and one optional/collection-change menu. Compact source identity and unsaved
+status remain visible; contextual help carries descriptions, units and full paths.
+Conflict review temporarily replaces fields with changed-value rows and pinned
+Reload/Keep choices. This records model inspection (2-38a) and existing-definition
+authoring (2-38b1); full asset validation/formatting, creation templates, draft
+playtests and asset editing remain open.
 
 This records the built Home, Skirmish setup, shared native panels, loading, Load,
-results, local Replays, Field Manual, content-model inspection and native normal match HUD. Debug retains HTML/CSS presentation; native
+results, local Replays, Field Manual, content-model inspection, existing-definition
+authoring and native normal match HUD. Debug retains HTML/CSS presentation; native
 surfaces retain synchronized semantic controls and usable HTML graphics fallbacks.
 The direction
 comes from the first body comment in `../../apps/web/index.html`; implementation
@@ -122,7 +128,10 @@ contract is in `src/features/onboarding/match.ts`; its Operate direction is
 recorded in `.impeccable/surfaces/src-features-onboarding-match-ts.md`.
 Content tools' local contract is in `src/features/content-editor/index.ts` and
 `.impeccable/surfaces/src-features-content-editor-index-ts.md`; its implementation
-also uses `src/features/content-editor/content-tools.css` and `model.ts`.
+also uses `src/features/content-editor/content-tools.css`, `model.ts`,
+`definition-editor.ts`, `definition-form.ts` and `definition-pack.ts`. Existing
+definition boundaries are recorded in
+`../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
 
 **Key Characteristics:**
 
@@ -145,6 +154,7 @@ also uses `src/features/content-editor/content-tools.css` and `model.ts`.
 - Native Field Manual with original icons, compiled facts and isolated model inspection.
 - Optional native HUD region labels and one observed-context hint with a direct reference link.
 - Native model-first content inspection with real presentation controls and expandable project checks.
+- Native existing-definition fields with contextual schema help, guarded saves/downloads and explicit disk-conflict review.
 
 ## Colors
 
@@ -371,8 +381,11 @@ the right, bounded by 460px or 42vw. At widths of 760px or less, the model occup
 the top 42dvh and the controls the remaining 58dvh. The pane uses the existing
 shared-panel type ramp and interface scale. Back and title, status/error feedback
 and pinned Open/Retry stay outside the scrolling body; choices and expandable
-tables scroll within it. This arrangement belongs to model inspection rather
-than changing the other galleries' column proportions.
+tables scroll within it. Definition authoring inherits this arrangement: Open/Save
+stay pinned, schema tabs and nested fields scroll, and conflict review replaces
+the fields with a scrollable comparison while Reload/Keep stay pinned. This
+arrangement belongs to content tools rather than changing the other galleries'
+column proportions.
 
 ## Elevation & Depth
 
@@ -525,6 +538,25 @@ the text leaves space for that disclosure mark.
   controls and diagnostics retained after a failed candidate. Local success
   clears the installed selection. These controls inspect presentation and never
   write content or alter simulation state.
+- **Existing-definition authoring:** owner-selected packs supply unit, structure
+  and prop definitions and their dependencies. Schema-derived fields reuse the
+  native square inputs and choices, ivory focus and warm-metal actions. Only
+  applicable General/Combat/Visuals/Production/Upgrades/Eras tabs appear; one
+  field-change menu collects optional/collection changes. Descriptions and human
+  units are contextual, with semantic accessible descriptions. Focus help waits
+  for measured bounds after scrolling and moves above a field when needed to
+  clear the pinned footer. Compact status identifies the name, pack and unsaved
+  state; the picker's contextual help retains the full source path.
+  Busy work locks competing controls. Invalid numeric/JSON text survives tabs;
+  failed selection restores picker identity. Back/replacement require saving or
+  discarding; failed writes preserve the draft. Disk conflicts temporarily replace
+  fields with changed-leaf rows and pinned Reload/Keep choices. The view discloses
+  its 100-row/512-character display caps without truncating the underlying versions.
+  File System Access saves the selected existing file after validation; the
+  read-only folder fallback downloads a copy and retains dirty state. No uploads
+  or simulation edits occur. Shared definition/model checks gate saving, while
+  full asset/provenance/audio/glTF conformance, exact formatter parity, new-file
+  templates, multi-file creation, draft playtests and asset editing remain open.
 - **Settings preview and feedback:** quality, UI scale, camera speed, edge scroll
   and reduced motion keep existing validation and storage. Preview applies live;
   Apply saves, Defaults previews defaults and Back/cancel restores saved values.
