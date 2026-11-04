@@ -141,24 +141,42 @@ source.
   failure alerts retain recovery to the library without deleting its record;
   navigation cancels the candidate worker and ignores late replies. Details:
   `../../docs/project/decisions/2026-11-03-native-replay-viewer.md`.
+- Contextual guidance uses a versioned local-browser profile. Settings stages
+  All, Important (the provisional default) or Off and Show hints again until
+  Apply; Back discards the draft and failed persistence keeps editable recovery.
+  Four once-only hints use permitted observations: low power, an owned actor
+  under attack, a visible enemy weapon's authored damage bonus against an owned
+  actor's armour, and an idle builder. The weapon hint indicates a multiplier
+  above 100%, not a universal counter or final damage. Important
+  omits the idle-builder hint; hints are spaced by at least 20 simulation seconds.
+  One brief native hint offers More and Dismiss; a failed history write reports
+  session-only retention. Optional HUD help labels active regions while existing
+  individual hover/focus tooltips retain complete action descriptions and live
+  shortcuts. Empty selection still leaves no selection station.
+- Hint More and selection Details reference links open the actual installed
+  Field Manual entry through the paused match menu. They preserve the same worker
+  and world, update the selection target while paused, and focus/reveal the entry
+  at the top of the reading viewport, including narrow unfiltered galleries.
 - Field Manual is available at `/manual`, from Home and in the paused match
-  menu. Its shared native gallery searches and filters Units/Structures across
-  the current 15 entries: the 14-entry Eastern Collective roster and the neutral
-  Resource Extractor. Original icons accompany installed compiled statistics,
+  menu. Its shared native gallery contains 15 actor entries (the 14-entry Eastern
+  Collective roster and neutral Resource Extractor) plus four guide entries for
+  economy, fog, combat and current keyboard bindings. All entries, Units,
+  Structures and Concepts and controls filters accompany search, which includes
+  guide titles and text. Original icons accompany installed compiled statistics,
   costs, requirements, weapon facts and expandable armour multipliers. Target
   restrictions still apply; multipliers do not promise final damage. Produces
   and Builds relationships show only the current roster.
   Desktop gives more space to the selected details; narrow layouts stack.
-  Selecting an entry reveals and focuses its heading; Return to roster focuses
+  Selecting an entry reveals and focuses its heading; Back to search focuses
   search. Inspect model opens the actual installed GLB in an isolated orbit/zoom
   scene with native controls, loading status and fetch-failure Retry. Escape
   returns focus to its initiating control; closing cancels/disposes pending work.
   Idle animation honors both device and operating-system reduced motion. The
   preview uses the current blue color without a color control. Embedded browsing
   and inspection preserve the paused world. HTML retains semantics and the
-  gallery's usable graphics fallback. Profile hints, HUD help/contextual More
-  links and training/playtest work remain under tasks 2-37b/2-38; this does not
-  complete those tasks or all first-playable guidance.
+  gallery's usable graphics fallback. Training, owner playtesting and tuning
+  recommendations remain separate work; this does not complete all
+  first-playable guidance.
 - Loading presents the existing five initialization stages and actual progress,
   with Cancel using the same dismissal as Escape. A separate dialog and canvas
   keep feedback intact while the world initializes or redraws its root. Failure

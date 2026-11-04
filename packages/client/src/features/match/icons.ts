@@ -34,6 +34,7 @@ const paths = {
   exit: "M10 4H4v16h6m3-13 5 5-5 5m-5-5h10",
   surrender: "M6 21V3l13 3-13 6",
   ping: "M12 21s7-8 7-12a7 7 0 0 0-14 0c0 4 7 12 7 12Zm0-15a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
+  help: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5m0 3h.01",
 } as const;
 export type HudIcon = keyof typeof paths;
 

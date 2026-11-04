@@ -16,11 +16,11 @@ test("native Field Manual searches actual roster facts, clears empty results and
   await clickNativeText(page, "Field Manual");
   await expect(page).toHaveURL(/\/manual$/);
   await expect(page.locator("#game")).toHaveAttribute("data-panel", "manual", { timeout: 30_000 });
-  await expect(page.locator("[data-panel-list] > button")).toHaveCount(15);
-  const point = await nativeTextPoint(page, "Search the roster");
+  await expect(page.locator("[data-panel-list] > button")).toHaveCount(19);
+  const point = await nativeTextPoint(page, "Search the manual");
   await page.mouse.click(point.x, point.y + 32);
   await page.keyboard.type("dragon");
-  await expect(page.getByLabel("Search the roster")).toHaveValue("dragon");
+  await expect(page.getByLabel("Search the manual")).toHaveValue("dragon");
   await expect(page.locator("[data-panel-list] > button")).toHaveCount(1);
   const detail = page.locator("[data-panel-detail]");
   await expect(detail.getByRole("heading", { name: "Dragon Tank", exact: true })).toHaveText(
@@ -37,7 +37,7 @@ test("native Field Manual searches actual roster facts, clears empty results and
   await page.keyboard.type("unmatched roster name");
   await expect(page.locator("[data-panel-list]")).toContainText("No matching entries");
   await expect(detail).toBeEmpty();
-  await page.getByLabel("Search the roster").fill("war factory");
+  await page.getByLabel("Search the manual").fill("war factory");
   const produces = detail
     .getByRole("row")
     .filter({ has: page.getByRole("cell", { name: "Produces", exact: true }) });
@@ -45,7 +45,7 @@ test("native Field Manual searches actual roster facts, clears empty results and
   await expect(produces).toContainText("Metamorphic APC");
   await expect(produces).not.toContainText("Flame Tank");
   await expect(produces).not.toContainText("Mobile EMP");
-  await page.getByLabel("Search the roster").fill("rocket");
+  await page.getByLabel("Search the manual").fill("rocket");
   await detail.getByRole("button", { name: "Inspect model" }).focus();
   await nativeFrame(page);
   await page.route("**/*.glb", (route) => route.fulfill({ status: 503, body: "unavailable" }));
@@ -84,13 +84,13 @@ test("paused-match Field Manual retains its worker and returns to the same match
   await menu.getByRole("button", { name: "Field Manual", exact: true }).press("Enter");
   await expect(gui).toHaveAttribute("data-panel", "manual");
   const tick = await world.getAttribute("data-tick");
-  await menu.getByLabel("Search the roster").fill("extractor");
+  await menu.getByLabel("Search the manual").fill("extractor");
   await expect(menu.getByRole("heading", { name: "Resource Extractor", exact: true })).toHaveText(
     "Resource Extractor",
   );
   await expect(menu.getByRole("row", { name: "Cost 800 credits", exact: true })).toHaveCount(1);
   await nativeTextPoint(page, "800 credits");
-  await clickNativeText(page, "Units and structures");
+  await clickNativeText(page, "All entries");
   await clickNativeText(page, "Units");
   await expect(menu.locator("[data-panel-detail]")).toBeEmpty();
   expect(await world.getAttribute("data-tick")).toBe(tick);

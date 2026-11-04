@@ -210,12 +210,12 @@ export async function createPanelScene(
     place(tooltipText, 12, 12, width - 24, height - 24);
     tooltip.isVisible = true;
   }
-  function reveal(control: Control) {
+  function reveal(control: Control, start = false) {
     const range = contentHeight - scroll.heightInPixels;
     if (range <= 0 || control.parent !== body) return;
     const top = scroll.verticalBar.value * range;
-    if (control.topInPixels < top)
-      scroll.verticalBar.value = Math.max(0, (control.topInPixels - 12) / range);
+    if (start || control.topInPixels < top)
+      scroll.verticalBar.value = Math.max(0, Math.min(1, (control.topInPixels - 12) / range));
     else if (control.topInPixels + control.heightInPixels > top + scroll.heightInPixels)
       scroll.verticalBar.value = Math.min(
         1,
@@ -653,7 +653,14 @@ export async function createPanelScene(
     }
     for (const block of rich) block.focus(block.id === id);
     const block = rich.find((block) => block.id === id);
-    if (block) reveal(block.root);
+    if (block)
+      reveal(
+        block.root,
+        content.id === "manual" &&
+          !!content.gallery?.detail.some(
+            (item) => item.id === id && item.kind === "text" && item.heading,
+          ),
+      );
   }
   function update(next: PanelContent) {
     const keepFields =

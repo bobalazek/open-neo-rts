@@ -26,6 +26,7 @@ import {
   saveStore,
   saveThumbnail,
 } from "../load-game";
+import { createMatchGuidance } from "../onboarding/match";
 import { postMatchScreen } from "../post-match";
 import { savedReplay } from "../replays/files";
 import { replayStore } from "../replays/storage";
@@ -80,6 +81,7 @@ export function createNormalSession(
   let nativeHud: ReturnType<typeof mountNativeMatchHud> | undefined;
   let interaction: ReturnType<typeof bindWorldInteraction> | undefined;
   let menu: ReturnType<typeof createInGameMenu> | undefined;
+  let guidance: ReturnType<typeof createMatchGuidance> | undefined;
   let preferences = readDeviceSettings();
   let bindings = readBindings();
   window.addEventListener(
@@ -253,6 +255,8 @@ export function createNormalSession(
     menu?.update();
     hud?.update(state);
     minimap?.update(state.snapshot);
+    guidance?.update(state.snapshot, !state.paused && !busy && !menu?.isOpen());
+    nativeHud?.update();
     void presentation?.accept(state.snapshot, clock.now(performance.now())).catch(failed);
     if (state.snapshot.victory?.result && !resultScreen) {
       hud?.cancel();
@@ -379,7 +383,11 @@ export function createNormalSession(
           if (!entry) throw new Error(`Model unavailable: ${id}`);
           return resolveEntityModel(entry, variant);
         },
-        () => hud?.update(),
+        () => {
+          hud?.update();
+          if (latest) guidance?.update(latest.snapshot, false);
+          nativeHud?.update();
+        },
       );
       presentation.setForceColor(0, "#d8443a");
       presentation.setForceColor(1, "#3c93d9");
@@ -567,6 +575,20 @@ export function createNormalSession(
           order: hud.orderPoint,
           armAttackMove: hud.armAttackMove,
           bindings: () => bindings,
+        },
+        signal.signal,
+      );
+      guidance = createMatchGuidance(
+        root,
+        {
+          force: 0,
+          definitions: content.catalog.definitions,
+          selection: activePresentation.selection,
+          manual: (definition) => {
+            hud?.cancel();
+            void menu?.openManual(definition);
+          },
+          present: () => nativeHud?.update(),
         },
         signal.signal,
       );

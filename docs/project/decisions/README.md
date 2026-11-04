@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-04 — Contextual guidance](./2026-11-04-contextual-guidance.md) — Once-per-browser-profile hints, native HUD help, contextual manual links and implemented concept/control pages.
+
 - [2026-11-04 — Native Field Manual](./2026-11-04-native-field-manual.md) — Search compiled roster facts and inspect original models from Home or the paused match, through the existing native panel system.
 
 - [2026-11-04 — First-playable combat sound library](./2026-11-04-first-playable-combat-library.md) — Original fire, impact and destruction signatures for the four remaining armed first-playable definitions, through existing routing.
