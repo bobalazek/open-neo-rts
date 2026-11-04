@@ -42,6 +42,11 @@ focus and Escape while its separate canvas leaves the world renderer intact.
 Save-before-leave, restart and load decisions use that same panel vocabulary in
 a separate modal, preserving the parent pane and original thumbnail source.
 
+Device camera preferences extend Settings with the existing framed percentage
+choice and square checkbox: Mouse camera sensitivity and Invert drag rotation.
+Permanent help distinguishes mouse behavior from keyboard/edge pan speed.
+Preview, Apply and Back preserve the shared saved-state safety interaction.
+
 The device-local Keyboard controls editor extends that shared native panel with
 category, action and primary/alternate choices, staged key capture and explicit
 conflict feedback. Applied bindings update the running match's captions while
@@ -155,6 +160,7 @@ Pending route editing follows the WAYPOINTS EXTENSION in
 - Native Home actions, original vector lettering and an authored model display.
 - Native setup fields, compact Force rows and an authored terrain preview.
 - Native content-sized Settings and pause panes over an intact match renderer.
+- Native device camera preferences with separate mouse sensitivity, drag inversion and saved-state recovery.
 - Native staged keyboard bindings with explicit conflicts and live match captions.
 - Native Audio preview and testing with contextual help and explicit save/cancel recovery.
 - Native save-before-replacement decisions with explicit cancellation and recovery.
@@ -569,10 +575,22 @@ the text leaves space for that disclosure mark.
   or simulation edits occur. Shared definition/model checks gate saving, while
   full asset/provenance/audio/glTF conformance, exact formatter parity, new-file
   templates, multi-file creation, draft playtests and asset editing remain open.
-- **Settings preview and feedback:** quality, UI scale, camera speed, edge scroll
-  and reduced motion keep existing validation and storage. Preview applies live;
-  Apply saves, Defaults previews defaults and Back/cancel restores saved values.
-  Status is warm metal, errors light coral; empty notices reserve no extra block.
+- **Settings preview and feedback:** quality, UI scale, keyboard/edge camera pan
+  speed, mouse sensitivity, drag inversion, edge scroll and reduced motion use the
+  shared native fields, validation and device storage. Mouse camera sensitivity
+  reuses the 50%, 75%, 100%, 150% and 200% choice; it scales wheel zoom,
+  right-drag panning and middle-drag rotation independently of keyboard/edge speed
+  and programmatic zoom. Invert drag rotation reuses the square checkbox and
+  reverses horizontal middle-drag rotation only. Permanent descriptions remain
+  beside fields and connect through semantic `aria-describedby`; labels, keyboard
+  focus and the HTML graphics fallback retain the shared panel behavior.
+  Preview applies live; Apply saves, Defaults previews defaults and Back/cancel
+  restores saved values. Failed Apply restores the saved preview while leaving
+  edited fields available for retry. Version-one device preferences migrate to
+  version two with existing choices intact, 100% mouse sensitivity and inversion
+  off. Status is warm metal, errors light coral; empty notices reserve no extra
+  block. The controls retain the shared two-column desktop/one-column narrow
+  layout, fixed Back and scrolling body actions; no new tokens or motion apply.
 - **Audio controls:** Settings from Home and a match share Master plus Music,
   Effects, Unit voices, Announcer, Interface and Ambience choices and integer
   0–100% previews. Test sound plays through the selected channel; Master uses

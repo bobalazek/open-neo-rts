@@ -10,18 +10,22 @@ export const DEVICE_SETTINGS_KEY = "open-neo-rts.settings.v1";
 export const UI_SCALES = [75, 100, 125, 150] as const;
 export const CAMERA_SPEEDS = [50, 75, 100, 150, 200] as const;
 export interface DeviceSettings {
-  format: 1;
+  format: 2;
   quality: GraphicsQuality;
   uiScale: number;
   cameraSpeed: number;
+  mouseSensitivity: number;
+  invertDragRotate: boolean;
   edgeScroll: boolean;
   reducedMotion: boolean;
 }
 export const defaultDeviceSettings = (): DeviceSettings => ({
-  format: 1,
+  format: 2,
   quality: "medium",
   uiScale: 100,
   cameraSpeed: 100,
+  mouseSensitivity: 100,
+  invertDragRotate: false,
   edgeScroll: true,
   reducedMotion: false,
 });
@@ -35,35 +39,45 @@ export function validateDeviceSettings(value: unknown): DeviceSettings {
   )
     throw new Error("Invalid device settings");
   const fields = Object.getOwnPropertyDescriptors(value);
+  const legacy = fields.format?.value === 1;
   if (
-    Reflect.ownKeys(value).length !== 6 ||
+    Reflect.ownKeys(value).length !== (legacy ? 6 : 8) ||
     Object.keys(fields).sort().join(",") !==
-      "cameraSpeed,edgeScroll,format,quality,reducedMotion,uiScale" ||
+      (legacy
+        ? "cameraSpeed,edgeScroll,format,quality,reducedMotion,uiScale"
+        : "cameraSpeed,edgeScroll,format,invertDragRotate,mouseSensitivity,quality,reducedMotion,uiScale") ||
     Object.values(fields).some((field) => !("value" in field))
   )
     throw new Error("Invalid device settings fields");
   const input = Object.fromEntries(
     Object.entries(fields).map(([key, field]) => [key, field.value]),
   ) as Record<string, unknown>;
+  const mouseSensitivity = legacy ? 100 : input.mouseSensitivity;
+  const invertDragRotate = legacy ? false : input.invertDragRotate;
   const quality = (["low", "medium", "high", "ultra"] as const).find(
     (quality) => quality === input.quality,
   );
   if (
-    input.format !== 1 ||
+    (input.format !== 1 && input.format !== 2) ||
     !quality ||
     typeof input.uiScale !== "number" ||
     typeof input.cameraSpeed !== "number" ||
     !UI_SCALES.some((scale) => scale === input.uiScale) ||
     !CAMERA_SPEEDS.some((speed) => speed === input.cameraSpeed) ||
+    typeof mouseSensitivity !== "number" ||
+    !CAMERA_SPEEDS.some((speed) => speed === mouseSensitivity) ||
+    typeof invertDragRotate !== "boolean" ||
     typeof input.edgeScroll !== "boolean" ||
     typeof input.reducedMotion !== "boolean"
   )
     throw new Error("Invalid device settings values");
   return {
-    format: 1,
+    format: 2,
     quality,
     uiScale: input.uiScale,
     cameraSpeed: input.cameraSpeed,
+    mouseSensitivity,
+    invertDragRotate,
     edgeScroll: input.edgeScroll,
     reducedMotion: input.reducedMotion,
   };
@@ -94,7 +108,7 @@ export function settingsScreen(
   canvas?: HTMLCanvasElement,
 ) {
   let saved = readDeviceSettings();
-  root.innerHTML = `<section class="settings-screen"><header><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.settings.title")}</h1></header><form><label>${text("ui.settings.quality")}<select name="quality" title="${text("ui.settings.quality-help")}">${["low", "medium", "high", "ultra"].map((quality) => `<option value="${quality}">${text(`ui.settings.${quality}` as "ui.settings.low")}</option>`).join("")}</select><small>${text("ui.settings.quality-help")}</small></label><label>${text("ui.settings.scale")}<select name="uiScale" title="${text("ui.settings.scale-help")}">${UI_SCALES.map((scale) => `<option value="${scale}">${scale}%</option>`).join("")}</select><small>${text("ui.settings.scale-help")}</small></label><label>${text("ui.settings.camera")}<select name="cameraSpeed" title="${text("ui.settings.camera-help")}">${CAMERA_SPEEDS.map((speed) => `<option value="${speed}">${speed}%</option>`).join("")}</select><small>${text("ui.settings.camera-help")}</small></label><label class="settings-check"><input type="checkbox" name="edgeScroll" />${text("ui.settings.edge")}<small>${text("ui.settings.edge-help")}</small></label><label class="settings-check"><input type="checkbox" name="reducedMotion" />${text("ui.settings.motion")}<small>${text("ui.settings.motion-help")}</small></label><p role="status" aria-live="polite" data-status></p><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-reset>${text("ui.settings.defaults")}</button><button type="submit" class="primary">${text("ui.settings.apply")}</button></div></form></section>`;
+  root.innerHTML = `<section class="settings-screen"><header><button type="button" data-back>${text("ui.common.back")}</button><h1>${text("ui.settings.title")}</h1></header><form><label>${text("ui.settings.quality")}<select name="quality" title="${text("ui.settings.quality-help")}">${["low", "medium", "high", "ultra"].map((quality) => `<option value="${quality}">${text(`ui.settings.${quality}` as "ui.settings.low")}</option>`).join("")}</select><small>${text("ui.settings.quality-help")}</small></label><label>${text("ui.settings.scale")}<select name="uiScale" title="${text("ui.settings.scale-help")}">${UI_SCALES.map((scale) => `<option value="${scale}">${scale}%</option>`).join("")}</select><small>${text("ui.settings.scale-help")}</small></label><label>${text("ui.settings.camera")}<select name="cameraSpeed" title="${text("ui.settings.camera-help")}">${CAMERA_SPEEDS.map((speed) => `<option value="${speed}">${speed}%</option>`).join("")}</select><small>${text("ui.settings.camera-help")}</small></label><label>${text("ui.settings.mouse")}<select name="mouseSensitivity" title="${text("ui.settings.mouse-help")}">${CAMERA_SPEEDS.map((speed) => `<option value="${speed}">${speed}%</option>`).join("")}</select><small>${text("ui.settings.mouse-help")}</small></label><label class="settings-check"><input type="checkbox" name="invertDragRotate" />${text("ui.settings.invert-rotate")}<small>${text("ui.settings.invert-rotate-help")}</small></label><label class="settings-check"><input type="checkbox" name="edgeScroll" />${text("ui.settings.edge")}<small>${text("ui.settings.edge-help")}</small></label><label class="settings-check"><input type="checkbox" name="reducedMotion" />${text("ui.settings.motion")}<small>${text("ui.settings.motion-help")}</small></label><p role="status" aria-live="polite" data-status></p><p role="alert" data-error></p><div class="setup-actions"><button type="button" data-reset>${text("ui.settings.defaults")}</button><button type="submit" class="primary">${text("ui.settings.apply")}</button></div></form></section>`;
   const form = root.querySelector("form");
   const error = root.querySelector("[data-error]");
   const status = root.querySelector("[data-status]");
@@ -141,17 +155,19 @@ export function settingsScreen(
   const field = (name: string) =>
     form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   const fill = (value: DeviceSettings) => {
-    for (const name of ["quality", "uiScale", "cameraSpeed"] as const)
+    for (const name of ["quality", "uiScale", "cameraSpeed", "mouseSensitivity"] as const)
       field(name).value = String(value[name]);
-    for (const name of ["edgeScroll", "reducedMotion"] as const)
+    for (const name of ["edgeScroll", "reducedMotion", "invertDragRotate"] as const)
       (field(name) as HTMLInputElement).checked = value[name];
   };
   const read = () =>
     validateDeviceSettings({
-      format: 1,
+      format: 2,
       quality: field("quality").value,
       uiScale: Number(field("uiScale").value),
       cameraSpeed: Number(field("cameraSpeed").value),
+      mouseSensitivity: Number(field("mouseSensitivity").value),
+      invertDragRotate: (field("invertDragRotate") as HTMLInputElement).checked,
       edgeScroll: (field("edgeScroll") as HTMLInputElement).checked,
       reducedMotion: (field("reducedMotion") as HTMLInputElement).checked,
     });
@@ -159,6 +175,8 @@ export function settingsScreen(
     ["quality", "ui.settings.quality"],
     ["uiScale", "ui.settings.scale"],
     ["cameraSpeed", "ui.settings.camera"],
+    ["mouseSensitivity", "ui.settings.mouse"],
+    ["invertDragRotate", "ui.settings.invert-rotate"],
     ["edgeScroll", "ui.settings.edge"],
     ["reducedMotion", "ui.settings.motion"],
   ] as const) {

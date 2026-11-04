@@ -58,6 +58,12 @@ source.
 - Settings use the same preferences, validation and storage from Home and in a
   match. Changes preview immediately; Apply persists them, while Back or cancel
   restores the saved preferences. Graphics failure leaves semantic HTML usable.
+  Mouse camera sensitivity offers 50%, 75%, 100%, 150% and 200% for wheel zoom,
+  right-drag panning and middle-drag rotation; keyboard/edge pan speed and
+  programmatic zoom remain separate. Invert drag rotation reverses only horizontal
+  middle-drag rotation. The version-two device payload reads version-one profiles
+  with 100% sensitivity and inversion off while preserving their existing choices.
+  Failed Apply restores the saved preview and retains the edited fields for retry.
 - Settings → Audio opens the same native pane from Home and a match. One
   application-owned Babylon Audio V2 mixer activates lazily through a user
   gesture and survives navigation, with Master plus Music, Effects, Unit voices,

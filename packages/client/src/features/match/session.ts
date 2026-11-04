@@ -148,6 +148,8 @@ export function createNormalSession(
     if (next.quality !== preferences.quality) renderer?.setQuality(next.quality);
     renderer?.camera.setControls({
       panSpeed: next.cameraSpeed / 100,
+      mouseSensitivity: next.mouseSensitivity / 100,
+      invertDragRotate: next.invertDragRotate,
       edgeScroll: next.edgeScroll,
       reducedMotion: next.reducedMotion,
     });

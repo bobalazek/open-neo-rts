@@ -303,6 +303,8 @@ export function replayViewer(
     canvas.hidden = false;
     renderer.camera.setControls({
       panSpeed: settings.cameraSpeed / 100,
+      mouseSensitivity: settings.mouseSensitivity / 100,
+      invertDragRotate: settings.invertDragRotate,
       edgeScroll: settings.edgeScroll,
       reducedMotion: settings.reducedMotion,
     });
