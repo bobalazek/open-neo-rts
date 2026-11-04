@@ -205,6 +205,7 @@ test("native pause canvas saves a match, previews settings and resumes with moda
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   const gui = menu.locator(".native-menu-canvas");
   await expect(gui).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
   const tick = await world.getAttribute("data-tick");
   await clickNative(page, "Normal (1×)");
   await page.keyboard.press("Escape");

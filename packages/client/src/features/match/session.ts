@@ -787,21 +787,20 @@ export function createNormalSession(
       );
       canvas.setAttribute("aria-label", text("ui.match.map-label"));
       canvas.tabIndex = 0;
+      if (!persistence?.saved) await match.pause(false);
+      if (disposed) return;
       ready = true;
-      canvas.dataset.session = "ready";
       canvas.dataset.mode = "controlled";
       update(latest);
-      if (!persistence?.saved) await match.pause(false);
       const auto = () => {
         if (disposed || saving || latest?.snapshot.victory?.result) return;
-        void persist("auto", text("ui.saves.auto")).catch(() => {
+        return persist("auto", text("ui.saves.auto")).catch(() => {
           if (!disposed) label("[data-save-notice]", text("ui.saves.auto-failed"));
         });
       };
       // shortcut: three wall-clock slots every three minutes; expose cadence with future save preferences.
       autosave = setInterval(auto, 3 * 60 * 1000);
       if (!persistence?.saved) auto();
-      if (!disposed) canvas.focus({ preventScroll: true });
     } catch (error) {
       if (!disposed) {
         release();

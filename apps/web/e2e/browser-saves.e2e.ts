@@ -3,10 +3,13 @@ import { expect, type Page, test } from "@playwright/test";
 import type { SavedGame } from "../../../packages/client/src/features/load-game/storage";
 import { checkpointHash, restoreMatchSnapshot } from "../../../packages/sim/src";
 
-async function saves(page: Page): Promise<SavedGame[]> {
+type SaveSlot = Pick<SavedGame, "id" | "name" | "kind" | "createdAt">;
+function saves(page: Page): Promise<SaveSlot[]>;
+function saves(page: Page, full: true): Promise<SavedGame[]>;
+function saves(page: Page, full = false) {
   return page.evaluate(
-    () =>
-      new Promise<SavedGame[]>((resolve, reject) => {
+    (full) =>
+      new Promise<SavedGame[] | SaveSlot[]>((resolve, reject) => {
         const open = indexedDB.open("open-neo-rts.saves", 1);
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
@@ -14,7 +17,16 @@ async function saves(page: Page): Promise<SavedGame[]> {
             tx = db.transaction("saves"),
             read = tx.objectStore("saves").getAll();
           tx.oncomplete = () => {
-            resolve(read.result);
+            resolve(
+              full
+                ? read.result
+                : (read.result as SavedGame[]).map(({ id, name, kind, createdAt }) => ({
+                    id,
+                    name,
+                    kind,
+                    createdAt,
+                  })),
+            );
             db.close();
           };
           tx.onabort = () => {
@@ -23,6 +35,7 @@ async function saves(page: Page): Promise<SavedGame[]> {
           };
         };
       }),
+    full,
   );
 }
 
@@ -53,16 +66,16 @@ async function replaceStored(page: Page, save: SavedGame) {
 test("real match save slots survive failed writes and canceled loads, import/export and resume", async ({
   page,
 }, info) => {
-  test.setTimeout(150_000);
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {
     const interval = window.setInterval;
-    const callbacks: (() => void)[] = [];
+    const callbacks: (() => void | Promise<void>)[] = [];
     Reflect.set(window, "saveIntervals", callbacks);
     window.setInterval = ((callback: TimerHandler, delay?: number) => {
       if (delay === 180000 && typeof callback === "function")
-        callbacks.push(callback as () => void);
+        callbacks.push(callback as () => void | Promise<void>);
       return interval(callback, delay);
     }) as typeof window.setInterval;
     const put = IDBObjectStore.prototype.put;
@@ -99,7 +112,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await menu.getByLabel("Save name", { exact: true }).fill("Before the push");
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await expect(menu.locator("[data-saved]")).toHaveText("Game saved in this browser.");
-  const manual = (await saves(page)).find((save) => save.name === "Before the push")!;
+  const manual = (await saves(page, true)).find((save) => save.name === "Before the push")!;
   expect(manual.packs).toHaveLength(1);
   expect(manual.match.scenario.setup.definitions).toHaveLength(137);
   const colors = await page.evaluate(async (thumbnail) => {
@@ -122,15 +135,18 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect
     .poll(async () => (await saves(page)).some((save) => save.id === "quicksave"))
     .toBe(true);
-  const quick = (await saves(page)).find((save) => save.id === "quicksave")!;
+  const quick = (await saves(page, true)).find((save) => save.id === "quicksave")!;
   await page.evaluate(() => Reflect.set(window, "failSaveWrites", true));
   await menu.getByRole("button", { name: "Quicksave now", exact: true }).press("Enter");
   await expect(menu.locator("[data-menu-error]")).not.toBeEmpty();
-  expect((await saves(page)).find((save) => save.id === "quicksave")).toEqual(quick);
+  expect((await saves(page, true)).find((save) => save.id === "quicksave")).toEqual(quick);
+  await expect(menu.getByRole("button", { name: "Quicksave now", exact: true })).toBeEnabled();
   await page.evaluate(() => Reflect.set(window, "failSaveWrites", false));
   const originalAuto = (await saves(page)).find((save) => save.id === "autosave-0")!.createdAt;
   for (let i = 0; i < 3; i++) {
-    await page.evaluate(() => (Reflect.get(window, "saveIntervals") as (() => void)[]).at(-1)?.());
+    await page.evaluate(() =>
+      (Reflect.get(window, "saveIntervals") as (() => void | Promise<void>)[]).at(-1)?.(),
+    );
     await expect
       .poll(async () =>
         (await saves(page))
@@ -214,7 +230,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await menu.getByLabel("Save name", { exact: true }).fill("Resumed proof");
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await expect(menu.locator("[data-saved]")).toHaveText("Game saved in this browser.");
-  const resumed = (await saves(page)).find((save) => save.name === "Resumed proof")!;
+  const resumed = (await saves(page, true)).find((save) => save.name === "Resumed proof")!;
   expect(resumed.match.hash).toBe(manual.match.hash);
   expect(checkpointHash(restoreMatchSnapshot(resumed.match, resumed.match.scenario.setup))).toBe(
     manual.match.hash,

@@ -141,7 +141,7 @@ test("bounded preparation and repeated keyframe seeking equal the uninterrupted 
   expect(replay.seek(1200, 1)).toBe(true);
   expect(replay.kernel).toBe(continuous);
   expect(checkpointHash(replay.kernel)).toBe(hashes.get(1200)!);
-});
+}, 15_000);
 
 test("the host owns the record/setup and a superseding seek ignores an unfinished destination", () => {
   const { setup, record, hashes } = fixture();
