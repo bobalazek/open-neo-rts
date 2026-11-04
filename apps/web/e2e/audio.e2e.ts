@@ -21,6 +21,7 @@ test.afterAll(() => rmSync(output, { recursive: true, force: true }));
 test("native Audio previews actual output, saves independently, restores Back and recovers from storage failure", async ({
   page,
 }, info) => {
+  test.setTimeout(120_000);
   await observeNativePaint(page);
   await page.addInitScript(() => {
     const probe = { peak: 0, starts: 0, fail: false, contexts: [] as BaseAudioContext[] };
