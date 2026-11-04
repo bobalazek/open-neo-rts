@@ -22,7 +22,6 @@
         "@open-neo-rts/ai": "workspace:*",
         "@open-neo-rts/content": "workspace:*",
         "@open-neo-rts/sim": "workspace:*",
-        "gltf-validator": "2.0.0-dev.3.10",
       },
     },
     "apps/server": {
@@ -63,6 +62,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@open-neo-rts/deterministic": "workspace:*",
+        "gltf-validator": "2.0.0-dev.3.10",
       },
     },
     "packages/deterministic": {

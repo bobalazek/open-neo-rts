@@ -4,13 +4,15 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./asset-validation": "./src/assets/validate-glb.ts"
   },
   "scripts": {
     "typecheck": "tsc && tsc -p tsconfig.test.json",
     "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {
-    "@open-neo-rts/deterministic": "workspace:*"
+    "@open-neo-rts/deterministic": "workspace:*",
+    "gltf-validator": "2.0.0-dev.3.10"
   }
 }

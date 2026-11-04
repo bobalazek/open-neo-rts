@@ -4,6 +4,8 @@
 
 - [2026-11-04 — World waypoint editing](./2026-11-04-world-waypoint-editing.md) — Drag or remove pending route markers through existing queue commands, preserving native controls and camera gestures.
 
+- [2026-11-04 — Shared asset provenance](./2026-11-04-shared-asset-provenance.md) — CLI and browser save checks use the same export coverage and author/source metadata validation.
+
 - [2026-11-04 — Visible public construction effects](./2026-11-04-public-construction-effects.md) — Public tool poses and existing original work audio for currently visible builder/site pairs, without economic details.
 
 - [Browser definition authoring](./2026-11-04-browser-definition-authoring.md)

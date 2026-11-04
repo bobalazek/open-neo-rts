@@ -1,10 +1,11 @@
 import {
+  checkAssetProvenance,
+  listAssetFiles,
   type PackInput,
   PackResolutionError,
-  parseGlb,
   resolvePacks,
-  validateModel,
 } from "@open-neo-rts/content";
+import { validateAssetGlb } from "@open-neo-rts/content/asset-validation";
 import { compileGameplayCatalog } from "@open-neo-rts/sim";
 
 export interface EditorFile {
@@ -64,16 +65,17 @@ export async function readEditorPack(
   const json = new Map<string, unknown>();
   const layers = new Map<string, Uint8Array>();
   let size = 0;
+  const exported = new Set(listAssetFiles([...files.keys()]).exported);
+  const runtime = [...files].filter(([path]) => exported.has(path));
   for (const [path, file] of files) {
     safeEditorPath(path);
-    if (path.includes("/source/")) continue;
+    if (!exported.has(path)) continue;
     size += file.size;
     if (size > 256 * 1024 * 1024) throw new Error("Pack runtime files exceed 256 MiB");
     if (path.endsWith(".json")) {
       if (file.size > 2 * 1024 * 1024) throw new Error("Pack JSON exceeds 2 MiB");
     }
   }
-  const runtime = [...files].filter(([path]) => !path.includes("/source/"));
   for (const [path, value] of await readBatches(
     runtime.filter(([path]) => path.endsWith(".json")),
     async ([path, file]) =>
@@ -134,7 +136,7 @@ export async function checkDefinitionDraft(
   path: string,
   draft: unknown,
 ) {
-  // shortcut: full binary/provenance/audio conformance parity remains 2-38b2; these are definition/model checks.
+  // shortcut: runtime audio, source freshness and formatting parity remain 2-38b2.
   if (new TextEncoder().encode(JSON.stringify(draft)).byteLength > 2 * 1024 * 1024)
     throw new Error("Definition JSON exceeds 2 MiB");
   const inputs = packs.map((pack) => ({ ...pack.input, json: new Map(pack.input.json) }));
@@ -144,14 +146,14 @@ export async function checkDefinitionDraft(
   target.json.set(path, draft);
   const bytes = new Map<string, Uint8Array>();
   let total = 0;
-  const runtime = packs.flatMap((pack) =>
-    [...pack.files]
+  const runtime = packs.flatMap((pack) => {
+    const exported = new Set(listAssetFiles(pack.input.files).exported);
+    return [...pack.files]
       .filter(
-        ([file]) =>
-          !file.endsWith(".json") && !file.includes("/source/") && !file.endsWith(".gitkeep"),
+        ([file]) => !file.endsWith(".json") && exported.has(file) && !file.endsWith(".gitkeep"),
       )
-      .map(([file, source]) => [`${pack.input.id}/${file}`, source] as const),
-  );
+      .map(([file, source]) => [`${pack.input.id}/${file}`, source] as const);
+  });
   for (const [, source] of runtime) {
     total += source.size;
     if (total > 256 * 1024 * 1024) throw new Error("Combined runtime files exceed 256 MiB");
@@ -164,6 +166,31 @@ export async function checkDefinitionDraft(
   try {
     const catalog = resolvePacks(inputs, "0.1.0", { bytes });
     const issues = [...catalog.issues];
+    for (const input of inputs)
+      issues.push(
+        ...checkAssetProvenance(input.files, input.json).issues.map((issue) => ({
+          ...issue,
+          file: `${input.id}/${issue.file}`,
+        })),
+      );
+    const models = new Set(catalog.models.map((model) => `${model.pack}/${model.file}`));
+    for (const [file, data] of bytes)
+      if (file.endsWith(".glb") && !models.has(file))
+        issues.push(
+          ...(await validateAssetGlb(data, file)).map((issue) => ({
+            ...issue,
+            file,
+          })),
+        );
+    for (const model of catalog.models) {
+      const file = `${model.pack}/${model.file}`;
+      const data = bytes.get(file);
+      if (!data) issues.push({ level: "error", file, message: "Model bytes are unavailable" });
+      else
+        issues.push(
+          ...(await validateAssetGlb(data, file, model)).map((issue) => ({ ...issue, file })),
+        );
+    }
     try {
       compileGameplayCatalog(catalog);
     } catch (error) {
@@ -172,20 +199,6 @@ export async function checkDefinitionDraft(
         file: path,
         message: error instanceof Error ? error.message : "Gameplay compilation failed",
       });
-    }
-    for (const model of catalog.models) {
-      const data = bytes.get(`${model.pack}/${model.file}`);
-      try {
-        if (!data) throw new Error("Model bytes are unavailable");
-        for (const issue of validateModel(parseGlb(data), model.kind, model.requires))
-          issues.push({ ...issue, file: `${model.pack}/${model.file}` });
-      } catch (error) {
-        issues.push({
-          level: "error",
-          file: model.file,
-          message: error instanceof Error ? error.message : "Model check failed",
-        });
-      }
     }
     return issues;
   } catch (error) {
