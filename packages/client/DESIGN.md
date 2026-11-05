@@ -78,8 +78,12 @@ at the right. Semantic controls own keyboard behavior and mirror focus into the
 native interface. Verified combat intervals and public Force outcomes extend the
 transport with a compact marker row and previous/next navigation, filtered by the
 current view. This records the first playable Eastern Collective local mirror,
-including verified portable frames and explicit map identity. Recorded cameras,
-analytics and live spectating remain deferred. The timeline explicitly
+including verified portable frames and explicit map identity. Optional native
+statistics extend the viewer below player observations: Economy and Military
+plot permitted sampled history, Production shows original queued-unit thumbnails
+and real progress, and Orders leads with accepted-order APM. Existing graphite
+frames, compact Arial, warm-metal actions and semantic controls carry this
+extension. Recorded cameras and delayed live spectating remain deferred. The timeline explicitly
 participates in sequential keyboard focus after speed and vision, retaining its
 native focus frame.
 
@@ -152,6 +156,8 @@ evidence is `../render/src/scene/menu.ts`, `src/features/main-menu/index.ts`,
 `src/features/match/native-hud.ts`
 and `src/features/match/`, `src/features/load-game/`, `src/features/post-match/`,
 `src/features/replays/`, `../render/src/scene/replay-hud.ts`,
+`src/features/replays/analytics.ts`, `../render/src/scene/replay-chart.ts`,
+`../render/src/scene/replay-production.ts`,
 `src/features/field-manual/`, `src/features/onboarding/`,
 `src/features/settings/guidance-screen.ts` and `src/app/shell.css`. Field Manual's local direction
 is the emitted comment in `src/features/field-manual/index.ts`; it extends the
@@ -204,6 +210,7 @@ Pending route editing follows the WAYPOINTS EXTENSION in
 - Native results with original plots and complete scrollable match records.
 - Native loading with actual stage progress, cancellation and explicit recovery.
 - Native local Replay library and read-only playback with synchronized keyboard focus.
+- Optional native replay statistics with permitted history plots, original production thumbnails and Order APM.
 - Native Field Manual with original icons, compiled facts and isolated model inspection.
 - Optional native HUD region labels and one observed-context hint with a direct reference link.
 - Native model-first content inspection with real presentation controls and expandable project checks.
@@ -269,6 +276,8 @@ annotation sizes remain fixed. The match scale is
 Replay playback reuses compact Arial: map title at 14px, current time and metric
 values at 13px, and Force labels, action values and tooltip copy at 12px. Larger
 numeric values compact visually while hover descriptions retain their exact value.
+Replay statistics retain that compact ramp for axes, legends, queue headings,
+tabs and metric choices; sampled-value tables retain exact values semantically.
 
 Home uses Arial/sans-serif for readable supporting type and native actions. The
 frontmatter records base sizes; the renderer multiplies them by its bounded UI
@@ -425,6 +434,11 @@ range, previous/next icons sit beside the clock, and the transport grows from
 96px to 116px times replay scale. Nearby markers share a pointer cluster; the
 ordinary playback row moves below it. An empty event view retains the compact
 transport without native event controls.
+The optional statistics pane sits below player observations and above transport,
+keeping the battlefield and circular map available. Four equal framed tabs
+precede the chart metric choice or scrolling Production/Orders body. Production
+wraps original queue thumbnails to the available width and scrolls all queues;
+the pane's bounded height follows the remaining viewport space.
 
 Field Manual alone splits the gallery's available column space 32%/68%, after
 the shared 32px scaled gap, at the same 760px scaled inner-width threshold.
@@ -836,6 +850,22 @@ the text leaves space for that disclosure mark.
   views retain their actual visibility/economic permissions. The right circular
   minimap preserves complete-map geometry, pan, drag and zoom, with orders and
   pings disabled. Original models, fog, effects and work poses follow replay state.
+- **Replay statistics:** G and the original graph pictogram toggle a nonmodal
+  pane below player observations. Economy and Military draw directly in Babylon
+  GUI's Canvas, reusing post-match history and income calculation, with readable
+  Force legends, line patterns and semantic sampled-value tables. Income excludes
+  opening stock and refunds; army recruitment values remain separate by resource.
+  Production groups original queued-unit thumbnails by producer, draws actual
+  progress and reveals name, work state and percentage contextually. Its complete
+  queues scroll by pointer and keyboard. Orders puts accepted-order APM before
+  totals and active time, identifying human and bot controllers separately.
+  Square graphite tabs and metric choices reuse warm selected wells and ivory
+  synchronized focus. Semantic tabs, selects and table/queue regions retain
+  keyboard ownership, including arrows, Page Up/Down and Home/End scrolling.
+  Only the verified settled terminal-replay host supplies opted-in permitted
+  details; closing opts out and seek/vision changes discard stale analysis.
+  Ordinary live-seat detail publication remains final-only. Behavior follows
+  `../../docs/project/decisions/2026-11-05-replay-analytics.md`.
 - **Replay loading and failure:** a separate native dialog shows actual terminal
   verification progress with Cancel. Leaving cancels its worker; late responses
   cannot revive the screen. Failure presents the actual alert and a Replays action

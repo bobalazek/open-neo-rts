@@ -161,3 +161,12 @@ Enter produced no second confirmation. A held outgoing pause-restoration request
 reproduced this interval; waiting for enabled Surrender before the next Enter
 reached the real Defeat result. These are causal harness waits, not longer sleeps,
 weaker assertions or changes to gameplay/menu behavior.
+
+The [analytics candidate](https://github.com/bobalazek/open-neo-rts/actions/runs/41954242486)
+passed all 114 Chrome journeys and repository verification. WebKit passed 89,
+skipped the existing 24 and failed its first native Resume click. The trace still
+showed Pausing and disabled Resume when the pointer click started; the menu later
+reached Paused, after that click had correctly been ignored. A menu's `data-panel`
+and painted label establish presentation, not completion of its worker pause.
+Wait for enabled Resume before the desktop and narrow pointer checks; retain
+the actual native click, menu dismissal and advancing-tick assertions.

@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import type { MatchRecord, SeatSnapshot } from "../../../packages/sim/src";
-import { nativeTextPoint, observeNativePaint } from "./native-paint";
+import { clickNativeText, nativeFrame, nativeTextPoint, observeNativePaint } from "./native-paint";
 
 test("real paid production reaches the frozen final totals on desktop and narrow layouts", async ({
   page,
@@ -56,6 +56,9 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeEnabled();
   const train = page.locator('[data-definition="core.unit:eastern-collective/field-technician"]');
   await expect(train).toBeEnabled();
+  const technicianIcon = await train
+    .locator("img")
+    .evaluate((image) => (image as HTMLImageElement).src);
   await train.press("Enter");
   await expect(page.locator("[data-credits]")).toHaveText("Credits 4550");
   await expect(page.getByRole("button", { name: /Idle builders 3/ })).toBeVisible({
@@ -180,6 +183,57 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   await dialog.getByRole("tab", { name: "Economy", exact: true }).press("Enter");
   await page.screenshot({ path: info.outputPath("history-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  const queuedAt =
+    record.scenario.commands.find((command) => command.type === "production.enqueue")!.tick + 1;
+  await dialog.getByRole("button", { name: "Watch replay", exact: true }).press("Enter");
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "replay", { timeout: 60000 });
+  await page.locator("[data-timeline]").evaluate((element, tick) => {
+    (element as HTMLInputElement).value = String(tick);
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+  }, queuedAt);
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", String(queuedAt));
+  await page.locator("#game").focus();
+  await page.keyboard.press("g");
+  await expect(page.locator("[data-stat-values] tbody tr")).not.toHaveCount(0);
+  await page.locator("[data-stat-metric]").selectOption("credits");
+  await expect(
+    page
+      .locator("[data-stat-values] tbody tr")
+      .filter({ hasText: "Force 1" })
+      .last()
+      .locator("td")
+      .last(),
+  ).toHaveText("4550");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("replay-paid-stock-mobile.png") });
+  await clickNativeText(page, "Production");
+  const queue = page
+    .locator("[data-stat-values] tbody tr")
+    .filter({ hasText: "Force 1" })
+    .filter({ hasText: "Field Technician" });
+  await expect(queue).toHaveCount(1);
+  await expect(queue.locator("td").nth(2)).toHaveText("working");
+  await expect
+    .poll(() =>
+      page.evaluate((source) => {
+        const point = Reflect.get(window, "nativePaintImages").get(source);
+        return point && point.x > 0 && point.x < innerWidth && point.y > 200 && point.y < 600;
+      }, technicianIcon),
+    )
+    .toBe(true);
+  const thumbnail = await page.evaluate(
+    (source) => Reflect.get(window, "nativePaintImages").get(source) as { x: number; y: number },
+    technicianIcon,
+  );
+  await page.mouse.move(thumbnail.x, thumbnail.y);
+  await nativeTextPoint(
+    page,
+    `Field Technician · working · ${await queue.locator("td").last().textContent()}`,
+  );
+  await page.screenshot({ path: info.outputPath("replay-production-mobile.png") });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("replay-production-desktop.png") });
 });
 
 test("a terminal result arriving before a stale surrender resume rejection stays visible", async ({

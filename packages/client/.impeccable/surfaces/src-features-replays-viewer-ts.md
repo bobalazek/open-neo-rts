@@ -61,8 +61,67 @@ verdict, not whole-project approval.
 These are bounded checks, not a claim that the full browser-hosted candidate
 suite is green. Physical touch, physical IME, screen-reader user testing and
 maximum-size replay stress remain unqualified. Verified portable frames and
-explicit map identity are built; recorded cameras, analytics and delayed
+explicit map identity are built; recorded cameras and delayed
 spectating remain separate work, and the replay/spectator phase is not complete.
 The inherited world needs no new visual identity, raster, composition or quality
 bar. The existing `force-opponent` palette advisory remains advisory, not a
 palette expansion.
+
+## Optional replay statistics extension
+
+The analytics slice extends this same Operate surface and Graphite Command
+Stations. G and the original native graph pictogram toggle a nonmodal pane below
+player observations; battlefield, transport and circular minimap remain usable.
+Four equal framed tabs reuse graphite fields, warm-metal selected wells, compact
+Arial and ivory synchronized focus. No new identity, composition, palette, type
+system or assets accompany the extension.
+
+Economy and Military draw permitted resource/inventory history directly through
+Babylon GUI Canvas, with Force legends, alternating line patterns and complete
+semantic sampled-value tables. Metric choices reuse semantic selects and native
+controls. Shared post-match income math excludes opening stock and refunds;
+army values retain authored recruitment costs separately by resource. Production
+groups original queued-unit thumbnails by producer, wraps them to available
+width, draws real progress and supplies name, work state and percentage through
+contextual help. All queues remain reachable through pointer and keyboard
+scrolling. Orders presents accepted-order APM first, then secondary totals and
+active time, with human and bot controllers identified separately. Selection,
+camera and refused inputs do not inflate APM.
+
+Semantic tabs, metric selects and table/queue regions own keyboard behavior and
+mirror focus into native controls. Tabs retain their arrow-key navigation;
+scrolling regions support arrows, Page Up/Down and Home/End. Loading and empty
+states reflect actual data. Closing opts out of detail publication; seeking or
+changing vision clears stale analysis until the new permitted position arrives.
+Only a verified settled terminal-replay host supplies opted-in statistics, using
+the existing per-seat inspection permissions. The ordinary live-seat final-only
+detail gate, canonical sample history, simulation hashes and simulation version
+remain unchanged. See
+`../../../../docs/project/decisions/2026-11-05-replay-analytics.md`.
+
+Final browser presentation evidence is scoped to current stable Google Chrome
+and current Playwright WebKit at desktop and narrow widths. The corrected-font four-case rerun passed
+all four replay/paid-production journeys in
+`/tmp/neo-analytics-corrected-browser.log`. Its twelve actual captures cover Economy
+at desktop/narrow widths, Orders desktop, Production desktop/narrow and paid stock
+narrow in both browsers, preserved beside this brief:
+
+- `../review/analytics-economy-desktop-{chromium,webkit}.png`
+- `../review/analytics-economy-mobile-{chromium,webkit}.png`
+- `../review/analytics-orders-desktop-{chromium,webkit}.png`
+- `../review/replay-production-desktop-{chromium,webkit}.png`
+- `../review/replay-production-mobile-{chromium,webkit}.png`
+- `../review/replay-paid-stock-mobile-{chromium,webkit}.png`
+
+The documenter opened corrected Chrome narrow Economy and WebKit desktop
+Production captures; labels, producer title and contextual help use readable
+compact type. Independent cached-font and Canvas-text probes across
+1440→390→1440 resizing also passed in both browsers. Earlier passing captures
+with cached font sizing are superseded and do not establish the recorded type
+ramp. The scoped finish verdict resolved typography and documentation, reopening
+all twelve corrected captures with no visible regression from that batch. No palette
+detector rerun was performed; the inherited `force-opponent` advisory remains
+advisory.
+Recorded cameras, delayed live spectating, full replay/spectator phase acceptance,
+physical touch/IME, screen-reader user testing, maximum-size replay
+stress and hardware FPS remain open.

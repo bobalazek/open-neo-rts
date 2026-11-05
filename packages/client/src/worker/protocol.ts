@@ -3,6 +3,7 @@ import type {
   DebugOverlayData,
   DebugOverlayOptions,
   DebugSpawn,
+  ForceStatisticsSnapshot,
   MatchRecord,
   MatchSetup,
   MatchSnapshot,
@@ -449,6 +450,37 @@ function isStatisticsDetails(value: unknown, tick: number): boolean {
   return true;
 }
 
+/** Shape only; ordinary live replies separately require a terminal result for details. */
+export function isStatisticsSnapshot(
+  value: unknown,
+  tick: number,
+): value is ForceStatisticsSnapshot[] {
+  if (!Array.isArray(value) || value.length > 8) return false;
+  let previous = -1;
+  for (const entry of value) {
+    if (
+      !isRecord(entry) ||
+      !exact(
+        entry,
+        Object.hasOwn(entry, "details") ? ["force", "counters", "details"] : ["force", "counters"],
+      ) ||
+      !bounded(entry.force) ||
+      Number(entry.force) <= previous ||
+      !isRecord(entry.counters)
+    )
+      return false;
+    const counters = entry.counters;
+    if (
+      !exact(counters, STAT_COUNTERS) ||
+      !STAT_COUNTERS.every((key) => bounded(counters[key], 0xffffffff)) ||
+      (entry.details !== undefined && !isStatisticsDetails(entry.details, tick))
+    )
+      return false;
+    previous = Number(entry.force);
+  }
+  return true;
+}
+
 function isVictory(value: unknown, tick: number): boolean {
   if (
     !isRecord(value) ||
@@ -685,39 +717,15 @@ export function isWorkerReply(value: unknown): value is WorkerReply {
   if (snapshot.statistics !== undefined) {
     if (
       snapshot.mode !== "controlled" ||
-      !Array.isArray(snapshot.statistics) ||
-      snapshot.statistics.length > 8
+      !isStatisticsSnapshot(snapshot.statistics, Number(snapshot.tick))
     )
       return false;
-    let previous = -1;
     for (const entry of snapshot.statistics) {
       if (
-        !isRecord(entry) ||
-        !exact(
-          entry,
-          Object.hasOwn(entry, "details")
-            ? ["force", "counters", "details"]
-            : ["force", "counters"],
-        ) ||
-        !bounded(entry.force) ||
-        Number(entry.force) <= previous ||
-        !isRecord(entry.counters)
-      )
-        return false;
-      const counters = entry.counters;
-      if (
-        !exact(counters, STAT_COUNTERS) ||
-        !STAT_COUNTERS.every((key) => bounded(counters[key], 0xffffffff))
-      )
-        return false;
-      if (
         entry.details !== undefined &&
-        (!isRecord(snapshot.victory) ||
-          !isRecord(snapshot.victory.result) ||
-          !isStatisticsDetails(entry.details, Number(snapshot.tick)))
+        (!isRecord(snapshot.victory) || !isRecord(snapshot.victory.result))
       )
         return false;
-      previous = Number(entry.force);
     }
   }
   if (

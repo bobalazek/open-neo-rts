@@ -1,9 +1,10 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
 type Point = { x: number; y: number };
+type TextPoint = Point & { fontSize: number };
 export async function observeNativePaint(page: Page) {
   await page.addInitScript(() => {
-    const text = new Map<string, { x: number; y: number }>();
+    const text = new Map<string, { x: number; y: number; fontSize: number }>();
     const images = new Map<string, { x: number; y: number }>();
     Reflect.set(window, "nativePaintText", text);
     Reflect.set(window, "nativePaintImages", images);
@@ -19,6 +20,7 @@ export async function observeNativePaint(page: Page) {
         text.set(value, {
           x: (point.x * innerWidth) / this.canvas.width,
           y: (point.y * innerHeight) / this.canvas.height,
+          fontSize: (size * Math.abs(this.getTransform().d) * innerHeight) / this.canvas.height,
         });
       Reflect.apply(fill, this, args);
     };
@@ -85,7 +87,7 @@ export async function nativeTextPoint(page: Page, value: string) {
     .poll(() => page.evaluate((value) => Reflect.get(window, "nativePaintText")?.has(value), value))
     .toBe(true);
   return page.evaluate(
-    (value) => Reflect.get(window, "nativePaintText").get(value) as Point,
+    (value) => Reflect.get(window, "nativePaintText").get(value) as TextPoint,
     value,
   );
 }

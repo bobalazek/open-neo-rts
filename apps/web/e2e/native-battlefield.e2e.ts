@@ -95,6 +95,7 @@ test("native battlefield integrates selected commands, recipes, circular map and
   await clickNativeIcon(page, menuButton);
   const menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("canvas")).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await expect(menu.getByRole("button", { name: "Resume match", exact: true })).toBeEnabled();
   await page.screenshot({ path: info.outputPath("menu-desktop.png") });
   const tick = await world.getAttribute("data-tick");
   await clickNativeText(page, "Resume match");
@@ -107,6 +108,7 @@ test("native battlefield integrates selected commands, recipes, circular map and
   await page.screenshot({ path: info.outputPath("mobile.png") });
   await clickNativeIcon(page, menuButton);
   await expect(menu.locator("canvas")).toHaveAttribute("data-panel", "menu", { timeout: 30_000 });
+  await expect(menu.getByRole("button", { name: "Resume match", exact: true })).toBeEnabled();
   await page.screenshot({ path: info.outputPath("menu-mobile.png") });
   await clickNativeText(page, "Resume match");
   await expect(menu).not.toBeVisible();

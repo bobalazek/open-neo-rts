@@ -11,6 +11,7 @@ import {
   type ReplayHudContent,
   resourceInstances,
 } from "@open-neo-rts/render";
+import type { ForceStatisticsSnapshot } from "@open-neo-rts/sim";
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
 import {
@@ -27,8 +28,16 @@ import { createMatchPresentation } from "../match";
 import { type HudIcon, hudIcon } from "../match/icons";
 import { bindWorldInteraction } from "../match/interaction";
 import { createMinimap } from "../match/minimap";
+import { type ChartMetric, metricLabels, table as statisticsTable } from "../post-match/statistics";
 import { readDeviceSettings } from "../settings";
 import { faction, map } from "../skirmish/setup";
+import {
+  replayAnalytics,
+  replayMetrics,
+  STATISTIC_VIEWS,
+  type StatisticView,
+  viewLabel,
+} from "./analytics";
 import { installedReplay } from "./files";
 import { replayStore, replayTime, type SavedReplay } from "./storage";
 
@@ -59,6 +68,14 @@ export function replayViewer(
     panel: ReturnType<typeof mountNativePanel> | undefined;
   let markers: readonly ReplayMarker[] = [],
     markerIdentity = "";
+  let statisticsOpen = false,
+    statisticsReady = false,
+    statisticView: StatisticView = "economy";
+  let statisticMetric: ChartMetric = "creditsIncome",
+    statistics: readonly ForceStatisticsSnapshot[] = [];
+  let statisticsRevision = 0,
+    analysisKey = "",
+    analysis: ReplayHudContent["statistics"];
   let eventPan: (x: number, y: number) => void = () => {};
   let timeout: ReturnType<typeof setTimeout> | undefined;
   const overlay = document.createElement("dialog");
@@ -145,6 +162,76 @@ export function replayViewer(
       force: marker.type === "elimination" ? marker.force + 1 : "",
     });
   }
+  function toggleStatistics() {
+    statisticsOpen = !statisticsOpen;
+    statisticsReady = false;
+    statistics = [];
+    analysisKey = "";
+    q<HTMLElement>("[data-analysis]").hidden = !statisticsOpen;
+    const button = buttons.get("statistics")!;
+    button.setAttribute("aria-expanded", String(statisticsOpen));
+    void request({ type: "statistics", enabled: statisticsOpen });
+    if (latest) update(latest);
+    canvas.focus({ preventScroll: true });
+  }
+  function statisticControls() {
+    const metric = q<HTMLSelectElement>("[data-stat-metric]");
+    metric.title = text(
+      statisticView === "military" ? "ui.replays.army-help" : "ui.replays.metric-help",
+    );
+    metric.replaceChildren();
+    const metrics =
+      statisticView === "economy" || statisticView === "military"
+        ? replayMetrics[statisticView]
+        : [];
+    for (const value of metrics) metric.append(new Option(text(metricLabels[value]), value));
+    if (metrics.length) {
+      statisticMetric = metrics[0]!;
+      metric.value = statisticMetric;
+    }
+    metric.closest("label")!.hidden = !metrics.length;
+    for (const view of STATISTIC_VIEWS) {
+      const tab = buttons.get(`statistics-${view}`)!;
+      tab.setAttribute("aria-selected", String(statisticView === view));
+      tab.tabIndex = statisticView === view ? 0 : -1;
+    }
+    q("[data-stat-panel]").setAttribute("aria-labelledby", `replay-stat-tab-${statisticView}`);
+    q<HTMLElement>("[data-stat-values]").tabIndex = metrics.length ? -1 : 0;
+  }
+  function statisticContent() {
+    if (!statisticsOpen || !latest?.snapshot || !content.catalog) return;
+    const key = `${latest.epoch}:${Math.floor(latest.tick / 20)}:${statisticsRevision}:${statisticView}:${statisticMetric}:${statisticsReady}`;
+    if (key !== analysisKey) {
+      analysisKey = key;
+      analysis = replayAnalytics(
+        statisticView,
+        statisticMetric,
+        statistics,
+        latest.snapshot,
+        builtins.map(({ raw, icon: image }) => ({
+          id: `core.${(raw as { id: string }).id}`,
+          name: (raw as { name: string }).name,
+          image: image ?? icon("population"),
+        })),
+      );
+      if (!statisticsReady) analysis.note = text("ui.replays.statistics-loading");
+      else if (!statistics.length) analysis.note = text("ui.replays.statistics-empty");
+      else if (statisticView === "production" && !analysis.table.rows.length)
+        analysis.note = text("ui.replays.production-empty");
+      const region = q<HTMLElement>("[data-stat-values]");
+      region.setAttribute("aria-label", analysis.table.caption);
+      const rendered = statisticsTable(
+        [...analysis.table.headers],
+        analysis.table.rows.map((row) => [...row]),
+        analysis.table.caption,
+      );
+      // The outer region owns stable keyboard focus while current values change.
+      rendered.tabIndex = -1;
+      region.replaceChildren(rendered);
+      q<HTMLElement>("[data-stat-status]").textContent = analysis.note ?? "";
+    }
+    return analysis;
+  }
   function controls(): ReplayHudContent | undefined {
     if (!latest || !replay || !content.catalog) return;
     const actions: BattlefieldAction[] = [];
@@ -154,6 +241,7 @@ export function replayViewer(
       ["forward", "forward"],
       ["previous-event", "previousEvent"],
       ["next-event", "nextEvent"],
+      ["statistics", "statistics"],
       ["speed", undefined],
       ["vision", "vision"],
       ["exit", "exit"],
@@ -170,13 +258,45 @@ export function replayViewer(
         tooltip: button.title,
         image: image ? icon(image) : undefined,
         disabled: button.disabled,
-        active: false,
+        active: id === "statistics" && statisticsOpen,
         activate: () => {
           button.focus({ preventScroll: true });
           button.click();
           canvas.focus({ preventScroll: true });
         },
       });
+    }
+    if (statisticsOpen && latest.snapshot) {
+      for (const view of STATISTIC_VIEWS) {
+        const button = buttons.get(`statistics-${view}`)!;
+        actions.push({
+          id: `statistics-${view}`,
+          label: viewLabel(view),
+          tooltip: button.title,
+          disabled: button.disabled,
+          active: statisticView === view,
+          activate: () => {
+            button.focus({ preventScroll: true });
+            button.click();
+            canvas.focus({ preventScroll: true });
+          },
+        });
+      }
+      if (statisticView === "economy" || statisticView === "military") {
+        const metric = q<HTMLSelectElement>("[data-stat-metric]");
+        actions.push({
+          id: "statistics-metric",
+          label: text(metricLabels[statisticMetric]),
+          tooltip: metric.title,
+          disabled: metric.disabled,
+          active: false,
+          activate: () => {
+            metric.focus({ preventScroll: true });
+            cycle(metric);
+            canvas.focus({ preventScroll: true });
+          },
+        });
+      }
     }
     const definitions = new Map(content.catalog.definitions.map((item) => [item.id, item]));
     const snapshot = latest.snapshot;
@@ -258,11 +378,22 @@ export function replayViewer(
         activate: () => jumpEvent(marker),
       })),
       actions,
+      statistics: statisticContent(),
       players,
     };
   }
   function update(state: ReplayState) {
     if (disposed || failed) return;
+    if (latest && (latest.epoch !== state.epoch || latest.vision !== state.vision)) {
+      statisticsReady = false;
+      statistics = [];
+      analysisKey = "";
+    }
+    if (state.statistics && statisticsOpen) {
+      statistics = state.statistics;
+      statisticsReady = true;
+      statisticsRevision++;
+    }
     if (state.markers) markers = state.markers;
     else if (latest && latest.vision !== state.vision) markers = [];
     latest = state;
@@ -328,6 +459,10 @@ export function replayViewer(
     }
     for (const button of root.querySelectorAll<HTMLButtonElement>("[data-replay-marker]"))
       button.disabled = state.phase !== "ready";
+    for (const element of root.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+      "[data-analysis] button,[data-analysis] select",
+    ))
+      element.disabled = state.phase !== "ready";
     const next = controls();
     q<HTMLElement>("[data-players]").replaceChildren(
       ...(next?.players ?? []).map((player) => {
@@ -427,6 +562,7 @@ export function replayViewer(
       ["forward", "ui.replays.forward", () => seek((latest?.tick ?? 0) + 200)],
       ["previous-event", "ui.replays.previous-event", () => jumpEvent(adjacentEvent(-1))],
       ["next-event", "ui.replays.next-event", () => jumpEvent(adjacentEvent(1))],
+      ["statistics", "ui.replays.statistics", toggleStatistics],
       ["speed", "ui.replays.speed", () => cycle(q("[data-speed]"))],
       ["vision", "ui.replays.vision", () => cycle(q("[data-vision]"))],
       ["exit", "ui.replays.exit", back],
@@ -441,6 +577,89 @@ export function replayViewer(
       q("nav").append(button);
       buttons.set(id, button);
     }
+    buttons.get("statistics")!.title = text("ui.replays.statistics-help");
+    buttons.get("statistics")!.setAttribute("aria-expanded", "false");
+    const analytics = document.createElement("section");
+    analytics.hidden = true;
+    analytics.dataset.analysis = "";
+    analytics.innerHTML = `<div role="tablist" aria-label="${text("ui.stats.views")}"></div><div data-stat-panel role="tabpanel" id="replay-stat-panel"><label>${text("ui.stats.metric")}<select data-stat-metric></select></label><p data-stat-status role="status"></p><div data-stat-values role="region"></div></div>`;
+    q(".replay-controls").append(analytics);
+    for (const [index, view] of STATISTIC_VIEWS.entries()) {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.textContent = tab.title = viewLabel(view);
+      tab.setAttribute("role", "tab");
+      tab.id = `replay-stat-tab-${view}`;
+      if (view === "orders") tab.title = text("ui.replays.orders-help");
+      tab.setAttribute("aria-controls", "replay-stat-panel");
+      tab.addEventListener(
+        "click",
+        () => {
+          statisticView = view;
+          statisticControls();
+          if (latest) update(latest);
+        },
+        { signal: abort.signal },
+      );
+      tab.addEventListener("focus", () => hud?.focus(`statistics-${view}`), {
+        signal: abort.signal,
+      });
+      tab.addEventListener("blur", () => hud?.focus(), { signal: abort.signal });
+      tab.addEventListener(
+        "keydown",
+        (event) => {
+          const target =
+            event.code === "ArrowRight"
+              ? (index + 1) % 4
+              : event.code === "ArrowLeft"
+                ? (index + 3) % 4
+                : event.code === "Home"
+                  ? 0
+                  : event.code === "End"
+                    ? 3
+                    : undefined;
+          if (target === undefined) return;
+          event.preventDefault();
+          event.stopPropagation();
+          const next = buttons.get(`statistics-${STATISTIC_VIEWS[target]}`)!;
+          next.click();
+          next.focus();
+        },
+        { signal: abort.signal },
+      );
+      analytics.querySelector("[role=tablist]")!.append(tab);
+      buttons.set(`statistics-${view}`, tab);
+    }
+    const metric = q<HTMLSelectElement>("[data-stat-metric]");
+    metric.title = text("ui.replays.metric-help");
+    metric.addEventListener(
+      "change",
+      () => {
+        statisticMetric = metric.value as ChartMetric;
+        if (latest) update(latest);
+      },
+      { signal: abort.signal },
+    );
+    metric.addEventListener("focus", () => hud?.focus("statistics-metric"), {
+      signal: abort.signal,
+    });
+    metric.addEventListener("blur", () => hud?.focus(), { signal: abort.signal });
+    const values = q<HTMLElement>("[data-stat-values]");
+    values.addEventListener("focus", () => hud?.focus("statistics-values"), {
+      signal: abort.signal,
+    });
+    values.addEventListener("blur", () => hud?.focus(), { signal: abort.signal });
+    values.addEventListener(
+      "keydown",
+      (event) => {
+        if (hud?.statisticsScrollKey(event.code)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      { signal: abort.signal },
+    );
+    statisticControls();
     const speed = q<HTMLSelectElement>("[data-speed]");
     for (const value of REPLAY_SPEEDS) {
       const option = document.createElement("option");
@@ -527,6 +746,7 @@ export function replayViewer(
       pan: (x, y) => minimap?.navigate(x, y, 0, false, false),
       zoom: minimap.zoom,
       mapFocus: () => minimap?.canvas.focus({ preventScroll: true }),
+      statisticsFocus: () => q<HTMLElement>("[data-stat-values]").focus({ preventScroll: true }),
     });
     eventPan = (x, y) =>
       minimap?.navigate(
@@ -605,6 +825,7 @@ export function replayViewer(
           KeyV: "vision",
           Comma: "previous-event",
           Period: "next-event",
+          KeyG: "statistics",
           Escape: "exit",
         } as Record<string, string>
       )[event.code];
