@@ -47,6 +47,10 @@ completed all twenty seeded bot mirrors twice without a crash, cap or divergence
 The real human match, duration, roster-use and other phase-2 exit clauses remain
 open; most AI mirrors exceeded 25 simulated minutes.
 
+The [SIM60 clearance correction](./learnings/2026-11-05-construction-clearance-goals.md)
+skips obstructed exits when asking friendly units to leave a building footprint.
+The earlier SIM59 full-match qualification remains historical evidence.
+
 - [ ] [2-38b2 · Full save-validation and formatter parity](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine/tooling; shared export/provenance metadata, GLB conformance and Ogg framing/checksum/channel checks are implemented. Finish native audio decoding/metering, source/schema freshness and exact project formatting before closing the whole definition-editing task.
 - [ ] [2-38d · Asset editing](./phases/2.md#2-38--content-tools-and-playtest-slice). PR type: engine; part/socket gizmos, safe GLB socket export and remaining editor tabs.
 - [ ] [2-21b1c · Clipped construction depth passes](./phases/2.md#2-21--present-combat-and-construction-events). PR type: engine; later visual polish after functional lifecycle work, replacing the current no-shadow policy for partial structures.

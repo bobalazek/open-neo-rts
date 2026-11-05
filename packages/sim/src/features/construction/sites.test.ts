@@ -378,6 +378,96 @@ test("friendly clearance uses normal paths, remains free while pending and commi
   expect(kernel.economy?.balance(0)?.credits).toBe(400);
 });
 
+test("clearance uses a legal exterior goal when the nearest side is blocked by headquarters", () => {
+  const input = setup();
+  input.definitions = input.definitions.map((definition) =>
+    definition.id === builder.id ? { ...definition, radiusSubcells: 819 } : definition,
+  );
+  const { kernel, builders } = fixture(input);
+  const blocker = builders[1] as number;
+  kernel.world.set(blocker, Transform, "x", 15 * 1024 - 100);
+  kernel.world.set(blocker, Transform, "y", 12 * 1024 + 512);
+  expect(step(kernel, [build(kernel, payload([builders[0] as number]))])[0]?.result).toBe(
+    "accepted",
+  );
+  expect(sites(kernel)).toHaveLength(0);
+  expect(kernel.economy?.balance(0)?.credits).toBe(1000);
+  for (let tick = 0; tick < CONSTRUCTION_CLEARANCE_TICKS; tick++) step(kernel, []);
+  expect(sites(kernel)).toHaveLength(1);
+  expect(kernel.world.query(ConstructionRequest)).toHaveLength(0);
+  expect(kernel.economy?.balance(0)?.credits).toBe(400);
+  expect(checkpointHash(kernel)).toBe("3cc3d35a8ac588e3");
+});
+
+test("clearance skips a legal but disconnected exterior goal", () => {
+  const input = setup();
+  const map = input.map!;
+  input.map = {
+    ...map,
+    spawns: [{ ...map.spawns[0]!, position: [12 * 1024, 10 * 1024] }],
+    terrain: {
+      ...map.terrain,
+      level: map.terrain.level.map((value, index) => (index >= 13 * map.terrain.width ? 1 : value)),
+    },
+  };
+  const { kernel, builders } = fixture(input);
+  const blocker = builders[1]!;
+  kernel.world.set(blocker, Transform, "x", 15 * 1024 + 512);
+  kernel.world.set(blocker, Transform, "y", 12 * 1024 + 800);
+  kernel.movement!.refreshOccupancy();
+  expect(kernel.movement!.canStand(blocker, { x: 15 * 1024 + 512, y: 13 * 1024 + 512 })).toBe(true);
+  expect(kernel.movement!.canReach(blocker, { x: 15 * 1024 + 512, y: 13 * 1024 + 512 })).toBe(
+    false,
+  );
+  expect(step(kernel, [build(kernel, payload([builders[0]!]))])[0]?.result).toBe("accepted");
+  for (let tick = 0; tick < CONSTRUCTION_CLEARANCE_TICKS; tick++) step(kernel, []);
+  expect(sites(kernel)).toHaveLength(1);
+  expect(kernel.world.query(ConstructionRequest)).toHaveLength(0);
+  expect(kernel.economy?.balance(0)?.credits).toBe(400);
+});
+
+test("clearance finds a reachable side from a physically clear off-centre start", () => {
+  const input = setup();
+  input.definitions = input.definitions.map((definition) =>
+    definition.id === builder.id
+      ? { ...definition, radiusSubcells: 819 }
+      : definition.id === building.id
+        ? { ...definition, footprint: [2, 2] }
+        : definition,
+  );
+  const map = input.map!;
+  input.map = {
+    ...map,
+    terrain: {
+      ...map.terrain,
+      level: map.terrain.level.map((value, index) => (index >= 14 * map.terrain.width ? 1 : value)),
+    },
+  };
+  const top = { x: 14 * 1024 + 512, y: 10 * 1024 + 512 };
+  for (const construction of [false, true]) {
+    const { kernel, builders } = fixture(input);
+    const blocker = builders[1]!;
+    // The disc is 924 subcells from both HQ and cliff, but its cell centre is blocked.
+    kernel.world.set(blocker, Transform, "x", 15 * 1024 - 100);
+    kernel.world.set(blocker, Transform, "y", 13 * 1024 + 100);
+    kernel.movement!.refreshOccupancy();
+    expect(kernel.movement!.canStand(blocker, top)).toBe(true);
+    expect(kernel.movement!.canReach(blocker, top)).toBe(false);
+    if (construction)
+      expect(step(kernel, [build(kernel, payload([builders[0]!]))])[0]?.result).toBe("accepted");
+    else kernel.movement!.order(blocker, top);
+    for (let tick = 0; tick < CONSTRUCTION_CLEARANCE_TICKS; tick++) step(kernel, []);
+    if (construction) {
+      expect(sites(kernel)).toHaveLength(1);
+      expect(kernel.world.query(ConstructionRequest)).toHaveLength(0);
+      expect(kernel.economy?.balance(0)?.credits).toBe(400);
+    } else {
+      expect(kernel.world.get(blocker, Transform, "x")).toBe(top.x);
+      expect(kernel.world.get(blocker, Transform, "y")).toBe(top.y);
+    }
+  }
+});
+
 test("automatic friendly site clearance replaces an unselected builder's salvage job", () => {
   const base = setup();
   if (!base.normal) throw new Error("Expected normal fixture");
