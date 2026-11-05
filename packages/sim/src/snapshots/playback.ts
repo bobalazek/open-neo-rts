@@ -6,6 +6,7 @@ import { createMatchKeyframe, type MatchKeyframe, REPLAY_KEYFRAME_INTERVAL } fro
 import { type MatchRecord, parseMatchRecord } from "./match-record";
 import { MAX_SNAPSHOT_TICK } from "./match-snapshot";
 import { replayScenario } from "./replay";
+import { createReplayEvents } from "./replay-events";
 import { canonicalJson } from "./schema";
 
 /**
@@ -26,6 +27,7 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
     settled = false;
   let failure: unknown;
   const frames: MatchKeyframe[] = [];
+  const events = createReplayEvents(setup);
   const views = new Map<number | "all", ReturnType<typeof createReplayProjection>>();
 
   function captureFrame() {
@@ -55,6 +57,7 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
       const entries = step(kernel, commands.slice(start, cursor));
       if (entries.some((entry) => entry.source === "input" && entry.result !== "accepted"))
         throw new Error("Match record contains refused external commands");
+      if (!verified) events.capture(kernel);
       if (!verified && kernel.tick % REPLAY_KEYFRAME_INTERVAL === 0) captureFrame();
     }
   }
@@ -70,6 +73,11 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
     },
     get keyframeTicks() {
       return frames.map((frame) => frame.tick);
+    },
+    markers(vision: number | "all") {
+      if (failure) throw failure;
+      if (!verified) throw new Error("Verify the replay before reading events");
+      return events.markers(vision);
     },
     /** Export only private captures whose complete state has reproduced the input history. */
     exportRecord(): MatchRecord & { format: 2 } {

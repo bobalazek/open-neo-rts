@@ -75,10 +75,13 @@ Grounds preview and selected-record actions. Its viewer retains a dominant
 battlefield, warm-metal transport pictograms and timeline, permitted Force
 readouts and original active-production thumbnails, with the circular minimap
 at the right. Semantic controls own keyboard behavior and mirror focus into the
-native interface. This records the first playable Eastern Collective local mirror,
-not portable frames, recorded cameras, event markers, analytics or live spectating.
-The timeline explicitly participates in sequential keyboard focus after speed and
-vision, retaining its native focus frame.
+native interface. Verified combat intervals and public Force outcomes extend the
+transport with a compact marker row and previous/next navigation, filtered by the
+current view. This records the first playable Eastern Collective local mirror,
+including verified portable frames and explicit map identity. Recorded cameras,
+analytics and live spectating remain deferred. The timeline explicitly
+participates in sequential keyboard focus after speed and vision, retaining its
+native focus frame.
 
 Field Manual extends the same gallery with original actor icons, searchable
 roster rows, four concept/control entries and compiled-statistic tables. Desktop
@@ -417,6 +420,11 @@ at bottom left beside the bottom-right circular map. Native layout changes below
 replay scale `min(device UI scale, max(0.8, viewport width / 420))`. Graphite frames
 retain a 12px viewport inset. Production thumbnails occupy only the available row
 width; semantic readouts retain the current production names and progress.
+When the current view has events, a compact marker row sits directly below the
+range, previous/next icons sit beside the clock, and the transport grows from
+96px to 116px times replay scale. Nearby markers share a pointer cluster; the
+ordinary playback row moves below it. An empty event view retains the compact
+transport without native event controls.
 
 Field Manual alone splits the gallery's available column space 32%/68%, after
 the shared 32px scaled gap, at the same 760px scaled inner-width threshold.
@@ -803,6 +811,24 @@ the text leaves space for that disclosure mark.
   pointer-out caused by resize. Space toggles playback,
   J/L jump ten seconds, brackets change speed, V changes vision and Escape returns
   to the library; focused fields keep ordinary keyboard editing/seeking.
+- **Replay event navigation:** the native row uses original combat, surrender
+  and elimination pictograms for verified positive-damage intervals and exact
+  public Force outcomes. All and recorded-seat views receive their own permitted
+  annotations; seeking does not append history. Repeated pointer clicks cycle
+  nearby events sharing a cluster, while previous/next buttons and comma/period
+  seek strictly earlier/later event ticks. Combat activation requests a camera
+  pan to its permitted damage location through the existing minimap route.
+  Hover help names the event and time, with a count and cycling hint for clusters.
+  Ordinary worker updates retain marker help and the cluster cursor; a changed
+  marker identity resets cycling and restores focused-control help. The semantic
+  ordered event list retains named buttons outside sequential Tab order; the
+  previous/next buttons provide sequential keyboard access. Semantic marker
+  focus mirrors a two-pixel ivory cluster frame and its description; pointer
+  hover uses a thin warm frame. Native transport activation returns focus to the
+  battlefield canvas. Previous/next disables when no strictly adjacent event
+  exists or while seeking; markers also disable while seeking. Native disabled
+  controls dim to 0.45 opacity and suppress activation. Comma/period retain the
+  existing shortcut guard for focused inputs, selects and buttons.
 - **Replay observations and map:** permitted credits, materials and unit counts
   come from the current copied snapshot. Up to four active-production thumbnails
   per Force reuse original built-in art, with progress in hover descriptions and
@@ -933,6 +959,15 @@ WebKit, with independent renderer/controller checks; this bounded evidence does
 not extend the physical touch, Firefox or hardware FPS qualification above.
 Unrelated stale Audio scope wording remains deferred to its own documentation
 refresh and is not a new design rule.
+The replay-event extension has four actual Chrome/WebKit desktop and narrow
+captures under `.impeccable/review/`, with focused surrender-marker pointer and
+keyboard journeys plus replay library import/export/seek checks. Independent
+worker/renderer probes cover combat, public outcomes, view filtering and cluster
+cycling. Combat camera panning was source-traced through the established minimap
+route, not verified as an end-to-end combat journey. Bounded evidence and remaining
+qualification limits are recorded in
+`.impeccable/surfaces/src-features-replays-viewer-ts.md`; this does not complete
+the replay/spectator phase or qualify maximum-size replay stress.
 The current `../render/src/scene/text-input.ts` adapter maps DOM UTF-16 offsets to
 Babylon code-point offsets and isolates private cursor fields because Babylon
 9.33 has no public range setter. That version-specific dependency is an

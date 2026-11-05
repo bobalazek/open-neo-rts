@@ -25,6 +25,7 @@ export * from "./keyframe";
 export * from "./match-record";
 export * from "./match-snapshot";
 export * from "./playback";
+export { MAX_REPLAY_MARKERS, type ReplayMarker } from "./replay-events";
 export * from "./trace";
 
 export const SCENARIO_FORMAT = 2;

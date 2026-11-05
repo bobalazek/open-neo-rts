@@ -186,6 +186,7 @@ test("Esc priority, real speed controls, restart confirmation and menu surrender
   page.once("dialog", (dialog) => dialog.dismiss());
   await menu.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(menu).toBeVisible();
+  await expect(menu.getByRole("button", { name: "Surrender", exact: true })).toBeEnabled();
   page.once("dialog", (dialog) => dialog.accept());
   await menu.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await expect(page.getByRole("dialog", { name: "Defeat", exact: true })).toBeVisible();

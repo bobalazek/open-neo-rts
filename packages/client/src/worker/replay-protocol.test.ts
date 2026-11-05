@@ -72,3 +72,26 @@ test("only explicit portable-record replies can carry host captures outside disp
   expect(isReplayReply({ id: 2, record: { ...record, format: 1 } })).toBe(false);
   expect(isReplayReply({ id: 0, state: { ...ready, record } })).toBe(false);
 });
+
+test("replay annotations are bounded ordered display data only on ready states", () => {
+  const combat = { type: "combat", tick: 1, x: 1024, y: 2048 };
+  const elimination = { type: "elimination", tick: 4, force: 0, reason: "surrendered" };
+  expect(isReplayReply({ id: 1, state: { ...ready, markers: [combat, elimination] } })).toBe(true);
+  for (const markers of [
+    Array(1),
+    Array(729).fill(combat),
+    [null],
+    [elimination, combat],
+    [{ ...combat, tick: 0 }],
+    [{ ...combat, tick: 5 }],
+    [{ ...combat, x: -1 }],
+    [{ ...combat, y: 0.5 }],
+    [{ ...combat, entity: "e1" }],
+    [{ ...elimination, reason: "active" }],
+    [{ ...elimination, force: -1 }],
+  ])
+    expect(isReplayReply({ id: 1, state: { ...ready, markers } })).toBe(false);
+  expect(isReplayReply({ id: 0, state: { ...ready, phase: "seeking", markers: [combat] } })).toBe(
+    false,
+  );
+});

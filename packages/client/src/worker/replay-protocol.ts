@@ -1,4 +1,10 @@
-import type { MatchRecord, MatchSetup, SeatSnapshot } from "@open-neo-rts/sim";
+import {
+  MAX_REPLAY_MARKERS,
+  type MatchRecord,
+  type MatchSetup,
+  type ReplayMarker,
+  type SeatSnapshot,
+} from "@open-neo-rts/sim";
 import { isMatchRecord, isRecord, isWorkerReply } from "./protocol";
 
 export const REPLAY_SPEEDS = [0.5, 1, 2, 4, 8] as const;
@@ -13,6 +19,7 @@ export interface ReplayState {
   vision: ReplayVision;
   winner?: number | null;
   snapshot?: SeatSnapshot;
+  markers?: readonly ReplayMarker[];
 }
 export type ReplayRequest =
   | { type: "init"; record: MatchRecord; setup: MatchSetup }
@@ -55,7 +62,7 @@ export function isReplayReply(value: unknown): value is ReplayReply {
           "paused",
           "speed",
           "vision",
-          ...(state.phase === "ready" ? ["snapshot", "winner"] : []),
+          ...(state.phase === "ready" ? ["snapshot", "winner", "markers"] : []),
         ].includes(key),
     ) ||
     !Number.isSafeInteger(state.duration) ||
@@ -78,6 +85,32 @@ export function isReplayReply(value: unknown): value is ReplayReply {
   )
     return false;
   if (state.phase !== "ready") return state.snapshot === undefined;
+  if (
+    state.markers !== undefined &&
+    (!Array.isArray(state.markers) ||
+      state.markers.length > MAX_REPLAY_MARKERS ||
+      !Array.from(state.markers).every(
+        (marker, index, markers) =>
+          isRecord(marker) &&
+          Number.isSafeInteger(marker.tick) &&
+          Number(marker.tick) >= 1 &&
+          Number(marker.tick) <= Number(state.duration) &&
+          (index === 0 || Number(marker.tick) >= Number(markers[index - 1].tick)) &&
+          (marker.type === "combat"
+            ? Object.keys(marker).length === 4 &&
+              [marker.x, marker.y].every(
+                (value) =>
+                  Number.isSafeInteger(value) && Number(value) >= 0 && Number(value) <= 0x7fffffff,
+              )
+            : marker.type === "elimination" &&
+              Object.keys(marker).length === 4 &&
+              Number.isSafeInteger(marker.force) &&
+              Number(marker.force) >= 0 &&
+              Number(marker.force) <= 0x7fffffff &&
+              (marker.reason === "eliminated" || marker.reason === "surrendered")),
+      ))
+  )
+    return false;
   return (
     (state.winner === null ||
       (Number.isSafeInteger(state.winner) &&

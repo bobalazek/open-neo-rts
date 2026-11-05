@@ -47,7 +47,38 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await expect(page.locator(".native-replay")).toHaveCount(1);
   await expect(page.locator("[data-players] p")).toHaveCount(2);
+  await expect(page.locator("[data-replay-marker]")).toHaveCount(1);
+  await expect(page.locator("[data-replay-marker]")).toContainText("Force 1 surrendered");
+  await expect(
+    page.getByRole("button", { name: "Previous event · ,", exact: true }),
+  ).toBeDisabled();
+  await page.locator("#game").focus();
+  await page.keyboard.press("Period");
+  const terminal = await page.locator("[data-timeline]").getAttribute("max");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", terminal!);
+  await expect(page.getByRole("button", { name: "Next event · .", exact: true })).toBeDisabled();
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("Home");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await nativeFrame(page);
+  const eventPath = "M6 21V3l13 3-13 6";
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (path) => (Reflect.get(window, "nativePaintImages").get(path)?.y ?? 0) > 700,
+        eventPath,
+      ),
+    )
+    .toBe(true);
+  const eventPoint = await page.evaluate(
+    (path) => Reflect.get(window, "nativePaintImages").get(path) as { x: number; y: number },
+    eventPath,
+  );
+  await page.mouse.click(eventPoint.x, eventPoint.y);
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", terminal!);
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("Home");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await page.screenshot({ path: info.outputPath("viewer-desktop.png") });
   const vision = page.locator("select[data-vision]");
   await vision.selectOption("1");
@@ -97,7 +128,7 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await page.keyboard.press("Home");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await page.locator("#game").focus();
-  await page.mouse.click(612, 829);
+  await page.mouse.click(612, 809);
   await expect
     .poll(async () =>
       Math.abs(
