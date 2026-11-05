@@ -2,7 +2,8 @@ import { expect, test } from "bun:test";
 import { step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
 import { flatMap } from "../testing/maps";
-import { createMatchRecord, parseMatchRecord, verifyMatchRecord } from "./match-record";
+import { createMatchRecord, parseMatchRecord } from "./match-record";
+import { verifyMatchRecord } from "./playback";
 
 function fixture() {
   const setup: MatchSetup = {

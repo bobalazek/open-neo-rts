@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { addString, createHasher, digest } from "@open-neo-rts/deterministic";
 import type { Command } from "../commands";
 import { OwnerForce, Template } from "../features/entities";
 import { emitCombatEvent } from "../features/events/combat";
@@ -6,8 +7,10 @@ import { checkpointHash, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
 import { createProjection, createReplayProjection } from "../projection";
 import { flatMap } from "../testing/maps";
-import { createMatchRecord } from "./match-record";
-import { createMatchPlayback, REPLAY_KEYFRAME_INTERVAL } from "./playback";
+import { REPLAY_KEYFRAME_INTERVAL } from "./keyframe";
+import { createMatchRecord, parseMatchRecord } from "./match-record";
+import { createMatchPlayback, verifyMatchRecord } from "./playback";
+import { canonicalJson } from "./schema";
 
 function fixture(end = 2505) {
   const setup: MatchSetup = {
@@ -102,6 +105,75 @@ function fixture(end = 2505) {
   }
   return { setup, kernel, hashes, record: createMatchRecord(kernel, setup) };
 }
+
+test("portable keyframes round-trip complete state and command boundaries without sharing mutable captures", () => {
+  const { setup, record, hashes } = fixture();
+  const playback = createMatchPlayback(record, setup);
+  expect(() => playback.exportRecord()).toThrow("Verify");
+  while (!playback.prepare(1000)) {}
+  const portable = playback.exportRecord();
+  expect(portable.keyframes.map((frame) => frame.tick)).toEqual([0, 1200, 2400]);
+  expect(portable.keyframes.every((frame) => !Object.hasOwn(frame, "scenario"))).toBe(true);
+  expect(parseMatchRecord(JSON.parse(JSON.stringify(portable)))).toEqual(portable);
+  expect(verifyMatchRecord(portable).hash).toBe(record.hash);
+  const imported = createMatchPlayback(portable, setup);
+  while (!imported.prepare(1000)) {}
+  for (const target of [1200, 1201, 2400, 2505, 0]) {
+    while (!imported.seek(target, 1000)) {}
+    expect(checkpointHash(imported.kernel)).toBe(hashes.get(target)!);
+    expect(imported.kernel.controllers.size).toBe(1);
+  }
+  portable.keyframes[0]!.streams.length = 0;
+  portable.scenario.setup.seed = 99;
+  expect(playback.exportRecord().scenario.setup.seed).toBe(7);
+  expect(playback.exportRecord().keyframes[0]!.streams.length).toBeGreaterThan(0);
+  expect(imported.exportRecord()).toEqual(playback.exportRecord());
+}, 15000);
+
+test("portable parsing rejects missing, extra, reordered, foreign and checksum-damaged frames", () => {
+  const { setup, record } = fixture(2);
+  const playback = createMatchPlayback(record, setup);
+  playback.prepare();
+  const portable = playback.exportRecord(),
+    frame = portable.keyframes[0]!;
+  for (const value of [
+    { ...portable, keyframes: [] },
+    { ...portable, keyframes: [frame, frame] },
+    { ...portable, keyframes: [{ ...frame, tick: 1 }] },
+    { ...portable, keyframes: [{ ...frame, scenario: portable.scenario }] },
+    { ...portable, keyframes: [{ ...frame, checksum: "0000000000000000" }] },
+    { ...portable, format: 1 },
+    { ...portable, keyframes: undefined },
+  ])
+    expect(() => parseMatchRecord(value)).toThrow();
+});
+
+test("a plausible rehashed portable state still cannot replace its actual history", () => {
+  const { setup, record } = fixture(1200);
+  const playback = createMatchPlayback(record, setup);
+  while (!playback.prepare(1000)) {}
+  const portable = playback.exportRecord();
+  // A valid-looking PRNG change is invisible to a mere checksum check, but history must reject it.
+  const frame = portable.keyframes[1]!;
+  frame.streams[0]!.a = (frame.streams[0]!.a ^ 1) >>> 0;
+  const { checksum: _checksum, ...body } = frame;
+  const scenario = {
+    ...portable.scenario,
+    commands: portable.scenario.commands.filter((c) => c.tick < frame.tick),
+  };
+  const hasher = createHasher();
+  addString(hasher, canonicalJson({ ...body, scenario }));
+  frame.checksum = digest(hasher).hex;
+  expect(parseMatchRecord(portable)).toBe(portable);
+  const imported = createMatchPlayback(portable, setup);
+  expect(() => {
+    while (!imported.prepare(1000)) {}
+  }).toThrow("does not reproduce");
+  expect(imported.verified).toBe(false);
+  expect(() => imported.exportRecord()).toThrow();
+  expect(() => imported.kernel).toThrow();
+  expect(() => imported.prepare()).toThrow();
+});
 
 test("bounded preparation and repeated keyframe seeking equal the uninterrupted host at every boundary", () => {
   const { setup, record, hashes } = fixture();

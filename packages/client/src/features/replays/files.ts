@@ -2,6 +2,7 @@ import { content } from "virtual:normal-catalog";
 import type { MatchRecord } from "@open-neo-rts/sim";
 import { createReplayWorker, type ReplayState } from "../../worker/replay";
 import { loadMap } from "../debug/maps";
+import { saveMapHash } from "../load-game/storage";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { replayCompatibility, type SavedReplay } from "./storage";
 
@@ -11,8 +12,7 @@ export function savedReplay(
   winner: number | null,
 ): SavedReplay {
   if (!content.cosmeticHash) throw new Error("Core content is unavailable");
-  return {
-    format: 1,
+  const metadata = {
     id: `replay-${crypto.randomUUID()}`,
     name: map.name,
     createdAt: Date.now(),
@@ -20,12 +20,16 @@ export function savedReplay(
     packs: content.packs,
     cosmeticHash: content.cosmeticHash,
     winner,
-    record,
   };
+  return record.format === 1
+    ? { ...metadata, format: 1, record }
+    : { ...metadata, format: 2, record, mapHash: saveMapHash(record) };
 }
 export async function installedReplay(replay: SavedReplay, signal: AbortSignal) {
   const reason = replayCompatibility(replay, content.packs, content.cosmeticHash);
   if (reason) throw new Error(reason);
+  if (replay.format === 2 && replay.mapHash !== saveMapHash(replay.record))
+    throw new Error("Replay map hash does not match its map");
   if (!content.catalog) throw new Error("Core content is unavailable");
   const loaded = await loadMap(`core.${map.id}`);
   signal.throwIfAborted();
@@ -36,6 +40,7 @@ export async function verifyReplay(
   replay: SavedReplay,
   signal: AbortSignal,
   progress: (state: ReplayState) => void,
+  includeKeyframes = false,
 ) {
   const { setup } = await installedReplay(replay, signal);
   let latest: ReplayState | undefined,
@@ -61,7 +66,14 @@ export async function verifyReplay(
     await Promise.race([worker.request({ type: "init", setup, record: replay.record }), failed]);
     signal.throwIfAborted();
     if (!latest || latest.winner === undefined) throw new Error("Replay has no verified result");
-    return latest.winner;
+    let record = replay.record;
+    if (includeKeyframes) {
+      const reply = await Promise.race([worker.request({ type: "export-record" }), failed]);
+      signal.throwIfAborted();
+      if (reply.record?.format !== 2) throw new Error("Replay has no verified keyframes");
+      record = reply.record;
+    }
+    return { winner: latest.winner, record };
   } finally {
     clearTimeout(timeout);
     signal.removeEventListener("abort", cancel);

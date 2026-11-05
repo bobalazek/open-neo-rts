@@ -1,24 +1,27 @@
-import { int, str, unknown, validate } from "@open-neo-rts/content";
+import { arr, int, opt, str, unknown, validate } from "@open-neo-rts/content";
+import { sortCommands } from "../commands";
 import { checkpointHash, type Kernel } from "../kernel";
 import { type MatchSetup, SIM_VERSION } from "../match";
 import { parseScenario, SCENARIO_FORMAT, type Scenario } from ".";
-import { replayScenario, scenarioTicks } from "./replay";
+import { REPLAY_KEYFRAME_INTERVAL, type ReplayKeyframe } from "./keyframe";
+import { MAX_SNAPSHOT_TICK, parseMatchSnapshot } from "./match-snapshot";
+import { scenarioTicks } from "./replay";
 import { strictObject } from "./schema";
 
-export interface MatchRecord {
-  format: 1;
+export type MatchRecord = {
   scenario: Scenario;
   tick: number;
   hash: string;
-}
+} & ({ format: 1 } | { format: 2; keyframes: readonly ReplayKeyframe[] });
 const schema = strictObject({
-  format: int(1, 1),
+  format: int(1, 2),
   scenario: unknown(),
   tick: int(1, 0x80000000),
   hash: str(/^[0-9a-f]{16}$/),
+  keyframes: opt(arr(unknown(), 1, 121)),
 });
 
-/** A complete local input record; keyframes and migration are separate save/replay work. */
+/** Parse transport/checksums only; playback must reproduce every frame and the terminal state. */
 export function parseMatchRecord(value: unknown): MatchRecord {
   const issues = validate(schema, value);
   if (issues.length)
@@ -33,6 +36,34 @@ export function parseMatchRecord(value: unknown): MatchRecord {
   if (scenario.commands.some((command) => bots.has(command.seat)))
     throw new Error("Hosted bot commands must be regenerated, never applied twice");
   scenarioTicks(scenario, { ticks: record.tick });
+  if (record.format === 1 && Object.hasOwn(record, "keyframes"))
+    throw new Error("Portable keyframes require match record format 2");
+  if (record.format === 2) {
+    if (
+      record.tick > MAX_SNAPSHOT_TICK ||
+      !record.keyframes ||
+      record.keyframes.length !== Math.floor(record.tick / REPLAY_KEYFRAME_INTERVAL) + 1
+    )
+      throw new Error("Replay requires every one-minute keyframe within its two-hour limit");
+    const commands = sortCommands(scenario.commands);
+    for (const [index, frame] of record.keyframes.entries()) {
+      if (
+        !frame ||
+        typeof frame !== "object" ||
+        Array.isArray(frame) ||
+        Object.hasOwn(frame, "scenario") ||
+        frame.tick !== index * REPLAY_KEYFRAME_INTERVAL
+      )
+        throw new Error("Invalid replay keyframe order or fields");
+      parseMatchSnapshot({
+        ...frame,
+        scenario: {
+          ...scenario,
+          commands: commands.filter((command) => command.tick < frame.tick),
+        },
+      });
+    }
+  }
   return record;
 }
 
@@ -50,16 +81,4 @@ export function createMatchRecord(kernel: Kernel, setup: MatchSetup): MatchRecor
     }),
   );
   return parseMatchRecord({ format: 1, scenario, tick: kernel.tick, hash: checkpointHash(kernel) });
-}
-
-/** Re-run from immutable inputs with hosted bots, and require the declared terminal tick/hash. */
-export function verifyMatchRecord(value: unknown) {
-  const record = parseMatchRecord(value);
-  const kernel = replayScenario(record.scenario, record.tick);
-  if (kernel.log.some((entry) => entry.source === "input" && entry.result !== "accepted"))
-    throw new Error("Match record contains refused external commands");
-  const hash = checkpointHash(kernel);
-  if (!kernel.victory?.ended || kernel.tick !== record.tick || hash !== record.hash)
-    throw new Error("Match record did not reproduce its terminal tick and hash");
-  return { tick: kernel.tick, hash, victory: kernel.victory.snapshot() };
 }

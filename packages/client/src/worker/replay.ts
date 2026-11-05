@@ -1,4 +1,9 @@
-import { isReplayReply, type ReplayRequest, type ReplayState } from "./replay-protocol";
+import {
+  isReplayReply,
+  type ReplayReply,
+  type ReplayRequest,
+  type ReplayState,
+} from "./replay-protocol";
 
 export {
   REPLAY_SPEEDS,
@@ -15,7 +20,10 @@ export function createReplayWorker(
   const worker = new Worker("/replay-worker.js", { type: "module" });
   let disposed = false,
     next = 0;
-  const pending = new Map<number, { resolve: () => void; reject: (error: Error) => void }>();
+  const pending = new Map<
+    number,
+    { resolve: (reply: ReplayReply) => void; reject: (error: Error) => void }
+  >();
   function dispose(reason = "Replay disposed") {
     if (disposed) return;
     disposed = true;
@@ -40,11 +48,11 @@ export function createReplayWorker(
     if (request) {
       pending.delete(data.id);
       if (data.error) request.reject(new Error(data.error));
-      else request.resolve();
+      else request.resolve(data);
     }
   };
   return {
-    request(message: ReplayRequest): Promise<void> {
+    request(message: ReplayRequest): Promise<ReplayReply> {
       if (disposed) return Promise.reject(new Error("Replay disposed"));
       return new Promise((resolve, reject) => {
         const id = ++next;

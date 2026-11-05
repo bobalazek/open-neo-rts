@@ -3,6 +3,8 @@ import preview from "../../../../../content/core/maps/training-grounds/preview.p
 import { text } from "../../shared";
 import { mountNativePanel } from "../../shared/native-panel";
 import { isMatchRecord, isRecord } from "../../worker/protocol";
+import type { ReplayState } from "../../worker/replay";
+import { saveMapHash } from "../load-game/storage";
 import { faction, map } from "../skirmish/setup";
 import { savedReplay, verifyReplay } from "./files";
 import {
@@ -136,10 +138,23 @@ export function replayLibrary(
       () =>
         void run(async () => {
           const current = await unchanged(replay);
+          let portable = current;
+          if (!replayCompatibility(current, content.packs, content.cosmeticHash)) {
+            const verified = await verifyReplay(current, signal.signal, verifying, true);
+            if (verified.record.format !== 2) throw new Error("Replay has no verified keyframes");
+            portable = {
+              ...current,
+              format: 2,
+              record: verified.record,
+              winner: verified.winner,
+              mapHash: saveMapHash(verified.record),
+            };
+          }
+          await unchanged(replay);
           if (disposed) return;
-          const url = URL.createObjectURL(
-            new Blob([`${JSON.stringify(current)}\n`], { type: "application/json" }),
-          );
+          const blob = new Blob([`${JSON.stringify(portable)}\n`], { type: "application/json" });
+          if (blob.size > MAX_REPLAY_BYTES) throw new Error(text("ui.replays.too-large"));
+          const url = URL.createObjectURL(blob);
           urls.add(url);
           const anchor = document.createElement("a");
           anchor.href = url;
@@ -258,6 +273,14 @@ export function replayLibrary(
       render();
     }
   }
+  function verifying(state: ReplayState) {
+    if (disposed) return;
+    status.textContent = text("ui.replays.verifying", {
+      current: replayTime(state.tick),
+      total: replayTime(state.duration),
+    });
+    native.update();
+  }
   section.querySelector("[data-back]")!.addEventListener("click", back, { signal: signal.signal });
   search.addEventListener("input", render, { signal: signal.signal });
   file.addEventListener(
@@ -271,15 +294,7 @@ export function replayLibrary(
         const replay = isMatchRecord(value)
           ? savedReplay(value, replayConfig(value), null)
           : parseSavedReplay(value);
-        const winner = await verifyReplay(replay, signal.signal, (state) => {
-          if (!disposed) {
-            status.textContent = text("ui.replays.verifying", {
-              current: replayTime(state.tick),
-              total: replayTime(state.duration),
-            });
-            native.update();
-          }
-        });
+        const { winner } = await verifyReplay(replay, signal.signal, verifying);
         if (disposed) return;
         const copy: SavedReplay = { ...replay, id: `replay-${crypto.randomUUID()}`, winner };
         await replayStore.write(copy);

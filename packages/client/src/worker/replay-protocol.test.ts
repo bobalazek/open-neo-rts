@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { SIM_VERSION } from "@open-neo-rts/sim";
 import { isReplayReply, type ReplayState } from "./replay-protocol";
 
 const ready: ReplayState = {
@@ -51,4 +52,23 @@ test("replay replies validate copied display state and bounded progress without 
     expect(isReplayReply({ id: 0, state: structuredClone(state) })).toBe(false);
   expect(isReplayReply({ id: -1, state: ready })).toBe(false);
   expect(isReplayReply({ id: 1, state: ready, world: "secret" })).toBe(false);
+});
+
+test("only explicit portable-record replies can carry host captures outside display state", () => {
+  const record = {
+    format: 2,
+    tick: 1,
+    hash: "1234567890abcdef",
+    keyframes: [{}],
+    scenario: {
+      format: 2,
+      simVersion: SIM_VERSION,
+      setup: { debug: false, normal: {} },
+      commands: [],
+    },
+  };
+  expect(isReplayReply({ id: 2, record })).toBe(true);
+  expect(isReplayReply({ id: 2, record: { ...record, keyframes: [] } })).toBe(false);
+  expect(isReplayReply({ id: 2, record: { ...record, format: 1 } })).toBe(false);
+  expect(isReplayReply({ id: 0, state: { ...ready, record } })).toBe(false);
 });

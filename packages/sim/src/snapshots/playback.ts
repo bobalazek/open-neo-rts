@@ -2,13 +2,11 @@ import { sortCommands } from "../commands";
 import { checkpointHash, type Kernel, step } from "../kernel";
 import { createMatch, type MatchSetup } from "../match";
 import { createReplayProjection } from "../projection";
-import { createMatchKeyframe, type MatchKeyframe } from "./keyframe";
-import { parseMatchRecord } from "./match-record";
+import { createMatchKeyframe, type MatchKeyframe, REPLAY_KEYFRAME_INTERVAL } from "./keyframe";
+import { type MatchRecord, parseMatchRecord } from "./match-record";
 import { MAX_SNAPSHOT_TICK } from "./match-snapshot";
+import { replayScenario } from "./replay";
 import { canonicalJson } from "./schema";
-
-/** One minute at 20 Hz; the two-hour import bound retains at most 121 owned frames. */
-export const REPLAY_KEYFRAME_INTERVAL = 1200;
 
 /**
  * Host-only playback, separate from any live match. Prepare in bounded worker batches before
@@ -27,8 +25,21 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
     verified = false,
     settled = false;
   let failure: unknown;
-  const frames: MatchKeyframe[] = [createMatchKeyframe(kernel, setup)];
+  const frames: MatchKeyframe[] = [];
   const views = new Map<number | "all", ReturnType<typeof createReplayProjection>>();
+
+  function captureFrame() {
+    const frame = createMatchKeyframe(kernel, setup);
+    if (
+      record.format === 2 &&
+      canonicalJson(frame.serialize()) !== canonicalJson(record.keyframes[frames.length])
+    )
+      throw new Error(
+        `Replay keyframe at tick ${kernel.tick} does not reproduce its input history`,
+      );
+    frames.push(frame);
+  }
+  captureFrame();
 
   function checkBudget(maxTicks: number) {
     if (!Number.isInteger(maxTicks) || maxTicks < 1 || maxTicks > 1000)
@@ -44,8 +55,7 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
       const entries = step(kernel, commands.slice(start, cursor));
       if (entries.some((entry) => entry.source === "input" && entry.result !== "accepted"))
         throw new Error("Match record contains refused external commands");
-      if (!verified && kernel.tick % REPLAY_KEYFRAME_INTERVAL === 0)
-        frames.push(createMatchKeyframe(kernel, setup));
+      if (!verified && kernel.tick % REPLAY_KEYFRAME_INTERVAL === 0) captureFrame();
     }
   }
   return {
@@ -60,6 +70,18 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
     },
     get keyframeTicks() {
       return frames.map((frame) => frame.tick);
+    },
+    /** Export only private captures whose complete state has reproduced the input history. */
+    exportRecord(): MatchRecord & { format: 2 } {
+      if (failure) throw failure;
+      if (!verified) throw new Error("Verify the replay before exporting keyframes");
+      return {
+        format: 2 as const,
+        scenario: JSON.parse(canonicalJson(record.scenario)),
+        tick: record.tick,
+        hash: record.hash,
+        keyframes: frames.map((frame) => frame.serialize()),
+      };
     },
     /** No unverified or partially sought host may be presented as a completed replay position. */
     get kernel(): Kernel {
@@ -127,4 +149,21 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
       }
     },
   };
+}
+
+/** Headless verification preserves legacy records and checks portable frames against real history. */
+export function verifyMatchRecord(value: unknown) {
+  const record = parseMatchRecord(value);
+  let kernel: Kernel;
+  if (record.format === 2) {
+    const playback = createMatchPlayback(record, record.scenario.setup);
+    while (!playback.prepare(1000)) {}
+    kernel = playback.kernel;
+  } else kernel = replayScenario(record.scenario, record.tick);
+  if (kernel.log.some((entry) => entry.source === "input" && entry.result !== "accepted"))
+    throw new Error("Match record contains refused external commands");
+  const hash = checkpointHash(kernel);
+  if (!kernel.victory?.ended || kernel.tick !== record.tick || hash !== record.hash)
+    throw new Error("Match record did not reproduce its terminal tick and hash");
+  return { tick: kernel.tick, hash, victory: kernel.victory.snapshot() };
 }

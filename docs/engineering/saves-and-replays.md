@@ -65,8 +65,15 @@ include the full save. Failed loading leaves the old worker/session untouched.
   must verify in a separate worker before persistence. `/replay/:id` provides
   native playback/speed/seek/vision controls and a read-only map. All vision is an
   explicit terminal-replay host permission; live match workers cannot request it.
-  Keyframes remain owned in-memory captures rebuilt during verification, not
-  trusted imported bytes. [Flow, bounds and remaining format work](../project/decisions/2026-11-03-native-replay-viewer.md).
+  Compatible library exports now upgrade to format 2, with explicit map hash and
+  a format-2 record containing canonical frames at tick zero and every minute.
+  Setup and command history appear once; each frame's checksum binds its exact
+  command prefix. Imports reproduce and compare every complete frame before
+  persistence. Seeking continues to restore only private owned captures.
+  Legacy files remain usable; incompatible entries can be downloaded unchanged.
+  `bun neo verify-replay <file>` verifies embedded record history/keyframes,
+  explicitly excluding installed-content/header identity checks performed by the
+  browser. [Format and limits](../project/decisions/2026-11-05-portable-replay-keyframes.md).
 - Viewers can see everything or follow one player's vision.
 - Playing a replay requires the same sim version and content hashes. Old replays stay playable by loading the matching game version, which is why releases keep versioned web builds hosted ([deployment-and-operations.md](deployment-and-operations.md)).
 - Replays of matches with custom packs record each pack's ID, version and hash. The server keeps a copy of every pack used in a stored replay, so the replay outlives the mod's removal.

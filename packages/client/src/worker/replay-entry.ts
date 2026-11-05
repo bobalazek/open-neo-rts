@@ -90,6 +90,12 @@ host.onmessage = ({ data }) => {
       return;
     }
     if (!playback || !setup) throw new Error("Replay is not initialized");
+    if (data.type === "export-record") {
+      if (Object.keys(data).length !== 2 || phase !== "ready")
+        throw new Error("Replay verification or seek is unfinished");
+      host.postMessage({ id, record: playback.exportRecord() });
+      return;
+    }
     if (Object.keys(data).length !== 3) throw new Error("Invalid replay request");
     switch (data.type) {
       case "seek":
