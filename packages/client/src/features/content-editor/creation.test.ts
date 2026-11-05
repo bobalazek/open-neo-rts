@@ -14,6 +14,8 @@ import {
 const sourcePath = "factions/eastern-collective/units/dragon-tank/unit.json";
 const newPath = sourcePath.replace("/dragon-tank/", "/test-tank/");
 const root = resolve(import.meta.dir, "../../../../../content/core");
+// Domain checks run in Bun; actual decoding is exercised by the browser journeys.
+const audio = async () => [];
 function coreFiles() {
   return new Map<string, EditorFile>(
     [...new Bun.Glob("**/*").scanSync({ cwd: root, onlyFiles: true })].map((path) => [
@@ -100,7 +102,14 @@ describe("new definition creation", () => {
   test("clones real authored content without changing originals, credits or editable source bytes", async () => {
     const pack = await readEditorPack("core", coreFiles());
     const original = pack.input.json.get(sourcePath);
-    const plan = await prepareDefinitionClone([pack], "core", sourcePath, "test-tank", "Test Tank");
+    const plan = await prepareDefinitionClone(
+      [pack],
+      "core",
+      sourcePath,
+      "test-tank",
+      "Test Tank",
+      audio,
+    );
     expect(plan.issues.filter((issue) => issue.level === "error")).toEqual([]);
     expect(plan.draft.id).toBe("unit:eastern-collective/test-tank");
     expect(plan.draft.name).toBe("Test Tank");
@@ -120,7 +129,7 @@ describe("new definition creation", () => {
     expect(sources).toBeGreaterThan(0);
     for (const slug of ["dragon-tank", "../escape", "Test Tank", "a".repeat(97)])
       await expect(
-        prepareDefinitionClone([pack], "core", sourcePath, slug, "Test"),
+        prepareDefinitionClone([pack], "core", sourcePath, slug, "Test", audio),
       ).rejects.toThrow();
     for (const path of ["../outside", "a\\b", "a/../b", "a:bad"])
       expect(() => definitionArchive(new Map([[path, new Uint8Array([1])]]))).toThrow();
@@ -131,13 +140,20 @@ describe("new definition creation", () => {
     const fixture = disk(files);
     const pack = await readEditorDirectory(fixture.directory);
     const baseline = await files.get("manifest.json")!.text();
-    const plan = await prepareDefinitionClone([pack], "core", sourcePath, "test-tank", "Test Tank");
+    const plan = await prepareDefinitionClone(
+      [pack],
+      "core",
+      sourcePath,
+      "test-tank",
+      "Test Tank",
+      audio,
+    );
     fixture.state.committedError = true;
-    const result = await writeDefinitionClone([pack], plan);
+    const result = await writeDefinitionClone([pack], plan, audio);
     expect(fixture.state.writes.at(-1)).toBe("manifest.json");
     expect(result.input.json.get(newPath)).toEqual(plan.draft);
     expect(await files.get("manifest.json")!.text()).not.toBe(baseline);
-    await expect(writeDefinitionClone([result], plan)).rejects.toThrow();
+    await expect(writeDefinitionClone([result], plan, audio)).rejects.toThrow();
   }, 20000);
 
   test("failed payload and manifest writes preserve the old pack and permit a clean retry", async () => {
@@ -152,13 +168,14 @@ describe("new definition creation", () => {
         sourcePath,
         "test-tank",
         "Test Tank",
+        audio,
       );
       fixture.state.fail = failure;
-      await expect(writeDefinitionClone([pack], plan)).rejects.toThrow("Disk full");
+      await expect(writeDefinitionClone([pack], plan, audio)).rejects.toThrow("Disk full");
       expect(await files.get("manifest.json")!.text()).toBe(baseline);
       expect([...files.keys()].some((path) => path.startsWith(plan.destination))).toBe(false);
       fixture.state.fail = "";
-      expect((await writeDefinitionClone([pack], plan)).input.json.get(newPath)).toEqual(
+      expect((await writeDefinitionClone([pack], plan, audio)).input.json.get(newPath)).toEqual(
         plan.draft,
       );
     }
@@ -168,13 +185,20 @@ describe("new definition creation", () => {
     const files = coreFiles();
     const fixture = disk(files);
     const pack = await readEditorDirectory(fixture.directory);
-    const plan = await prepareDefinitionClone([pack], "core", sourcePath, "test-tank", "Test Tank");
+    const plan = await prepareDefinitionClone(
+      [pack],
+      "core",
+      sourcePath,
+      "test-tank",
+      "Test Tank",
+      audio,
+    );
     const baseline = files.get("manifest.json")!;
     files.set("manifest.json", new File(["{}"], "manifest.json"));
-    await expect(writeDefinitionClone([pack], plan)).rejects.toThrow("manifest changed");
+    await expect(writeDefinitionClone([pack], plan, audio)).rejects.toThrow("manifest changed");
     files.set("manifest.json", baseline);
     files.set(newPath, new File(["other person's draft"], "unit.json"));
-    await expect(writeDefinitionClone([pack], plan)).rejects.toThrow("no longer empty");
+    await expect(writeDefinitionClone([pack], plan, audio)).rejects.toThrow("no longer empty");
     expect(fixture.state.writes).toEqual([]);
     expect(await files.get(newPath)!.text()).toBe("other person's draft");
   }, 20000);
@@ -183,13 +207,20 @@ describe("new definition creation", () => {
     const files = coreFiles();
     const fixture = disk(files);
     const pack = await readEditorDirectory(fixture.directory);
-    const plan = await prepareDefinitionClone([pack], "core", sourcePath, "test-tank", "Test Tank");
+    const plan = await prepareDefinitionClone(
+      [pack],
+      "core",
+      sourcePath,
+      "test-tank",
+      "Test Tank",
+      audio,
+    );
     const first = [...plan.files.keys()].find((path) => path !== "manifest.json")!;
     fixture.state.fail = "manifest.json";
     fixture.state.onFailure = () => {
       files.set(first, new File(["external edit"], first.split("/").at(-1)!));
     };
-    await expect(writeDefinitionClone([pack], plan)).rejects.toThrow("preserved");
+    await expect(writeDefinitionClone([pack], plan, audio)).rejects.toThrow("preserved");
     expect(await files.get(first)!.text()).toBe("external edit");
     expect(await files.get("manifest.json")!.text()).toBe(plan.manifestBaseline);
   }, 20000);

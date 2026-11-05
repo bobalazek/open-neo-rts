@@ -8,6 +8,7 @@ import {
 import { validateAssetGlb } from "@open-neo-rts/content/asset-validation";
 import { validateAudioContainer } from "@open-neo-rts/content/audio-validation";
 import { compileGameplayCatalog } from "@open-neo-rts/sim";
+import { checkEditorAudio } from "./audio-validation";
 
 export interface EditorFile {
   text(): Promise<string>;
@@ -139,8 +140,9 @@ export async function checkDefinitionDraft(
   packId: string,
   path: string,
   draft: unknown,
+  audio = checkEditorAudio,
 ) {
-  return (await resolveDefinitionDraft(packs, packId, path, draft)).issues;
+  return (await resolveDefinitionDraft(packs, packId, path, draft, audio)).issues;
 }
 
 /** Share the exact validated snapshot with authoring previews instead of resolving different inputs. */
@@ -149,8 +151,9 @@ export async function resolveDefinitionDraft(
   packId: string,
   path: string,
   draft: unknown,
+  audio = checkEditorAudio,
 ) {
-  // shortcut: native audio decoding/metering, source freshness and formatting parity remain 2-38b2.
+  // shortcut: CLI true-peak metering, source freshness and formatting parity remain 2-38b2.
   if (new TextEncoder().encode(JSON.stringify(draft)).byteLength > 2 * 1024 * 1024)
     throw new Error("Definition JSON exceeds 2 MiB");
   const inputs = packs.map((pack) => ({ ...pack.input, json: new Map(pack.input.json) }));
@@ -190,10 +193,13 @@ export async function resolveDefinitionDraft(
         const mono = ["unit", "structure", "prop"].some((kind) =>
           pack.input.json.has(`${folder}${kind}.json`),
         );
+        const container = validateAudioContainer(data, mono, folder.split("/").at(-2) === "music");
         issues.push(
-          ...validateAudioContainer(data, mono, folder.split("/").at(-2) === "music").map(
-            (message) => ({ level: "error" as const, file: name, message }),
-          ),
+          ...(container.length ? container : await audio(data)).map((message) => ({
+            level: "error" as const,
+            file: name,
+            message,
+          })),
         );
       }
     for (const input of inputs)

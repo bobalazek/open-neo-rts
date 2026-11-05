@@ -1,3 +1,4 @@
+import { checkEditorAudio } from "./audio-validation";
 import type { DefinitionClone } from "./creation";
 import {
   checkDefinitionDraft,
@@ -12,7 +13,11 @@ const equal = (left: Uint8Array, right: Uint8Array) =>
   left.length === right.length && left.every((byte, index) => byte === right[index]);
 
 /** Publish the manifest last; failed payload writes remove only unchanged files we created. */
-export async function writeDefinitionClone(packs: readonly EditorPack[], plan: DefinitionClone) {
+export async function writeDefinitionClone(
+  packs: readonly EditorPack[],
+  plan: DefinitionClone,
+  audio = checkEditorAudio,
+) {
   const directory = packs.find((pack) => pack.input.id === plan.packId)?.directory;
   if (!directory?.getDirectoryHandle || !directory.getFileHandle || !directory.removeEntry)
     throw new Error("This folder does not support creation; download the changes instead");
@@ -85,6 +90,7 @@ export async function writeDefinitionClone(packs: readonly EditorPack[], plan: D
       plan.packId,
       plan.path,
       plan.draft,
+      audio,
     );
     if (issues.some((issue) => issue.level === "error"))
       throw new Error(

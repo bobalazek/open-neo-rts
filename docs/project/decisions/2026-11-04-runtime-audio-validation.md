@@ -51,3 +51,10 @@ full browser audio parity: a checksummed container can still contain undecodable
 silent or over-loud samples. Native codec decoding and true-peak measurement,
 source/schema freshness and exact project formatting remain task 2-38b2. No
 simulation version, source media or built-in content identity changes.
+
+**Native decoder follow-up (November 5).** [Offline browser decoding and sample
+checks](2026-11-05-editor-audio-decoding.md) now reject undecodable, silent,
+non-finite and excessive sample-level exports through the same save/playtest
+gates. True-peak meter parity, source/schema freshness and exact formatting
+remain open; the earlier container-only limitation above records that delivery's
+scope.

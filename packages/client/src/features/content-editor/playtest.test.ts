@@ -39,9 +39,19 @@ async function core() {
 }
 const path = "factions/eastern-collective/units/dragon-tank/unit.json";
 
+// Domain checks run in Bun; actual decoding is exercised by the browser journeys.
+const audio = async () => [];
+
 test("draft scenarios preserve normal defaults, authored maps and legal mirrored starting kits", async () => {
   const pack = await core();
-  const prepared = await prepareDraftPlaytest([pack], "core", path, pack.input.json.get(path));
+  const prepared = await prepareDraftPlaytest(
+    [pack],
+    "core",
+    path,
+    pack.input.json.get(path),
+    undefined,
+    audio,
+  );
   try {
     const catalog = prepared.skirmish.content.catalog!;
     const trainingGrid = parseTerrain(128, 128, {});
@@ -126,6 +136,7 @@ test("draft scenarios preserve normal defaults, authored maps and legal mirrored
       path,
       pack.input.json.get(path),
       config,
+      audio,
     );
     try {
       config.seed = 99;
@@ -204,7 +215,7 @@ test("playtests own validated unsaved definitions and models without changing th
     movement: { ...(original.movement as object), speed: 3 },
   };
   const revoke = spyOn(URL, "revokeObjectURL");
-  const prepared = await prepareDraftPlaytest([pack], "core", path, draft);
+  const prepared = await prepareDraftPlaytest([pack], "core", path, draft, undefined, audio);
   try {
     const entry = prepared.catalog.find((entry) => entry.definition.id === prepared.definition)!;
     expect(entry.definition.health).toBe(1901);
@@ -272,6 +283,8 @@ test("draft skirmishes use authored edited damage in real normal combat and reta
     "core",
     "factions/eastern-collective/units/collective-soldier/unit.json",
     draft,
+    undefined,
+    audio,
   );
   try {
     expect(prepared.supportsSkirmish).toBe(true);
@@ -340,6 +353,8 @@ test("draft recipes charge the edited price and tier-1 clones join only the temp
     "core",
     "factions/eastern-collective/units/field-technician/unit.json",
     draft,
+    undefined,
+    audio,
   );
   try {
     const setup = skirmish(prepared),
@@ -415,8 +430,16 @@ test("draft recipes charge the edited price and tier-1 clones join only the temp
     "factions/eastern-collective/units/collective-soldier/unit.json",
     "test-rifle",
     "Test Rifle",
+    audio,
   );
-  const copied = await prepareDraftPlaytest([clone.candidate], "core", clone.path, clone.draft);
+  const copied = await prepareDraftPlaytest(
+    [clone.candidate],
+    "core",
+    clone.path,
+    clone.draft,
+    undefined,
+    audio,
+  );
   try {
     expect(copied.supportsSkirmish).toBe(true);
     expect(copied.skirmish.roster.has("core.unit:eastern-collective/test-rifle")).toBe(true);
@@ -437,14 +460,21 @@ test("invalid drafts create no asset URLs and suitable water/node maps use autho
   try {
     const original = pack.input.json.get(path) as object;
     await expect(
-      prepareDraftPlaytest([pack], "core", path, { ...original, health: -1 }),
+      prepareDraftPlaytest([pack], "core", path, { ...original, health: -1 }, undefined, audio),
     ).rejects.toThrow();
     expect(create).not.toHaveBeenCalled();
     for (const [file, map] of [
       ["factions/eastern-collective/structures/shipyard/structure.json", "core.map:sandbox-water"],
       ["neutral/structures/resource-extractor/structure.json", "core.map:sandbox-resources"],
     ] as const) {
-      const prepared = await prepareDraftPlaytest([pack], "core", file, pack.input.json.get(file));
+      const prepared = await prepareDraftPlaytest(
+        [pack],
+        "core",
+        file,
+        pack.input.json.get(file),
+        undefined,
+        audio,
+      );
       try {
         expect(prepared.initial.map).toBe(map);
       } finally {
