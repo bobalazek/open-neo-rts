@@ -5,6 +5,93 @@ import { parseGlb } from "../../../packages/content/src/assets/glb";
 import { contentToolsFixture } from "./content-tools-fixture";
 import { nativeFrame } from "./native-paint";
 
+test("native part sliders pose authored pivots without changing the downloadable model", async ({
+  page,
+}, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/tools/content?model=core.unit:eastern-collective/dragon-tank");
+  await expect(page.locator("#game")).toHaveAttribute("data-model", "Dragon Tank", {
+    timeout: 30000,
+  });
+  const button = page.getByRole("button", { name: "Part controls", exact: true });
+  await expect(button).toBeEnabled();
+  await button.press("Enter");
+  const part = page.getByLabel("Model part", { exact: true });
+  const y = page.getByRole("slider", { name: "Rotation Y (°)", exact: true });
+  await expect(part).toHaveValue("turret");
+  await part.focus();
+  for (const axis of ["X", "Y", "Z"]) {
+    await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("slider", { name: `Rotation ${axis} (°)`, exact: true }),
+    ).toBeFocused();
+  }
+  await page.evaluate(() => Reflect.get(window, "contentToolPaint").clear());
+  await y.focus();
+  await expect
+    .poll(() =>
+      page.evaluate(() => Reflect.get(window, "contentToolPaint").has("Rotation Y (°): 0")),
+    )
+    .toBe(true);
+  const point = await page.evaluate(
+    () =>
+      Reflect.get(window, "contentToolPaint").get("Rotation Y (°): 0") as { x: number; y: number },
+  );
+  const pane = (await page.locator(".content-tools-controls").boundingBox())!;
+  const center = pane.x + pane.width / 2;
+  await page.mouse.move(center, point.y + 38);
+  await page.mouse.down();
+  await page.mouse.move(center + 65, point.y + 38, { steps: 5 });
+  await page.mouse.up();
+  await expect.poll(async () => Number(await y.inputValue())).toBeGreaterThan(0);
+  await y.focus();
+  await y.press("End");
+  await expect(y).toHaveValue("180");
+  await y.press("ArrowLeft");
+  await expect(y).toHaveValue("179");
+  await part.selectOption("barrel");
+  const x = page.getByRole("slider", { name: "Rotation X (°)", exact: true });
+  await x.evaluate((element: HTMLInputElement) => {
+    element.value = "-15";
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(x).toHaveValue("-15");
+  await x.focus();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("parts-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await x.focus();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("parts-mobile.png") });
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download GLB", exact: true }).press("Enter");
+  const download = await downloading;
+  const original = await readFile(
+    new URL(
+      "../../../content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb",
+      import.meta.url,
+    ),
+  );
+  expect(await readFile((await download.path())!)).toEqual(original);
+  await page.getByRole("button", { name: "Fire", exact: true }).press("Enter");
+  await expect(x).toHaveValue("-15");
+  await part.selectOption("turret");
+  await expect(y).toHaveValue("179");
+  await page.getByRole("button", { name: "Restore model", exact: true }).press("Enter");
+  await expect(y).toHaveValue("0");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "no-parts.glb",
+    mimeType: "model/gltf-binary",
+    buffer: Buffer.from(contentToolsFixture()),
+  });
+  await expect(page.locator("#game")).toHaveAttribute("data-model", "no-parts.glb");
+  await expect(page.getByRole("button", { name: "Part controls", exact: true })).toBeDisabled();
+  await expect(page.locator("[data-part-controls]")).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
 test("socket editor applies checked model-local edits and exports a geometry-preserving GLB", async ({
   page,
 }, info) => {
@@ -66,7 +153,7 @@ test("socket editor applies checked model-local edits and exports a geometry-pre
   await page.getByRole("button", { name: "Add socket", exact: true }).press("Enter");
   await expect(socket.locator("option:checked")).toHaveText("socket_marker");
   await x.fill("0.5");
-  await page.getByLabel("Rotation Y (°)", { exact: true }).fill("45");
+  await editor.getByLabel("Rotation Y (°)", { exact: true }).fill("45");
   await page.getByLabel("Gizmo", { exact: true }).selectOption("rotate");
   await nativeFrame(page);
   await page.screenshot({ path: info.outputPath("sockets-desktop.png") });
@@ -115,7 +202,7 @@ test("socket editor applies checked model-local edits and exports a geometry-pre
   await expect(editor).toHaveCount(1);
   await socket.selectOption({ label: "socket_marker" });
   await expect(x).toHaveValue("0.5");
-  await expect(page.getByLabel("Rotation Y (°)", { exact: true })).toHaveValue("45");
+  await expect(editor.getByLabel("Rotation Y (°)", { exact: true })).toHaveValue("45");
   await page.getByRole("button", { name: "Cancel socket edits", exact: true }).press("Enter");
   expect(errors).toEqual([]);
 });
@@ -289,6 +376,7 @@ test("content tools preview installed models and local team/clip/LOD/damage chan
   const input = page.locator('input[type="file"]');
   await page.evaluate(() => Reflect.get(window, "contentToolPaint").delete("Open local GLB"));
   await page.getByRole("button", { name: "Open local GLB", exact: true }).focus();
+  await nativeFrame(page);
   await expect
     .poll(() =>
       page.evaluate(() => {

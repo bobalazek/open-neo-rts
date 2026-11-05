@@ -254,6 +254,12 @@ source.
   actions stay in the scrolling body, preserving the compact Open/definition
   footer. Fire/clip previews resume after applying or canceling socket mode. See
   `../../docs/project/decisions/2026-11-05-model-socket-editing.md`.
+- Part controls (2-38d2) disclose native XYZ degree sliders for authored part
+  pivots, with sequential keyboard focus and readable values. Fire retains the
+  posed muzzle; Restore model, clips, health and socket editing return to rest.
+  These inspection poses never alter downloaded GLB bytes. Free part gizmos,
+  material mappings and full editor validation remain open. See
+  `../../docs/project/decisions/2026-11-05-model-part-controls.md`.
 - The same model-first tool includes 2-38b1 editing of existing unit, structure
   and prop definitions from owner-selected pack folders. Opened packs supply
   dependencies. Schema-derived scalar, enum, boolean, nested object, record and

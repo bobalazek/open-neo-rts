@@ -505,7 +505,7 @@
         "recovery": "The editor retains unsaved fields while its model/panel rendering is suspended. Return to draft remains available after worker failure, disposes worker/scene and temporary URLs, restores the native pane, resumes the model and returns focus to the initiating Playtest draft action. Leaving content tools also releases playtest resources.",
         "reproduction": "Canonical command-log export contains the actual copied simulation definitions and commands. Copy initial setup link is disabled because a URL cannot carry unsaved definitions or models. Export reproduces simulation, not an asset pack."
       },
-      "deferred": "The whole 2-38b task remains open: 2-38b2 retains full runtime audio, source freshness and exact project formatter parity. Scenario presets complete the remaining 2-38c2 slice. Socket editing and GLB copy export are recorded in extensions.modelSocketEditing. Part controls, damage-socket smoke/fire previews, grid/scale reference, material mappings, native debug conversion and remaining documented editor controls remain follow-up work.",
+      "deferred": "The whole 2-38b task remains open: 2-38b2 retains full runtime audio, source freshness and exact project formatter parity. Scenario presets complete the remaining 2-38c2 slice. Socket editing and GLB copy export are recorded in extensions.modelSocketEditing; part inspection sliders are recorded in extensions.modelPartControls. Free part gizmos, damage-socket smoke/fire previews, grid/scale reference, material mappings, native debug conversion and remaining documented editor tabs/validation remain follow-up work.",
       "qualification": "No blanket phase acceptance, physical directory-picker/file-dragging, touch/IME, screen-reader, Firefox or hardware-performance qualification. No simulation version or gameplay outcome change.",
       "deferredDrift": "Unrelated incumbent Audio wording and deviceAudio metadata remain preserved for a separate documentation refresh.",
       "normalPlaytestDecision": "../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md",
@@ -530,6 +530,30 @@
         "qualification": "Implementation evidence is limited to the current Chrome/WebKit browser scope; it does not qualify Firefox, physical touch/IME, screen readers or hardware FPS."
       },
       "scenarioDecision": "../../docs/project/decisions/2026-11-04-draft-scenario-presets.md"
+    },
+    "modelPartControls": {
+      "sources": [
+        "src/features/content-editor/index.ts",
+        "../render/src/scene/panel.ts",
+        "../render/src/units/preview.ts",
+        "../render/src/units/preview-actions.ts",
+        "src/locales/en.json"
+      ],
+      "surfaceBrief": ".impeccable/surfaces/src-features-content-editor-index-ts.md",
+      "decision": "../../docs/project/decisions/2026-11-05-model-part-controls.md",
+      "world": "Code-led Operate extension of Graphite Command Stations: original model dominant on the desktop left/narrow-screen top, scrolling native graphite pane right/below, existing pinned Arial, ivory focus and brass actions. No token, identity, composition, asset or decorative-motion change.",
+      "interaction": "Part controls reveals an authored-part picker and XYZ native degree sliders bounded to -180 through 180. Definitions supply presentation.parts; standalone art uses conventional hull/turret/barrel/rotor/legs nodes. Models without parts add no empty form. Each offset uses the actual node's local authored rest quaternion and shows its current degree value.",
+      "keyboard": "Semantic range input and native pointer dragging share values. Tab reaches the picker and XYZ axes; arrow keys change degrees while native focus follows semantic focus. Explicit tabIndex=0 preserves WebKit sequential range focus. Revealing a focused slider also reveals its readable caption above the pinned footer.",
+      "actions": "Changing a part stops the clip. Fire retains the pose, samples its actual posed muzzle and layers the existing recoil preview. Restore model, clip playback, health changes and socket-entry reset parts to rest. Successful replacement replaces controls; failed candidates retain the last good model and pose.",
+      "persistence": "Inspection poses do not rewrite geometry, animation keys, source packs, definitions or simulation state. Download GLB retains opened bytes, including only separately applied socket edits.",
+      "evidence": [
+        ".impeccable/review/parts-desktop-chromium.png",
+        ".impeccable/review/parts-desktop-webkit.png",
+        ".impeccable/review/parts-mobile-chromium.png",
+        ".impeccable/review/parts-mobile-webkit.png"
+      ],
+      "qualification": "All ten content-tools journeys passed in current Chromium and WebKit. Fresh finish review opened all four captures and returned SHIP with no fixes. Context discovery and detector were not rerun. No physical touch/IME, screen-reader, Firefox or hardware-performance qualification; no whole-editor or phase acceptance.",
+      "deferred": "Free part gizmos, material mappings, remaining documented editor tabs/validation, 2-38b2 parity and damage-socket smoke/fire previews remain open."
     },
     "modelSocketEditing": {
       "task": "2-38d1",

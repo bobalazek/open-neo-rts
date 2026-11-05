@@ -18,7 +18,7 @@ export function startContentTools(canvas: HTMLCanvasElement) {
   root.className = "content-tools";
   root.innerHTML = `<!-- THESIS: inspect original model behaviour and actual validator output before entering a match.
 OWN-WORLD: inherited graphite command stations, original brick subjects, native framed controls.
-STORY: inspect a model, edit sockets with native gizmos and checked GLB copies, or open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks or a temporary normal skirmish.
+STORY: inspect original model parts and actions, edit sockets with native gizmos and checked GLB copies, or open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks or a temporary normal skirmish.
 FIRST VIEWPORT: the model owns the desktop left; a scrolling native tool pane sits right, below the model when narrow.
 FORM: code-led Operate extension of existing native panels and the documented model-first tool.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
@@ -82,6 +82,72 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     destroy = action("destroy"),
     restore = action("restore");
   health.closest("label")!.after(actions);
+  const partsButton = document.createElement("button");
+  partsButton.type = "button";
+  partsButton.disabled = true;
+  partsButton.textContent = text("ui.parts.show");
+  actions.append(partsButton);
+  const partsPanel = document.createElement("div");
+  partsPanel.dataset.partControls = "";
+  partsPanel.hidden = true;
+  const part = document.createElement("select");
+  part.name = "preview-part";
+  const partLabel = document.createElement("label");
+  partLabel.textContent = text("ui.parts.part");
+  part.setAttribute("aria-label", text("ui.parts.part"));
+  partLabel.append(part);
+  partsPanel.append(partLabel);
+  const partAxes = (["x", "y", "z"] as const).map((axis, index) => {
+    const label = document.createElement("label"),
+      input = document.createElement("input");
+    label.textContent = text(`ui.parts.${axis}`);
+    input.type = "range";
+    input.tabIndex = 0;
+    input.name = `preview-part-${axis}`;
+    input.min = "-180";
+    input.max = "180";
+    input.step = "1";
+    input.value = "0";
+    input.setAttribute("aria-label", label.textContent);
+    input.title = text("ui.parts.help");
+    input.setAttribute("data-contextual-help", "");
+    label.append(input);
+    partsPanel.append(label);
+    input.addEventListener(
+      "input",
+      () => {
+        preview?.posePart(part.value, index, Number(input.value));
+        clip.value = "";
+        syncParts();
+        panel.update();
+      },
+      { signal: events.signal },
+    );
+    return input;
+  });
+  actions.after(partsPanel);
+  function syncParts() {
+    partsButton.disabled = !preview?.parts().length || !!editor || !!socketEditor || socketOpening;
+    part.disabled = partsButton.disabled || !preview?.canDestroy();
+    const angles = preview?.partAngles(part.value) ?? [0, 0, 0];
+    partAxes.forEach((input, index) => {
+      input.disabled = part.disabled;
+      input.value = String(angles[index]);
+      input.setAttribute("aria-valuetext", `${angles[index]}°`);
+    });
+    partsButton.textContent = text(partsPanel.hidden ? "ui.parts.show" : "ui.parts.hide");
+  }
+  part.addEventListener("change", syncParts, { signal: events.signal });
+  partsButton.addEventListener(
+    "click",
+    () => {
+      partsPanel.hidden = !partsPanel.hidden;
+      syncParts();
+      panel.update();
+      if (!partsPanel.hidden) part.focus();
+    },
+    { signal: events.signal },
+  );
   checks.setAttribute("data-panel-content", "");
   const semantics = root.querySelector("section")!;
   const edit = document.createElement("button");
@@ -201,8 +267,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         checks.setAttribute("data-panel-content", "");
         for (const [element, hidden] of previous) element.hidden = hidden;
         restoreEditor = undefined;
+        syncParts();
         panel.update();
       };
+      syncParts();
       panel.update();
     },
     { signal: events.signal },
@@ -329,6 +397,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     const ticket = ++request;
     fetching?.abort();
     preview?.cancelLoad();
+    partsButton.disabled = part.disabled = true;
+    for (const input of partAxes) input.disabled = true;
     clip.disabled =
       lod.disabled =
       health.disabled =
@@ -354,6 +424,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         weapons: candidate.raw
           ? ((candidate.raw.weapons ?? []) as { socket?: string }[])
           : undefined,
+        parts: (candidate.raw?.presentation as { parts?: string[] } | undefined)?.parts,
       });
       if (disposed || ticket !== request || !clips) return;
       opened = candidate;
@@ -379,6 +450,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       scene.setTeamColor(team.value);
       scene.setLod(lod.value as "auto" | "0" | "1");
       scene.setHealth(Number(health.value));
+      part.replaceChildren(...scene.parts().map((name) => new Option(name, name)));
+      if (scene.parts().includes("turret")) part.value = "turret";
+      if (!scene.parts().length) partsPanel.hidden = true;
+      syncParts();
       canvas.dataset.model = candidate.name;
       status.textContent = assetDirty
         ? text("ui.sockets.applied")
@@ -397,6 +472,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         destroy.disabled = !preview?.canDestroy();
         restore.disabled = false;
         socketButton.disabled = downloadModel.disabled = false;
+        syncParts();
       }
     } finally {
       if (!disposed && ticket === request) panel.update();
@@ -499,6 +575,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     () => {
       preview?.fire();
       clip.value = "";
+      syncParts();
       panel.update();
     },
     { signal: events.signal },
@@ -509,6 +586,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       preview?.destroy();
       clip.value = "";
       fire.disabled = destroy.disabled = true;
+      syncParts();
       panel.update();
     },
     { signal: events.signal },
@@ -520,6 +598,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       clip.value = "";
       fire.disabled = !preview?.canFire();
       destroy.disabled = false;
+      syncParts();
       panel.update();
     },
     { signal: events.signal },
@@ -545,6 +624,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         if (control === clip || control === health) {
           fire.disabled = !preview?.canFire();
           destroy.disabled = !opened;
+          syncParts();
         }
         panel.update();
       },
@@ -608,6 +688,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             checks.setAttribute("data-panel-content", "");
             restoreSockets = undefined;
             root.querySelector<HTMLButtonElement>("[data-back]")!.disabled = false;
+            syncParts();
             panel.update();
             socketButton.focus();
           };

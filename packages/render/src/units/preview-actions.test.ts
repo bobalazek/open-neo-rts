@@ -51,6 +51,54 @@ function fixture() {
   };
 }
 
+test("part controls rotate local pivots, retain posed muzzles when firing, and restore authored rest", () => {
+  const f = fixture();
+  const turret = new TransformNode("turret", f.scene);
+  const barrel = new TransformNode("barrel", f.scene);
+  turret.parent = f.root;
+  barrel.parent = turret;
+  turret.rotation.z = 0.2;
+  barrel.rotation.x = 0.1;
+  f.muzzle.parent = barrel;
+  f.live.nodes.push(turret, barrel);
+  const actions = createModelActions(
+    f.scene,
+    f.live,
+    undefined,
+    [{ socket: "socket_side" }],
+    ["turret", "barrel"],
+  );
+  try {
+    expect(actions.parts).toEqual(["turret", "barrel"]);
+    actions.posePart("turret", 1, 90);
+    actions.posePart("barrel", 0, -15);
+    const expected = Quaternion.FromEulerAngles(0, 0, 0.2).multiply(
+      Quaternion.FromEulerAngles(0, Math.PI / 2, 0),
+    );
+    expect(turret.rotationQuaternion!.equalsWithEpsilon(expected)).toBe(true);
+    const origin = f.muzzle.computeWorldMatrix(true).getTranslation().asArray();
+    expect(actions.fire()).toBe(true);
+    expect(f.scene.getMeshByName("preview muzzle flash")!.position.asArray()).toEqual(origin);
+    f.scene.onAfterAnimationsObservable.notifyObservers(f.scene);
+    expect(turret.rotationQuaternion!.equalsWithEpsilon(expected)).toBe(true);
+    expect(actions.partAngles("barrel")).toEqual([-15, 0, 0]);
+    for (const degrees of [Number.NaN, Infinity, -181, 181])
+      expect(() => actions.posePart("turret", 1, degrees)).toThrow();
+    expect(() => actions.posePart("missing", 1, 20)).toThrow();
+    expect(() => actions.posePart("turret", 1.5, 20)).toThrow();
+    actions.posePart("turret", 1, 0);
+    expect(turret.rotationQuaternion).toBeNull();
+    actions.reset();
+    expect(actions.partAngles("barrel")).toEqual([0, 0, 0]);
+    expect(barrel.rotationQuaternion).toBeNull();
+    expect(barrel.rotation.x).toBe(0.1);
+    expect(turret.rotation.z).toBe(0.2);
+  } finally {
+    actions.dispose();
+    f.dispose();
+  }
+});
+
 test("preview firing uses the assigned transformed muzzle and releases its own effects", () => {
   const f = fixture();
   try {

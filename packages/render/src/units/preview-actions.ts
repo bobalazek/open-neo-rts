@@ -13,6 +13,7 @@ type Model = Awaited<ReturnType<typeof loadModel>>;
 export interface ModelPreviewAssets {
   weapons?: readonly { socket?: string }[];
   wreck?: Uint8Array;
+  parts?: readonly string[];
 }
 
 /** Isolated authoring effects; never emit commands or change gameplay values. */
@@ -21,7 +22,39 @@ export function createModelActions(
   live: Model,
   wreck?: Model,
   weapons?: ModelPreviewAssets["weapons"],
+  partNames?: readonly string[],
 ) {
+  const parts = live.nodes
+    .filter((node) =>
+      partNames
+        ? partNames.includes(node.name)
+        : /^(hull|turret|barrel|rotor|legs)(_[0-9]+)?$/.test(node.name),
+    )
+    .map((node) => ({
+      node,
+      rotation: node.rotation.clone(),
+      quaternion: node.rotationQuaternion?.clone(),
+      rest: node.rotationQuaternion?.clone() ?? Quaternion.FromEulerVector(node.rotation),
+      angles: [0, 0, 0],
+    }));
+  const restoreParts = () => {
+    for (const part of parts) {
+      part.node.rotation.copyFrom(part.rotation);
+      part.node.rotationQuaternion = part.quaternion?.clone() ?? null;
+    }
+  };
+  const poseParts = () => {
+    if (state !== "live") return;
+    for (const part of parts)
+      if (part.angles.some((angle) => angle !== 0))
+        part.node.rotationQuaternion = part.rest.multiply(
+          Quaternion.FromEulerAngles(
+            (part.angles[0]! * Math.PI) / 180,
+            (part.angles[1]! * Math.PI) / 180,
+            (part.angles[2]! * Math.PI) / 180,
+          ),
+        );
+  };
   const enable = (model: Model | undefined, enabled: boolean) => {
     if (!model) return;
     for (const node of model.nodes)
@@ -59,6 +92,7 @@ export function createModelActions(
   let firing = -1,
     elapsed = 0,
     state: "live" | "death" | "debris" | "wreck" = "live";
+  const posing = scene.onAfterAnimationsObservable.add(poseParts);
   const clear = () => {
     for (const mesh of effects) mesh.dispose(false, mesh.name === "preview tracer");
     effects = [];
@@ -103,6 +137,29 @@ export function createModelActions(
     elapsed = 0;
   }
   return {
+    parts: parts.map((part) => part.node.name),
+    partAngles(name: string) {
+      return [...(parts.find((part) => part.node.name === name)?.angles ?? [0, 0, 0])];
+    },
+    posePart(name: string, axis: number, degrees: number) {
+      const part = parts.find((part) => part.node.name === name);
+      if (
+        !part ||
+        !Number.isInteger(axis) ||
+        axis < 0 ||
+        axis > 2 ||
+        !Number.isFinite(degrees) ||
+        Math.abs(degrees) > 180
+      )
+        throw new RangeError("Invalid preview part rotation");
+      if (state !== "live") return false;
+      clear();
+      live.play("");
+      restoreParts();
+      part.angles[axis] = degrees;
+      poseParts();
+      return true;
+    },
     get canFire() {
       return state === "live" && muzzles.length > 0;
     },
@@ -114,6 +171,7 @@ export function createModelActions(
       clear();
       const clip = ["fire_recoil", "attack"].find((name) => live.clips.includes(name));
       live.play(clip ?? "");
+      poseParts();
       if (!material) {
         material = new StandardMaterial("preview muzzle", scene);
         material.emissiveColor = material.diffuseColor = Color3.FromHexString("#ffba52");
@@ -160,12 +218,15 @@ export function createModelActions(
       }
       elapsed = 0;
       if (live.clips.includes("death")) {
+        restoreParts();
         live.play("death");
         state = "death";
       } else scatter();
     },
     reset() {
       clear();
+      restoreParts();
+      for (const part of parts) part.angles.fill(0);
       enable(wreck, false);
       for (const pose of wreckPose) {
         pose.node.rotation.copyFrom(pose.rotation);
@@ -202,6 +263,7 @@ export function createModelActions(
       wreck?.setTeamColor(hex);
     },
     dispose() {
+      scene.onAfterAnimationsObservable.remove(posing);
       clear();
       material?.dispose();
     },

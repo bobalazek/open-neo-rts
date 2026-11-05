@@ -101,7 +101,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
           nextWreck?.dispose();
           return undefined;
         }
-        nextActions = createModelActions(scene, next, nextWreck, assets.weapons);
+        nextActions = createModelActions(scene, next, nextWreck, assets.weapons, assets.parts);
       } catch (error) {
         nextActions?.dispose();
         next.dispose();
@@ -129,6 +129,10 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
       return next.clips;
     },
     canFire: () => actions?.canFire ?? false,
+    parts: () => actions?.parts ?? [],
+    partAngles: (name: string) => actions?.partAngles(name) ?? [0, 0, 0],
+    posePart: (name: string, axis: number, degrees: number) =>
+      actions?.posePart(name, axis, degrees),
     editSockets(specs: readonly SocketNode[], changed: () => void) {
       if (!current) throw new Error("No model loaded");
       sockets?.dispose();

@@ -135,8 +135,10 @@ checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
 The six-map scenario presets complete the remaining 2-38c2 slice. Full runtime
 audio, source freshness and exact formatter parity remain 2-38b2. Asset editing
 now includes native socket Move/Rotate gizmos, local numeric fields and checked
-GLB copy exports. Part controls, material mappings and damage-socket smoke/fire
-previews remain open.
+GLB copy exports. Native Part controls reveal an authored-part picker and XYZ
+degree sliders for inspection poses around actual local rest pivots. Free part
+gizmos, material mappings, remaining documented tabs/validation and damage-socket
+smoke/fire previews remain open.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -191,6 +193,8 @@ Scenario configuration follows
 `../../docs/project/decisions/2026-11-04-draft-scenario-presets.md`.
 Isolated model actions use `../render/src/units/preview-actions.ts` and follow
 `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
+Part controls use the same preview actions and shared native panel, following
+`../../docs/project/decisions/2026-11-05-model-part-controls.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -665,7 +669,17 @@ the text leaves space for that disclosure mark.
   nodes; replacement and unload guard unsaved preview edits. Download GLB creates
   a separate copy: appended node indices preserve geometry, animations, materials,
   metadata and every following GLB chunk. Original parts and source files remain
-  intact; this does not add part or material editing.
+  intact; part inspection poses are separate and material editing remains open.
+- **Model part controls:** the native disclosure reveals an authored-part picker
+  and XYZ sliders bounded to −180…180°, with readable current degree captions.
+  Local offsets use each actual node's authored rest pivot. Pointer and semantic
+  range input share values; Tab and arrow keys retain native focus, including
+  explicit sequential range focus in WebKit. Focus scrolling keeps the slider's
+  caption visible. Changing a part stops the clip; Fire retains the pose and
+  samples its actual muzzle. Restore model, clip playback, health changes and
+  socket-entry restore rest. These are inspection poses: Download GLB retains the
+  opened bytes and only separately applied socket edits. Free part gizmos,
+  material mappings and remaining documented editor tabs/validation stay open.
 - **Existing-definition authoring:** owner-selected packs supply unit, structure
   and prop definitions and their dependencies. Schema-derived fields reuse the
   native square inputs and choices, ivory focus and warm-metal actions. Only
@@ -686,8 +700,9 @@ the text leaves space for that disclosure mark.
   checks gate saving, creation and draft playtests. Container errors use existing
   file-specific diagnostics and preserve edits for retry. Native audio decoding/
   metering, source freshness and exact formatter parity remain 2-38b2;
-  socket editing/GLB copy export is implemented, while part controls, material
-  mappings and damage-socket smoke/fire previews remain open.
+  socket editing/GLB copy export and part inspection sliders are implemented,
+  while free part gizmos, material mappings, remaining documented tabs/validation
+  and damage-socket smoke/fire previews remain open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source
