@@ -231,6 +231,14 @@ export class TerrainMovement {
     return !!start && start === labels[this.cell(point)];
   }
 
+  /** Conservative continuous-start filter; counted planning still decides actual joins and paths. */
+  sharesPhysicalRegion(id: number, point: Point): boolean {
+    if (!this.canStand(id, point)) return false;
+    const { grid } = this.profile(this.definitionOf(id));
+    const start = grid.physicalRegions[this.cell(this.position(id))];
+    return !!start && start === grid.physicalRegions[this.cell(point)];
+  }
+
   /** Certified exterior work positions use the same radius/domain/occupancy grid as normal orders. */
   canStand(id: number, point: Point): boolean {
     return this.canStandDefinition(this.definitionOf(id), point);

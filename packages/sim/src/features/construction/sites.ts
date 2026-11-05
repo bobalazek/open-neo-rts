@@ -414,17 +414,34 @@ export function constructionFeature(
             clearConstructionOrder(kernel, id);
           const x = world.get(id, Transform, "x"),
             y = world.get(id, Transform, "y");
-          const radius = definitionOf(kernel, id)?.radiusSubcells ?? 0;
+          const definition = definitionOf(kernel, id);
+          const radius = definition?.radiusSubcells ?? 0;
           const targets = [
             { x: minX * 1024 - radius - 512, y },
             { x: (maxX + 1) * 1024 + radius + 512, y },
             { x, y: minY * 1024 - radius - 512 },
             { x, y: (maxY + 1) * 1024 + radius + 512 },
-          ].sort((a, b) => (a.x - x) ** 2 + (a.y - y) ** 2 - ((b.x - x) ** 2 + (b.y - y) ** 2));
+          ]
+            .map((point) =>
+              definition?.domain === "air"
+                ? point
+                : {
+                    x: Math.floor(point.x / 1024) * 1024 + 512,
+                    y: Math.floor(point.y / 1024) * 1024 + 512,
+                  },
+            )
+            .sort((a, b) => (a.x - x) ** 2 + (a.y - y) ** 2 - ((b.x - x) ** 2 + (b.y - y) ** 2));
+          // An obstructed goal can make normal navigation fall back into the future footprint.
+          const target =
+            targets.find(
+              (point) => definition?.domain === "air" || kernel.movement?.canReach(id, point),
+            ) ??
+            // Continuous starts can be valid even when their containing cell center is blocked.
+            targets.find((point) => kernel.movement?.sharesPhysicalRegion(id, point));
           if (world.has(id, MoveIntent)) world.remove(id, MoveIntent);
           if (world.has(id, MovementFailure)) world.remove(id, MovementFailure);
           kernel.movement.cancel(id);
-          kernel.movement.order(id, targets[0] as { x: number; y: number });
+          if (target) kernel.movement.order(id, target);
         }
       },
       "economy.cancelConstruction": (kernel, { seat, payload: { entity } }) => {
