@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
-import { SIM_VERSION } from "@open-neo-rts/sim";
+import { HISTORY_METRICS, SIM_VERSION, STAT_COUNTERS } from "@open-neo-rts/sim";
+import { isWorkerReply } from "./protocol";
 import { isReplayReply, type ReplayState } from "./replay-protocol";
 
 const ready: ReplayState = {
@@ -94,4 +95,32 @@ test("replay annotations are bounded ordered display data only on ready states",
   expect(isReplayReply({ id: 0, state: { ...ready, phase: "seeking", markers: [combat] } })).toBe(
     false,
   );
+});
+
+test("current detailed statistics require the explicit ready replay channel; live replies stay terminal-only", () => {
+  const statistics = [
+    {
+      force: 0,
+      counters: Object.fromEntries(STAT_COUNTERS.map((key) => [key, 0])),
+      details: {
+        controllers: [{ seat: 1, bot: false, orders: 1, ticks: 2, apm: 600 }],
+        types: [],
+        history: [{ tick: 0, values: Object.fromEntries(HISTORY_METRICS.map((key) => [key, 0])) }],
+      },
+    },
+  ];
+  expect(isReplayReply({ id: 1, state: { ...ready, statistics } })).toBe(true);
+  expect(
+    isWorkerReply({
+      id: 1,
+      state: { paused: true, speed: 1, snapshot: { ...ready.snapshot, statistics } },
+    }),
+  ).toBe(false);
+  expect(isReplayReply({ id: 1, state: { ...ready, phase: "seeking", statistics } })).toBe(false);
+  expect(
+    isReplayReply({ id: 1, state: { ...ready, statistics: [statistics[0], statistics[0]] } }),
+  ).toBe(false);
+  const bad = structuredClone(statistics);
+  bad[0]!.details.history[0]!.tick = 3;
+  expect(isReplayReply({ id: 1, state: { ...ready, statistics: bad } })).toBe(false);
 });

@@ -79,6 +79,13 @@ export function createMatchPlayback(value: unknown, installedSetup: MatchSetup) 
       if (!verified) throw new Error("Verify the replay before reading events");
       return events.markers(vision);
     },
+    statistics(vision: number | "all") {
+      if (failure) throw failure;
+      if (!verified || !settled) throw new Error("Replay verification or seek is unfinished");
+      if (vision !== "all" && !setup.seats.includes(vision))
+        throw new Error("Unknown replay vision");
+      return kernel.statistics!.replaySnapshot(vision);
+    },
     /** Export only private captures whose complete state has reproduced the input history. */
     exportRecord(): MatchRecord & { format: 2 } {
       if (failure) throw failure;

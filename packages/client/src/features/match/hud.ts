@@ -1745,7 +1745,7 @@ function refusal(value: unknown) {
     : text("ui.hud.refusal-other");
 }
 
-function workState(value: string) {
+export function workState(value: string) {
   const states = {
     approaching: "ui.hud.state-approaching",
     working: "ui.hud.state-working",

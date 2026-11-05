@@ -192,6 +192,72 @@ test("verified real combat markers survive repeated seeks without duplication or
   expect(() => corrupt.markers("all")).toThrow();
 });
 
+test("replay statistics expose current copied history and APM only after verified settled seeking", () => {
+  const { setup } = fixture(2);
+  setup.grants = setup.grants.map((grant) => ({
+    ...grant,
+    scopes: [...grant.scopes, "economy.build"],
+  }));
+  const kernel = createMatch(setup);
+  const actor = kernel.world
+    .query(Template, OwnerForce)
+    .find(
+      (id) =>
+        kernel.world.get(id, Template, "definition") === 1 &&
+        kernel.world.get(id, OwnerForce, "force") === 0,
+    )!;
+  const commands: Command[] = [
+    {
+      tick: 0,
+      seat: 1,
+      sequence: 0,
+      type: "unit.move",
+      payload: { entities: [actor], x: 14 * 1024, y: 14 * 1024 },
+    },
+    { tick: 604, seat: 1, sequence: 1, type: "match.surrender", payload: { force: 0 } },
+  ];
+  const hashes = new Map<number, string>();
+  while (kernel.tick < 605) {
+    hashes.set(kernel.tick, checkpointHash(kernel));
+    step(
+      kernel,
+      commands.filter((command) => command.tick === kernel.tick),
+    );
+  }
+  const record = createMatchRecord(kernel, setup),
+    replay = createMatchPlayback(record, setup);
+  expect(() => replay.statistics("all")).toThrow("unfinished");
+  while (!replay.prepare(1000)) {}
+  expect(replay.statistics("all")).toEqual(kernel.statistics!.snapshot("all"));
+  for (const tick of [7, 600, 601, 0, 7]) {
+    while (!replay.seek(tick, 1000)) {}
+    const current = replay.statistics(1);
+    expect(current.map((row) => row.force)).toEqual([0]);
+    expect(replay.statistics("all").map((row) => row.force)).toEqual([0, 1]);
+    const details = current[0]!.details!;
+    expect(details.history.at(-1)!.tick).toBe(tick);
+    expect(new Set(details.history.map((point) => point.tick)).size).toBe(details.history.length);
+    expect(details.history.every((point) => point.tick <= tick)).toBe(true);
+    expect(details.controllers[0]!.orders).toBe(tick ? 1 : 0);
+    expect(details.controllers[0]!.apm).toBe(tick ? Math.floor(1200 / tick) : 0);
+    expect(details.history.at(-1)!.values.credits).toBe(100);
+    expect(details.history.at(-1)!.values.creditsGathered).toBe(0);
+    expect(details.history.at(-1)!.values.armyUnits).toBe(0);
+    expect(
+      createProjection(setup, 1, "controlled")
+        .snapshot(replay.kernel)
+        .statistics!.every((row) => !row.details),
+    ).toBe(true);
+    details.history[0]!.values.credits = 999;
+    details.controllers[0]!.orders = 999;
+    expect(replay.statistics(1)[0]!.details!.history[0]!.values.credits).toBe(100);
+    expect(checkpointHash(replay.kernel)).toBe(hashes.get(tick)!);
+  }
+  expect(() => replay.statistics(99)).toThrow("Unknown");
+  expect(replay.seek(599, 1)).toBe(false);
+  expect(() => replay.statistics(1)).toThrow("unfinished");
+});
+
 test("portable keyframes round-trip complete state and command boundaries without sharing mutable captures", () => {
   const { setup, record, hashes } = fixture();
   const playback = createMatchPlayback(record, setup);

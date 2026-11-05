@@ -22,11 +22,23 @@ let phase: ReplayState["phase"] = "preparing",
 let timer: ReturnType<typeof setTimeout> | undefined;
 let winner: number | null | undefined;
 let projectedEpoch = -1;
+let statisticsEnabled = false,
+  statisticsEpoch = -1,
+  statisticsTick = -1;
 function publish(id = 0) {
   if (!playback) return;
   const reset = projectedEpoch !== epoch;
   const snapshot = phase === "ready" ? playback.snapshot(vision, reset) : undefined;
   if (snapshot) projectedEpoch = epoch;
+  const sample = Math.floor(playback.tick / 20);
+  const statistics =
+    snapshot && statisticsEnabled && (statisticsEpoch !== epoch || statisticsTick !== sample)
+      ? playback.statistics(vision)
+      : undefined;
+  if (statistics) {
+    statisticsEpoch = epoch;
+    statisticsTick = sample;
+  }
   host.postMessage({
     id,
     state: {
@@ -37,7 +49,12 @@ function publish(id = 0) {
       paused,
       speed,
       vision,
-      ...(snapshot && { snapshot, winner, ...(reset && { markers: playback.markers(vision) }) }),
+      ...(snapshot && {
+        snapshot,
+        winner,
+        ...(reset && { markers: playback.markers(vision) }),
+        ...(statistics && { statistics }),
+      }),
     },
   });
 }
@@ -98,6 +115,11 @@ host.onmessage = ({ data }) => {
     }
     if (Object.keys(data).length !== 3) throw new Error("Invalid replay request");
     switch (data.type) {
+      case "statistics":
+        if (typeof data.enabled !== "boolean") throw new Error("Invalid replay statistics request");
+        statisticsEnabled = data.enabled;
+        statisticsEpoch = -1;
+        break;
       case "seek":
         if (
           !playback.verified ||

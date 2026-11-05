@@ -36,7 +36,7 @@ export type StatCounter = (typeof STAT_COUNTERS)[number];
 export interface ForceStatisticsSnapshot {
   force: number;
   counters: Record<StatCounter, number>;
-  /** Final-only details; live economic counters keep their existing permission boundary. */
+  /** Final or explicit replay-host details; ordinary live seats receive counters only. */
   details?: {
     controllers: { seat: number; bot: boolean; orders: number; ticks: number; apm: number }[];
     types: {
@@ -344,30 +344,48 @@ export class MatchStatistics {
           Math.min(0x7fffffff, world.get(row, StatisticsSeries, "interval") * 2),
         );
       }
-      const bank = this.kernel.economy?.balance(force);
-      const stat = this.rows.get(force)!;
-      const inventory = this.inventory(force);
       const sample = world.create();
       world.add(sample, StatisticsSample, {
         force,
         tick,
-        credits: bank?.credits ?? 0,
-        materials: bank?.materials ?? 0,
-        industrialCapacity: bank?.["industrial-capacity"] ?? 0,
-        salvagePoints: bank?.["salvage-points"] ?? 0,
-        creditsGathered: world.get(stat, ForceStatistics, "creditsGathered"),
-        materialsGathered: world.get(stat, ForceStatistics, "materialsGathered"),
-        industrialCapacityGathered: world.get(stat, ForceStatistics, "industrialCapacityGathered"),
-        salvagePointsGathered: world.get(stat, ForceStatistics, "salvagePointsGathered"),
-        units: inventory.units,
-        structures: inventory.structures,
-        armyUnits: inventory.armyUnits,
-        armyCredits: inventory.armyCredits,
-        armyMaterials: inventory.armyMaterials,
-        armyIndustrialCapacity: inventory.armyIndustrialCapacity,
-        armySalvagePoints: inventory.armySalvagePoints,
+        ...this.historyValues(force),
       });
     }
+  }
+  private historyValues(force: number): Record<HistoryMetric, number> {
+    const bank = this.kernel.economy?.balance(force),
+      world = this.kernel.world;
+    const stat = this.rows.get(force)!,
+      inventory = this.inventory(force);
+    return {
+      credits: bank?.credits ?? 0,
+      materials: bank?.materials ?? 0,
+      industrialCapacity: bank?.["industrial-capacity"] ?? 0,
+      salvagePoints: bank?.["salvage-points"] ?? 0,
+      creditsGathered: world.get(stat, ForceStatistics, "creditsGathered"),
+      materialsGathered: world.get(stat, ForceStatistics, "materialsGathered"),
+      industrialCapacityGathered: world.get(stat, ForceStatistics, "industrialCapacityGathered"),
+      salvagePointsGathered: world.get(stat, ForceStatistics, "salvagePointsGathered"),
+      units: inventory.units,
+      structures: inventory.structures,
+      armyUnits: inventory.armyUnits,
+      armyCredits: inventory.armyCredits,
+      armyMaterials: inventory.armyMaterials,
+      armyIndustrialCapacity: inventory.armyIndustrialCapacity,
+      armySalvagePoints: inventory.armySalvagePoints,
+    };
+  }
+  /** Trusted terminal-replay host only; never used by ordinary seat projection. */
+  replaySnapshot(seat: number | "all"): ForceStatisticsSnapshot[] {
+    return this.snapshot(seat).map((entry) => {
+      const details = entry.details ?? this.details(entry.force);
+      const tick =
+        this.kernel.victory!.snapshot().forces.find((force) => force.force === entry.force)!.tick ??
+        this.kernel.tick;
+      if (details.history.at(-1)!.tick < tick)
+        details.history.push({ tick, values: this.historyValues(entry.force) });
+      return { ...entry, details };
+    });
   }
   private details(force: number): NonNullable<ForceStatisticsSnapshot["details"]> {
     const world = this.kernel.world;

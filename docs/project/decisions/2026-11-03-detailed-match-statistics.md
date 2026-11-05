@@ -44,6 +44,11 @@ history metrics and accessible sampled tables. Territory and an invented score
 formula are not supplied: the current elimination ruleset has no territory or
 authored score producer. Those rules remain with their later systems.
 
+The later [replay overlay](./2026-11-05-replay-analytics.md) adds an explicit verified
+terminal-replay host channel for current permitted details. Ordinary live
+projection keeps the final-only rule above. Its copied current endpoint and
+analysis cadence do not alter these canonical samples or simulation outcomes.
+
 **Reference.** OpenRA's [PlayerStatistics](https://github.com/OpenRA/OpenRA/blob/bleed/OpenRA.Mods.Common/Traits/Player/PlayerStatistics.cs)
 separates non-debug order counts, per-type inventory and 30-second army/income
 samples. Its [APM defeat issue](https://github.com/OpenRA/OpenRA/issues/22331)

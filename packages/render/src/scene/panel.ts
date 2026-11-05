@@ -9,7 +9,7 @@ import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { createEngine, createScene } from ".";
-import { createPanelBlock, type PanelBlock } from "./panel-content";
+import { createPanelBlock, type PanelBlock, panelTextHeight } from "./panel-content";
 import { NativeTextInput, type TextSelection } from "./text-input";
 
 export interface PanelField {
@@ -427,24 +427,7 @@ export async function createPanelScene(
     layout();
   }
   function textHeight(text: string, width: number, size: number) {
-    if (!text) return 0;
-    const context = gui.getContext();
-    context.save();
-    context.font = `${size}px Arial`;
-    let lines = 0;
-    for (const block of text.split("\n")) {
-      let line = "";
-      lines++;
-      for (const word of block.split(/\s+/)) {
-        const next = line ? `${line} ${word}` : word;
-        if (line && context.measureText(next).width > width) {
-          lines++;
-          line = word;
-        } else line = next;
-      }
-    }
-    context.restore();
-    return Math.ceil(lines * size * 1.4);
+    return panelTextHeight(gui.getContext(), text, width, size);
   }
   function layout() {
     closeChoices();

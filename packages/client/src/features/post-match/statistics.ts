@@ -2,7 +2,7 @@ import type { ForceStatisticsSnapshot, HistoryMetric } from "@open-neo-rts/sim";
 import { text } from "../../shared";
 
 type DefinitionLabel = { id: string; name: string; kind: string };
-const metricLabels = {
+export const metricLabels = {
   credits: "ui.stats.credits-stock",
   materials: "ui.stats.materials-stock",
   industrialCapacity: "ui.stats.industrial-stock",
@@ -23,14 +23,14 @@ const metricLabels = {
   armyIndustrialCapacity: "ui.stats.army-industrial",
   armySalvagePoints: "ui.stats.army-salvage",
 } as const;
-type ChartMetric = keyof typeof metricLabels;
+export type ChartMetric = keyof typeof metricLabels;
 const incomeMetrics: Partial<Record<ChartMetric, HistoryMetric>> = {
   creditsIncome: "creditsGathered",
   materialsIncome: "materialsGathered",
   industrialIncome: "industrialCapacityGathered",
   salvageIncome: "salvagePointsGathered",
 };
-const colors = [
+export const colors = [
   "#e87870",
   "#75b9ec",
   "#eac674",
@@ -44,7 +44,28 @@ const duration = (ticks: number) =>
   `${Math.floor(ticks / 1200)}:${String(Math.floor(ticks / 20) % 60).padStart(2, "0")}`;
 const forceName = (force: number) => text("ui.result.other-force", { force: force + 1 });
 
-function table(headers: string[], rows: (string | number)[][], caption: string) {
+/** Shared sampled graph values; starting stock/refunds never count as gathered income. */
+export function historySeries(statistics: readonly ForceStatisticsSnapshot[], metric: ChartMetric) {
+  const income = incomeMetrics[metric];
+  return statistics
+    .filter((row) => row.details)
+    .map((row) => ({
+      force: row.force,
+      points: row.details!.history.map((point, index, points) => ({
+        tick: point.tick,
+        value: income
+          ? index
+            ? Math.floor(
+                ((point.values[income] - points[index - 1]!.values[income]) * 1200) /
+                  (point.tick - points[index - 1]!.tick),
+              )
+            : 0
+          : point.values[metric as HistoryMetric],
+      })),
+    }));
+}
+
+export function table(headers: string[], rows: (string | number)[][], caption: string) {
   const scroll = document.createElement("div");
   scroll.className = "result-totals";
   scroll.tabIndex = 0;
@@ -94,23 +115,7 @@ function history(
   const render = () => {
     graph.replaceChildren();
     const metric = select.value as ChartMetric;
-    const income = incomeMetrics[metric];
-    const series = statistics
-      .filter((row) => row.details)
-      .map((row) => ({
-        force: row.force,
-        points: row.details!.history.map((point, index, points) => ({
-          tick: point.tick,
-          value: income
-            ? index
-              ? Math.floor(
-                  ((point.values[income] - points[index - 1]!.values[income]) * 1200) /
-                    (point.tick - points[index - 1]!.tick),
-                )
-              : 0
-            : point.values[metric as HistoryMetric],
-        })),
-      }));
+    const series = historySeries(statistics, metric);
     const maxTick = Math.max(1, ...series.flatMap((row) => row.points.map((point) => point.tick)));
     const maxValue = Math.max(
       1,

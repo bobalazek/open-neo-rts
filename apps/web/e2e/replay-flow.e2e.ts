@@ -1,7 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { verifyMatchRecord } from "../../../packages/sim/src";
-import { clickNativeText, nativeFrame, nativeMapPoint, observeNativePaint } from "./native-paint";
+import {
+  clickNativeText,
+  nativeFrame,
+  nativeMapPoint,
+  nativeTextPoint,
+  observeNativePaint,
+} from "./native-paint";
 
 test("finished skirmish opens a native replay, seeks, switches vision and manages verified browser files", async ({
   page,
@@ -80,6 +86,61 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await page.keyboard.press("Home");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await page.screenshot({ path: info.outputPath("viewer-desktop.png") });
+  await page.locator("#game").focus();
+  await page.keyboard.press("g");
+  await expect(page.getByRole("button", { name: "Statistics · G", exact: true })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await expect(page.locator("[data-stat-values] tbody tr")).toHaveCount(2);
+  await expect(page.getByRole("tab", { name: "Economy", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await nativeTextPoint(page, "Force 1: 0");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("analytics-economy-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  expect((await nativeTextPoint(page, "Economy")).fontSize).toBe(12);
+  await page.screenshot({ path: info.outputPath("analytics-economy-mobile.png") });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await nativeFrame(page);
+  expect((await nativeTextPoint(page, "Economy")).fontSize).toBe(12);
+  await clickNativeText(page, "Military");
+  await expect(page.getByRole("tab", { name: "Military", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await page.locator("[data-stat-metric]").selectOption("armyUnits");
+  await expect(page.locator("[data-stat-values] caption")).toHaveText("Living army units");
+  await clickNativeText(page, "Orders");
+  const playerOrders = page
+    .locator("[data-stat-values] tbody tr")
+    .filter({ hasText: "Player seat 1" });
+  await expect(playerOrders.locator("th,td").nth(2)).toHaveText("0");
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("End");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", terminal!);
+  await expect(playerOrders.locator("th,td").nth(2)).toHaveText(
+    String(Math.floor(1200 / Number(terminal))),
+  );
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("analytics-orders-desktop.png") });
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("Home");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
+  await expect(playerOrders.locator("th,td").nth(2)).toHaveText("0");
+  await page.locator("select[data-vision]").selectOption("1");
+  await expect(page.locator("[data-stat-values] tbody tr")).toHaveCount(1);
+  await expect(page.locator("[data-stat-values]")).not.toContainText("Bot seat");
+  await page.locator("select[data-vision]").selectOption("all");
+  await expect(page.locator("[data-stat-values] tbody tr")).toHaveCount(2);
+  await clickNativeText(page, "Production");
+  await expect(page.locator("[data-stat-status]")).toHaveText("No production queues in this view.");
+  await page.locator("#game").focus();
+  await page.keyboard.press("g");
+  await expect(page.locator("[data-analysis]")).toHaveAttribute("hidden", "");
   const vision = page.locator("select[data-vision]");
   await vision.selectOption("1");
   await expect(page.locator("#game")).toHaveAttribute("data-vision", "1");

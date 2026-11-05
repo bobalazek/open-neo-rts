@@ -1,11 +1,12 @@
 import {
+  type ForceStatisticsSnapshot,
   MAX_REPLAY_MARKERS,
   type MatchRecord,
   type MatchSetup,
   type ReplayMarker,
   type SeatSnapshot,
 } from "@open-neo-rts/sim";
-import { isMatchRecord, isRecord, isWorkerReply } from "./protocol";
+import { isMatchRecord, isRecord, isStatisticsSnapshot, isWorkerReply } from "./protocol";
 
 export const REPLAY_SPEEDS = [0.5, 1, 2, 4, 8] as const;
 export type ReplayVision = number | "all";
@@ -20,10 +21,12 @@ export interface ReplayState {
   winner?: number | null;
   snapshot?: SeatSnapshot;
   markers?: readonly ReplayMarker[];
+  statistics?: readonly ForceStatisticsSnapshot[];
 }
 export type ReplayRequest =
   | { type: "init"; record: MatchRecord; setup: MatchSetup }
   | { type: "export-record" }
+  | { type: "statistics"; enabled: boolean }
   | { type: "seek"; tick: number }
   | { type: "pause"; paused: boolean }
   | { type: "speed"; speed: number }
@@ -62,7 +65,7 @@ export function isReplayReply(value: unknown): value is ReplayReply {
           "paused",
           "speed",
           "vision",
-          ...(state.phase === "ready" ? ["snapshot", "winner", "markers"] : []),
+          ...(state.phase === "ready" ? ["snapshot", "winner", "markers", "statistics"] : []),
         ].includes(key),
     ) ||
     !Number.isSafeInteger(state.duration) ||
@@ -85,6 +88,8 @@ export function isReplayReply(value: unknown): value is ReplayReply {
   )
     return false;
   if (state.phase !== "ready") return state.snapshot === undefined;
+  if (state.statistics !== undefined && !isStatisticsSnapshot(state.statistics, Number(state.tick)))
+    return false;
   if (
     state.markers !== undefined &&
     (!Array.isArray(state.markers) ||

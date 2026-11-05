@@ -8,7 +8,14 @@ import { Slider } from "@babylonjs/gui/2D/controls/sliders/slider";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import type { BattlefieldAction } from "./battlefield-hud";
 import { BattlefieldMap } from "./battlefield-map";
-import { placePanelControl as place } from "./panel-content";
+import {
+  createPanelBlock,
+  type PanelBlock,
+  panelTextHeight,
+  placePanelControl as place,
+} from "./panel-content";
+import { ReplayChart, type ReplayChartData } from "./replay-chart";
+import { createReplayProduction, type ReplayProductionData } from "./replay-production";
 
 export interface ReplayHudContent {
   title: string;
@@ -21,6 +28,12 @@ export interface ReplayHudContent {
   duration: number;
   scale: number;
   actions: readonly BattlefieldAction[];
+  statistics?: {
+    chart?: ReplayChartData;
+    production?: ReplayProductionData;
+    table: Extract<PanelBlock, { kind: "table" }>;
+    note?: string;
+  };
   players: readonly {
     name: string;
     color: string;
@@ -39,6 +52,7 @@ export function createReplayHud(
     pan: (x: number, y: number) => void;
     zoom: (delta: number) => void;
     mapFocus: () => void;
+    statisticsFocus: () => void;
   },
 ) {
   const gui = AdvancedDynamicTexture.CreateFullscreenUI("replay HUD", true, scene);
@@ -71,6 +85,21 @@ export function createReplayHud(
   const header = frame("replay header"),
     transport = frame("replay transport"),
     players = frame("replay players");
+  const statisticsFrame = frame("replay statistics");
+  statisticsFrame.isVisible = false;
+  const statisticsNote = new TextBlock("replay statistics status");
+  statisticsNote.fontFamily = "Arial";
+  statisticsNote.fontSize = 13;
+  statisticsNote.color = "#b5c0bf";
+  statisticsNote.textWrapping = true;
+  statisticsNote.isHitTestVisible = false;
+  statisticsNote.isVisible = false;
+  gui.addControl(statisticsNote);
+  const chart = new ReplayChart();
+  chart.isVisible = false;
+  gui.addControl(chart);
+  let statisticsTable: ReturnType<typeof createPanelBlock> | undefined;
+  let production: ReturnType<typeof createReplayProduction> | undefined;
   const timelineFocus = frame("focused replay timeline");
   timelineFocus.background = "transparent";
   timelineFocus.color = "#fff6db";
@@ -121,10 +150,11 @@ export function createReplayHud(
     tooltipFrame.isVisible = tooltip.isVisible = !!value;
   }
   function focusHint() {
+    const button = buttons.get(focused ?? "");
     hint(
       focused === "timeline"
         ? (content?.timelineLabel ?? "")
-        : (buttons.get(focused ?? "")?.action.tooltip ??
+        : ((button?.button.isVisible ? button.action.tooltip : undefined) ??
             content?.markers.find((marker) => marker.id === focused)?.tooltip ??
             ""),
     );
@@ -133,6 +163,9 @@ export function createReplayHud(
     if (!content) return;
     const width = Math.max(1, canvas.clientWidth),
       height = Math.max(1, canvas.clientHeight);
+    // Ideal setters refresh cached fonts, so resize their backing before assigning them.
+    const backing = gui.getSize();
+    if (backing.width !== width || backing.height !== height) gui.scaleTo(width, height);
     gui.idealWidth = width;
     gui.idealHeight = height;
     const scale = Math.min(content.scale, Math.max(0.8, width / 420)),
@@ -161,10 +194,14 @@ export function createReplayHud(
     place(mini, mapX, mapY, mapSize, mapSize);
     place(status, 24, transportY - 30, Math.max(180, width - mapSize - 40), 24);
     let x = 24;
-    for (const id of ["backward", "play", "forward", "speed"]) {
+    const statisticsBox: { x: number; y: number; w: number; h: number }[] = [];
+    for (const id of ["backward", "play", "forward", "speed", "statistics"]) {
       const item = buttons.get(id);
       if (!item) continue;
-      const w = (id === "speed" ? 54 : 36) * scale;
+      const w =
+        id === "statistics"
+          ? Math.min(unit, Math.max(24, transportWidth - x))
+          : (id === "speed" ? 54 : 36) * scale;
       place(item.button, x, transportY + (content.markers.length ? 74 : 52) * scale, w, unit);
       const imageSize = Math.min(w, unit) - 12 * scale;
       place(item.image, (w - imageSize) / 2, (unit - imageSize) / 2, imageSize, imageSize);
@@ -289,12 +326,53 @@ export function createReplayHud(
         metricX += 31 * scale;
       }
     });
+    if (content.statistics) {
+      const top = 62 * scale + content.players.length * rowHeight + 20 * scale;
+      const height = Math.min(310 * scale, Math.max(80, transportY - top - 12));
+      place(statisticsFrame, edge, top, playerWidth, height);
+      const noteTop = content.statistics.chart ? 78 : 46;
+      place(
+        statisticsNote,
+        24,
+        top + noteTop * scale,
+        playerWidth - 24,
+        Math.max(1, height - (noteTop + 8) * scale),
+      );
+      for (const [index, id] of ["economy", "military", "production", "orders"].entries()) {
+        const tab = buttons.get(`statistics-${id}`)!;
+        const w = (playerWidth - 24) / 4;
+        place(tab.button, 24 + index * w, top + 8 * scale, w, 28 * scale);
+        place(tab.label, 0, 0, w, 28 * scale);
+      }
+      const metric = buttons.get("statistics-metric");
+      if (metric && content.statistics.chart) {
+        place(metric.button, 24, top + 42 * scale, playerWidth - 24, 28 * scale);
+        place(metric.label, 0, 0, playerWidth - 24, 28 * scale);
+        place(chart, 24, top + 78 * scale, playerWidth - 24, Math.max(1, height - 88 * scale));
+      }
+      if (statisticsTable && !content.statistics.chart && !content.statistics.production) {
+        const h = statisticsTable.layout(playerWidth - 24, scale, height - 48 * scale);
+        place(statisticsTable.root, 24, top + 42 * scale, playerWidth - 24, h);
+      }
+      if (production && content.statistics.production) {
+        production.layout(playerWidth - 24, Math.max(1, height - 50 * scale), scale);
+        place(
+          production.root,
+          24,
+          top + 42 * scale,
+          playerWidth - 24,
+          Math.max(1, height - 50 * scale),
+        );
+      }
+      statisticsBox.push({ x: edge, y: top, w: playerWidth, h: height });
+    }
     tooltipFrame.zIndex = 10;
     tooltip.zIndex = 11;
     const tipWidth = Math.min(360, width - 24);
     place(tooltipFrame, 12, transportY - 106, tipWidth, 66);
     place(tooltip, 24, transportY - 100, tipWidth - 24, 54);
     boxes = [
+      ...statisticsBox,
       { x: edge, y: edge, w: width - 24, h: 42 * scale },
       {
         x: edge,
@@ -319,6 +397,37 @@ export function createReplayHud(
     title.text = next.title;
     time.text = next.time;
     status.text = next.status;
+    statisticsFrame.isVisible = !!next.statistics;
+    statisticsNote.isVisible = !!next.statistics?.note;
+    statisticsNote.text = next.statistics?.note ?? "";
+    chart.isVisible = !!next.statistics?.chart && !next.statistics.note;
+    if (next.statistics?.chart) chart.update(next.statistics.chart);
+    if (next.statistics?.production) {
+      production ??= createReplayProduction(gui.rootContainer, hint, () =>
+        options.statisticsFocus(),
+      );
+      production.update(next.statistics.production);
+      production.root.isVisible = !next.statistics.note;
+    } else if (production) {
+      production.update([]);
+      production.root.isVisible = false;
+    }
+    if (next.statistics && !next.statistics.chart && !next.statistics.production) {
+      if (!statisticsTable)
+        statisticsTable = createPanelBlock(
+          gui.rootContainer,
+          next.statistics.table,
+          (value, width, size) => panelTextHeight(gui.getContext(), value, width, size),
+          () => options.statisticsFocus(),
+        );
+      else statisticsTable.update(next.statistics.table);
+      statisticsTable.root.isVisible = !next.statistics.note;
+    } else if (statisticsTable) statisticsTable.root.isVisible = false;
+    for (const [id, item] of buttons) {
+      const visible = next.actions.some((action) => action.id === id);
+      if (item.button.isVisible && !visible) hint("");
+      item.button.isVisible = visible;
+    }
     slider.maximum = next.duration;
     if (!dragging) slider.value = next.tick;
     for (const action of next.actions) {
@@ -358,10 +467,15 @@ export function createReplayHud(
         });
       }
       item.action = action;
+      item.button.isVisible = true;
+      item.button.background = action.active ? "#3c392d" : "#18262e";
       item.button.alpha = action.disabled ? 0.45 : 1;
       if (item.image.source !== (action.image ?? "")) item.image.source = action.image ?? "";
       item.image.isVisible = !!action.image;
-      item.label.text = ["vision", "speed"].includes(action.id) ? action.label : "";
+      item.label.text =
+        ["vision", "speed"].includes(action.id) || action.id.startsWith("statistics-")
+          ? action.label
+          : "";
     }
     const identity = JSON.stringify(
       next.players.map((player) => ({
@@ -476,6 +590,13 @@ export function createReplayHud(
         node.button.color = selected ? "#fff6db" : "#ddc382";
       }
       focusHint();
+      statisticsTable?.focus(id === "statistics-values");
+      production?.focus(id === "statistics-values");
+    },
+    statisticsScrollKey(key: string) {
+      return content?.statistics?.production
+        ? (production?.scrollKey(key) ?? false)
+        : (statisticsTable?.scrollKey(key) ?? false);
     },
     blocksPointer(clientX: number, clientY: number) {
       const rect = canvas.getBoundingClientRect();

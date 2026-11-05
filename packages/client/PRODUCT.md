@@ -23,7 +23,7 @@ uses authored Training Grounds terrain, resources and selected spawn coordinates
 Online play and the complete three-faction game remain later roadmap phases.
 The first playable local replay viewer supports that Eastern Collective mirror
 on Training Grounds, including portable keyframes and explicit map identity.
-Recorded camera tracks, analytics overlays and live network spectating remain
+Recorded camera tracks and live network spectating remain
 deferred; this does not complete the replay/spectator phase.
 See `../../docs/project/roadmap.md` and `../../docs/design/screens/match-hud.md`.
 
@@ -145,6 +145,14 @@ source.
   comma/period shortcuts seek distinct event ticks. Combat navigation pans to the
   permitted damage location. Per-seat annotations follow live event visibility,
   and seeking never appends history.
+  G and the native graph pictogram toggle a nonmodal statistics overlay. Economy
+  and Military plot current permitted resource/inventory history; Production uses
+  original queued-unit thumbnails with real work state/progress on hover; Orders
+  shows accepted-order APM with bots identified. Native tabs, metric choices and
+  scrolling regions retain semantic keyboard access and sampled-value tables.
+  Data comes only from the verified settled replay host; ordinary live-seat detail
+  publication remains final-only. Closing opts out, and seek/vision changes discard
+  stale analysis before the new permitted position arrives.
 - Replays use separate IndexedDB storage from saves. Import accepts the local
   envelope or legacy terminal record, validates installed simulation/content and
   reproduces the terminal result before storing a new ID. Incompatible Watch is

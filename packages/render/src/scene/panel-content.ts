@@ -1,9 +1,47 @@
+import type { ICanvasRenderingContext } from "@babylonjs/core/Engines/ICanvas";
 import { Button } from "@babylonjs/gui/2D/controls/button";
 import { Container } from "@babylonjs/gui/2D/controls/container";
 import { Control } from "@babylonjs/gui/2D/controls/control";
 import { Image } from "@babylonjs/gui/2D/controls/image";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
+
+export function panelTextHeight(
+  context: ICanvasRenderingContext,
+  text: string,
+  width: number,
+  size: number,
+) {
+  if (!text) return 0;
+  context.save();
+  context.font = `${size}px Arial`;
+  let lines = 0;
+  for (const block of text.split("\n")) {
+    let line = "";
+    lines++;
+    for (const word of block.split(/\s+/)) {
+      const next = line ? `${line} ${word}` : word;
+      if (line && context.measureText(next).width > width) {
+        lines++;
+        line = word;
+      } else line = next;
+    }
+  }
+  context.restore();
+  return Math.ceil(lines * size * 1.4);
+}
+
+export function scrollPanelKey(table: ScrollViewer, key: string) {
+  const horizontal = key === "ArrowLeft" || key === "ArrowRight";
+  const bar = horizontal ? table.horizontalBar : table.verticalBar;
+  const step = key === "PageUp" || key === "PageDown" ? 0.8 : 0.1;
+  const direction = ["ArrowLeft", "ArrowUp", "PageUp"].includes(key) ? -1 : 1;
+  if (key === "Home" || key === "End") bar.value = key === "Home" ? 0 : 1;
+  else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageUp", "PageDown"].includes(key))
+    bar.value = Math.max(0, Math.min(1, bar.value + direction * step));
+  else return false;
+  return true;
+}
 
 export type PanelBlock =
   | { kind: "text"; id: string; text: string; heading?: boolean }
@@ -106,23 +144,42 @@ export function createPanelBlock(
     tableBody.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     tableBody.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
     table.addControl(tableBody);
-    [block.headers, ...block.rows].forEach((values, row) => {
-      cells.push(
-        values.map((value, col) => {
-          const text = label(`${block.id} ${row} ${col}`, value, 13, tableBody);
-          text.color = row ? "#eff1e9" : "#ddc382";
-          if (!row) text.fontWeight = "bold";
-          return text;
-        }),
-      );
-    });
+    refreshTable();
     table.onPointerDownObservable.add(() => focus(block.id));
+  }
+  function refreshTable() {
+    if (block.kind !== "table" || !tableBody || !title) return;
+    title.text = block.caption;
+    const values = [block.headers, ...block.rows];
+    if (
+      cells.length !== values.length ||
+      cells.some((row, index) => row.length !== values[index]!.length)
+    ) {
+      for (const row of cells) for (const cell of row) cell.dispose();
+      cells.length = 0;
+      values.forEach((row, index) => {
+        cells.push(
+          row.map((value, col) => {
+            const cell = label(`${block.id} ${index} ${col}`, value, 13, tableBody);
+            cell.color = index ? "#eff1e9" : "#ddc382";
+            if (!index) cell.fontWeight = "bold";
+            return cell;
+          }),
+        );
+      });
+    } else
+      values.forEach((row, index) => {
+        row.forEach((value, col) => {
+          cells[index]![col]!.text = value;
+        });
+      });
   }
   return {
     id: block.id,
     root,
     update(next: PanelBlock) {
       block = next;
+      refreshTable();
       if (block.kind === "button" && root instanceof Button) {
         root.isEnabled = !block.disabled;
         root.background = block.active ? "#3c392d" : "#18262e";
@@ -240,17 +297,7 @@ export function createPanelBlock(
     },
     scrollKey(key: string) {
       if (!table) return false;
-      const horizontal = key === "ArrowLeft" || key === "ArrowRight";
-      const bar = horizontal ? table.horizontalBar : table.verticalBar;
-      const step = key === "PageUp" || key === "PageDown" ? 0.8 : 0.1;
-      const direction = ["ArrowLeft", "ArrowUp", "PageUp"].includes(key) ? -1 : 1;
-      if (key === "Home" || key === "End") bar.value = key === "Home" ? 0 : 1;
-      else if (
-        ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageUp", "PageDown"].includes(key)
-      )
-        bar.value = Math.max(0, Math.min(1, bar.value + direction * step));
-      else return false;
-      return true;
+      return scrollPanelKey(table, key);
     },
   };
 }
