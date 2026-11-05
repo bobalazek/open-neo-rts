@@ -69,7 +69,8 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   const bounds = await canvas.boundingBox();
   if (!bounds) throw new Error("Playable area missing");
   const placement = {
-    x: bounds.width / 2 + bounds.height * 0.15,
+    // Build west of headquarters, clear of the departing supply truck.
+    x: bounds.width / 2 - bounds.height * 0.15,
     y: bounds.height / 2,
   };
   await page.mouse.move(placement.x, placement.y);

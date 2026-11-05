@@ -23,8 +23,9 @@ uses authored Training Grounds terrain, resources and selected spawn coordinates
 Online play and the complete three-faction game remain later roadmap phases.
 The first playable local replay viewer supports that Eastern Collective mirror
 on Training Grounds, including portable keyframes and explicit map identity.
-Recorded camera tracks and live network spectating remain
-deferred; this does not complete the replay/spectator phase.
+Actual local-human camera tracks now support native follow/free navigation,
+seeking and manual override independently of vision. Live network spectating
+remains deferred; this does not complete the replay/spectator phase.
 See `../../docs/project/roadmap.md` and `../../docs/design/screens/match-hud.md`.
 
 ## Brand commitments

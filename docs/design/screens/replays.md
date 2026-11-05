@@ -9,7 +9,9 @@ now retain complete history verification on import. [Event navigation](../../pro
 adds view-filtered combat intervals and exact public Force outcomes. The
 [statistics overlay](../../project/decisions/2026-11-05-replay-analytics.md) adds
 current income/army graphs, original production queues and accepted-order APM.
-Recorded cameras and live spectating remain work.
+[Recorded player cameras](../../project/decisions/2026-11-05-recorded-replay-cameras.md)
+add native follow/free controls and real target, rotation and zoom playback.
+Delayed live spectating remains work.
 
 ## Replay browser
 

@@ -9,7 +9,7 @@ import { createQuality, type GraphicsQuality } from "./scene/quality";
 import { CELL_SIZE, createTerrain } from "./terrain";
 
 export type { Biome } from "@open-neo-rts/content";
-export { cameraGroundView } from "./camera";
+export { type CameraPose, cameraGroundView } from "./camera";
 export { createCombatEffects, eventVisible } from "./effects";
 export {
   AUDIO_BUSES,

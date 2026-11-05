@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-05 — Recorded replay cameras](./2026-11-05-recorded-replay-cameras.md) — Actual local-human camera annotations, native follow/free controls and manual navigation override.
+
 - [2026-11-05 — Replay statistics overlay](./2026-11-05-replay-analytics.md) — Native income/army graphs, original production queues and accepted-order APM from the current verified replay position.
 
 - [2026-11-05 — Replay event timeline](./2026-11-05-replay-event-timeline.md) — Verified, view-filtered combat/outcome markers with native pointer and keyboard navigation.

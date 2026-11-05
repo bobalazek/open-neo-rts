@@ -83,7 +83,9 @@ statistics extend the viewer below player observations: Economy and Military
 plot permitted sampled history, Production shows original queued-unit thumbnails
 and real progress, and Orders leads with accepted-order APM. Existing graphite
 frames, compact Arial, warm-metal actions and semantic controls carry this
-extension. Recorded cameras and delayed live spectating remain deferred. The timeline explicitly
+extension. Recorded player cameras add a compact native camera pictogram beside
+vision, selected while following; C cycles follow/free modes and manual navigation
+returns to free mode. Delayed live spectating remains deferred. The timeline explicitly
 participates in sequential keyboard focus after speed and vision, retaining its
 native focus frame.
 
@@ -843,6 +845,18 @@ the text leaves space for that disclosure mark.
   exists or while seeking; markers also disable while seeking. Native disabled
   controls dim to 0.45 opacity and suppress activation. Comma/period retain the
   existing shortcut guard for focused inputs, selects and buttons.
+- **Recorded replay cameras:** the original camera pictogram shares the compact
+  vision/exit group and uses the existing warm selected well while following.
+  C and native activation cycle Free camera and available recorded seats; the
+  semantic select retains keyboard ownership and mirrors ivory native focus.
+  Hover/focus names the mode and shortcut. Vision permissions remain independent.
+  Keyboard, edge and drag pan, rotation, wheel zoom, minimap navigation and combat
+  event pans return to free camera. Seeking restores the selected recording's
+  pose; seeking before its first actual tick returns to free camera. Camera-free
+  files retain a dimmed control with contextual explanation. Playback uses the
+  current viewport aspect ratio and actual local-human poses, with no invented
+  bot view. Behavior and presentation-only metadata follow
+  `../../docs/project/decisions/2026-11-05-recorded-replay-cameras.md`.
 - **Replay observations and map:** permitted credits, materials and unit counts
   come from the current copied snapshot. Up to four active-production thumbnails
   per Force reuse original built-in art, with progress in hover descriptions and
@@ -998,6 +1012,15 @@ route, not verified as an end-to-end combat journey. Bounded evidence and remain
 qualification limits are recorded in
 `.impeccable/surfaces/src-features-replays-viewer-ts.md`; this does not complete
 the replay/spectator phase or qualify maximum-size replay stress.
+The recorded-camera extension separately received a ship finish disposition
+after all eight actual follow/free/missing-camera Chrome and WebKit captures
+were opened. Four corrected real-browser journeys passed pointer/C/select follow,
+rewind, manual pan override, rotated/zoomed data, camera-free playback and portable
+import/export; normal result format-1 metadata was inspected. Focused parser and
+independent technical probes passed. Loaded-match camera segments and final-pose
+freeze were source-reviewed only. The replay surface brief records the bounded
+evidence, superseded failure and remaining qualification limits; no new tokens
+or identity are established by these captures.
 The current `../render/src/scene/text-input.ts` adapter maps DOM UTF-16 offsets to
 Babylon code-point offsets and isolates private cursor fields because Babylon
 9.33 has no public range setter. That version-specific dependency is an

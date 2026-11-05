@@ -61,7 +61,7 @@ verdict, not whole-project approval.
 These are bounded checks, not a claim that the full browser-hosted candidate
 suite is green. Physical touch, physical IME, screen-reader user testing and
 maximum-size replay stress remain unqualified. Verified portable frames and
-explicit map identity are built; recorded cameras and delayed
+explicit map identity and recorded cameras are built; delayed
 spectating remain separate work, and the replay/spectator phase is not complete.
 The inherited world needs no new visual identity, raster, composition or quality
 bar. The existing `force-opponent` palette advisory remains advisory, not a
@@ -122,6 +122,65 @@ ramp. The scoped finish verdict resolved typography and documentation, reopening
 all twelve corrected captures with no visible regression from that batch. No palette
 detector rerun was performed; the inherited `force-opponent` advisory remains
 advisory.
-Recorded cameras, delayed live spectating, full replay/spectator phase acceptance,
+Delayed live spectating, full replay/spectator phase acceptance,
 physical touch/IME, screen-reader user testing, maximum-size replay
 stress and hardware FPS remain open.
+
+## Recorded camera extension
+
+This code-led Operate extension retains the same world, compact header and
+contextual help. An original camera pictogram beside vision and exit cycles free
+or recorded-player camera with C, with a warm selected well while following.
+Semantic camera choices mirror focus and preserve vision independently. Manual
+navigation returns to free mode; seeking restores the recorded pose. Only actual
+human recordings are offered. Camera-free files keep a dimmed control with
+contextual explanation. A resumed recording is unavailable before its first tick.
+The current window's aspect ratio adapts the recorded view. No new identity,
+tokens, raster, quality board or replacement comp accompanies the extension.
+
+Behavior and metadata limits follow
+`../../../../docs/project/decisions/2026-11-05-recorded-replay-cameras.md`.
+Capture records target, rotation, pitch and distance against observed simulation
+ticks, replacing the same tick's pose after paused edits. Initial capture precedes
+unpause; terminal capture freezes before result-screen camera movement. Loaded
+matches record only their resumed segment, and draft playtests record no camera.
+Playback directly seeks and interpolates poses, including shortest-angle wrap;
+pause holds the current tick. Keyboard/edge/drag pan, rotation, wheel zoom,
+minimap navigation and combat-event pans all return to free mode.
+
+Optional `cameras` metadata survives both envelope formats: actual normal result
+downloads retain the format-1 worker record, while library portable upgrades add
+verified format-2 frames/map identity and preserve cameras through rename,
+export and import. Strict fields, finite bounded poses, unique recorded seats,
+monotonic ticks within duration and an aggregate 144,001-sample limit apply before
+storage/watch, alongside the existing two-hour and 64 MiB file limits. Imported
+camera annotations remain untrusted presentation metadata; simulation-history
+verification does not authenticate them. They never change commands, canonical
+state, keyframes, hashes or simulation version.
+
+The initial four-case real-browser attempt exposed dropped format-1 metadata and
+is superseded by the corrected four passing replay/paid-production journeys in
+`/tmp/neo-camera-browser-confirm.log`: Chrome 22.4s/17.4s and WebKit 29.0s/22.3s.
+They exercise native pointer/C/semantic-select follow, rewind, manual pan override,
+rotated/zoomed recording data, portable import/export and camera-free legacy
+playback. The actual normal format-1 download was also inspected. Fresh focused
+parser checks passed seven tests/60 assertions; independent technical probes
+passed seven probes/60 assertions. The full repository fix, typecheck, test and
+build batch passed.
+
+The fresh scoped finish review returned SHIP without a material correction and
+independently opened all eight valid actual captures:
+
+- `../review/camera-follow-desktop-{chromium,webkit}.png`
+- `../review/camera-follow-mobile-{chromium,webkit}.png`
+- `../review/camera-free-desktop-{chromium,webkit}.png`
+- `../review/camera-missing-desktop-{chromium,webkit}.png`
+
+Evidence is limited to current stable Google Chrome and current Playwright WebKit.
+Loaded-match camera segments and post-result pose freezing were source-reviewed,
+not independently exercised in a browser. Maximum-size replay stress,
+hardware FPS, physical touch/IME and screen-reader user testing remain unqualified;
+delayed live spectating and full replay/spectator acceptance remain open. The
+detector ran once at `/tmp/neo-camera-design-detect.json`; its existing `#efa394`
+advisory remains advisory, with no rerun or palette expansion. No new identity,
+raster, quality board or replacement composition was introduced.

@@ -3,6 +3,7 @@ import type { MatchRecord } from "@open-neo-rts/sim";
 import { SIM_VERSION } from "@open-neo-rts/sim";
 import { isRecord } from "../../worker/protocol";
 import { type SkirmishSetup, validateSkirmish } from "../skirmish/setup";
+import { parseReplayCameras, type ReplayCameraTrack } from "./cameras";
 
 export const MAX_REPLAY_BYTES = 64 * 1024 * 1024;
 type ReplayMetadata = {
@@ -13,6 +14,7 @@ type ReplayMetadata = {
   packs: readonly PackIdentity[];
   cosmeticHash: string;
   winner: number | null;
+  cameras?: readonly ReplayCameraTrack[];
 };
 export type SavedReplay = ReplayMetadata &
   (
@@ -30,12 +32,14 @@ const fields = [
   "winner",
   "record",
   "mapHash",
+  "cameras",
 ];
 /** Cheap metadata check only; all imported histories must pass the isolated replay worker. */
 export function parseSavedReplay(value: unknown): SavedReplay {
   if (
     !isRecord(value) ||
-    Object.keys(value).length !== (value.format === 2 ? fields.length : fields.length - 1) ||
+    Object.keys(value).length !==
+      (value.format === 2 ? 10 : 9) + Number(Object.hasOwn(value, "cameras")) ||
     Object.keys(value).some((key) => !fields.includes(key)) ||
     !(value.format === 1 || value.format === 2) ||
     (value.format === 1
@@ -89,6 +93,11 @@ export function parseSavedReplay(value: unknown): SavedReplay {
   )
     throw new Error("Invalid replay file");
   validateSkirmish(value.config);
+  if (Object.hasOwn(value, "cameras")) {
+    if (!Array.isArray(value.record.scenario.setup.seats))
+      throw new Error("Recorded cameras require recorded seats");
+    parseReplayCameras(value.cameras, Number(value.record.tick), value.record.scenario.setup.seats);
+  }
   return value as unknown as SavedReplay;
 }
 export function replayCompatibility(

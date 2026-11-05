@@ -4,12 +4,14 @@ import { createReplayWorker, type ReplayState } from "../../worker/replay";
 import { loadMap } from "../debug/maps";
 import { saveMapHash } from "../load-game/storage";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
+import type { ReplayCameraTrack } from "./cameras";
 import { replayCompatibility, type SavedReplay } from "./storage";
 
 export function savedReplay(
   record: MatchRecord,
   config: SkirmishSetup,
   winner: number | null,
+  cameras: readonly ReplayCameraTrack[] = [],
 ): SavedReplay {
   if (!content.cosmeticHash) throw new Error("Core content is unavailable");
   const metadata = {
@@ -20,10 +22,16 @@ export function savedReplay(
     packs: content.packs,
     cosmeticHash: content.cosmeticHash,
     winner,
+    ...(cameras.length && { cameras }),
   };
   return record.format === 1
     ? { ...metadata, format: 1, record }
-    : { ...metadata, format: 2, record, mapHash: saveMapHash(record) };
+    : {
+        ...metadata,
+        format: 2,
+        record,
+        mapHash: saveMapHash(record),
+      };
 }
 export async function installedReplay(replay: SavedReplay, signal: AbortSignal) {
   const reason = replayCompatibility(replay, content.packs, content.cosmeticHash);

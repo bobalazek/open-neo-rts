@@ -115,3 +115,40 @@ test("portable header requires its explicit map identity and matching bounded re
   ])
     expect(() => parseSavedReplay(value)).toThrow();
 });
+
+test("optional recorded cameras survive portable metadata while legacy files stay camera-free", () => {
+  const legacy = fixture();
+  const cameras = [
+    { seat: 1, samples: [{ tick: 0, x: 10, y: 0, z: 20, alpha: 1, beta: 0.8, radius: 60 }] },
+  ];
+  const portable = {
+    ...legacy,
+    format: 2,
+    mapHash: "abcdef1234567890",
+    cameras,
+    record: {
+      ...legacy.record,
+      format: 2,
+      keyframes: [{ tick: 0 }],
+      scenario: {
+        ...legacy.record.scenario,
+        setup: { ...legacy.record.scenario.setup, seats: [1, 2] },
+      },
+    },
+  };
+  expect(parseSavedReplay(portable).cameras).toEqual(cameras);
+  expect(
+    parseSavedReplay({
+      ...legacy,
+      cameras,
+      record: { ...legacy.record, scenario: portable.record.scenario },
+    }).cameras,
+  ).toEqual(cameras);
+  expect(parseSavedReplay(legacy).cameras).toBeUndefined();
+  for (const value of [
+    { ...legacy, cameras },
+    { ...portable, cameras: undefined },
+    { ...portable, cameras: [{ ...cameras[0], seat: 9 }] },
+  ])
+    expect(() => parseSavedReplay(value)).toThrow();
+});

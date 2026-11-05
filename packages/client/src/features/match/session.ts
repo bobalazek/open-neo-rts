@@ -28,6 +28,7 @@ import {
 } from "../load-game";
 import { createMatchGuidance } from "../onboarding/match";
 import { postMatchScreen } from "../post-match";
+import { createCameraRecording } from "../replays/cameras";
 import { savedReplay } from "../replays/files";
 import { replayStore } from "../replays/storage";
 import { applyInterfaceScale, type DeviceSettings, readDeviceSettings } from "../settings";
@@ -116,6 +117,7 @@ export function createNormalSession(
   );
   let resultDefinitions: { id: string; name: string; kind: string }[] = [];
   const replayUrls = new Set<string>();
+  const cameraRecording = createCameraRecording(1);
   let autosave: ReturnType<typeof setInterval> | undefined,
     saving = false,
     autoSlot = 0;
@@ -219,6 +221,8 @@ export function createNormalSession(
       ready && !state.paused && root.style.visibility !== "hidden",
     );
     if (!ready) return;
+    if (!resultScreen && !draft && renderer)
+      cameraRecording.capture(state.snapshot.tick, renderer.camera.capturePose());
     canvas.dataset.tick = String(state.snapshot.tick);
     canvas.dataset.entities = String(state.snapshot.entities.length);
     label(
@@ -293,8 +297,16 @@ export function createNormalSession(
           if (!match || disposed) return;
           const record = await match.exportMatchRecord();
           if (disposed) return;
+          const file = draft
+            ? record
+            : savedReplay(
+                record,
+                config,
+                state.snapshot.victory!.result!.winner,
+                cameraRecording.snapshot(),
+              );
           const url = URL.createObjectURL(
-            new Blob([`${JSON.stringify(record)}\n`], { type: "application/json" }),
+            new Blob([`${JSON.stringify(file)}\n`], { type: "application/json" }),
           );
           replayUrls.add(url);
           const anchor = document.createElement("a");
@@ -312,7 +324,12 @@ export function createNormalSession(
               if (!match || disposed || !state.snapshot.victory?.result) return;
               const record = await match.exportMatchRecord();
               if (disposed) return;
-              const file = savedReplay(record, config, state.snapshot.victory.result.winner);
+              const file = savedReplay(
+                record,
+                config,
+                state.snapshot.victory.result.winner,
+                cameraRecording.snapshot(),
+              );
               await replayStore.write(file);
               if (!disposed) persistence.replay?.(file.id);
             }
@@ -422,6 +439,8 @@ export function createNormalSession(
       presentation.setForceColor(1, "#3c93d9");
       const activePresentation = presentation;
       renderer.scene.onBeforeRenderObservable.add(() => {
+        if (ready && !draft && latest && !latest.snapshot.victory?.result)
+          cameraRecording.capture(latest.snapshot.tick, renderer!.camera.capturePose());
         if (ready && root.style.visibility !== "hidden") audio?.listen(renderer!.camera);
         activePresentation.render(clock.now(performance.now()));
         interaction?.frame(performance.now());
@@ -841,6 +860,7 @@ export function createNormalSession(
       );
       canvas.setAttribute("aria-label", text("ui.match.map-label"));
       canvas.tabIndex = 0;
+      if (!draft) cameraRecording.capture(latest.snapshot.tick, renderer.camera.capturePose());
       if (!persistence?.saved) await match.pause(false);
       if (disposed) return;
       ready = true;

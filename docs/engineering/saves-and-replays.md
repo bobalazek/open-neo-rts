@@ -75,6 +75,12 @@ include the full save. Failed loading leaves the old worker/session untouched.
   explicitly excluding installed-content/header identity checks performed by the
   browser. [Format and limits](../project/decisions/2026-11-05-portable-replay-keyframes.md).
 - Viewers can see everything or follow one player's vision.
+- **Recorded cameras:** local human target, rotation, tilt and zoom are optional
+  bounded portable annotations. Native follow/free controls and C preserve the
+  independent vision choice; manual camera navigation returns to free mode.
+  Seeking interpolates by recorded tick, and resumed matches expose only their
+  actual camera segment. Annotations do not enter canonical state or authenticate
+  a player's actions. [Format and interaction](../project/decisions/2026-11-05-recorded-replay-cameras.md).
 - **Timeline events:** verification derives combat intervals from each view's
   observable positive-damage events and public Force outcomes. Native markers
   and previous/next controls seek their actual ticks; combat navigation also pans

@@ -38,6 +38,7 @@ import {
   type StatisticView,
   viewLabel,
 } from "./analytics";
+import { replayCameraPose } from "./cameras";
 import { installedReplay } from "./files";
 import { replayStore, replayTime, type SavedReplay } from "./storage";
 
@@ -77,6 +78,8 @@ export function replayViewer(
     analysisKey = "",
     analysis: ReplayHudContent["statistics"];
   let eventPan: (x: number, y: number) => void = () => {};
+  let cameraSeat: number | undefined,
+    cameraPublishedAt = 0;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   const overlay = document.createElement("dialog");
   overlay.className = "match-menu";
@@ -141,9 +144,21 @@ export function replayViewer(
     void request({ type: "seek", tick: Math.max(0, Math.min(latest.duration, Math.round(tick))) });
   }
   function cycle(control: HTMLSelectElement, delta = 1) {
-    control.selectedIndex =
-      (control.selectedIndex + delta + control.options.length) % control.options.length;
+    const choices = [...control.options].filter((option) => !option.disabled);
+    if (!choices.length) return;
+    const index = choices.findIndex((option) => option.selected);
+    control.value = choices[(index + delta + choices.length) % choices.length]!.value;
     control.dispatchEvent(new Event("change"));
+  }
+  function freeCamera() {
+    if (cameraSeat === undefined) return;
+    cameraSeat = undefined;
+    if (ready && latest) update(latest);
+  }
+  function followCamera(tick: number) {
+    const track = replay?.cameras?.find((track) => track.seat === cameraSeat);
+    const pose = track && replayCameraPose(track, tick);
+    if (pose) renderer?.camera.restorePose(pose);
   }
   function adjacentEvent(direction: number) {
     if (!latest) return;
@@ -244,6 +259,7 @@ export function replayViewer(
       ["statistics", "statistics"],
       ["speed", undefined],
       ["vision", "vision"],
+      ["camera", "camera"],
       ["exit", "exit"],
     ] as const) {
       const button = buttons.get(id)!;
@@ -258,7 +274,8 @@ export function replayViewer(
         tooltip: button.title,
         image: image ? icon(image) : undefined,
         disabled: button.disabled,
-        active: id === "statistics" && statisticsOpen,
+        active:
+          (id === "statistics" && statisticsOpen) || (id === "camera" && cameraSeat !== undefined),
         activate: () => {
           button.focus({ preventScroll: true });
           button.click();
@@ -384,6 +401,7 @@ export function replayViewer(
   }
   function update(state: ReplayState) {
     if (disposed || failed) return;
+    if (latest !== state) cameraPublishedAt = performance.now();
     if (latest && (latest.epoch !== state.epoch || latest.vision !== state.vision)) {
       statisticsReady = false;
       statistics = [];
@@ -427,6 +445,31 @@ export function replayViewer(
     if (document.activeElement !== timeline) timeline.value = String(state.tick);
     q<HTMLSelectElement>("[data-speed]").value = String(state.speed);
     q<HTMLSelectElement>("[data-vision]").value = String(state.vision);
+    const cameraChoice = q<HTMLSelectElement>("[data-camera]");
+    for (const option of cameraChoice.options) {
+      const track = replay?.cameras?.find((track) => String(track.seat) === option.value);
+      option.disabled = !!track && state.tick < track.samples[0]!.tick;
+    }
+    if (
+      cameraSeat !== undefined &&
+      cameraChoice.querySelector<HTMLOptionElement>(`option[value="${cameraSeat}"]`)?.disabled
+    )
+      cameraSeat = undefined;
+    cameraChoice.value = cameraSeat === undefined ? "free" : String(cameraSeat);
+    cameraChoice.disabled =
+      state.phase !== "ready" ||
+      ![...cameraChoice.options].some((option) => option.value !== "free" && !option.disabled);
+    const cameraButton = buttons.get("camera")!;
+    cameraButton.disabled = cameraChoice.disabled;
+    cameraButton.setAttribute("aria-pressed", String(cameraSeat !== undefined));
+    cameraButton.title =
+      cameraChoice.options.length === 1
+        ? text("ui.replays.camera-missing")
+        : text("ui.replays.camera-help", {
+            mode: cameraChoice.selectedOptions[0]?.textContent ?? "",
+          });
+    canvas.dataset.replayCamera = cameraChoice.value;
+    if (state.phase === "ready") followCamera(state.tick);
     const play = buttons.get("play")!;
     play.textContent = play.title = text(state.paused ? "ui.replays.play" : "ui.replays.pause");
     play.setAttribute("aria-pressed", String(!state.paused));
@@ -506,6 +549,7 @@ export function replayViewer(
       return;
     }
     renderer = nextRenderer;
+    renderer.camera.setManualInputHandler(freeCamera);
     canvas.hidden = false;
     renderer.camera.setControls({
       panSpeed: settings.cameraSpeed / 100,
@@ -543,7 +587,7 @@ export function replayViewer(
     await presentation.accept(latest.snapshot, clock.now(performance.now()));
     if (disposed || failed) return;
     root.classList.add("match-shell", "replay-shell");
-    root.innerHTML = `<section class="replay-controls"><h1>${text("ui.replays.watch")}</h1><div data-players></div><nav aria-label="${text("ui.replays.timeline")}"></nav><label>${text("ui.replays.speed")}<select data-speed></select></label><label>${text("ui.replays.vision")}<select data-vision></select></label><label>${text("ui.replays.timeline")}<input type="range" min="0" max="1" step="1" value="0" data-timeline></label><ol data-events aria-label="${text("ui.replays.events")}"></ol><output data-time></output><output role="status" data-replay-status></output></section><div class="match-hud"><div class="hud-panels"></div></div>`;
+    root.innerHTML = `<section class="replay-controls"><h1>${text("ui.replays.watch")}</h1><div data-players></div><nav aria-label="${text("ui.replays.timeline")}"></nav><label>${text("ui.replays.speed")}<select data-speed></select></label><label>${text("ui.replays.vision")}<select data-vision></select></label><label>${text("ui.replays.timeline")}<input type="range" min="0" max="1" step="1" value="0" data-timeline></label><label>${text("ui.replays.camera")}<select data-camera></select></label><ol data-events aria-label="${text("ui.replays.events")}"></ol><output data-time></output><output role="status" data-replay-status></output></section><div class="match-hud"><div class="hud-panels"></div></div>`;
     // WebKit skips a range in sequential focus unless its tabindex is explicit.
     q<HTMLInputElement>("[data-timeline]").tabIndex = 0;
     for (const [id, label, activate] of [
@@ -565,6 +609,7 @@ export function replayViewer(
       ["statistics", "ui.replays.statistics", toggleStatistics],
       ["speed", "ui.replays.speed", () => cycle(q("[data-speed]"))],
       ["vision", "ui.replays.vision", () => cycle(q("[data-vision]"))],
+      ["camera", "ui.replays.camera-toggle", () => cycle(q("[data-camera]"))],
       ["exit", "ui.replays.exit", back],
     ] as const) {
       const button = document.createElement("button");
@@ -691,6 +736,24 @@ export function replayViewer(
         }),
       { signal: abort.signal },
     );
+    const cameraChoice = q<HTMLSelectElement>("[data-camera]");
+    cameraChoice.append(new Option(text("ui.replays.camera-free"), "free"));
+    for (const track of replay.cameras ?? []) {
+      const label = text("ui.replays.camera-player", { seat: track.seat });
+      const option = new Option(label, String(track.seat));
+      option.title = text("ui.replays.camera-start", { time: replayTime(track.samples[0]!.tick) });
+      cameraChoice.append(option);
+    }
+    cameraChoice.addEventListener(
+      "change",
+      () => {
+        cameraSeat = replay?.cameras?.find(
+          (track) => String(track.seat) === cameraChoice.value,
+        )?.seat;
+        if (latest) update(latest);
+      },
+      { signal: abort.signal },
+    );
     q("[data-timeline]").addEventListener(
       "change",
       () => seek(Number(q<HTMLInputElement>("[data-timeline]").value)),
@@ -700,6 +763,7 @@ export function replayViewer(
       ["[data-speed]", "speed"],
       ["[data-vision]", "vision"],
       ["[data-timeline]", "timeline"],
+      ["[data-camera]", "camera"],
     ] as const) {
       q(selector).addEventListener("focus", () => hud?.focus(id), { signal: abort.signal });
       q(selector).addEventListener("blur", () => hud?.focus(), { signal: abort.signal });
@@ -718,14 +782,19 @@ export function replayViewer(
           [1, "#3c93d9"],
         ]),
         selection: () => [],
-        pan: ({ x, y }) =>
+        pan: ({ x, y }) => {
+          freeCamera();
           world.camera.panTo(
             x * CELL_SIZE,
             y * CELL_SIZE,
             (loaded.grid.level[Math.floor(y) * loaded.grid.width + Math.floor(x)] ?? 0) *
               LEVEL_HEIGHT,
-          ),
-        zoom: (delta) => world.camera.zoomBy(delta),
+          );
+        },
+        zoom: (delta) => {
+          freeCamera();
+          world.camera.zoomBy(delta);
+        },
         view: () =>
           cameraGroundView(world.camera).map((point) => ({
             x: point.x / CELL_SIZE,
@@ -770,6 +839,14 @@ export function replayViewer(
       abort.signal,
     );
     renderer.scene.onBeforeRenderObservable.add(() => {
+      if (ready && latest?.phase === "ready")
+        followCamera(
+          Math.min(
+            latest.duration,
+            latest.tick +
+              (latest.paused ? 0 : ((performance.now() - cameraPublishedAt) * latest.speed) / 50),
+          ),
+        );
       actors.render(clock.now(performance.now()));
       interaction?.frame(performance.now());
       if (minimap?.frame(performance.now())) hud?.frame();
@@ -826,6 +903,7 @@ export function replayViewer(
           Comma: "previous-event",
           Period: "next-event",
           KeyG: "statistics",
+          KeyC: "camera",
           Escape: "exit",
         } as Record<string, string>
       )[event.code];
@@ -861,7 +939,8 @@ export function replayViewer(
     art?.dispose();
     renderer?.dispose();
     root.classList.remove("match-shell", "replay-shell", "native-replay");
-    for (const key of ["tick", "replayPhase", "vision", "session"]) delete canvas.dataset[key];
+    for (const key of ["tick", "replayPhase", "vision", "replayCamera", "session"])
+      delete canvas.dataset[key];
     canvas.hidden = true;
   };
 }
