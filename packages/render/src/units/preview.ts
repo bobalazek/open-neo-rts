@@ -3,6 +3,7 @@ import { createEngine, createScene } from "../scene";
 import { loadModel } from ".";
 import { createModelLod, MODEL_LOD_DISTANCE } from "./lod";
 import { createModelActions, type ModelPreviewAssets } from "./preview-actions";
+import { createSocketPreview, type SocketNode } from "./preview-sockets";
 
 /** An isolated asset scene for checking colours and clips before the match client exists. */
 export async function createModelPreview(canvas: HTMLCanvasElement) {
@@ -21,6 +22,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
   let current: Awaited<ReturnType<typeof loadModel>> | undefined;
   let wreck: Awaited<ReturnType<typeof loadModel>> | undefined;
   let actions: ReturnType<typeof createModelActions> | undefined;
+  let sockets: ReturnType<typeof createSocketPreview> | undefined;
   let wreckLod: ReturnType<typeof createModelLod>;
   let lod: ReturnType<typeof createModelLod>;
   let lodMode: "auto" | "0" | "1" = "auto";
@@ -106,6 +108,8 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
         nextWreck?.dispose();
         throw error;
       }
+      sockets?.dispose();
+      sockets = undefined;
       actions?.dispose();
       current?.dispose();
       wreck?.dispose();
@@ -125,6 +129,18 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
       return next.clips;
     },
     canFire: () => actions?.canFire ?? false,
+    editSockets(specs: readonly SocketNode[], changed: () => void) {
+      if (!current) throw new Error("No model loaded");
+      sockets?.dispose();
+      actions?.reset();
+      current.play("");
+      lodMode = "0";
+      health = 100;
+      lod?.setDistant(false);
+      showHealth();
+      sockets = createSocketPreview(scene, current.nodes, specs, changed);
+      return sockets;
+    },
     canDestroy: () => actions?.canDestroy ?? false,
     fire: () => actions?.fire(),
     destroy: () => actions?.destroy(),
@@ -151,6 +167,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
     },
     dispose() {
       request++;
+      sockets?.dispose();
       actions?.dispose();
       current?.dispose();
       wreck?.dispose();

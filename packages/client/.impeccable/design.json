@@ -505,7 +505,7 @@
         "recovery": "The editor retains unsaved fields while its model/panel rendering is suspended. Return to draft remains available after worker failure, disposes worker/scene and temporary URLs, restores the native pane, resumes the model and returns focus to the initiating Playtest draft action. Leaving content tools also releases playtest resources.",
         "reproduction": "Canonical command-log export contains the actual copied simulation definitions and commands. Copy initial setup link is disabled because a URL cannot carry unsaved definitions or models. Export reproduces simulation, not an asset pack."
       },
-      "deferred": "The whole 2-38b task remains open: 2-38b2 retains full runtime audio, source freshness and exact project formatter parity. Scenario presets complete the remaining 2-38c2 slice. Asset editing/gizmos remain 2-38d, including socket/part gizmos, GLB export and damage-socket smoke/fire previews. Grid/scale reference, material mappings, native debug conversion and remaining documented editor controls remain follow-up work.",
+      "deferred": "The whole 2-38b task remains open: 2-38b2 retains full runtime audio, source freshness and exact project formatter parity. Scenario presets complete the remaining 2-38c2 slice. Socket editing and GLB copy export are recorded in extensions.modelSocketEditing. Part controls, damage-socket smoke/fire previews, grid/scale reference, material mappings, native debug conversion and remaining documented editor controls remain follow-up work.",
       "qualification": "No blanket phase acceptance, physical directory-picker/file-dragging, touch/IME, screen-reader, Firefox or hardware-performance qualification. No simulation version or gameplay outcome change.",
       "deferredDrift": "Unrelated incumbent Audio wording and deviceAudio metadata remain preserved for a separate documentation refresh.",
       "normalPlaytestDecision": "../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md",
@@ -530,6 +530,25 @@
         "qualification": "Implementation evidence is limited to the current Chrome/WebKit browser scope; it does not qualify Firefox, physical touch/IME, screen readers or hardware FPS."
       },
       "scenarioDecision": "../../docs/project/decisions/2026-11-04-draft-scenario-presets.md"
+    },
+    "modelSocketEditing": {
+      "task": "2-38d1",
+      "sources": [
+        "src/features/content-editor/index.ts",
+        "src/features/content-editor/socket-editor.ts",
+        "src/features/content-editor/sockets.ts",
+        "../render/src/units/preview.ts",
+        "../render/src/units/preview-sockets.ts"
+      ],
+      "surfaceBrief": ".impeccable/surfaces/src-features-content-editor-index-ts.md",
+      "decision": "../../docs/project/decisions/2026-11-05-model-socket-editing.md",
+      "world": "Code-led Operate extension of Graphite Command Stations: original model left and native pane right on desktop, model above when narrow. Existing square graphite frames, ivory Arial labels/focus, warm-metal actions, contextual help and coral errors remain authoritative. No new identity, tokens, raster, quality board or replacement composition.",
+      "layout": "Edit sockets and Download GLB stay in the scrolling model-action body, preserving the compact pinned Open/definition footer. Socket mode exposes selection, Move/Rotate, local metre/degree fields and new-name/parent controls; Apply to preview and Cancel stay pinned while fields scroll.",
+      "interaction": "Actual Babylon local Move/Rotate gizmos manipulate the selected attachment. Its native opaque graphite caption uses measured Arial text width for legibility over original model colours. Entering socket mode stops clips and restores full-health LOD0 rest. Ordinary model actions return after Apply or Cancel.",
+      "scope": "Only empty unanimated leaf sockets are editable; mesh nodes, skin joints, animated nodes and socket branches with children are excluded. New named attachments use an authored parent or model root. Existing sockets keep their names and parents; original parts, materials and source files remain intact.",
+      "recovery": "Invalid text survives with an alert and blocks Apply. Apply validates with shared project/conformance checks before reimport; failure retains the editable draft and last good model. Cancel restores original poses and removes new nodes. Replacement and unload protect unsaved preview edits.",
+      "export": "Download GLB copies the applied preview without overwriting pack or Blender sources. Socket JSON and parent/scene child lists change; new nodes append stable indices and every following GLB chunk remains byte-identical, preserving original geometry, animation buffers, materials and metadata. Finite bounded transforms, unit quaternions, unique names and the 16 MiB limit gate export.",
+      "qualification": "All eight content-tools journeys passed in current Chrome and current WebKit. Finish review opened all eight fresh desktop/narrow and invalid-input captures and returned SHIP with no findings. Independent actual pointer drags cover position/rotation in both browsers; probes cover Cancel pose/new-node disposal, skin-joint exclusion, multi-chunk tail preservation, unchanged inputs and a real 16 MiB export failure retaining the draft for retry. Matrix-specific fixtures were not exercised; the strict shared-conformance failure path was source-reviewed. Detector ran once with no findings and was not rerun. No physical touch/IME, screen-reader or hardware-stress qualification, and no whole-editor or phase acceptance."
     },
     "worldWaypoints": {
       "task": "2-17c",

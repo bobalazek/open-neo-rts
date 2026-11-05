@@ -222,11 +222,11 @@ source.
   with Retry. Native Open and Retry stay outside the scrolling body; Open and
   validation-kind help use contextual hover/focus descriptions, and the model
   canvas names orbit, zoom and drop interactions. Existing interface scale and
-  semantic HTML/fallback remain in use. Grid/scale reference, gizmos, material
+  semantic HTML/fallback remain in use. Grid/scale reference, part gizmos, material
   mappings remain follow-up work. This does not complete the
   content editor; see `../../docs/project/decisions/2026-11-04-model-inspection-tools.md`.
 - Fire, Destroy and Restore model provide the isolated firing/destruction slice
-  of 2-38c2 in the same native pane, including while editing. Actions use the
+  of 2-38c2 in the same native pane, including while editing definitions. Actions use the
   loaded snapshot; unsaved fields apply only after Preview model. Fire resolves
   authored assigned sockets (or standalone muzzle sockets), plays available
   `fire_recoil`/`attack` and shows a short flash plus fixed model-relative +Z
@@ -241,8 +241,19 @@ source.
   Replacement/disposal releases owned effects and paired containers; retained
   editor playtests pause the effect clock. No sources, saves, normal matches or
   simulation state change. Full 2-38b2 validation/formatter parity and 2-38d
-  socket/part gizmos, GLB export and damage-socket smoke/fire previews stay open. See
+  part gizmos and damage-socket smoke/fire previews stay open. See
   `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
+- Socket editing (2-38d1) uses actual Babylon Move/Rotate gizmos, a readable native
+  attachment label and model-local metre/degree fields in the existing pane.
+  Authors can edit unanimated leaf sockets or add named attachments under an
+  authored parent/model root. Mesh nodes, skin joints and animated/branch sockets
+  are excluded. Apply validates before reimport; Cancel restores original poses
+  and removes new nodes. Download GLB retains the original geometry, animation
+  buffers and metadata in a separate copy. Replacement/unload protects unsaved
+  preview edits; no pack or Blender source is overwritten. Model edit/download
+  actions stay in the scrolling body, preserving the compact Open/definition
+  footer. Fire/clip previews resume after applying or canceling socket mode. See
+  `../../docs/project/decisions/2026-11-05-model-socket-editing.md`.
 - The same model-first tool includes 2-38b1 editing of existing unit, structure
   and prop definitions from owner-selected pack folders. Opened packs supply
   dependencies. Schema-derived scalar, enum, boolean, nested object, record and
@@ -344,7 +355,7 @@ source.
   can execute: normal engine validation still rejects incompatible commands.
   Focused Chrome and WebKit journeys cover this bounded flow; they do not close
   the whole editor task. Scenario presets complete the remaining 2-38c2 slice;
-  full 2-38b2 parity and 2-38d asset gizmos remain open. Normal quick play and
+  full 2-38b2 parity and remaining 2-38d asset editing remain open. Normal quick play and
   saved setup defaults retain the installed Training Grounds mirror. See
   `../../docs/project/decisions/2026-11-04-draft-normal-skirmish.md` and
   `../../docs/project/decisions/2026-11-04-draft-scenario-presets.md`.

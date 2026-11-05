@@ -1,5 +1,11 @@
 # Content editor and model viewer
 
+The [socket editor](../../project/decisions/2026-11-05-model-socket-editing.md)
+now supplies native Move/Rotate gizmos, model-local numeric fields and attachment
+creation. Apply validates/reimports a preview; Cancel restores the original
+nodes, and Download GLB preserves geometry/animation chunks in a separate copy.
+Part controls, material mappings and the remaining asset editor remain work.
+
 **Route:** `/tools/content` (`/tools/content?model=…` opens the model viewer on its own) · **From:** Map editor menu, Home (developer builds), PR preview links · **Phase:** 2, model viewer first, then definition editing ([roadmap](../../project/roadmap.md#what-each-phase-builds)).
 
 Editing units and structures by hand-writing JSON is error-prone, and checking a model means starting a match. The content editor puts both in one place: the model on the left, the definition as a form on the right, and live validation. It saves the same JSON files that live in the content packs (`content/<pack>/`), so it's a convenience, never a second source of truth.
