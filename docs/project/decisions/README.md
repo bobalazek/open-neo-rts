@@ -12,6 +12,7 @@
 
 - [2026-11-05 — Portable replay keyframes](./2026-11-05-portable-replay-keyframes.md) — Compact canonical frames, explicit map identity and full history verification, preserving legacy files.
 
+- [2026-11-05 — Editor audio decoding](./2026-11-05-editor-audio-decoding.md) — Native offline decoding and sample checks gate saves, creation and draft playtests without opening audio output.
 - [2026-11-05 — First-playable announcer](./2026-11-05-first-playable-announcer.md) — Original synthetic core speech, native captions and location-aware notices on a bounded priority queue.
 - [2026-11-05 — First-playable music](./2026-11-05-first-playable-music.md) — Original menu/match tracks, bounded scene playlists, actual Music levels and announcer-bus ducking.
 

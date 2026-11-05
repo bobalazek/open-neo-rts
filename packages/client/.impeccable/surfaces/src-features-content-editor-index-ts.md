@@ -44,7 +44,8 @@ decorative motion or new identity. The safety interaction is reviewing a disk
 conflict without losing a draft. Busy operations lock editable controls; invalid
 input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
-Full runtime audio, source freshness and exact formatter parity remain explicit
+Native offline audio decoding/sample checks use existing file diagnostics and
+preserve drafts without audio output. True-peak meter parity, source freshness and exact formatter parity remain explicit
 2-38b2 work before the whole 2-38b task can close. Remaining asset editing stays 2-38d.
 
 ## Socket editing extension

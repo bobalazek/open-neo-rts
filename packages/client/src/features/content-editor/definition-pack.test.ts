@@ -11,6 +11,9 @@ import {
   writeDefinition,
 } from "./definition-pack";
 
+// Domain checks run in Bun; actual decoding is exercised by the browser journeys.
+const audio = async () => [];
+
 describe("definition authoring", () => {
   test("rejects an oversized pack before any file contents are read", async () => {
     let reads = 0;
@@ -57,19 +60,19 @@ describe("definition authoring", () => {
     const path = "factions/eastern-collective/units/dragon-tank/unit.json";
     const original = pack.input.json.get(path) as Record<string, unknown>;
     expect(
-      (await checkDefinitionDraft([pack], "core", path, original)).filter(
+      (await checkDefinitionDraft([pack], "core", path, original, audio)).filter(
         (i) => i.level === "error",
       ),
     ).toEqual([]);
     const badReference = { ...original, producedBy: ["structure:eastern-collective/missing"] };
     expect(
-      (await checkDefinitionDraft([pack], "core", path, badReference)).some((i) =>
+      (await checkDefinitionDraft([pack], "core", path, badReference, audio)).some((i) =>
         i.message.includes("unknown reference"),
       ),
     ).toBe(true);
     const badHealth = { ...original, health: -1 };
     expect(
-      (await checkDefinitionDraft([pack], "core", path, badHealth)).some((i) =>
+      (await checkDefinitionDraft([pack], "core", path, badHealth, audio)).some((i) =>
         i.message.includes("health"),
       ),
     ).toBe(true);
@@ -79,7 +82,7 @@ describe("definition authoring", () => {
       presentation: { ...presentation, sockets: [...presentation.sockets, "socket_missingtest"] },
     };
     expect(
-      (await checkDefinitionDraft([pack], "core", path, badModel)).some(
+      (await checkDefinitionDraft([pack], "core", path, badModel, audio)).some(
         (i) => i.level === "error" && i.message.includes("socket_missingtest"),
       ),
     ).toBe(true);
@@ -91,7 +94,7 @@ describe("definition authoring", () => {
     };
     uncredited.input.json.set(metadata, { files: {} });
     expect(
-      (await checkDefinitionDraft([uncredited], "core", path, original)).some(
+      (await checkDefinitionDraft([uncredited], "core", path, original, audio)).some(
         (issue) => issue.level === "error" && issue.message.includes("no assets.json entry"),
       ),
     ).toBe(true);
@@ -113,7 +116,7 @@ describe("definition authoring", () => {
     const nestedPack = await readEditorPack("core", withNested);
     expect(nestedPack.input.json.has(nested + "assets.json")).toBe(true);
     expect(
-      (await checkDefinitionDraft([nestedPack], "core", path, original)).filter(
+      (await checkDefinitionDraft([nestedPack], "core", path, original, audio)).filter(
         (issue) => issue.level === "error",
       ),
     ).toEqual([]);

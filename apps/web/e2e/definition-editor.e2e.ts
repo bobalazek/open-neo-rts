@@ -23,6 +23,83 @@ async function click(page: import("@playwright/test").Page, name: string) {
     .evaluate((button: HTMLButtonElement) => button.click());
 }
 
+test("native audio decoding blocks an unsupported codec before saving and preserves export bytes on retry", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  const health = page.getByLabel("health", { exact: true });
+  await expect(health).toHaveValue("900", { timeout: 30000 });
+  await health.fill("1901");
+  await page.evaluate(async () => {
+    const state = Reflect.get(window, "editorFixture");
+    const path = "factions/eastern-collective/units/collective-soldier/collective-soldier.fire.ogg";
+    const original = state.files.get(path) as File;
+    Reflect.set(window, "editorAudioOriginal", original);
+    const bytes = new Uint8Array(await original.arrayBuffer());
+    const header = 27 + bytes[26]!;
+    // Unsupported Vorbis version, but a complete Ogg stream with a correct page checksum.
+    if (bytes[header] !== 1) throw new Error("Expected the original Vorbis fixture");
+    bytes[header + 7] = 1;
+    let end = header;
+    for (let i = 27; i < header; i++) end += bytes[i]!;
+    let crc = 0;
+    for (let i = 0; i < end; i++) {
+      crc ^= (i >= 22 && i < 26 ? 0 : bytes[i]!) << 24;
+      for (let bit = 0; bit < 8; bit++) crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04c11db7 : 0);
+    }
+    new DataView(bytes.buffer).setUint32(22, crc >>> 0, true);
+    state.files.set(path, new File([bytes], original.name));
+    Reflect.set(window, "editorAudioCounts", { decoded: 0 });
+    const decode = OfflineAudioContext.prototype.decodeAudioData;
+    OfflineAudioContext.prototype.decodeAudioData = function (data: ArrayBuffer) {
+      return decode.call(this, data).then((result) => {
+        Reflect.get(window, "editorAudioCounts").decoded++;
+        return result;
+      });
+    };
+  });
+  await click(page, "Save definition");
+  await expect(page.locator(".definition-editor")).toContainText("audio decoding failed", {
+    timeout: 60000,
+  });
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await expect(health).toHaveValue("1901");
+  await page.evaluate(() => {
+    const state = Reflect.get(window, "editorFixture");
+    state.files.set(
+      "factions/eastern-collective/units/collective-soldier/collective-soldier.fire.ogg",
+      Reflect.get(window, "editorAudioOriginal"),
+    );
+  });
+  await click(page, "Save definition");
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "editorFixture").writes), {
+      timeout: 60000,
+    })
+    .toBe(1);
+  const result = await page.evaluate(async (path) => {
+    const state = Reflect.get(window, "editorFixture");
+    const original = Reflect.get(window, "editorAudioOriginal") as File;
+    const actual = state.files.get(
+      "factions/eastern-collective/units/collective-soldier/collective-soldier.fire.ogg",
+    ) as File;
+    const before = new Uint8Array(await original.arrayBuffer());
+    const after = new Uint8Array(await actual.arrayBuffer());
+    return {
+      health: JSON.parse(await state.files.get(path).text()).health,
+      decoded: Reflect.get(window, "editorAudioCounts").decoded,
+      preserved:
+        after.length === before.length && after.every((byte, index) => byte === before[index]),
+    };
+  }, path);
+  expect(result.health).toBe(1901);
+  expect(result.decoded).toBeGreaterThan(1);
+  expect(result.preserved).toBe(true);
+});
+
 test("draft scenario controls launch authored terrain and a frozen unit mirror without saving", async ({
   page,
 }, info) => {

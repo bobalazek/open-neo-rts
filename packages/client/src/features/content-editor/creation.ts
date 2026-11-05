@@ -1,3 +1,4 @@
+import { checkEditorAudio } from "./audio-validation";
 import {
   checkDefinitionDraft,
   type EditorPack,
@@ -16,6 +17,7 @@ export async function prepareDefinitionClone(
   sourcePath: string,
   slug: string,
   name: string,
+  audio = checkEditorAudio,
 ) {
   if (
     slug.length > 96 ||
@@ -73,7 +75,7 @@ export async function prepareDefinitionClone(
     candidateFiles.set(file, new File([bytes], file.split("/").at(-1)!));
   const candidate = await readEditorPack(packId, candidateFiles);
   const candidates = packs.map((pack) => (pack === source ? candidate : pack));
-  const issues = await checkDefinitionDraft(candidates, packId, path, draft);
+  const issues = await checkDefinitionDraft(candidates, packId, path, draft, audio);
   return {
     packId,
     sourcePath,

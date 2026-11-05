@@ -3,6 +3,7 @@ import { FACTIONS } from "../debug/configuration";
 import type { DebugLink } from "../debug/links";
 import type { DraftSkirmishSource } from "../match/session";
 import { firstPlayableRoster } from "../skirmish/roster";
+import { checkEditorAudio } from "./audio-validation";
 import { type EditorPack, resolveDefinitionDraft, safeEditorPath } from "./definition-pack";
 import { MODEL_FILE_LIMIT } from "./model";
 import { type DraftScenario, defaultDraftScenario } from "./scenarios";
@@ -14,8 +15,9 @@ export async function prepareDraftPlaytest(
   path: string,
   draft: unknown,
   scenario: DraftScenario = defaultDraftScenario(),
+  audio = checkEditorAudio,
 ) {
-  const checked = await resolveDefinitionDraft(packs, packId, path, structuredClone(draft));
+  const checked = await resolveDefinitionDraft(packs, packId, path, structuredClone(draft), audio);
   if (
     !checked.catalog ||
     !checked.gameplay ||

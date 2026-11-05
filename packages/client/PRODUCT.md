@@ -292,7 +292,10 @@ source.
   packs, including clips unrelated to the selected definition. Invalid containers
   block save/download, sibling creation and draft playtests without changing
   source files or discarding edits. Editable source media stay excluded.
-  Native audio decoding/metering, source freshness and exact formatter parity remain
+  Native offline decoding also rejects undecodable, empty/silent, non-finite and
+  excessive sample-level exports before saving or playtesting. It copies encoded
+  bytes before decoding and never opens audio output or changes mixer settings.
+  CLI true-peak meter parity, source freshness and exact formatter parity remain
   2-38b2. The whole 2-38b task and asset editing (2-38d) remain open. See
   `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
 - New from selected completes 2-38b3 sibling creation from a clean unit,

@@ -132,8 +132,10 @@ model. Functional model effects reuse original geometry without decorative motio
 This records model inspection (2-38a),
 existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debug
 checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
-The six-map scenario presets complete the remaining 2-38c2 slice. Full runtime
-audio, source freshness and exact formatter parity remain 2-38b2. Asset editing
+The six-map scenario presets complete the remaining 2-38c2 slice. Native offline
+audio decoding and sample checks now gate saves and draft playtests through the
+existing diagnostics. True-peak meter parity, source freshness and exact
+formatter parity remain 2-38b2. Asset editing
 now includes native socket Move/Rotate gizmos, local numeric fields and checked
 GLB copy exports. Native Part controls reveal an authored-part picker and XYZ
 degree sliders for inspection poses around actual local rest pivots. Free part
@@ -698,8 +700,10 @@ the text leaves space for that disclosure mark.
   read-only folder fallback downloads a copy and retains dirty state. No uploads
   or simulation edits occur. Shared definition/model and runtime Ogg container
   checks gate saving, creation and draft playtests. Container errors use existing
-  file-specific diagnostics and preserve edits for retry. Native audio decoding/
-  metering, source freshness and exact formatter parity remain 2-38b2;
+  file-specific diagnostics and preserve edits for retry. Native offline decoding
+  adds decode, silence, finite-sample and sample-level refusals using those same
+  diagnostics, without audible output. True-peak meter parity, source freshness
+  and exact formatter parity remain 2-38b2;
   socket editing/GLB copy export and part inspection sliders are implemented,
   while free part gizmos, material mappings, remaining documented tabs/validation
   and damage-socket smoke/fire previews remain open.
