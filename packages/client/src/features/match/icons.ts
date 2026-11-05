@@ -30,6 +30,8 @@ const paths = {
   play: "m8 4 12 8-12 8V4Z",
   rewind: "m11 5-8 7 8 7V5Zm10 0-8 7 8 7V5Z",
   forward: "m3 5 8 7-8 7V5Zm10 0 8 7-8 7V5Z",
+  previousEvent: "M5 4v16m14-16L8 12l11 8V4Z",
+  nextEvent: "M19 4v16M5 4l11 8-11 8V4Z",
   vision: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Zm10-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
   exit: "M10 4H4v16h6m3-13 5 5-5 5m-5-5h10",
   surrender: "M6 21V3l13 3-13 6",

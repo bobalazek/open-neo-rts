@@ -10,6 +10,7 @@ import { flatMap } from "../testing/maps";
 import { REPLAY_KEYFRAME_INTERVAL } from "./keyframe";
 import { createMatchRecord, parseMatchRecord } from "./match-record";
 import { createMatchPlayback, verifyMatchRecord } from "./playback";
+import { createReplayEvents } from "./replay-events";
 import { canonicalJson } from "./schema";
 
 function fixture(end = 2505) {
@@ -105,6 +106,91 @@ function fixture(end = 2505) {
   }
   return { setup, kernel, hashes, record: createMatchRecord(kernel, setup) };
 }
+
+test("timeline combat groups retain each view's first observable damage and public eliminations", () => {
+  const { setup } = fixture(2),
+    kernel = createMatch(setup),
+    events = createReplayEvents(setup);
+  step(kernel, []);
+  emitCombatEvent(kernel, { type: "damage", force: 1, x: 18 * 1024, y: 8 * 1024, amount: 5 });
+  const hash = checkpointHash(kernel);
+  events.capture(kernel);
+  expect(checkpointHash(kernel)).toBe(hash);
+  expect(events.markers("all")).toEqual([{ type: "combat", tick: 1, x: 18 * 1024, y: 8 * 1024 }]);
+  expect(events.markers(1)).toEqual([]);
+  expect(events.markers(2)).toHaveLength(1);
+  step(kernel, []);
+  emitCombatEvent(kernel, { type: "damage", force: 0, x: 6 * 1024, y: 8 * 1024, amount: 5 });
+  events.capture(kernel);
+  expect(events.markers("all")).toHaveLength(1);
+  expect(events.markers(1)[0]?.tick).toBe(2);
+  while (kernel.tick < 201) step(kernel, []);
+  emitCombatEvent(kernel, { type: "launch", force: 1, x: 18 * 1024, y: 8 * 1024 });
+  emitCombatEvent(kernel, { type: "damage", force: 0, x: 6 * 1024, y: 8 * 1024, amount: 0 });
+  events.capture(kernel);
+  expect(events.markers("all")).toHaveLength(1);
+  emitCombatEvent(kernel, { type: "damage", force: 1, x: 18 * 1024, y: 8 * 1024, amount: 5 });
+  events.capture(kernel);
+  expect(events.markers("all")).toHaveLength(2);
+  expect(events.markers(1)).toHaveLength(1);
+  step(kernel, [
+    { tick: 201, seat: 1, sequence: 0, type: "match.surrender", payload: { force: 0 } },
+  ]);
+  events.capture(kernel);
+  for (const vision of ["all", 1, 2] as const)
+    expect(events.markers(vision).at(-1)).toEqual({
+      type: "elimination",
+      tick: 202,
+      force: 0,
+      reason: "surrendered",
+    });
+  const copy = events.markers(1);
+  copy[0]!.tick = 999;
+  copy.length = 0;
+  expect(events.markers(1)).toHaveLength(2);
+  expect(events.markers(1)[0]!.tick).toBe(2);
+  expect(() => events.markers(99)).toThrow("Unknown");
+});
+
+test("verified real combat markers survive repeated seeks without duplication or changed outcomes", () => {
+  const { setup } = fixture(2);
+  setup.definitions = setup.definitions.map((definition) => ({
+    ...definition,
+    health: 1000,
+    armor: "infantry",
+    visionSubcells: 32 * 1024,
+    ...(definition.speed && {
+      weapons: [
+        {
+          id: "timeline-gun",
+          targets: ["ground" as const],
+          rangeSubcells: [0, 32 * 1024] as const,
+          reloadTicks: 1,
+          projectile: { kind: "instant" as const },
+          warheads: [{ type: "damage" as const, amount: 1, versusPerMille: {}, tags: [] }],
+        },
+      ],
+    }),
+  }));
+  const kernel = createMatch(setup);
+  for (let tick = 0; tick < 5; tick++) step(kernel, []);
+  step(kernel, [{ tick: 5, seat: 1, sequence: 0, type: "match.surrender", payload: { force: 0 } }]);
+  const record = createMatchRecord(kernel, setup),
+    playback = createMatchPlayback(record, setup);
+  expect(() => playback.markers("all")).toThrow("Verify");
+  playback.prepare();
+  const markers = playback.markers("all");
+  expect(markers.some((marker) => marker.type === "combat")).toBe(true);
+  expect(markers.at(-1)).toEqual({ type: "elimination", tick: 6, force: 0, reason: "surrendered" });
+  for (const target of [0, 6, 1, 0, 6]) {
+    playback.seek(target);
+    expect(playback.markers("all")).toEqual(markers);
+  }
+  expect(checkpointHash(playback.kernel)).toBe(record.hash);
+  const corrupt = createMatchPlayback({ ...record, hash: "0000000000000000" }, setup);
+  expect(() => corrupt.prepare()).toThrow();
+  expect(() => corrupt.markers("all")).toThrow();
+});
 
 test("portable keyframes round-trip complete state and command boundaries without sharing mutable captures", () => {
   const { setup, record, hashes } = fixture();

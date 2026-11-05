@@ -16,6 +16,7 @@ import { mountNativePanel } from "../../shared/native-panel";
 import {
   createReplayWorker,
   REPLAY_SPEEDS,
+  type ReplayMarker,
   type ReplayRequest,
   type ReplayState,
 } from "../../worker/replay";
@@ -56,6 +57,9 @@ export function replayViewer(
     interaction: ReturnType<typeof bindWorldInteraction> | undefined;
   let hud: ReturnType<typeof createReplayHud> | undefined,
     panel: ReturnType<typeof mountNativePanel> | undefined;
+  let markers: readonly ReplayMarker[] = [],
+    markerIdentity = "";
+  let eventPan: (x: number, y: number) => void = () => {};
   let timeout: ReturnType<typeof setTimeout> | undefined;
   const overlay = document.createElement("dialog");
   overlay.className = "match-menu";
@@ -124,6 +128,23 @@ export function replayViewer(
       (control.selectedIndex + delta + control.options.length) % control.options.length;
     control.dispatchEvent(new Event("change"));
   }
+  function adjacentEvent(direction: number) {
+    if (!latest) return;
+    return direction > 0
+      ? markers.find((marker) => marker.tick > latest!.tick)
+      : [...markers].reverse().find((marker) => marker.tick < latest!.tick);
+  }
+  function jumpEvent(marker?: ReplayMarker) {
+    if (!marker || latest?.phase !== "ready") return;
+    seek(marker.tick);
+    if (marker.type === "combat") eventPan(marker.x, marker.y);
+  }
+  function markerLabel(marker: ReplayMarker) {
+    return text(`ui.replays.event-${marker.type === "combat" ? "combat" : marker.reason}`, {
+      time: replayTime(marker.tick),
+      force: marker.type === "elimination" ? marker.force + 1 : "",
+    });
+  }
   function controls(): ReplayHudContent | undefined {
     if (!latest || !replay || !content.catalog) return;
     const actions: BattlefieldAction[] = [];
@@ -131,6 +152,8 @@ export function replayViewer(
       ["backward", "rewind"],
       ["play", latest.paused ? "play" : "pause"],
       ["forward", "forward"],
+      ["previous-event", "previousEvent"],
+      ["next-event", "nextEvent"],
       ["speed", undefined],
       ["vision", "vision"],
       ["exit", "exit"],
@@ -216,12 +239,32 @@ export function replayViewer(
             }),
       scale: settings.uiScale / 100,
       timelineLabel: text("ui.replays.timeline-help"),
+      markerGroupHint: text("ui.replays.event-cluster"),
+      markers: markers.map((marker, index) => ({
+        id: `marker:${index}`,
+        tick: marker.tick,
+        kind: marker.type,
+        label: markerLabel(marker),
+        tooltip: markerLabel(marker),
+        image: icon(
+          marker.type === "combat"
+            ? "attack"
+            : marker.reason === "surrendered"
+              ? "surrender"
+              : "cancel",
+        ),
+        disabled: latest!.phase !== "ready",
+        active: false,
+        activate: () => jumpEvent(marker),
+      })),
       actions,
       players,
     };
   }
   function update(state: ReplayState) {
     if (disposed || failed) return;
+    if (state.markers) markers = state.markers;
+    else if (latest && latest.vision !== state.vision) markers = [];
     latest = state;
     clock.update(performance.now(), state.paused || state.phase !== "ready", state.speed);
     presentation?.setPlaybackRate(state.paused || state.phase !== "ready" ? 0 : state.speed);
@@ -257,6 +300,34 @@ export function replayViewer(
     play.textContent = play.title = text(state.paused ? "ui.replays.play" : "ui.replays.pause");
     play.setAttribute("aria-pressed", String(!state.paused));
     play.disabled = state.phase !== "ready";
+    for (const [action, direction] of [
+      ["previous-event", -1],
+      ["next-event", 1],
+    ] as const)
+      buttons.get(action)!.disabled = state.phase !== "ready" || !adjacentEvent(direction);
+    const identity = JSON.stringify(markers);
+    if (markerIdentity !== identity) {
+      markerIdentity = identity;
+      q("[data-events]").replaceChildren(
+        ...markers.map((marker, index) => {
+          const item = document.createElement("li"),
+            button = document.createElement("button");
+          button.type = "button";
+          button.tabIndex = -1; // Previous/next event controls provide sequential keyboard access.
+          button.dataset.replayMarker = String(index);
+          button.textContent = button.title = markerLabel(marker);
+          button.addEventListener("click", () => jumpEvent(marker), { signal: abort.signal });
+          button.addEventListener("focus", () => hud?.focus(`marker:${index}`), {
+            signal: abort.signal,
+          });
+          button.addEventListener("blur", () => hud?.focus(), { signal: abort.signal });
+          item.append(button);
+          return item;
+        }),
+      );
+    }
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-replay-marker]"))
+      button.disabled = state.phase !== "ready";
     const next = controls();
     q<HTMLElement>("[data-players]").replaceChildren(
       ...(next?.players ?? []).map((player) => {
@@ -337,7 +408,7 @@ export function replayViewer(
     await presentation.accept(latest.snapshot, clock.now(performance.now()));
     if (disposed || failed) return;
     root.classList.add("match-shell", "replay-shell");
-    root.innerHTML = `<section class="replay-controls"><h1>${text("ui.replays.watch")}</h1><div data-players></div><nav aria-label="${text("ui.replays.timeline")}"></nav><label>${text("ui.replays.speed")}<select data-speed></select></label><label>${text("ui.replays.vision")}<select data-vision></select></label><label>${text("ui.replays.timeline")}<input type="range" min="0" max="1" step="1" value="0" data-timeline></label><output data-time></output><output role="status" data-replay-status></output></section><div class="match-hud"><div class="hud-panels"></div></div>`;
+    root.innerHTML = `<section class="replay-controls"><h1>${text("ui.replays.watch")}</h1><div data-players></div><nav aria-label="${text("ui.replays.timeline")}"></nav><label>${text("ui.replays.speed")}<select data-speed></select></label><label>${text("ui.replays.vision")}<select data-vision></select></label><label>${text("ui.replays.timeline")}<input type="range" min="0" max="1" step="1" value="0" data-timeline></label><ol data-events aria-label="${text("ui.replays.events")}"></ol><output data-time></output><output role="status" data-replay-status></output></section><div class="match-hud"><div class="hud-panels"></div></div>`;
     // WebKit skips a range in sequential focus unless its tabindex is explicit.
     q<HTMLInputElement>("[data-timeline]").tabIndex = 0;
     for (const [id, label, activate] of [
@@ -354,6 +425,8 @@ export function replayViewer(
         },
       ],
       ["forward", "ui.replays.forward", () => seek((latest?.tick ?? 0) + 200)],
+      ["previous-event", "ui.replays.previous-event", () => jumpEvent(adjacentEvent(-1))],
+      ["next-event", "ui.replays.next-event", () => jumpEvent(adjacentEvent(1))],
       ["speed", "ui.replays.speed", () => cycle(q("[data-speed]"))],
       ["vision", "ui.replays.vision", () => cycle(q("[data-vision]"))],
       ["exit", "ui.replays.exit", back],
@@ -455,6 +528,14 @@ export function replayViewer(
       zoom: minimap.zoom,
       mapFocus: () => minimap?.canvas.focus({ preventScroll: true }),
     });
+    eventPan = (x, y) =>
+      minimap?.navigate(
+        x / 1024 / loaded.grid.width,
+        y / 1024 / loaded.grid.height,
+        0,
+        false,
+        false,
+      );
     renderer.camera.setPointerBlocker((x, y) => hud?.blocksPointer(x, y) ?? false);
     interaction = bindWorldInteraction(
       canvas,
@@ -522,6 +603,8 @@ export function replayViewer(
           KeyJ: "backward",
           KeyL: "forward",
           KeyV: "vision",
+          Comma: "previous-event",
+          Period: "next-event",
           Escape: "exit",
         } as Record<string, string>
       )[event.code];

@@ -24,8 +24,8 @@ let winner: number | null | undefined;
 let projectedEpoch = -1;
 function publish(id = 0) {
   if (!playback) return;
-  const snapshot =
-    phase === "ready" ? playback.snapshot(vision, projectedEpoch !== epoch) : undefined;
+  const reset = projectedEpoch !== epoch;
+  const snapshot = phase === "ready" ? playback.snapshot(vision, reset) : undefined;
   if (snapshot) projectedEpoch = epoch;
   host.postMessage({
     id,
@@ -37,7 +37,7 @@ function publish(id = 0) {
       paused,
       speed,
       vision,
-      ...(snapshot && { snapshot, winner }),
+      ...(snapshot && { snapshot, winner, ...(reset && { markers: playback.markers(vision) }) }),
     },
   });
 }

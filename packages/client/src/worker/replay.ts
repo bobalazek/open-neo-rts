@@ -5,6 +5,8 @@ import {
   type ReplayState,
 } from "./replay-protocol";
 
+export type { ReplayMarker } from "@open-neo-rts/sim";
+
 export {
   REPLAY_SPEEDS,
   type ReplayRequest,

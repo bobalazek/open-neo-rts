@@ -5,7 +5,8 @@ supports the authored Eastern Collective mirror: native library actions and
 metadata, verified container/legacy imports, read-only playback/speed/seek,
 All/player fog, actual resources/production and free-camera/right-hand circular
 map navigation. [Portable keyframes and map identity](../../project/decisions/2026-11-05-portable-replay-keyframes.md)
-now retain complete history verification on import. Recorded cameras, event markers,
+now retain complete history verification on import. [Event navigation](../../project/decisions/2026-11-05-replay-event-timeline.md)
+adds view-filtered combat intervals and exact public Force outcomes. Recorded cameras,
 analytics and live spectating remain work.
 
 ## Replay browser

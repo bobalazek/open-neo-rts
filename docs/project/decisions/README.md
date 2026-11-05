@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-05 — Replay event timeline](./2026-11-05-replay-event-timeline.md) — Verified, view-filtered combat/outcome markers with native pointer and keyboard navigation.
+
 - [2026-11-05 — Portable replay keyframes](./2026-11-05-portable-replay-keyframes.md) — Compact canonical frames, explicit map identity and full history verification, preserving legacy files.
 
 - [2026-11-05 — First-playable music](./2026-11-05-first-playable-music.md) — Original menu/match tracks, bounded scene playlists, actual Music levels and announcer-bus ducking.

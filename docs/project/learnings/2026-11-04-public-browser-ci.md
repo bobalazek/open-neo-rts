@@ -149,3 +149,15 @@ and open until the owner finishes restoration and disposes it. This keeps every
 underlying pane blocked by the same modal, including when no gallery-owned action
 is running. Held acknowledgements cover both main-menu restart and browser-Back
 from the idle gallery, preserving the selected save and paused tick.
+
+The [replay-event candidate](https://github.com/bobalazek/open-neo-rts/actions/runs/41947902217)
+later finished Chrome with 112 passed and two timing failures. The HUD trace read
+paint coordinates 1.24 ms after the semantic selection assertion completed; a held real
+animation frame reproduced valid DOM details with no native text yet. Wait for
+the existing `nativeTextPoint` observations before reading layout, retaining the
+same playable-area and economy-order assertions. The menu trace resolved the
+second Surrender target as disabled after dismissing its first confirmation, so
+Enter produced no second confirmation. A held outgoing pause-restoration request
+reproduced this interval; waiting for enabled Surrender before the next Enter
+reached the real Defeat result. These are causal harness waits, not longer sleeps,
+weaker assertions or changes to gameplay/menu behavior.

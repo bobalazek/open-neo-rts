@@ -15,6 +15,8 @@ export interface ReplayHudContent {
   time: string;
   status: string;
   timelineLabel: string;
+  markerGroupHint: string;
+  markers: readonly (BattlefieldAction & { tick: number; kind: "combat" | "elimination" })[];
   tick: number;
   duration: number;
   scale: number;
@@ -98,11 +100,21 @@ export function createReplayHud(
     { button: Button; image: Image; label: TextBlock; action: BattlefieldAction }
   >();
   const playerNodes: Control[] = [];
+  const markerNodes = new Map<
+    number,
+    {
+      button: Button;
+      image: Image;
+      members: ReplayHudContent["markers"];
+      cursor: number;
+    }
+  >();
   let content: ReplayHudContent | undefined,
     focused: string | undefined,
     dragging = false,
     mapDrag = false;
   let playerIdentity = "";
+  let markerIdentity = "";
   let boxes: { x: number; y: number; w: number; h: number }[] = [];
   function hint(value: string) {
     tooltip.text = value;
@@ -112,7 +124,9 @@ export function createReplayHud(
     hint(
       focused === "timeline"
         ? (content?.timelineLabel ?? "")
-        : (buttons.get(focused ?? "")?.action.tooltip ?? ""),
+        : (buttons.get(focused ?? "")?.action.tooltip ??
+            content?.markers.find((marker) => marker.id === focused)?.tooltip ??
+            ""),
     );
   }
   function layout() {
@@ -130,12 +144,18 @@ export function createReplayHud(
       mapX = width - edge - mapSize,
       mapY = height - edge - mapSize;
     const transportWidth = mapX - edge - 12,
-      transportHeight = 96 * scale,
+      transportHeight = (content.markers.length ? 116 : 96) * scale,
       transportY = height - edge - transportHeight;
     place(header, edge, edge, width - 24, 42 * scale);
     place(title, 24, edge, Math.max(40, width - 270 * scale), 42 * scale);
     place(transport, edge, transportY, Math.max(160, transportWidth), transportHeight);
-    place(time, 24, transportY + 6 * scale, transportWidth - 24, 20 * scale);
+    place(
+      time,
+      24,
+      transportY + 6 * scale,
+      transportWidth - 24 - (content.markers.length ? 57 * scale : 0),
+      20 * scale,
+    );
     place(slider, 24, transportY + 29 * scale, transportWidth - 24, 16 * scale);
     place(timelineFocus, 22, transportY + 26 * scale, transportWidth - 20, 22 * scale);
     place(mini, mapX, mapY, mapSize, mapSize);
@@ -144,11 +164,97 @@ export function createReplayHud(
     for (const id of ["backward", "play", "forward", "speed"]) {
       const item = buttons.get(id);
       if (!item) continue;
-      const w = id === "speed" ? 54 * scale : unit;
-      place(item.button, x, transportY + 52 * scale, w, unit);
-      place(item.image, 6 * scale, 6 * scale, w - 12 * scale, unit - 12 * scale);
+      const w = (id === "speed" ? 54 : 36) * scale;
+      place(item.button, x, transportY + (content.markers.length ? 74 : 52) * scale, w, unit);
+      const imageSize = Math.min(w, unit) - 12 * scale;
+      place(item.image, (w - imageSize) / 2, (unit - imageSize) / 2, imageSize, imageSize);
       place(item.label, 0, 0, w, unit);
       x += w + gap;
+    }
+    for (const [index, id] of ["previous-event", "next-event"].entries()) {
+      const item = buttons.get(id);
+      if (!item) continue;
+      item.button.isVisible = !!content.markers.length;
+      place(
+        item.button,
+        transportWidth - (index === 0 ? 57 : 26) * scale,
+        transportY + 3 * scale,
+        26 * scale,
+        26 * scale,
+      );
+      place(item.image, 6 * scale, 6 * scale, 14 * scale, 14 * scale);
+      place(item.label, 0, 0, 26 * scale, 26 * scale);
+    }
+    const columns = Math.max(1, Math.floor((transportWidth - 24) / (24 * scale)));
+    const groups = new Map<number, ReplayHudContent["markers"][number][]>();
+    for (const marker of content.markers) {
+      const column = Math.min(columns - 1, Math.floor((marker.tick / content.duration) * columns));
+      const members = groups.get(column) ?? [];
+      members.push(marker);
+      groups.set(column, members);
+    }
+    for (const [column, node] of markerNodes)
+      if (!groups.has(column)) {
+        node.button.dispose();
+        markerNodes.delete(column);
+      }
+    for (const [column, members] of groups) {
+      let node = markerNodes.get(column);
+      if (!node) {
+        const button = new Button(`replay event cluster ${column}`),
+          image = new Image("event icon");
+        button.background = "transparent";
+        button.color = "#ddc382";
+        button.thickness = 0;
+        button.isPointerBlocker = true;
+        button.hoverCursor = "pointer";
+        image.isHitTestVisible = false;
+        button.addControl(image);
+        gui.addControl(button);
+        node = { button, image, members, cursor: 0 };
+        markerNodes.set(column, node);
+        const hintEvent = () => {
+          const current = markerNodes.get(column)!;
+          hint(
+            `${current.members[current.cursor]!.tooltip}${current.members.length > 1 ? ` (${current.members.length})\n${content?.markerGroupHint ?? ""}` : ""}`,
+          );
+        };
+        button.onPointerEnterObservable.add(() => {
+          button.thickness = 1;
+          hintEvent();
+        });
+        button.onPointerOutObservable.add(() => {
+          button.thickness = markerNodes
+            .get(column)!
+            .members.some((marker) => marker.id === focused)
+            ? 2
+            : 0;
+          focusHint();
+        });
+        button.onPointerClickObservable.add(() => {
+          const current = markerNodes.get(column)!;
+          const marker = current.members[current.cursor]!;
+          if (marker.disabled) return;
+          hintEvent();
+          current.cursor = (current.cursor + 1) % current.members.length;
+          marker.activate();
+        });
+      }
+      node.members = members;
+      node.cursor %= members.length;
+      const representative = members.find((marker) => marker.kind === "elimination") ?? members[0]!;
+      if (node.image.source !== representative.image)
+        node.image.source = representative.image ?? "";
+      node.button.alpha = representative.disabled ? 0.45 : 1;
+      const width = (transportWidth - 24) / columns;
+      place(
+        node.button,
+        24 + column * width + (width - 24 * scale) / 2,
+        transportY + 47 * scale,
+        24 * scale,
+        22 * scale,
+      );
+      place(node.image, 5 * scale, 4 * scale, 14 * scale, 14 * scale);
     }
     const vision = buttons.get("vision"),
       exit = buttons.get("exit");
@@ -202,6 +308,14 @@ export function createReplayHud(
   }
   function update(next: ReplayHudContent) {
     content = next;
+    const markerKey = JSON.stringify(
+      next.markers.map(({ id, tick, tooltip }) => [id, tick, tooltip]),
+    );
+    if (markerIdentity !== markerKey) {
+      markerIdentity = markerKey;
+      for (const node of markerNodes.values()) node.cursor = 0;
+      focusHint();
+    }
     title.text = next.title;
     time.text = next.time;
     status.text = next.status;
@@ -356,6 +470,11 @@ export function createReplayHud(
       focused = id;
       timelineFocus.isVisible = id === "timeline";
       for (const [key, item] of buttons) item.button.color = key === id ? "#fff6db" : "#475354";
+      for (const node of markerNodes.values()) {
+        const selected = node.members.some((marker) => marker.id === id);
+        node.button.thickness = selected ? 2 : 0;
+        node.button.color = selected ? "#fff6db" : "#ddc382";
+      }
       focusHint();
     },
     blocksPointer(clientX: number, clientY: number) {

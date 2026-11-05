@@ -40,17 +40,8 @@ export function projectCombatEvents(
   actorHandle: (entity: number, type: CombatEventType) => string | undefined,
   replayAll = false,
 ): PresentedCombatEvent[] {
-  const owned = kernel.visibility?.forcesForSeat(seat) ?? [];
   return (kernel.combatEvents ?? [])
-    .filter(
-      (event) =>
-        replayAll ||
-        canObserveEventSource(kernel, seat, {
-          x: Math.floor(event.x / 1024),
-          y: Math.floor(event.y / 1024),
-        }) ||
-        (["launch", "damage", "death"].includes(event.type) && owned.includes(event.force)),
-    )
+    .filter((event) => canObserveCombatEvent(kernel, seat, event, replayAll))
     .map(({ force: _force, round, entity, ...event }) => {
       const actor = entity === undefined ? undefined : actorHandle(entity, event.type);
       return {
@@ -59,4 +50,22 @@ export function projectCombatEvents(
         ...(actor && { entity: actor }),
       };
     });
+}
+
+/** Shared by live presentation and terminal-replay annotations; an own hit reveals no attacker. */
+export function canObserveCombatEvent(
+  kernel: Kernel,
+  seat: number,
+  event: CombatEvent,
+  replayAll = false,
+): boolean {
+  return (
+    replayAll ||
+    canObserveEventSource(kernel, seat, {
+      x: Math.floor(event.x / 1024),
+      y: Math.floor(event.y / 1024),
+    }) ||
+    (["launch", "damage", "death"].includes(event.type) &&
+      (kernel.visibility?.forcesForSeat(seat) ?? []).includes(event.force))
+  );
 }

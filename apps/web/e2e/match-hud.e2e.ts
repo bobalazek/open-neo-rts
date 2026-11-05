@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { observeNativePaint } from "./native-paint";
+import { nativeTextPoint, observeNativePaint } from "./native-paint";
 
 test("normal HUD uses real production receipts, selection groups and cancellable placement", async ({
   page,
@@ -17,6 +17,8 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   await expect(canvas).toHaveAttribute("data-hud", "native");
   await page.getByRole("button", { name: /Idle builders 2/ }).press("Enter");
   await expect(page.locator("[data-details]")).toContainText("Field Technician");
+  await nativeTextPoint(page, "Field Technician");
+  await nativeTextPoint(page, "5000");
   const layout = await page.evaluate(() => {
     const paint = Reflect.get(window, "nativePaintText") as Map<string, { x: number; y: number }>;
     return {
