@@ -82,7 +82,7 @@ jobs:
       - run: bunx playwright install --with-deps ${{ matrix.browser }}
       - run: bunx tsc -p apps/web/e2e/tsconfig.json
       - name: Run browser journeys
-        run: bun run test:browsers --project=${{ matrix.project }}
+        run: PLAYWRIGHT_JSON_OUTPUT_FILE=test-results/announcer-diagnostic.json bun run test:browsers --project=${{ matrix.project }} apps/web/e2e/announcer.e2e.ts --repeat-each=3 --reporter=list,json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -91,7 +91,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - uses: actions/upload-artifact@v4
-        if: failure() || cancelled()
+        if: always()
         with:
           name: determinism-traces-${{ matrix.browser }}
           path: test-results/

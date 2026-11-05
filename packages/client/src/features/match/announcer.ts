@@ -66,6 +66,10 @@ export function createMatchAnnouncer(options: {
     };
     cooldowns.set(item.key, now);
     options.subtitle(item.line.text);
+    Reflect.get(globalThis, "announcerProbe")?.events.push({
+      stage: "announcer-request",
+      at: performance.now(),
+    });
     if (item.point) options.notice(item.line.text, item.point, item.kind);
     void scope
       ?.play(options.source, {
@@ -75,6 +79,10 @@ export function createMatchAnnouncer(options: {
         onEnded: () => finish(ticket),
       })
       .then((played) => {
+        Reflect.get(globalThis, "announcerProbe")?.events.push({
+          stage: `announcer-result:${played}`,
+          at: performance.now(),
+        });
         if (current?.token === ticket)
           current.deadline = now + Math.max(played ? 0 : 1800, item.line.duration * 1000 + 250);
       })
@@ -123,7 +131,13 @@ export function createMatchAnnouncer(options: {
         if (current || queue.length) clear();
         return;
       }
-      if (current && now >= current.deadline) finish(current.token);
+      if (current && now >= current.deadline) {
+        Reflect.get(globalThis, "announcerProbe")?.events.push({
+          stage: "announcer-deadline",
+          at: performance.now(),
+        });
+        finish(current.token);
+      }
       pump();
     },
     accept(snapshot: SeatSnapshot, enabled: boolean, time: number) {

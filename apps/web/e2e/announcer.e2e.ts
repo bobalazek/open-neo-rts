@@ -31,20 +31,51 @@ test("announcer presentation uses real clipped audio, native captions, pause and
       harvester: false,
       starts: [] as { offset: number; duration: number | null; bufferDuration: number }[],
       decodes: [] as { duration?: number; error?: string; elapsed: number }[],
+      events: [] as { stage: string; at: number; state?: string; error?: string }[],
     };
     Reflect.set(window, "announcerProbe", probe);
+    const event = (stage: string, context?: BaseAudioContext, error?: unknown) =>
+      probe.events.push({
+        stage,
+        at: performance.now(),
+        ...(context && { state: context.state }),
+        ...(error !== undefined && { error: String(error) }),
+      });
+    const contexts = new Set<BaseAudioContext>();
+    const monitor = (context: BaseAudioContext) => {
+      if (contexts.has(context)) return;
+      contexts.add(context);
+      event("context", context);
+      context.addEventListener("statechange", () => event("statechange", context));
+    };
+    const connect = AudioNode.prototype.connect;
+    AudioNode.prototype.connect = function (this: AudioNode, ...args: Parameters<typeof connect>) {
+      monitor(this.context);
+      try {
+        const result = Reflect.apply(connect, this, args);
+        event(`connect:${this.constructor.name}`, this.context);
+        return result;
+      } catch (error) {
+        event("connect-error", this.context, error);
+        throw error;
+      }
+    } as typeof connect;
     const decode = BaseAudioContext.prototype.decodeAudioData;
     BaseAudioContext.prototype.decodeAudioData = function (
       this: BaseAudioContext,
       ...args: Parameters<typeof decode>
     ) {
       const started = performance.now();
+      monitor(this);
+      event("decode-start", this);
       return Reflect.apply(decode, this, args).then(
         (buffer: AudioBuffer) => {
+          event("decode-end", this);
           probe.decodes.push({ duration: buffer.duration, elapsed: performance.now() - started });
           return buffer;
         },
         (error: unknown) => {
+          event("decode-error", this, error);
           probe.decodes.push({ error: String(error), elapsed: performance.now() - started });
           throw error;
         },
@@ -55,7 +86,14 @@ test("announcer presentation uses real clipped audio, native captions, pause and
       this: AudioBufferSourceNode,
       ...args: Parameters<typeof start>
     ) {
-      Reflect.apply(start, this, args);
+      event("start-attempt", this.context);
+      try {
+        Reflect.apply(start, this, args);
+      } catch (error) {
+        event("start-error", this.context, error);
+        throw error;
+      }
+      event("start-success", this.context);
       if (this.buffer)
         probe.starts.push({
           offset: args[1] ?? 0,
@@ -63,6 +101,15 @@ test("announcer presentation uses real clipped audio, native captions, pause and
           bufferDuration: this.buffer.duration,
         });
     };
+    let caption = "";
+    new MutationObserver(() => {
+      const current = document.querySelector("[data-announcer]")?.textContent ?? "";
+      if (current !== caption) {
+        caption = current;
+        event(`caption:${caption}`);
+      }
+    }).observe(document, { subtree: true, childList: true, characterData: true });
+    document.addEventListener("visibilitychange", () => event(`hidden:${document.hidden}`));
     const OriginalWorker = window.Worker;
     window.Worker = class extends OriginalWorker {
       constructor(url: string | URL, options?: WorkerOptions) {
