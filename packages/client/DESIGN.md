@@ -134,7 +134,9 @@ existing-definition authoring (2-38b1), sibling creation (2-38b3) and draft debu
 checks (2-38c1), plus bounded normal combat/economy integration (2-38c2).
 The six-map scenario presets complete the remaining 2-38c2 slice. Full runtime
 audio, source freshness and exact formatter parity remain 2-38b2. Asset editing
-remains open, including socket/part gizmos, GLB export and damage-socket smoke/fire previews.
+now includes native socket Move/Rotate gizmos, local numeric fields and checked
+GLB copy exports. Part controls, material mappings and damage-socket smoke/fire
+previews remain open.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -173,6 +175,9 @@ also uses `src/features/content-editor/content-tools.css`, `model.ts`,
 `creation-write.ts`, `archive.ts`, `playtest.ts`, `skirmish-playtest.ts`,
 `scenario-panel.ts` and `scenarios.ts`, plus
 `src/features/debug/session.ts`, `catalog.ts`, `palette.ts` and `reproduction.ts`.
+Socket editing also uses `src/features/content-editor/socket-editor.ts`,
+`sockets.ts` and `../render/src/units/preview-sockets.ts`; its bounded behavior
+is recorded in `../../docs/project/decisions/2026-11-05-model-socket-editing.md`.
 Existing
 definition boundaries are recorded in
 `../../docs/project/decisions/2026-11-04-browser-definition-authoring.md`.
@@ -468,6 +473,11 @@ original model remains left/above. This
 arrangement belongs to content tools rather than changing the other galleries'
 column proportions.
 
+Edit sockets and Download GLB remain in the scrolling model-action body rather
+than enlarging the compact Open/definition footer. Socket mode replaces that
+body with selection, Move/Rotate, local metre/degree fields and new-name/parent
+controls; Apply to preview and Cancel stay pinned while those fields scroll.
+
 Draft playtesting temporarily replaces the editor view with the existing debug
 terrain canvas and bounded scrolling HTML controls. Return to draft comes first,
 followed by the explicit movement/health/placement scope notice. Existing map,
@@ -642,6 +652,20 @@ the text leaves space for that disclosure mark.
   choices retained. Candidate model/wreck replacement succeeds together; failed
   or superseded pairs retain the last good view. Replacement/disposal releases
   owned effects and art; draft playtests pause the effect clock.
+- **Model socket editing:** Babylon Move/Rotate gizmos manipulate actual empty,
+  unanimated leaf attachments. Mesh nodes, skin joints and animated/branch sockets
+  are excluded. The native selected-name caption uses opaque graphite, an ivory
+  Arial label and measured text width so original model colours do not obscure
+  it. Selection, mode, local metre/degree fields and new-name/parent controls reuse
+  the existing framed fields, synchronized focus and contextual help. Invalid
+  text retains its coral alert and blocks Apply. Entering socket mode stops clips
+  and restores full-health LOD0 rest; model actions become available again on
+  Apply or Cancel. Apply checks the candidate before reimport, preserving the
+  draft and last good model on failure. Cancel restores poses and removes new
+  nodes; replacement and unload guard unsaved preview edits. Download GLB creates
+  a separate copy: appended node indices preserve geometry, animations, materials,
+  metadata and every following GLB chunk. Original parts and source files remain
+  intact; this does not add part or material editing.
 - **Existing-definition authoring:** owner-selected packs supply unit, structure
   and prop definitions and their dependencies. Schema-derived fields reuse the
   native square inputs and choices, ivory focus and warm-metal actions. Only
@@ -662,8 +686,8 @@ the text leaves space for that disclosure mark.
   checks gate saving, creation and draft playtests. Container errors use existing
   file-specific diagnostics and preserve edits for retry. Native audio decoding/
   metering, source freshness and exact formatter parity remain 2-38b2;
-  asset editing remains open, including socket/part gizmos, GLB export and
-  damage-socket smoke/fire previews.
+  socket editing/GLB copy export is implemented, while part controls, material
+  mappings and damage-socket smoke/fire previews remain open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source

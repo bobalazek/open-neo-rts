@@ -8,6 +8,7 @@ import { mountDefinitionEditor } from "./definition-editor";
 import { inspectModel, installedModel, MODEL_FILE_LIMIT } from "./model";
 import { prepareDraftPlaytest } from "./playtest";
 import { defaultDraftScenario } from "./scenarios";
+import { mountSocketEditor } from "./socket-editor";
 
 /** Model-first content tools; definition writes and draft playtests have separate owners. */
 export function startContentTools(canvas: HTMLCanvasElement) {
@@ -17,7 +18,7 @@ export function startContentTools(canvas: HTMLCanvasElement) {
   root.className = "content-tools";
   root.innerHTML = `<!-- THESIS: inspect original model behaviour and actual validator output before entering a match.
 OWN-WORLD: inherited graphite command stations, original brick subjects, native framed controls.
-STORY: inspect a model, then open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks or a temporary normal skirmish.
+STORY: inspect a model, edit sockets with native gizmos and checked GLB copies, or open an authored pack and edit schema fields with validation, recovery, explicit save/download and unsaved debug checks or a temporary normal skirmish.
 FIRST VIEWPORT: the model owns the desktop left; a scrolling native tool pane sits right, below the model when narrow.
 FORM: code-led Operate extension of existing native panels and the documented model-first tool.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
@@ -88,13 +89,29 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   edit.textContent = text("ui.editor.edit");
   edit.setAttribute("data-panel-footer", "");
   semantics.append(edit);
+  const socketButton = document.createElement("button"),
+    downloadModel = document.createElement("button");
+  for (const [button, key] of [
+    [socketButton, "ui.sockets.edit"],
+    [downloadModel, "ui.sockets.download"],
+  ] as const) {
+    button.type = "button";
+    button.textContent = text(key);
+    button.disabled = true;
+    actions.append(button);
+  }
+  let socketEditor: Awaited<ReturnType<typeof mountSocketEditor>> | undefined;
+  let restoreSockets: (() => void) | undefined,
+    socketOpening = false,
+    assetDirty = false;
+  const modelUrls = new Set<string>();
   let editor: ReturnType<typeof mountDefinitionEditor> | undefined;
   let scenario = defaultDraftScenario();
   let restoreEditor: (() => void) | undefined;
   edit.addEventListener(
     "click",
     () => {
-      if (editor) return;
+      if (editor || socketEditor || socketOpening) return;
       const previous = [...semantics.children].map(
         (element) => [element as HTMLElement, (element as HTMLElement).hidden] as const,
       );
@@ -290,7 +307,25 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       });
     return creating;
   }
-  async function load(source: () => Promise<NonNullable<typeof opened>>) {
+  async function load(source: () => Promise<NonNullable<typeof opened>>, keepEdits = false) {
+    if (socketOpening) return;
+    if (!keepEdits) {
+      const pending = socketEditor?.dirty();
+      if (
+        (socketEditor && !socketEditor.canReplace()) ||
+        (assetDirty && !pending && !window.confirm(text("ui.sockets.discard")))
+      ) {
+        selected = entries.find((entry) => entry.raw.id === opened?.raw?.id)?.id;
+        search.value = "";
+        definition.replaceChildren(...entries.map((entry) => new Option(entry.name, entry.id)));
+        definition.value = selected ?? "";
+        definition.disabled = !entries.length;
+        root.querySelector<HTMLElement>("[data-empty]")!.hidden = !!entries.length;
+        panel.update();
+        return;
+      }
+      restoreSockets?.();
+    }
     const ticket = ++request;
     fetching?.abort();
     preview?.cancelLoad();
@@ -300,6 +335,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       fire.disabled =
       destroy.disabled =
       restore.disabled =
+      socketButton.disabled =
+      downloadModel.disabled =
         true;
     status.textContent = text("ui.tools.loading");
     error.textContent = "";
@@ -320,6 +357,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       });
       if (disposed || ticket !== request || !clips) return;
       opened = candidate;
+      assetDirty = keepEdits;
       if (!candidate.raw) {
         selected = undefined;
         definition.selectedIndex = -1;
@@ -337,11 +375,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       health.disabled = !info.hasDamage;
       fire.disabled = !scene.canFire();
       destroy.disabled = restore.disabled = false;
+      socketButton.disabled = downloadModel.disabled = false;
       scene.setTeamColor(team.value);
       scene.setLod(lod.value as "auto" | "0" | "1");
       scene.setHealth(Number(health.value));
       canvas.dataset.model = candidate.name;
-      status.textContent = text("ui.tools.loaded", { name: candidate.name, clips: clips.length });
+      status.textContent = assetDirty
+        ? text("ui.sockets.applied")
+        : text("ui.tools.loaded", { name: candidate.name, clips: clips.length });
     } catch {
       if (disposed || ticket !== request) return;
       status.textContent = opened?.name ?? "";
@@ -355,6 +396,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         fire.disabled = !preview?.canFire();
         destroy.disabled = !preview?.canDestroy();
         restore.disabled = false;
+        socketButton.disabled = downloadModel.disabled = false;
       }
     } finally {
       if (!disposed && ticket === request) panel.update();
@@ -401,7 +443,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     panel.update();
   }
   function open(file: File) {
-    if (editor) return;
+    if (editor || socketOpening) return;
     pending = () =>
       load(async () => {
         if (!file.name.toLowerCase().endsWith(".glb") || file.size > MODEL_FILE_LIMIT)
@@ -417,10 +459,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   root.querySelector("[data-back]")!.addEventListener(
     "click",
     () => {
+      if (socketOpening) return;
+      if (socketEditor) {
+        if (socketEditor.canReplace()) restoreSockets?.();
+        return;
+      }
       if (editor) {
         if (editor.canReplace()) restoreEditor?.();
         return;
       }
+      if (assetDirty && !window.confirm(text("ui.sockets.discard"))) return;
       location.href = "/";
     },
     { signal: events.signal },
@@ -514,6 +562,104 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     { signal: events.signal },
   );
   retry.addEventListener("click", () => void pending?.(), { signal: events.signal });
+  socketButton.addEventListener(
+    "click",
+    () =>
+      void (async () => {
+        if (!opened || !preview || editor || socketEditor || socketOpening) return;
+        socketOpening = true;
+        root.querySelector<HTMLButtonElement>("[data-back]")!.disabled = true;
+        socketButton.disabled = downloadModel.disabled = true;
+        error.textContent = "";
+        status.textContent = text("ui.sockets.validating");
+        panel.update();
+        const previous = [...semantics.children].map(
+          (element) => [element as HTMLElement, (element as HTMLElement).hidden] as const,
+        );
+        try {
+          const next = await mountSocketEditor(semantics, preview, opened, {
+            signal: events.signal,
+            update: () => {
+              root.querySelector<HTMLButtonElement>("[data-back]")!.disabled =
+                socketOpening || !!socketEditor?.busy();
+              panel.update();
+            },
+            cancel: () => restoreSockets?.(),
+            apply: async (bytes) => {
+              if (!opened || disposed) return;
+              const candidate = { ...opened, bytes };
+              await load(async () => candidate, true);
+              if (disposed) return;
+              if (opened !== candidate) throw new Error(text("ui.sockets.apply-failed"));
+              restoreSockets?.();
+            },
+          });
+          if (disposed) {
+            next.dispose();
+            return;
+          }
+          socketEditor = next;
+          for (const [element] of previous) if (element.tagName !== "HEADER") element.hidden = true;
+          checks.removeAttribute("data-panel-content");
+          restoreSockets = () => {
+            socketEditor?.dispose();
+            socketEditor = undefined;
+            for (const [element, hidden] of previous) element.hidden = hidden;
+            checks.setAttribute("data-panel-content", "");
+            restoreSockets = undefined;
+            root.querySelector<HTMLButtonElement>("[data-back]")!.disabled = false;
+            panel.update();
+            socketButton.focus();
+          };
+          clip.value = "";
+          lod.value = "0";
+          health.value = "100";
+        } catch (failure) {
+          if (!disposed)
+            error.textContent =
+              failure instanceof Error ? failure.message : text("ui.tools.failed");
+        } finally {
+          socketOpening = false;
+          if (!disposed) {
+            socketButton.disabled = downloadModel.disabled = !opened;
+            root.querySelector<HTMLButtonElement>("[data-back]")!.disabled = !!socketEditor?.busy();
+            panel.update();
+          }
+        }
+      })(),
+    { signal: events.signal },
+  );
+  downloadModel.addEventListener(
+    "click",
+    () => {
+      if (!opened || socketOpening || socketEditor) return;
+      const url = URL.createObjectURL(
+        new Blob([opened.bytes.slice().buffer], { type: "model/gltf-binary" }),
+      );
+      modelUrls.add(url);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${opened.name.replace(/\.glb$/i, "").replace(/[^a-z0-9_.-]+/gi, "-")}.glb`;
+      link.click();
+      status.textContent = text("ui.sockets.downloaded");
+      panel.update();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        modelUrls.delete(url);
+      }, 1000);
+    },
+    { signal: events.signal },
+  );
+  window.addEventListener(
+    "beforeunload",
+    (event) => {
+      if (assetDirty || socketEditor?.dirty()) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    },
+    { signal: events.signal },
+  );
   filter();
   try {
     const model = new URLSearchParams(location.search).get("model");
@@ -536,6 +682,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       request++;
       events.abort();
       editor?.dispose();
+      socketEditor?.dispose();
+      for (const url of modelUrls) URL.revokeObjectURL(url);
       fetching?.abort();
       preview?.dispose();
       panel.dispose();

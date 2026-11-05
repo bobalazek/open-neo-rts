@@ -1,7 +1,124 @@
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
+import { parseGlb } from "../../../packages/content/src/assets/glb";
 import { contentToolsFixture } from "./content-tools-fixture";
 import { nativeFrame } from "./native-paint";
+
+test("socket editor applies checked model-local edits and exports a geometry-preserving GLB", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/tools/content?model=core.unit:eastern-collective/dragon-tank");
+  const world = page.locator("#game");
+  await expect(world).toHaveAttribute("data-model", "Dragon Tank", { timeout: 30000 });
+  const edit = page.getByRole("button", { name: "Edit sockets", exact: true });
+  await expect(edit).toBeEnabled();
+  await page.evaluate(() => Reflect.get(window, "contentToolPaint").delete("Edit sockets"));
+  await edit.focus();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const point = Reflect.get(window, "contentToolPaint").get("Edit sockets");
+        const bounds = document.querySelector(".content-tools-controls")!.getBoundingClientRect();
+        return !!point && point.y > bounds.y + 80 && point.y < bounds.bottom - 60;
+      }),
+    )
+    .toBe(true);
+  const point = await page.evaluate(
+    () => Reflect.get(window, "contentToolPaint").get("Edit sockets") as { x: number; y: number },
+  );
+  await page.mouse.click(point.x, point.y);
+  const editor = page.locator("[data-socket-editor]");
+  await expect(editor).toHaveCount(1);
+  const socket = page.getByLabel("Socket", { exact: true });
+  await socket.selectOption({ label: "socket_muzzle_0" });
+  const x = page.getByLabel("Local X (m)", { exact: true });
+  const initial = await x.inputValue();
+  await x.fill("2.5");
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Cancel socket edits", exact: true }).press("Enter");
+  await expect(editor).toHaveCount(0);
+  await edit.press("Enter");
+  await expect(editor).toHaveCount(1);
+  await socket.selectOption({ label: "socket_muzzle_0" });
+  await expect(x).toHaveValue(initial);
+  await x.fill("bad");
+  await expect(editor.getByRole("alert")).toContainText("finite positions");
+  await expect(page.getByRole("button", { name: "Apply to preview", exact: true })).toBeDisabled();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("sockets-invalid-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await x.focus();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("sockets-invalid-mobile.png") });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const selected = await socket.inputValue();
+  await socket.selectOption({ label: "socket_exhaust_0" });
+  await expect(socket).toHaveValue(selected);
+  await expect(x).toHaveValue("bad");
+  await x.fill("0.25");
+  await page.getByLabel("New socket parent", { exact: true }).selectOption({ label: "turret" });
+  await page.getByLabel("New socket name", { exact: true }).fill("socket_marker");
+  await page.getByRole("button", { name: "Add socket", exact: true }).press("Enter");
+  await expect(socket.locator("option:checked")).toHaveText("socket_marker");
+  await x.fill("0.5");
+  await page.getByLabel("Rotation Y (°)", { exact: true }).fill("45");
+  await page.getByLabel("Gizmo", { exact: true }).selectOption("rotate");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("sockets-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await socket.focus();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("sockets-mobile.png") });
+  await page.getByRole("button", { name: "Apply to preview", exact: true }).press("Enter");
+  await expect(editor).toHaveCount(0, { timeout: 30000 });
+  await expect(page.getByRole("button", { name: "Fire", exact: true })).toBeEnabled();
+  await expect(page.locator("[data-model-checks]")).toContainText("socket_marker");
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download GLB", exact: true }).press("Enter");
+  const download = await downloading;
+  const bytes = new Uint8Array(await readFile((await download.path())!));
+  const gltf = parseGlb(bytes);
+  const muzzle = gltf.nodes!.find((node) => node.name === "socket_muzzle_0")!;
+  expect(muzzle.translation![0]).toBe(0.25);
+  const marker = gltf.nodes!.findIndex((node) => node.name === "socket_marker");
+  expect(gltf.nodes![marker]!.translation![0]).toBe(0.5);
+  expect(gltf.nodes!.find((node) => node.name === "turret")!.children).toContain(marker);
+  const original = new Uint8Array(
+    await readFile(
+      fileURLToPath(
+        new URL(
+          "../../../content/core/factions/eastern-collective/units/dragon-tank/dragon-tank.glb",
+          import.meta.url,
+        ),
+      ),
+    ),
+  );
+  const tail = (value: Uint8Array) =>
+    value.subarray(
+      20 + new DataView(value.buffer, value.byteOffset, value.byteLength).getUint32(12, true),
+    );
+  expect(tail(bytes)).toEqual(tail(original));
+  expect(gltf.animations).toEqual(parseGlb(original).animations);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "socket-roundtrip.glb",
+    mimeType: "model/gltf-binary",
+    buffer: Buffer.from(bytes),
+  });
+  await expect(world).toHaveAttribute("data-model", "socket-roundtrip.glb");
+  await edit.press("Enter");
+  await expect(editor).toHaveCount(1);
+  await socket.selectOption({ label: "socket_marker" });
+  await expect(x).toHaveValue("0.5");
+  await expect(page.getByLabel("Rotation Y (°)", { exact: true })).toHaveValue("45");
+  await page.getByRole("button", { name: "Cancel socket edits", exact: true }).press("Enter");
+  expect(errors).toEqual([]);
+});
 
 test("model actions fire, destroy and restore original paired models while retaining good art after a failed pair", async ({
   page,

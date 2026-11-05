@@ -3,7 +3,7 @@
 version: 1
 slug: "src-features-content-editor-index-ts"
 primary_target: "src/features/content-editor/index.ts"
-related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/content-editor/skirmish-playtest.ts", "src/features/match/session.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts", "../render/src/units/preview-actions.ts", "src/locales/en.json"]
+related_targets: ["src/features/content-editor/content-tools.css", "src/features/content-editor/definition-editor.ts", "src/features/content-editor/definition-pack.ts", "src/features/content-editor/playtest.ts", "src/features/content-editor/skirmish-playtest.ts", "src/features/content-editor/socket-editor.ts", "src/features/content-editor/sockets.ts", "src/features/match/session.ts", "src/features/debug/session.ts", "src/features/debug/catalog.ts", "src/features/debug/palette.ts", "src/features/debug/reproduction.ts", "../render/src/units/preview.ts", "../render/src/units/preview-actions.ts", "../render/src/units/preview-sockets.ts", "src/locales/en.json"]
 ---
 
 # Model-first content tools
@@ -25,7 +25,7 @@ The signature interaction is changing a real model's presentation while reading
 the same project validator used by the CLI. A failed candidate retains the last
 good model and offers retry. Unknown installed links cannot fetch arbitrary
 remote models. Model inspection remains available beside the authoring extension
-below; asset gizmos remain an explicit phase-2 follow-up.
+below; socket gizmos are implemented, while part/material editing remains phase-2 work.
 
 ## Definition authoring extension
 
@@ -44,7 +44,48 @@ conflict without losing a draft. Busy operations lock editable controls; invalid
 input survives tab changes; failed writes preserve the draft. Definition checks
 share schemas, pack resolution, gameplay compilation and model requirements.
 Full runtime audio, source freshness and exact formatter parity remain explicit
-2-38b2 work before the whole 2-38b task can close. Asset editing remains 2-38d.
+2-38b2 work before the whole 2-38b task can close. Remaining asset editing stays 2-38d.
+
+## Socket editing extension
+
+This code-led Operate extension inherits the same Graphite Command Stations
+panel, original model subject and semantic keyboard bridge. Edit sockets opens
+model-local selection, Move/Rotate modes and metre/degree fields. Babylon gizmos
+manipulate actual attachment nodes; a compact opaque graphite caption uses
+measured Arial text width for legibility over coloured model surfaces. Selected
+socket identity, invalid input, checking state and Apply/Cancel actions remain
+native. No new identity, tokens, raster or replacement comp accompanies the
+extension.
+
+Edit sockets and Download GLB stay with ordinary scrolling model actions; the
+existing Open/definition footer remains compact on narrow screens. Socket mode
+provides selection, Move/Rotate, local metre/degree fields and new-name/parent
+controls, with Apply to preview and Cancel pinned while fields scroll. Entering
+socket mode stops clips and restores full-health LOD0 rest; Fire/clip previews
+become available after Apply or Cancel. Apply checks the candidate before reimport;
+failures preserve the last good model and editable draft. Cancel restores poses
+and removes new nodes; replacement/unload guards protect preview edits.
+Only empty unanimated leaf sockets can change; socket-named skin joints, mesh
+nodes and animated/branch sockets are excluded. The exported GLB appends new
+attachment indices while preserving every following chunk byte for byte,
+including geometry and animation buffers. Original materials, metadata, parts
+and source files remain intact. Behavior and remaining editor scope:
+`../../../../docs/project/decisions/2026-11-05-model-socket-editing.md`.
+
+All eight content-tools journeys passed in current Chrome and current WebKit
+(`/tmp/neo-sockets-browser-final2.log`). Finish review opened all eight fresh
+captures under `.impeccable/review/`: `sockets-desktop-{chromium,webkit}.png`,
+`sockets-mobile-{chromium,webkit}.png`,
+`sockets-invalid-desktop-{chromium,webkit}.png` and
+`sockets-invalid-mobile-{chromium,webkit}.png`, returning SHIP with no findings.
+Independent `/tmp/neo-socket-refutation` probes exercised actual position and
+rotation pointer drags in both browsers, Cancel pose/new-node disposal, skin-joint
+exclusion, multi-chunk tail preservation, unchanged inputs and a real 16 MiB
+export failure preserving the draft for retry. Matrix-specific fixtures were not
+exercised; the strict shared-conformance failure path was source-reviewed.
+The single detector result was empty; it was not rerun. This bounded evidence
+does not qualify physical touch/IME, screen readers or hardware stress, or close
+part/material controls, 2-38b2 parity, the full editor or the whole phase.
 
 ## Sibling-definition creation extension
 
@@ -187,8 +228,8 @@ than letting it advance offscreen. Shared no-options preview callers remain
 compatible. No source, save, normal match or simulation state changes.
 
 This records isolated firing/destruction within 2-38c2. Full 2-38b2
-validation/formatter parity and 2-38d socket/part
-gizmos, GLB export and damage-socket smoke/fire previews remain open. Current
+validation/formatter parity, 2-38d part controls and damage-socket smoke/fire
+previews remain open; socket editing/GLB copy export is recorded above. Current
 Chrome/WebKit browser checks do not qualify Firefox, physical touch/IME, screen
 readers or hardware FPS. The decision is
 `../../../../docs/project/decisions/2026-11-04-model-action-previews.md`.

@@ -46,6 +46,7 @@ export {
 } from "./terrain/objects";
 export { createEntityPresentation } from "./units";
 export { createModelPreview } from "./units/preview";
+export type { SocketChange, SocketNode } from "./units/preview-sockets";
 export { createOrderWaypoints, type OrderWaypoint } from "./units/waypoints";
 
 export interface RendererOptions {

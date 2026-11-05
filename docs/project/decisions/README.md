@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-05 — Model socket editing](./2026-11-05-model-socket-editing.md) — Native move/rotate gizmos, checked local preview changes and socket-only GLB exports preserving geometry and animation buffers.
+
 - [2026-11-05 — Recorded replay cameras](./2026-11-05-recorded-replay-cameras.md) — Actual local-human camera annotations, native follow/free controls and manual navigation override.
 
 - [2026-11-05 — Replay statistics overlay](./2026-11-05-replay-analytics.md) — Native income/army graphs, original production queues and accepted-order APM from the current verified replay position.
