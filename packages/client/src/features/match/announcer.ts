@@ -25,11 +25,13 @@ export function createMatchAnnouncer(options: {
   groups: (index: number) => readonly string[];
   source: string;
   lines: Readonly<Record<string, AnnouncerLine>>;
-  mixer?: Pick<ReturnType<typeof createAudioMixer>, "scope">;
+  mixer?: Pick<ReturnType<typeof createAudioMixer>, "scope" | "preload">;
   subtitle: (text: string) => void;
   notice: (text: string, point: MapPoint, kind: NoticeKind) => void;
 }) {
   const scope = options.mixer?.scope();
+  // A cold atlas fetch and decode can outlast the first line's start window on slow devices.
+  options.mixer?.preload(options.source);
   const cooldowns = new Map<string, number>();
   let current: { item: Announcement; token: number; deadline: number } | undefined;
   let queue: Announcement[] = [];

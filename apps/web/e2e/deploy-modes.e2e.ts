@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { parseMatchRecord, type SeatSnapshot, verifyMatchRecord } from "../../../packages/sim/src";
@@ -19,6 +21,20 @@ declare global {
   }
 }
 const root = fileURLToPath(new URL("../../../", import.meta.url));
+// Render bundles emit Babylon's shader compiler files beside the entry.
+const buildProof = (name: string) => {
+  const directory = mkdtempSync(resolve(tmpdir(), `neo-${name}-`));
+  try {
+    execFileSync(
+      "bun",
+      ["build", `apps/web/e2e/${name}.ts`, "--target=browser", "--outdir", directory],
+      { cwd: root },
+    );
+    return readFileSync(resolve(directory, `${name}.js`), "utf8");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+};
 const fixture = execFileSync(
   "bun",
   [
@@ -217,11 +233,7 @@ test("paid original infantry earn industrial capacity and activate the authored 
     { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
   ];
   const errors: string[] = [];
-  const renderFixture = execFileSync(
-    "bun",
-    ["build", "apps/web/e2e/door-proof.ts", "--target=browser"],
-    { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
-  );
+  const renderFixture = buildProof("door-proof");
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -426,15 +438,7 @@ test("authored Siege and Bunker modes work through the actual worker and HUD", a
   test.skip(info.project.name !== "chromium", "Bounded HUD integration runs in Chromium");
   test.setTimeout(60_000);
   const errors: string[] = [];
-  const renderFixture = execFileSync(
-    "bun",
-    ["build", "apps/web/e2e/deployment-proof.ts", "--target=browser"],
-    {
-      cwd: root,
-      encoding: "utf8",
-      maxBuffer: 32 * 1024 * 1024,
-    },
-  );
+  const renderFixture = buildProof("deployment-proof");
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("http://deploy-modes.test/**", (route) => {
     const path = new URL(route.request().url()).pathname;
@@ -1121,11 +1125,7 @@ test("paid original reactors gain and lose their adjacency output through worker
     { unit: "core.unit:eastern-collective/field-technician", count: 2, pop: 1, role: "builder" },
   ];
   const errors: string[] = [];
-  const renderFixture = execFileSync(
-    "bun",
-    ["build", "apps/web/e2e/construction-proof.ts", "--target=browser"],
-    { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
-  );
+  const renderFixture = buildProof("construction-proof");
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());

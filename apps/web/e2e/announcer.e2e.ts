@@ -91,6 +91,10 @@ test("announcer presentation uses real clipped audio, native captions, pause and
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60000 });
   const subtitle = page.locator("[data-announcer]");
   await expect(subtitle).toBeEmpty();
+  // The atlas is warmed at match start, so the first line never races a cold decode.
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "announcerProbe").decodes.length))
+    .toBe(1);
   await page.evaluate(() => (Reflect.get(window, "announcerProbe").power = true));
   await expect(subtitle).toHaveText("Low power.");
   await expect

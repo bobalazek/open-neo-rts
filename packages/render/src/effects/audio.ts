@@ -99,6 +99,15 @@ export function createAudioMixer() {
     });
     return starting;
   }
+  const load = (current: AudioEngineV2, source: string | AudioBuffer) => {
+    let buffer = buffers.get(source);
+    if (!buffer) {
+      buffer = current.createSoundBufferAsync(source);
+      buffers.set(source, buffer);
+      void buffer.catch(() => buffers.delete(source));
+    }
+    return buffer;
+  };
   const remove = (voice: Voice) => {
     if (voice.canceled) return;
     voice.canceled = true;
@@ -112,6 +121,10 @@ export function createAudioMixer() {
       return (
         !disposed && !muted && volumes.master > 0 && volumes[bus] > 0 && engine?.state === "running"
       );
+    },
+    /** Decodes ahead of a first cue on an engine a gesture already started; never creates one. */
+    preload(source: string | AudioBuffer) {
+      void starting?.then((current) => load(current, source)).catch(() => {});
     },
     async unlock() {
       const current = await start();
@@ -183,13 +196,7 @@ export function createAudioMixer() {
               current.state !== "running"
             )
               return false;
-            let buffer = buffers.get(source);
-            if (!buffer) {
-              buffer = current.createSoundBufferAsync(source);
-              buffers.set(source, buffer);
-              void buffer.catch(() => buffers.delete(source));
-            }
-            const decoded = await buffer;
+            const decoded = await load(current, source);
             if (voice.canceled || closed || disposed) return false;
             const sound = await current.createSoundAsync("presentation cue", decoded, {
               outBus: buses.get(options.bus)!,
