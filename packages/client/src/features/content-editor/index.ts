@@ -182,7 +182,12 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         (element) => [element as HTMLElement, (element as HTMLElement).hidden] as const,
       );
       for (const [element] of previous)
-        if (element.tagName !== "HEADER" && element !== error && element !== actions)
+        if (
+          element.tagName !== "HEADER" &&
+          element !== error &&
+          element !== actions &&
+          element !== team.closest("label")
+        )
           element.hidden = true;
       checks.removeAttribute("data-panel-content");
       editor = mountDefinitionEditor(semantics, {
@@ -425,6 +430,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           ? ((candidate.raw.weapons ?? []) as { socket?: string }[])
           : undefined,
         parts: (candidate.raw?.presentation as { parts?: string[] } | undefined)?.parts,
+        materials: (
+          candidate.raw?.presentation as { materials?: Record<string, string> } | undefined
+        )?.materials,
       });
       if (disposed || ticket !== request || !clips) return;
       opened = candidate;

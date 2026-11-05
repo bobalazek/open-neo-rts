@@ -66,9 +66,19 @@ describe("validateModel", () => {
     const map = { Body: "team", Trim: "team_dark", Visor: "glass" };
     expect(errors({ ...tank, materials }, "unit", { materials: map })).toEqual([]);
     expect(errors({ ...tank, materials }, "unit", { materials: { Body: "team" } })).toEqual([
-      'material "Trim" has no slot in the definition\'s material map',
-      'material "Visor" has no slot in the definition\'s material map',
+      'material "Trim" maps to unknown slot "Trim" (palette, team, team_dark, team_light, team_emissive, metal, glass, emissive)',
+      'material "Visor" maps to unknown slot "Visor" (palette, team, team_dark, team_light, team_emissive, metal, glass, emissive)',
     ]);
+  });
+  test("partial material maps retain conventional names while custom names still require an override", () => {
+    const materials = [{ name: "palette" }, { name: "team" }, { name: "Paint" }];
+    expect(errors({ ...tank, materials }, "unit", { materials: { Paint: "team_dark" } })).toEqual(
+      [],
+    );
+    expect(errors({ ...tank, materials }, "unit", { materials: { team: "metal" } })).toHaveLength(
+      1,
+    );
+    expect(errors({ ...tank, materials: [{ name: "constructor" }] })[0]).toContain("unknown slot");
   });
   test("rejects sockets with geometry", () => {
     const nodes = [...(tank.nodes ?? []), { name: "socket_exhaust", mesh: 0 }];

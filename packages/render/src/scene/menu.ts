@@ -32,6 +32,7 @@ export interface MenuContent {
   reducedMotion: boolean;
   scale: number;
   model: (signal: AbortSignal) => Promise<Uint8Array>;
+  materials?: Readonly<Record<string, string>>;
 }
 
 // Original angular lettering; a vector stays sharp at every GUI texture resolution.
@@ -245,7 +246,7 @@ export async function createMenuScene(
     .model(abort.signal)
     .then(async (bytes) => {
       if (disposed) return;
-      const model = await loadModel(scene, bytes);
+      const model = await loadModel(scene, bytes, content.materials);
       if (disposed) {
         model.dispose();
         return;

@@ -100,6 +100,34 @@ test("local GLBs cannot fetch resources from external URLs", async () => {
   }
 });
 
+test("authored material mappings override slot names before team recolouring without changing other assets", async () => {
+  const engine = new NullEngine();
+  const scene = new Scene(engine);
+  try {
+    const fixed = await loadModel(scene, morphGlb(), { team: "metal", metal: "team" });
+    const painted = await loadModel(scene, morphGlb(), { team: "team_emissive" });
+    const material = (model: typeof fixed) =>
+      model.meshes.find((mesh) => mesh.getTotalVertices() > 0)!.material as PBRMaterial;
+    const original = material(fixed).albedoColor.clone();
+    fixed.setTeamColor("#0080ff");
+    painted.setTeamColor("#0080ff");
+    expect(material(fixed).name).toBe("metal");
+    expect(material(fixed).albedoColor.equals(original)).toBe(true);
+    expect(
+      material(painted).emissiveColor.equals(Color3.FromHexString("#0080ff").toLinearSpace(true)),
+    ).toBe(true);
+    expect(material(fixed).emissiveColor.equals(Color3.Black())).toBe(true);
+    await expect(loadModel(scene, morphGlb(), { team: "unknown" })).rejects.toThrow(
+      "Unknown material slot",
+    );
+    fixed.dispose();
+    painted.dispose();
+  } finally {
+    scene.dispose();
+    engine.dispose();
+  }
+});
+
 test("team recolouring preserves fixed materials and another model's colour", () => {
   const engine = new NullEngine();
   const scene = new Scene(engine);

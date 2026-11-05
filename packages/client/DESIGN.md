@@ -139,8 +139,18 @@ formatter parity remain 2-38b2. Asset editing
 now includes native socket Move/Rotate gizmos, local numeric fields and checked
 GLB copy exports. Native Part controls reveal an authored-part picker and XYZ
 degree sliders for inspection poses around actual local rest pivots. Free part
-gizmos, material mappings, remaining documented tabs/validation and damage-socket
-smoke/fire previews remain open.
+gizmos, remaining documented tabs/validation and damage-socket smoke/fire previews
+remain open.
+
+Visuals extends the same framed choices with actual imported GLB material names
+and schema slot assignments. Contextual help begins with the actual material
+caption so focus help preserves its identity. Model default removes a partial
+override; conventional names retain their roles and custom names need a valid
+assignment. Opening adds no identity entries or dirty state. Team colour remains
+available during editing. Shared imports apply aliases once before Force tinting,
+preserving authored PBR textures and parameters in model/wreck previews, matches,
+debug/draft sessions, replays, Field Manual and Home. No shader presets, geometry
+or art are added.
 
 Pending route editing extends the existing cyan battlefield overlay with a small
 hover diamond and a terrain-aligned drag preview. The native selection station
@@ -197,6 +207,8 @@ Isolated model actions use `../render/src/units/preview-actions.ts` and follow
 `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 Part controls use the same preview actions and shared native panel, following
 `../../docs/project/decisions/2026-11-05-model-part-controls.md`.
+Material assignments follow
+`../../docs/project/decisions/2026-11-05-model-material-mappings.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
 `../../apps/web/index.html` and
 `.impeccable/surfaces/src-features-match-waypoints-ts.md`; its evidence is
@@ -470,8 +482,10 @@ the right, bounded by 460px or 42vw. At widths of 760px or less, the model occup
 the top 42dvh and the controls the remaining 58dvh. The pane uses the existing
 shared-panel type ramp and interface scale. Back and title, status/error feedback
 and pinned Open/Retry stay outside the scrolling body; choices and expandable
-tables scroll within it. Definition authoring inherits this arrangement: Open/Save
-stay pinned, schema tabs and nested fields scroll, and conflict review replaces
+tables scroll within it. Once a definition is open, Save/download, Validate and
+preview, Playtest draft and Skirmish draft stay pinned; Open pack folder moves
+into the scrolling actions and remains pinned only before opening a definition.
+Schema tabs and nested fields scroll, and conflict review replaces
 the fields with a scrollable comparison while Reload/Keep stay pinned. Sibling
 creation replaces the form with display-name and folder-name fields while
 Create definition, Download changes ZIP and Cancel creation stay pinned; the
@@ -598,6 +612,9 @@ the text leaves space for that disclosure mark.
   existing handlers. Keyboard focus thickens the corresponding frame to 2px.
   Native selects show an original SVG disclosure chevron and open framed 44px
   option rows; Escape closes the list first.
+  With native graphics active, semantic ArrowUp/ArrowDown/Home/End changes the
+  selected value without opening the platform picker; the HTML graphics fallback
+  retains normal browser behavior.
   Current controls preserves the complete existing help copy, with height derived
   from actual wrapping rather than an estimated character count.
 - **Field Manual gallery:** original-icon roster buttons reuse selected warm wells
@@ -671,7 +688,7 @@ the text leaves space for that disclosure mark.
   nodes; replacement and unload guard unsaved preview edits. Download GLB creates
   a separate copy: appended node indices preserve geometry, animations, materials,
   metadata and every following GLB chunk. Original parts and source files remain
-  intact; part inspection poses are separate and material editing remains open.
+  intact; part inspection poses and definition material assignments are separate.
 - **Model part controls:** the native disclosure reveals an authored-part picker
   and XYZ sliders bounded to −180…180°, with readable current degree captions.
   Local offsets use each actual node's authored rest pivot. Pointer and semantic
@@ -680,8 +697,20 @@ the text leaves space for that disclosure mark.
   caption visible. Changing a part stops the clip; Fire retains the pose and
   samples its actual muzzle. Restore model, clip playback, health changes and
   socket-entry restore rest. These are inspection poses: Download GLB retains the
-  opened bytes and only separately applied socket edits. Free part gizmos,
-  material mappings and remaining documented editor tabs/validation stay open.
+  opened bytes and only separately applied socket edits. Free part gizmos and
+  remaining documented editor tabs/validation stay open.
+- **Model material assignments:** Visuals lists imported GLB names with the
+  schema's eight slot choices. Each hover/focus explanation begins with the
+  actual material caption, retaining identity when help covers its field.
+  Model default removes an override; conventional names keep their roles and
+  custom names require valid assignments. Existing keys absent from the current
+  GLB remain editable/removable. Opening adds no identity map or dirty state.
+  Validate and preview applies the draft; Team colour stays available while
+  editing. Failed model-reference checks refresh names from checked bytes;
+  Discard and conflict Reload validate and refresh restored names too. Invalid
+  all-neutral owned models retain their draft and cannot save. Shared aliases
+  apply once before Force tinting, preserving authored PBR textures/parameters
+  and source GLB bytes across live/wreck previews and shared model consumers.
 - **Existing-definition authoring:** owner-selected packs supply unit, structure
   and prop definitions and their dependencies. Schema-derived fields reuse the
   native square inputs and choices, ivory focus and warm-metal actions. Only
@@ -704,8 +733,8 @@ the text leaves space for that disclosure mark.
   adds decode, silence, finite-sample and sample-level refusals using those same
   diagnostics, without audible output. True-peak meter parity, source freshness
   and exact formatter parity remain 2-38b2;
-  socket editing/GLB copy export and part inspection sliders are implemented,
-  while free part gizmos, material mappings, remaining documented tabs/validation
+  socket editing/GLB copy export, part inspection sliders and material assignments
+  are implemented, while free part gizmos, remaining documented tabs/validation
   and damage-socket smoke/fire previews remain open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name

@@ -80,7 +80,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
     },
     async load(bytes: Uint8Array, teamColor: string, assets: ModelPreviewAssets = {}) {
       const ticket = ++request;
-      const next = await loadModel(scene, bytes);
+      const next = await loadModel(scene, bytes, assets.materials);
       if (ticket !== request) {
         next.dispose();
         return undefined;
@@ -93,7 +93,7 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
         for (const node of next.nodes)
           if (!next.nodes.some((parent) => parent === node.parent)) node.setEnabled(false);
         if (assets.wreck) {
-          nextWreck = await loadModel(scene, assets.wreck);
+          nextWreck = await loadModel(scene, assets.wreck, assets.materials);
           nextWreck.setTeamColor(teamColor);
         }
         if (ticket !== request) {

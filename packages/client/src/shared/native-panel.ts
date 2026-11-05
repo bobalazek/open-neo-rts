@@ -258,6 +258,36 @@ export function mountNativePanel(
       const region = event.target;
       if (
         shell.classList.contains("native-panel") &&
+        region instanceof HTMLSelectElement &&
+        !region.disabled &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.isComposing &&
+        ["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)
+      ) {
+        // Keep semantic choices on the native panel instead of opening platform pickers.
+        event.preventDefault();
+        event.stopPropagation();
+        const options = [...region.options].filter((option) => !option.disabled);
+        const current = options.findIndex((option) => option.value === region.value);
+        const index =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? options.length - 1
+              : Math.max(
+                  0,
+                  Math.min(options.length - 1, current + (event.key === "ArrowDown" ? 1 : -1)),
+                );
+        const option = options[index];
+        if (option && option.value !== region.value) {
+          region.value = option.value;
+          region.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+      if (
+        shell.classList.contains("native-panel") &&
         region instanceof HTMLElement &&
         region.matches('[role="region"]') &&
         region.dataset.nativeBlock &&

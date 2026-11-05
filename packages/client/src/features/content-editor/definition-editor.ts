@@ -5,16 +5,16 @@ import { prepareDefinitionClone } from "./creation";
 import { writeDefinitionClone } from "./creation-write";
 import { definitionForm } from "./definition-form";
 import {
-  checkDefinitionDraft,
   EditorConflict,
   type EditorDirectory,
   type EditorPack,
   readEditorDirectory,
   readEditorPack,
+  resolveDefinitionDraft,
   safeEditorPath,
   writeDefinition,
 } from "./definition-pack";
-import { MODEL_FILE_LIMIT } from "./model";
+import { inspectModel, MODEL_FILE_LIMIT } from "./model";
 
 type Data = Record<string, unknown>;
 type Kind = "unit" | "structure" | "prop";
@@ -109,6 +109,7 @@ export function mountDefinitionEditor(
   const tabs = document.createElement("div");
   tabs.setAttribute("role", "tablist");
   const formHost = document.createElement("div");
+  let materialNames: string[] = [];
   const creationHost = document.createElement("div");
   const creationHelp = document.createElement("p");
   creationHelp.textContent = text("ui.editor.clone-help");
@@ -168,7 +169,7 @@ export function mountDefinitionEditor(
   }
   const open = action("ui.editor.open-pack", () => void openPack(), true);
   const save = action("ui.editor.download", () => void saveDraft(), true);
-  const preview = action("ui.editor.preview", () => void validateDraft(true));
+  const preview = action("ui.editor.preview", () => void validateDraft(true), true);
   const playtest = action("ui.editor.playtest", () => void startPlaytest("movement"), true);
   playtest.setAttribute("data-playtest", "");
   playtest.title = text("ui.editor.playtest-help");
@@ -211,6 +212,7 @@ export function mountDefinitionEditor(
     diskConflict = undefined;
     conflict.hidden = true;
     renderForm();
+    void validateDraft(true);
   });
   const reload = action("ui.editor.reload-disk", () => {
     if (!current || busy || diskConflict === undefined) return;
@@ -226,6 +228,7 @@ export function mountDefinitionEditor(
       diskConflict = undefined;
       conflict.hidden = true;
       renderForm();
+      void validateDraft(true);
     } catch {
       error.textContent = text("ui.editor.invalid-disk");
       options.update();
@@ -282,6 +285,7 @@ export function mountDefinitionEditor(
     skirmish.hidden = playtest.hidden;
     skirmish.disabled = playtest.disabled;
     open.hidden = reviewing || creating;
+    open.toggleAttribute("data-panel-footer", !current);
     clone.hidden = !current || reviewing || creating;
     clone.disabled = busy || dirty();
     create.hidden = !creating || !current?.pack.directory;
@@ -331,6 +335,7 @@ export function mountDefinitionEditor(
       },
       inputErrors,
       inputValues,
+      materialNames,
     );
     refresh();
   }
@@ -380,6 +385,7 @@ export function mountDefinitionEditor(
       inputValues.clear();
       conflict.hidden = true;
       diskConflict = undefined;
+      materialNames = [];
       diagnostics.replaceChildren();
       renderForm();
       await previewDraft();
@@ -419,7 +425,12 @@ export function mountDefinitionEditor(
       name: String(candidate.name),
       kind: current.kind,
     };
-    if (!disposed && ticket === selection) await options.preview(value);
+    if (!disposed && ticket === selection) {
+      await options.preview(value);
+      if (disposed || ticket !== selection) return;
+      materialNames = inspectModel(value.bytes, value.kind, value.raw).materials;
+      if (group === "visuals") renderForm();
+    }
   }
   async function accept(pack: EditorPack, preferredPath?: string) {
     if (disposed) return;
@@ -537,13 +548,28 @@ export function mountDefinitionEditor(
         ),
       );
       current.pack = packs.find((pack) => pack.input.id === current!.pack.input.id)!;
-      const issues = await checkDefinitionDraft(
+      const checked = await resolveDefinitionDraft(
         packs,
         current.pack.input.id,
         current.file,
         candidate,
       );
       if (disposed) return false;
+      const model = (candidate.presentation as { model?: string } | undefined)?.model;
+      const bytes =
+        model &&
+        checked.bytes.get(
+          `${current.pack.input.id}/${current.file.slice(0, current.file.lastIndexOf("/") + 1)}${model}`,
+        );
+      if (bytes) {
+        try {
+          materialNames = inspectModel(bytes, current.kind, candidate).materials;
+          if (group === "visuals") renderForm();
+        } catch {
+          // Shared validation already supplies the malformed model's file-specific diagnostics.
+        }
+      }
+      const issues = checked.issues;
       diagnostics.replaceChildren();
       for (const issue of issues) {
         const line = document.createElement("p");

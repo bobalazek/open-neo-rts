@@ -63,6 +63,34 @@ function fixture() {
   };
 }
 
+test("definition material mappings reach shared Force instances and later recolouring", async () => {
+  const f = fixture();
+  const layer = createEntityPresentation(f.scene, f.terrain, async () => ({
+    bytes: await bytes("dragon-tank"),
+    movementDomain: "tracked",
+    materials: { palette: "team_light", team: "metal" },
+  }));
+  const tint = (handle: string) =>
+    root(f.scene, handle)
+      .getChildMeshes()
+      .find((mesh) => mesh.material?.name === "team_light")!.material as PBRMaterial;
+  const expected = (hex: string) =>
+    Color3.Lerp(Color3.FromHexString(hex), Color3.White(), 0.4).toLinearSpace(true);
+  try {
+    layer.setForceColor(0, "#ff0000");
+    layer.setForceColor(1, "#0000ff");
+    await layer.accept(snapshot(0, [entity("red"), entity("blue", { force: 1 })]), 0);
+    expect(tint("red").albedoColor.equals(expected("#ff0000"))).toBe(true);
+    expect(tint("blue").albedoColor.equals(expected("#0000ff"))).toBe(true);
+    layer.setForceColor(0, "#00ff00");
+    expect(tint("red").albedoColor.equals(expected("#00ff00"))).toBe(true);
+    expect(tint("blue").albedoColor.equals(expected("#0000ff"))).toBe(true);
+  } finally {
+    layer.dispose();
+    f.dispose();
+  }
+});
+
 test("original producer doors open, hold, reverse closing, pause and close independently after observed exits", async () => {
   const f = fixture();
   const layer = createEntityPresentation(f.scene, f.terrain, async () => ({

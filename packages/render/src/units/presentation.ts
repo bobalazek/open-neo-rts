@@ -100,6 +100,7 @@ export function createEntityPresentation(
     footprint?: readonly [number, number];
     radiusSubcells?: number;
     foundation?: boolean;
+    materials?: Readonly<Record<string, string>>;
   }>,
   options: { ghost?: boolean; remains?: boolean } = {},
 ) {
@@ -157,11 +158,11 @@ export function createEntityPresentation(
       visibility: new Map(),
       loading: Promise.resolve()
         .then(async () => {
-          const { bytes, movementDomain, footprint, radiusSubcells, foundation } =
+          const { bytes, movementDomain, footprint, radiusSubcells, foundation, materials } =
             await resolveModel(definition, options.remains ? "wreck" : "model");
           // A removed entity or disposed layer must not start another import.
           if (disposed || templates.get(key) !== template) return undefined;
-          const model = await loadModelContainer(scene, bytes);
+          const model = await loadModelContainer(scene, bytes, materials);
           if (disposed || templates.get(key) !== template) {
             model.dispose();
             return undefined;
