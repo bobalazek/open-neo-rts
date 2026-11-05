@@ -31,6 +31,7 @@ export function definitionForm(
   changed: () => void,
   errors = new Map<string, string>(),
   inputs = new Map<string, string>(),
+  materialNames?: readonly string[],
 ) {
   let changes: { label: string; action(): void }[] = [];
   function change(label: string, action: () => void) {
@@ -96,6 +97,38 @@ export function definitionForm(
     }
     if (schema.type === "object" && object(schema.additionalProperties)) {
       const values = object(value) ? value : {};
+      if (path === "presentation.materials" && materialNames) {
+        for (const name of new Set([...materialNames, ...Object.keys(values)])) {
+          const label = document.createElement("label");
+          const caption = text("ui.materials.slot", { name });
+          label.append(caption);
+          const select = document.createElement("select");
+          select.name = `draft:${path}.${name}`;
+          select.setAttribute("aria-label", caption);
+          select.title = `${caption}. ${text("ui.materials.help")}`;
+          select.setAttribute("data-contextual-help", "");
+          select.append(
+            new Option(text("ui.materials.default"), ""),
+            ...(schema.additionalProperties.enum as string[]).map((slot) => new Option(slot, slot)),
+          );
+          select.value = String(Object.hasOwn(values, name) ? values[name] : "");
+          select.addEventListener("change", () => {
+            if (select.value)
+              Object.defineProperty(values, name, {
+                value: select.value,
+                enumerable: true,
+                writable: true,
+                configurable: true,
+              });
+            else delete values[name];
+            set(values);
+            changed();
+          });
+          label.append(select);
+          parent.append(label);
+        }
+        return;
+      }
       for (const key of Object.keys(values)) {
         field(parent, schema.additionalProperties, values[key], `${path}.${key}`, (next) => {
           values[key] = next;

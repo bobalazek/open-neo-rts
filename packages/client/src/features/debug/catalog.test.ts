@@ -42,6 +42,28 @@ test("catalog preserves original names and converts each object kind once", () =
   expect(catalogEntry(bush).definition.blocks).toBe("nothing");
 });
 
+test("validated material mappings are copied into model metadata for live and wreck imports", async () => {
+  const materials = { team: "team_dark" };
+  const entry = catalogEntry(
+    { ...dragon, presentation: { ...dragon.presentation, materials } },
+    "/dragon.glb",
+    "/wreck.glb",
+  );
+  materials.team = "metal";
+  expect(entry.materials).toEqual({ team: "team_dark" });
+  const fetcher = spyOn(globalThis, "fetch").mockImplementation(
+    Object.assign(async () => new Response(new Uint8Array([1])), {
+      preconnect: globalThis.fetch.preconnect,
+    }),
+  );
+  try {
+    expect((await resolveEntityModel(entry)).materials).toEqual({ team: "team_dark" });
+    expect((await resolveEntityModel(entry, "wreck")).materials).toEqual({ team: "team_dark" });
+  } finally {
+    fetcher.mockRestore();
+  }
+});
+
 test("raw metadata cannot bypass the original schema before conversion", () => {
   expect(() => catalogEntry({ ...dragon, radius: -1 })).toThrow("Invalid");
   expect(() => catalogEntry({ ...bush, presentation: { model: 12 } })).toThrow("Invalid");

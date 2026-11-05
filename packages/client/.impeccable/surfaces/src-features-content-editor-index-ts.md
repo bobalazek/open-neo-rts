@@ -25,8 +25,8 @@ The signature interaction is changing a real model's presentation while reading
 the same project validator used by the CLI. A failed candidate retains the last
 good model and offers retry. Unknown installed links cannot fetch arbitrary
 remote models. Model inspection remains available beside the authoring extension
-below; socket gizmos and part inspection sliders are implemented, while free part
-gizmos and material editing remain phase-2 work.
+below; socket gizmos, part inspection sliders and material assignments are
+implemented, while free part gizmos remain phase-2 work.
 
 ## Definition authoring extension
 
@@ -87,7 +87,7 @@ export failure preserving the draft for retry. Matrix-specific fixtures were not
 exercised; the strict shared-conformance failure path was source-reviewed.
 The single detector result was empty; it was not rerun. This bounded evidence
 does not qualify physical touch/IME, screen readers or hardware stress, or close
-free part gizmos/material editing, 2-38b2 parity, the full editor or the whole phase.
+free part gizmos, 2-38b2 parity, the full editor or the whole phase.
 
 ## Sibling-definition creation extension
 
@@ -269,7 +269,58 @@ Finish review opened the four fresh captures
 `.impeccable/review/parts-mobile-webkit.png`, returning SHIP with no fixes.
 The detector and context discovery were not rerun. This bounded evidence does not
 qualify physical touch/IME, screen readers, Firefox or hardware performance. Free
-part gizmos, material mappings, remaining documented tabs/validation, 2-38b2 parity
+part gizmos, remaining documented tabs/validation, 2-38b2 parity
 and damage-socket smoke/fire previews remain open; the whole editor and phase are
 not complete. Behavior is recorded in
 `../../../../docs/project/decisions/2026-11-05-model-part-controls.md`.
+
+## Material-assignment extension
+
+Visuals extends the same code-led Operate pane with actual imported GLB material
+names and the schema's eight native slot choices. The original model stays left
+on desktop and above the scrolling pane when narrow. Graphite Command Stations,
+the existing Arial ramp, ivory focus and brass actions remain authoritative;
+there is no new identity, token, shader preset, geometry or artwork. Hover/focus
+help begins with the actual material caption so its identity stays readable even
+when the tooltip covers the field.
+
+Model default removes a partial override. Conventional names retain their roles;
+custom names require explicit valid assignments. Existing keys missing from the
+current model stay editable/removable. Opening adds no identity entries or dirty
+state. Validate and preview applies the draft and Team colour remains available
+during definition editing. Save/download, Validate and preview, Playtest draft
+and Skirmish draft share the pinned footer once a definition is open. Open pack
+folder then remains in the scrolling actions, pinned only before opening. Shared
+native semantic choices handle ArrowUp/ArrowDown/Home/End without opening the
+platform picker; the HTML graphics fallback retains normal browser behavior.
+
+Failed model-reference validation refreshes material names from checked bytes;
+Discard and external-conflict Reload also validate and refresh restored names.
+Invalid all-neutral owned models are refused without writing or losing edits.
+Shared imports apply each name alias once before Force tinting, preserving GLB
+bytes and authored PBR textures/parameters across editor model/wreck previews,
+match/debug/draft/replay, Field Manual and Home. Only an explicit definition save
+writes mappings. The authoritative decision is
+`../../../../docs/project/decisions/2026-11-05-model-material-mappings.md`.
+
+The final scoped reviewer opened all four recaptures in
+`.impeccable/review/materials-{desktop,mobile}-{chromium,webkit}.png` at
+1280×720 and 390×844. The single named finding, contextual help hiding the
+material identity, was resolved by prefixing the actual caption; final review
+returned SHIP at that fix-list scope, with selectors and all four actions
+readable. This is not a broader re-audit. The detector ran once with no findings
+(`/tmp/neo-material-mappings-design-detect.json`) and was not rerun.
+
+Browser evidence includes 36 other editor/model/Field Manual/Home journeys in
+`/tmp/neo-material-mappings-verified-browser.log`; after correcting the new
+case's paint observer to inspect the pane's backing canvas, all four material
+and schema-recovery journeys passed across current Chromium and WebKit in
+`/tmp/neo-material-mappings-confirm-browser.log`. The final named help fix passed
+both focused journeys in `/tmp/neo-material-mappings-review-browser.log`.
+Actual native keyboard selection, invalid all-neutral refusal, JSON save/default
+clearing, model swap/Discard and external-conflict Reload were exercised.
+Support is scoped to current Chrome stable and current Playwright WebKit, one
+standard setup each. Physical touch, screen readers and hardware performance are
+outside this evidence. Free part gizmos, remaining documented tabs/validation,
+2-38b2 parity and damage-socket smoke/fire previews remain open; this does not
+close the whole editor or phase.

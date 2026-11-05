@@ -100,6 +100,115 @@ test("native audio decoding blocks an unsupported codec before saving and preser
   expect(result.preserved).toBe(true);
 });
 
+test("imported material slots preview and save team mappings while model default removes overrides", async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    const painted = new Set<string>();
+    Reflect.set(window, "materialPaint", painted);
+    const fill = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (...args: Parameters<typeof fill>) {
+      painted.add(args[0]);
+      Reflect.apply(fill, this, args);
+    };
+  });
+  await installEditorPack(page);
+  await edit(page);
+  await click(page, "Open pack folder");
+  await expect(page.getByLabel("health", { exact: true })).toHaveValue("900", { timeout: 30000 });
+  await page.getByRole("tab", { name: "Visuals", exact: true }).press("Enter");
+  const palette = page.getByLabel("Material · palette", { exact: true });
+  const team = page.getByLabel("Material · team", { exact: true });
+  await expect(palette).toHaveValue("");
+  await expect(team).toHaveValue("");
+  for (const name of ["team", "team_dark", "team_emissive"])
+    await page.getByLabel(`Material · ${name}`, { exact: true }).selectOption("metal");
+  await click(page, "Validate and preview");
+  await expect(page.locator(".definition-editor")).toContainText("needs team colour", {
+    timeout: 30000,
+  });
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(0);
+  await palette.focus();
+  await expect(palette).toBeFocused();
+  await palette.press("Home");
+  for (let i = 0; i < 4; i++) await palette.press("ArrowDown");
+  await expect(palette).toHaveValue("team_light");
+  await team.selectOption("team_light");
+  await click(page, "Validate and preview");
+  const save = page.getByRole("button", { name: "Save definition", exact: true });
+  await expect(save).toBeEnabled();
+  await expect(page.locator(".definition-editor")).not.toContainText("needs team colour");
+  await page.getByLabel("Team colour", { exact: true }).selectOption("#3c93d9");
+  await palette.focus();
+  await nativeFrame(page);
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "materialPaint").has("Material · palette")))
+    .toBe(true);
+  await page.screenshot({ path: info.outputPath("materials-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel("Team colour", { exact: true }).focus();
+  await palette.focus();
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("materials-mobile.png") });
+  await click(page, "Save definition");
+  await expect.poll(() => page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(1);
+  const mapping = () =>
+    page.evaluate(
+      async (path) =>
+        JSON.parse(await Reflect.get(window, "editorFixture").files.get(path).text()).presentation
+          .materials,
+      path,
+    );
+  expect(await mapping()).toEqual({
+    palette: "team_light",
+    team: "team_light",
+    team_dark: "metal",
+    team_emissive: "metal",
+  });
+  await palette.selectOption("");
+  await team.selectOption("");
+  for (const name of ["team_dark", "team_emissive"])
+    await page.getByLabel(`Material · ${name}`, { exact: true }).selectOption("");
+  await click(page, "Save definition");
+  await expect.poll(() => page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(2);
+  expect(await mapping()).toEqual({});
+  await page.evaluate(() => {
+    const files = Reflect.get(window, "editorFixture").files;
+    files.set(
+      "factions/eastern-collective/units/dragon-tank/alternate.glb",
+      files.get("props/temperate/bush/bush.glb"),
+    );
+  });
+  const model = page.getByLabel("presentation.model", { exact: true });
+  await model.fill("alternate.glb");
+  await click(page, "Validate and preview");
+  await expect(team).toHaveCount(0);
+  await expect(save).toBeEnabled();
+  await click(page, "Discard edits");
+  await expect(model).toHaveValue("dragon-tank.glb");
+  await expect(team).toHaveCount(1);
+  await expect(save).toBeEnabled();
+  await model.fill("alternate.glb");
+  await click(page, "Validate and preview");
+  await expect(team).toHaveCount(0);
+  await expect(save).toBeEnabled();
+  await page.evaluate(async (path) => {
+    const files = Reflect.get(window, "editorFixture").files;
+    const data = JSON.parse(await files.get(path).text());
+    data.health = 903;
+    files.set(path, new File([JSON.stringify(data, null, 2) + "\n"], "unit.json"));
+  }, path);
+  await click(page, "Save definition");
+  await expect(
+    page.getByRole("button", { name: "Reload disk version", exact: true }),
+  ).toBeEnabled();
+  await click(page, "Reload disk version");
+  await expect(model).toHaveValue("dragon-tank.glb");
+  await expect(team).toHaveCount(1);
+  expect(await page.evaluate(() => Reflect.get(window, "editorFixture").writes)).toBe(2);
+});
+
 test("draft scenario controls launch authored terrain and a frozen unit mirror without saving", async ({
   page,
 }, info) => {

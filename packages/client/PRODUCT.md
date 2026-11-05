@@ -261,9 +261,23 @@ source.
 - Part controls (2-38d2) disclose native XYZ degree sliders for authored part
   pivots, with sequential keyboard focus and readable values. Fire retains the
   posed muzzle; Restore model, clips, health and socket editing return to rest.
-  These inspection poses never alter downloaded GLB bytes. Free part gizmos,
-  material mappings and full editor validation remain open. See
+  These inspection poses never alter downloaded GLB bytes. Free part gizmos
+  and full editor validation remain open. See
   `../../docs/project/decisions/2026-11-05-model-part-controls.md`.
+- Visuals material assignments (2-38d3) list imported GLB names as native slot
+  choices. Model default removes a partial override, retaining conventional slot
+  names; custom names still need a valid assignment. Opening adds no identity
+  entries or dirty state. Team colour stays available during editing. Validate
+  and preview applies the draft; Save/download and both draft-playtest actions
+  share its pinned footer once a definition is open. Open pack folder remains
+  in the scrolling actions after opening, and pinned before opening.
+  Failed validation refreshes names from checked model bytes; Discard and Reload
+  also refresh restored names. Shared imports apply aliases once before Force
+  tinting in previews, entities, remains, Field Manual and Home, preserving source
+  GLBs and authored PBR properties. No new shader presets or geometry edits.
+  Native semantic choices handle Arrow/Home/End keys without a platform picker;
+  the HTML graphics fallback retains normal browser behavior. See
+  `../../docs/project/decisions/2026-11-05-model-material-mappings.md`.
 - The same model-first tool includes 2-38b1 editing of existing unit, structure
   and prop definitions from owner-selected pack folders. Opened packs supply
   dependencies. Schema-derived scalar, enum, boolean, nested object, record and

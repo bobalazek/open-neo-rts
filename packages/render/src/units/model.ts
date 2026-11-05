@@ -12,6 +12,7 @@ import {
   type TransformNode,
 } from "@babylonjs/core";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
+import { MATERIALS } from "@open-neo-rts/content";
 
 registerBuiltInLoaders();
 
@@ -40,7 +41,13 @@ export function setTeamColor(materials: readonly Material[], hex: string): void 
 }
 
 /** Loads a presentation asset without ever touching simulation state. */
-export async function loadModelContainer(scene: Scene, bytes: Uint8Array) {
+export async function loadModelContainer(
+  scene: Scene,
+  bytes: Uint8Array,
+  materials: Readonly<Record<string, string>> = {},
+) {
+  for (const slot of Object.values(materials))
+    if (!Object.hasOwn(MATERIALS, slot)) throw new RangeError(`Unknown material slot: ${slot}`);
   const container = await LoadAssetContainerAsync(bytes, scene, {
     pluginExtension: ".glb",
     pluginOptions: {
@@ -57,11 +64,18 @@ export async function loadModelContainer(scene: Scene, bytes: Uint8Array) {
     container.dispose();
     throw new Error("Model has no mesh geometry");
   }
+  // Resolve each authored name once; aliases must not chain through another mapping key.
+  for (const material of container.materials)
+    if (Object.hasOwn(materials, material.name)) material.name = materials[material.name]!;
   return container;
 }
 
-export async function loadModel(scene: Scene, bytes: Uint8Array) {
-  const container = await loadModelContainer(scene, bytes);
+export async function loadModel(
+  scene: Scene,
+  bytes: Uint8Array,
+  materials: Readonly<Record<string, string>> = {},
+) {
+  const container = await loadModelContainer(scene, bytes, materials);
   container.addAllToScene();
   const nodes = [...container.transformNodes, ...container.meshes];
   return {

@@ -55,7 +55,7 @@ export function inspectManualModel(entry: ManualEntry) {
       if (!response.ok) throw new Error(`Model HTTP ${response.status}`);
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (disposed) return;
-      const clips = await preview.load(bytes, "#81d4ed");
+      const clips = await preview.load(bytes, "#81d4ed", { materials: entry.materials });
       if (disposed) return;
       if (
         !readDeviceSettings().reducedMotion &&

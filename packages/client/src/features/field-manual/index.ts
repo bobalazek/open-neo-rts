@@ -35,10 +35,20 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   const abort = new AbortController();
   const metadata = new Map<string, Omit<ManualEntry, "gameplay">>(
     builtins.map((entry) => {
-      const raw = entry.raw as { id: string; name: string; description?: string };
+      const raw = entry.raw as {
+        id: string;
+        name: string;
+        description?: string;
+        presentation?: { materials?: Record<string, string> };
+      };
       return [
         `core.${raw.id}`,
-        { ...entry, name: raw.name, description: raw.description ?? "" },
+        {
+          ...entry,
+          name: raw.name,
+          description: raw.description ?? "",
+          materials: raw.presentation?.materials,
+        },
       ] as const;
     }),
   );

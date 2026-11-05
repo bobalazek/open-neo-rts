@@ -4,7 +4,8 @@ The [socket editor](../../project/decisions/2026-11-05-model-socket-editing.md)
 now supplies native Move/Rotate gizmos, model-local numeric fields and attachment
 creation. Apply validates/reimports a preview; Cancel restores the original
 nodes, and Download GLB preserves geometry/animation chunks in a separate copy.
-Part controls, material mappings and the remaining asset editor remain work.
+Part controls and [material-slot assignments](../../project/decisions/2026-11-05-model-material-mappings.md)
+are also implemented. Free part gizmos and the remaining asset editor remain work.
 
 **Route:** `/tools/content` (`/tools/content?model=…` opens the model viewer on its own) · **From:** Map editor menu, Home (developer builds), PR preview links · **Phase:** 2, model viewer first, then definition editing ([roadmap](../../project/roadmap.md#what-each-phase-builds)).
 
@@ -63,6 +64,13 @@ The delivered Part controls action reveals local XYZ degree sliders for the
 authored part list (conventional part names for standalone files). Fire uses the
 posed muzzle; Restore model or playing a clip returns to rest. These inspection
 poses do not alter downloaded model bytes. Free part gizmos remain separate work.
+
+Visuals lists imported GLB material names with a native slot selector for each.
+Model default removes an override; conventional slot names remain implicit.
+Existing unmatched map entries stay available to correct or clear. Validate and
+preview applies assignments; Team colour stays available while editing. Save
+uses `presentation.materials` in the same definition JSON. Role aliases preserve
+authored PBR surface properties; team roles add Force tint. No binary rewrite occurs.
 
 ## Saving
 

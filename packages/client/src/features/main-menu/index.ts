@@ -155,6 +155,9 @@ export function homeScreen(
       modelLabel: `Eastern Collective · ${(model?.raw as { name?: string } | undefined)?.name ?? "Dragon Tank"}`,
       reducedMotion,
       scale: settings.uiScale / 100,
+      materials: (
+        model?.raw as { presentation?: { materials?: Record<string, string> } } | undefined
+      )?.presentation?.materials,
       model: async (signal) => {
         if (!model?.model) throw new Error("Menu model unavailable");
         const response = await fetch(model.model, { signal });

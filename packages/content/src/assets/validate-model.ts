@@ -11,7 +11,7 @@ export interface ModelIssue {
 
 /** What a definition requires from its model. Empty until content schemas land. */
 export interface ModelRequirements {
-  /** Model material name -> material slot. Without it, model materials must be named after slots. */
+  /** Partial name -> slot overrides; unmapped materials retain their conventional slot names. */
   materials?: Record<string, string>;
   parts?: string[];
   sockets?: string[];
@@ -69,12 +69,12 @@ export function validateModel(
     else seen.add(n.name);
   });
 
+  const materialSlot = (name: string) =>
+    requires.materials && Object.hasOwn(requires.materials, name) ? requires.materials[name] : name;
   for (const m of gltf.materials ?? []) {
     const name = m.name ?? "";
-    const slot = requires.materials ? requires.materials[name] : name;
-    if (requires.materials && slot === undefined) {
-      error(`material "${name}" has no slot in the definition's material map`);
-    } else if (!(slot && slot in MATERIALS)) {
+    const slot = materialSlot(name);
+    if (!(slot && Object.hasOwn(MATERIALS, slot))) {
       error(
         `material "${name}" maps to unknown slot "${slot}" (${Object.keys(MATERIALS).join(", ")})`,
       );
@@ -97,7 +97,7 @@ export function validateModel(
     const hasTeamColor = [...usedMeshes].some((index) =>
       gltf.meshes?.[index]?.primitives.some((p) => {
         const name = p.material === undefined ? undefined : gltf.materials?.[p.material]?.name;
-        const slot = name && (requires.materials ? requires.materials[name] : name);
+        const slot = name && materialSlot(name);
         const vertices = gltf.accessors?.[p.attributes.POSITION ?? -1]?.count ?? 0;
         return vertices >= 3 && (slot === "team" || slot?.startsWith("team_"));
       }),

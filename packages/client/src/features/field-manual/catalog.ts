@@ -7,6 +7,7 @@ export interface ManualEntry {
   description: string;
   icon?: string;
   model?: string;
+  materials?: Readonly<Record<string, string>>;
 }
 
 /** Content metadata and compiled gameplay remain the only source of roster facts. */

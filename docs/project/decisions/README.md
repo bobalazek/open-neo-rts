@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-05 — Model material-slot assignments](./2026-11-05-model-material-mappings.md) — Imported material names, native Visuals choices and shared role-aware model imports, preserving original GLB bytes.
+
 - [2026-11-05 — Model part controls](./2026-11-05-model-part-controls.md) — Native local-pivot rotation sliders, posed firing and unchanged GLB downloads.
 
 - [2026-11-05 — Model socket editing](./2026-11-05-model-socket-editing.md) — Native move/rotate gizmos, checked local preview changes and socket-only GLB exports preserving geometry and animation buffers.

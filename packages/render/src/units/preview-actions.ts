@@ -14,6 +14,7 @@ export interface ModelPreviewAssets {
   weapons?: readonly { socket?: string }[];
   wreck?: Uint8Array;
   parts?: readonly string[];
+  materials?: Readonly<Record<string, string>>;
 }
 
 /** Isolated authoring effects; never emit commands or change gameplay values. */

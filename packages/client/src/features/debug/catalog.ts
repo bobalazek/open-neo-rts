@@ -11,6 +11,7 @@ interface RawDefinition {
   cells?: readonly string[];
   nodeKinds?: readonly NodeKind[];
   blocks?: string;
+  presentation?: { materials?: Record<string, string> };
 }
 
 /** Original schema validation precedes both metadata access and sim-unit conversion. */
@@ -33,6 +34,7 @@ export function catalogEntry(raw: unknown, model?: string, wreck?: string, pack 
     movementDomain: content.movement?.domain ?? null,
     model,
     wreck,
+    ...(content.presentation?.materials && { materials: { ...content.presentation.materials } }),
   };
 }
 export type CatalogEntry = ReturnType<typeof catalogEntry>;
@@ -57,5 +59,6 @@ export async function resolveEntityModel(
     footprint: entry.definition.footprint,
     radiusSubcells: entry.definition.radiusSubcells,
     foundation: entry.kind === "structure" && variant === "model",
+    ...(entry.materials && { materials: entry.materials }),
   };
 }
