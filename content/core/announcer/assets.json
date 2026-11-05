@@ -1,0 +1,21 @@
+{
+  "files": {
+    "announcer.ogg": {
+      "author": "Borut Balazek",
+      "source": "source/phrases.json",
+      "generator": "source/render.ts",
+      "method": "Original non-neural eSpeak NG 1.52.0 formant synthesis, en-us+klatt; no recorded or cloned person",
+      "ai_involvement": "none",
+      "synthetic_voice": true,
+      "rights_status": "owned",
+      "licence_ref": "../../../LICENSE",
+      "permitted_uses": ["commercial", "modification", "redistribution"],
+      "permitted_destinations": "any",
+      "credit_required": "Repository MIT notice",
+      "expires_at": "never",
+      "consent_ref": "Not applicable: no identifiable person",
+      "model_release": "Not applicable",
+      "property_release": "Not applicable"
+    }
+  }
+}

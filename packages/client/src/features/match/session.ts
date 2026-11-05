@@ -36,6 +36,8 @@ import { BINDINGS_CHANGED, bindingText, matchesBinding, readBindings } from "../
 import { firstPlayableRoster } from "../skirmish/roster";
 import { map, normalSkirmish, type SkirmishSetup } from "../skirmish/setup";
 import { createMatchPresentation } from ".";
+import { createMatchAnnouncer } from "./announcer";
+import { ANNOUNCER } from "./announcer-library";
 import { createMatchAudio } from "./audio";
 import { createMatchHud } from "./hud";
 import type { HudDefinition } from "./hud-model";
@@ -102,6 +104,7 @@ export function createNormalSession(
   let guidance: ReturnType<typeof createMatchGuidance> | undefined;
   let preferences = readDeviceSettings();
   let bindings = readBindings();
+  let announcer: ReturnType<typeof createMatchAnnouncer> | undefined;
   window.addEventListener(
     BINDINGS_CHANGED,
     () => {
@@ -189,6 +192,7 @@ export function createNormalSession(
     nativeHud?.dispose();
     match?.dispose();
     matchAudio?.dispose();
+    announcer?.dispose();
     presentation?.dispose();
     footprint?.dispose();
     art?.dispose();
@@ -280,6 +284,13 @@ export function createNormalSession(
     menu?.update();
     hud?.update(state);
     minimap?.update(state.snapshot);
+    announcer?.accept(
+      state.snapshot,
+      (!state.paused || !!state.snapshot.victory?.result) &&
+        root.style.visibility !== "hidden" &&
+        !document.hidden,
+      performance.now(),
+    );
     guidance?.update(state.snapshot, !state.paused && !busy && !menu?.isOpen());
     nativeHud?.update();
     void presentation?.accept(state.snapshot, clock.now(performance.now())).catch(failed);
@@ -416,6 +427,22 @@ export function createNormalSession(
           ...(entry?.icon && { icon: entry.icon }),
         };
       });
+      announcer = createMatchAnnouncer({
+        ...ANNOUNCER,
+        force: 0,
+        definitions: new Map(uiCatalog.map(({ gameplay }) => [gameplay.id, gameplay])),
+        groups: (index) => hud?.groupMembers(index) ?? [],
+        mixer: audio,
+        subtitle: (value) => {
+          if (disposed) return;
+          const label = root.querySelector("[data-announcer]");
+          if (label) setText(label, value);
+          nativeHud?.update();
+        },
+        notice: (value, point, kind) => {
+          minimap?.announce(value, point, kind);
+        },
+      });
       resultDefinitions = uiCatalog.map(({ gameplay, name }) => ({
         id: gameplay.id,
         name,
@@ -442,6 +469,14 @@ export function createNormalSession(
         if (ready && !draft && latest && !latest.snapshot.victory?.result)
           cameraRecording.capture(latest.snapshot.tick, renderer!.camera.capturePose());
         if (ready && root.style.visibility !== "hidden") audio?.listen(renderer!.camera);
+        announcer?.frame(
+          performance.now(),
+          ready &&
+            !!latest &&
+            (!latest.paused || !!latest.snapshot.victory?.result) &&
+            root.style.visibility !== "hidden" &&
+            !document.hidden,
+        );
         activePresentation.render(clock.now(performance.now()));
         interaction?.frame(performance.now());
         waypointInput?.frame();

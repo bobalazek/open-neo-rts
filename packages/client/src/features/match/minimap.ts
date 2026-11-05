@@ -152,13 +152,13 @@ export function createMinimap(
         const item = document.createElement("li");
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = `${noticeLabel(entry.kind)} · ${Math.floor(entry.x)}, ${Math.floor(entry.y)}`;
+        button.textContent = `${entry.label ?? noticeLabel(entry.kind)} · ${Math.floor(entry.x)}, ${Math.floor(entry.y)}`;
         button.addEventListener("click", () => pan(entry));
         item.append(button);
         return item;
       }),
     );
-    status.textContent = entries[0] ? noticeLabel(entries[0].kind) : "";
+    status.textContent = entries[0] && !entries[0].label ? noticeLabel(entries[0].kind) : "";
   }
   function nextAlert() {
     const entry = notices.next();
@@ -167,7 +167,7 @@ export function createMinimap(
       return;
     }
     pan(entry);
-    status.textContent = noticeLabel(entry.kind);
+    status.textContent = entry.label ?? noticeLabel(entry.kind);
   }
   function placePing(cell: MapPoint) {
     const kind = PING_KINDS.find((kind) => kind === ping.value);
@@ -450,6 +450,10 @@ export function createMinimap(
   );
   return {
     canvas,
+    announce(label: string, point: MapPoint, kind: NoticeKind = "announcement") {
+      if (options.readOnly || !notices.announce(label, point, kind)) return;
+      refreshFeed();
+    },
     navigate,
     zoom: options.zoom,
     update(value: SeatSnapshot) {

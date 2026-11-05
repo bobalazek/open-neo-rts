@@ -132,6 +132,13 @@ export function createMatchHud(
   section.setAttribute("aria-label", text("ui.hud.title"));
   section.innerHTML = `<div class="hud-feedback"><p data-mode role="status" aria-live="polite"></p><p data-result role="status" aria-live="polite"></p><div data-requests></div></div><nav class="hud-panel-tabs" aria-label="${text("ui.hud.panels")}" data-panel-tabs></nav><div class="hud-panels"><section class="hud-selection"><header><h2>${text("ui.hud.selection")}</h2><p data-summary></p></header><div class="hud-selection-profile"><img data-portrait alt="" hidden/><div><div data-types class="hud-types"></div><progress data-health max="100" value="0" aria-label="${text("ui.hud.health-bar")}" hidden></progress></div></div><div data-details tabindex="0"></div></section><section class="hud-command-panel"><h2>${text("ui.hud.commands")}</h2><div class="hud-command-grid" data-commands></div></section><section class="hud-build-panel"><h2 data-build-title>${text("ui.hud.build")}</h2><ol class="hud-queue" data-queue></ol><div class="hud-catalog" data-catalog></div><p data-advice class="hud-help"></p></section></div><div class="hud-groups"><span>${text("ui.hud.groups")}</span><div data-groups></div><label>${text("ui.hud.group")}<select data-group-index>${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((n) => `<option>${n}</option>`).join("")}</select></label><button type="button" data-set-group>${text("ui.hud.set-group")}</button><button type="button" data-add-group>${text("ui.hud.add-group")}</button><button type="button" data-idle-builder></button><button type="button" data-idle-producer></button></div>`;
   root.append(section);
+  const subtitle = document.createElement("p");
+  subtitle.dataset.announcer = "";
+  subtitle.setAttribute("role", "status");
+  subtitle.setAttribute("aria-live", "polite");
+  subtitle.setAttribute("aria-atomic", "true");
+  subtitle.setAttribute("aria-label", text("ui.announcer.title"));
+  section.querySelector(".hud-feedback")!.append(subtitle);
   const get = <T extends HTMLElement = HTMLElement>(selector: string) => {
     const element = section.querySelector<T>(selector);
     if (!element) throw new Error(`HUD element missing: ${selector}`);
@@ -1647,6 +1654,7 @@ export function createMatchHud(
     { once: true },
   );
   return {
+    groupMembers: groups.get,
     update(state?: OfflineState) {
       if (state) snapshot = state.snapshot;
       update();

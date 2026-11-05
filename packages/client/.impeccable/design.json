@@ -40,9 +40,27 @@
       "persistence": "Apply saves a separate versioned device profile. Back/cancel restores saved levels. Failed writes preserve both the saved profile and editable preview, with visible recovery.",
       "help": "Only Audio marks title-derived descriptions as contextual native hover/focus tooltips and hidden semantic aria-describedby text. Status and errors remain visible; incumbent permanent help outside Audio remains unchanged.",
       "layout": "Back/title stay in the fixed header; responsive body content and actions scroll. Shared native dropdowns clamp to the viewport and contain an inner ScrollViewer, initially revealing the selected value. Wheel, scrollbar drag and pointer selection reach all 101 percentages and long Controls action lists.",
-      "scope": "Original first-playable effects and menu/match music are implemented. Announcer speech/subtitles/queue, other-roster clips, full-mix qualification and replay audio remain open; this does not complete first-playable audio.",
+      "scope": "Original first-playable effects, menu/match music and core announcer speech/captions/bounded priority queue are implemented. Other-roster clips, later-system announcements, full-mix qualification and replay audio remain open; this does not complete first-playable audio.",
       "qualification": "Implementation evidence does not qualify hardware hearing, OS media keys, physical touch/IME, screen readers, Firefox or hardware FPS.",
-      "music": "Original menu and in-match tracks use committed scene ownership, presentation-only shuffle, Music/Master levels, mute/focus handling and announcer-bus ducking. Speech and queue/subtitles remain unfinished. See ../../docs/project/decisions/2026-11-05-first-playable-music.md."
+      "music": "Original menu and in-match tracks use committed scene ownership, presentation-only shuffle, Music/Master levels, mute/focus handling and announcer-bus ducking. Core speech and queue/captions are recorded in extensions.matchAnnouncer. See ../../docs/project/decisions/2026-11-05-first-playable-music.md."
+    },
+    "matchAnnouncer": {
+      "sources": [
+        "src/features/match/announcer.ts",
+        "src/features/match/announcer-library.ts",
+        "src/features/match/hud.ts",
+        "src/features/match/native-hud.ts",
+        "src/features/match/minimap.ts",
+        "src/features/match/alerts.ts",
+        "src/features/match/session.ts",
+        "src/app/shell.css"
+      ],
+      "surfaceBrief": ".impeccable/surfaces/src-features-match-announcer-ts.md",
+      "decision": "../../docs/project/decisions/2026-11-05-first-playable-announcer.md",
+      "world": "Ordinary Operate extension of Graphite Command Stations: existing compact Arial, graphite and brass, battlefield feedback TextBlock and minimap feed buttons. No new tokens, panel, colors or controls.",
+      "presentation": "Short native captions have a semantic paragraph mirror with polite atomic live status. Location-bearing lines replace equivalent generic feed notices with the spoken label and retain the existing jump target. Active captions suppress duplicate minimap status in native feedback. Muted or unavailable audio retains timed captions.",
+      "playback": "One original synthetic English atlas uses native clip start/duration through the existing mixer, Announcer/Master levels and music ducking. Priorities, cooldowns and a bounded queue limit repetition; pause, hiding, leaving and rewinding clear pending speech/captions. Only copied permitted HUD observations and canonical outcomes supply messages.",
+      "qualification": "Four actual reviewed captures, announcer-{desktop,mobile}-{chromium,webkit}.png under .impeccable/review/, received SHIP at 1440×900 and 390×844 with readable caption/feed labels and no clipping. Current Chrome/WebKit journeys passed clip offset/duration, pause clearing, muted captions with one feed line and actual-worker surrender/Defeat. Power/damage observations were presentation-only fixtures. Other-roster and later-system announcements, full-mix qualification, replay audio and hardware hearing remain open; screen readers are not qualified. The existing onboarding hint is outside this change."
     },
     "matchInputBindings": {
       "source": "src/features/settings/bindings-screen.ts",

@@ -560,6 +560,8 @@
   "ui.notice.on-my-way": "On my way",
   "ui.notice.danger": "Danger",
   "ui.notice.help": "Need help",
+  "ui.announcer.title": "Announcer subtitle",
+  "ui.notice.announcement": "Announcement",
   "ui.notice.under-attack": "Force under attack",
   "ui.notice.unit-ready": "Unit ready",
   "ui.notice.structure-ready": "Structure ready",

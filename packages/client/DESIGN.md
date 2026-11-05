@@ -783,11 +783,28 @@ the text leaves space for that disclosure mark.
   survives navigation. Original first-playable effects and menu/match music use
   this mixer. Music/Master preview, mute and focus behavior govern the current
   soundtrack; active announcer-bus audio ducks it without replacing saved levels.
-  Speech, announcements/subtitles/priority queue, other-roster clips, full-mix
-  qualification and replay audio remain
-  open. This does not complete first-playable audio or qualify hardware hearing
+  Core first-playable speech, captions and the bounded priority queue now use
+  this mixer. Other-roster clips, later-system announcements, full-mix
+  qualification and replay audio remain open. This does not complete
+  first-playable audio or qualify hardware hearing
   and OS media keys. See
   `../../docs/project/decisions/2026-11-03-device-audio-mixer.md`.
+- **Match announcer:** short captions reuse the existing battlefield feedback
+  TextBlock and compact Arial; a semantic paragraph mirrors them as a polite,
+  atomic live status. Location-bearing lines reuse the minimap feed's framed
+  button and jump target with the spoken label, replacing equivalent generic
+  notices. While a caption is present, native feedback suppresses the duplicate
+  minimap status. No new panel, palette or controls apply. Original synthetic
+  English speech uses the saved Announcer/Master levels and existing music
+  ducking; muted or unavailable audio retains timed captions. Priority,
+  cooldowns and a bounded queue limit repetition; pause, hiding, leaving or
+  rewinding clears pending speech and captions. Only copied permitted
+  observations and canonical outcomes supply messages. The four actual desktop
+  (1440×900) and narrow (390×844) Chrome/WebKit captures received a `ship`
+  finish disposition, with readable caption/feed labels and no clipping. This
+  does not qualify hardware hearing, screen readers or later-system audio.
+  See `../../docs/project/decisions/2026-11-05-first-playable-announcer.md`
+  and `.impeccable/surfaces/src-features-match-announcer-ts.md`.
 - **Keyboard controls:** Settings and the pause menu open the shared native
   panel's editor for 64 implemented normal-match actions. Category/action and
   primary/alternate choice fields expose up to two physical key-code chords or

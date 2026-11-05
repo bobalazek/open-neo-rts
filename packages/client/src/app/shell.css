@@ -1063,7 +1063,9 @@
   border: 1px solid var(--hud-line);
   pointer-events: auto;
 }
-.hud-feedback:has([data-mode]:empty):has([data-result]:empty):has([data-requests]:empty) {
+.hud-feedback:has([data-mode]:empty):has([data-result]:empty):has([data-requests]:empty):has(
+  [data-announcer]:empty
+) {
   display: none;
 }
 .hud-feedback button {

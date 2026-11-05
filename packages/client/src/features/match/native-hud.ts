@@ -279,10 +279,13 @@ export function mountNativeMatchHud(
       },
       mode: canvas.dataset.commandMode ? `${modeLabel} · Shift · Esc` : "",
       feedback: [
+        root.querySelector("[data-announcer]")?.textContent,
         root.querySelector<HTMLElement>("[data-result]")?.dataset.feedbackKey === "ui.hud.accepted"
           ? ""
           : root.querySelector("[data-result]")?.textContent,
-        root.querySelector(".hud-minimap [role=status]")?.textContent,
+        root.querySelector("[data-announcer]")?.textContent
+          ? ""
+          : root.querySelector(".hud-minimap [role=status]")?.textContent,
       ]
         .filter(Boolean)
         .join(" · "),
