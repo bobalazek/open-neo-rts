@@ -46,6 +46,21 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await expect
     .poll(async () => Number(await page.locator("#game").getAttribute("data-tick")))
     .toBeGreaterThan(10);
+  const mapCanvas = page.locator(".hud-minimap canvas");
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", /\d+,\d+/);
+  const initialCameraCell = await mapCanvas.getAttribute("data-camera-cell");
+  const movedAt = Number(await page.locator("#game").getAttribute("data-tick"));
+  const destination = await nativeMapPoint(page, 0.6, 0.4);
+  await page.mouse.click(destination.x, destination.y);
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", "76,51");
+  await page.mouse.move(700, 400);
+  await page.mouse.down({ button: "middle" });
+  await page.mouse.move(780, 400, { steps: 4 });
+  await page.mouse.up({ button: "middle" });
+  await page.mouse.wheel(0, -180);
+  await expect
+    .poll(async () => Number(await page.locator("#game").getAttribute("data-tick")))
+    .toBeGreaterThan(movedAt + 6);
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Surrender", exact: true }).press("Enter");
   await page.getByRole("button", { name: "Watch replay", exact: true }).press("Enter");
@@ -53,6 +68,47 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await expect(page.locator("#game")).toHaveAttribute("data-tick", "0");
   await expect(page.locator(".native-replay")).toHaveCount(1);
   await expect(page.locator("[data-players] p")).toHaveCount(2);
+  await expect(page.locator("[data-camera] option")).toHaveCount(2);
+  await page.locator("#game").focus();
+  await page.keyboard.press("c");
+  await expect(page.locator("#game")).toHaveAttribute("data-replay-camera", "1");
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", initialCameraCell!);
+  await nativeFrame(page);
+  const cameraPath = "M3 7h13v12H3Zm13 4 5-3v10l-5-3M6 7V4h7v3";
+  await expect
+    .poll(() =>
+      page.evaluate((path) => Reflect.get(window, "nativePaintImages").has(path), cameraPath),
+    )
+    .toBe(true);
+  const cameraPoint = await page.evaluate(
+    (path) => Reflect.get(window, "nativePaintImages").get(path) as { x: number; y: number },
+    cameraPath,
+  );
+  await page.mouse.click(cameraPoint.x, cameraPoint.y);
+  await expect(page.locator("#game")).toHaveAttribute("data-replay-camera", "free");
+  await page.locator("[data-camera]").selectOption("1");
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("End");
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", "76,51");
+  await expect(page.locator("select[data-vision]")).toHaveValue("all");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("camera-follow-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("camera-follow-mobile.png") });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator("#game").focus();
+  await page.keyboard.down("ArrowRight");
+  await expect(page.locator("#game")).toHaveAttribute("data-replay-camera", "free");
+  await page.keyboard.up("ArrowRight");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("camera-free-desktop.png") });
+  await page.keyboard.press("c");
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", "76,51");
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("Home");
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", initialCameraCell!);
+  await page.locator("[data-camera]").selectOption("free");
   await expect(page.locator("[data-replay-marker]")).toHaveCount(1);
   await expect(page.locator("[data-replay-marker]")).toContainText("Force 1 surrendered");
   await expect(
@@ -255,6 +311,10 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   expect(portable.mapHash).toMatch(/^[a-f0-9]{16}$/);
   expect(portable.record.format).toBe(2);
   expect(portable.record.keyframes.map((frame: { tick: number }) => frame.tick)).toEqual([0]);
+  expect(portable.cameras[0].seat).toBe(1);
+  expect(portable.cameras[0].samples[0].tick).toBe(0);
+  expect(portable.cameras[0].samples.at(-1).radius).toBeLessThan(60);
+  expect(portable.cameras[0].samples.at(-1).alpha).not.toBe(Math.PI / 2);
   expect(verifyMatchRecord(portable.record).hash).toBe(portable.record.hash);
   await page
     .locator('[type="file"]')
@@ -263,9 +323,11 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await expect(page.getByRole("button", { name: "Watch replay", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Watch replay", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "replay", { timeout: 60000 });
+  await page.locator("[data-camera]").selectOption("1");
   await page.locator("[data-timeline]").focus();
   await page.keyboard.press("End");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(portable.record.tick));
+  await expect(mapCanvas).toHaveAttribute("data-camera-cell", "76,51");
   await page.locator("#game").focus();
   await page.keyboard.press("Escape");
   await expect(page.locator(".save-row")).toHaveCount(2);
@@ -277,6 +339,21 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
     buffer: Buffer.from(JSON.stringify(legacy)),
   });
   await expect(page.locator(".save-row")).toHaveCount(3, { timeout: 60000 });
+  await page.getByRole("button", { name: "Watch replay", exact: true }).press("Enter");
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "replay", { timeout: 60000 });
+  await expect(page.locator("[data-camera] option")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Camera · C", exact: true })).toBeDisabled();
+  const missingPoint = await page.evaluate(
+    (path) => Reflect.get(window, "nativePaintImages").get(path) as { x: number; y: number },
+    cameraPath,
+  );
+  await page.mouse.move(missingPoint.x, missingPoint.y);
+  await nativeTextPoint(page, "This replay has no recorded camera.");
+  await nativeFrame(page);
+  await page.screenshot({ path: info.outputPath("camera-missing-desktop.png") });
+  await page.locator("#game").focus();
+  await page.keyboard.press("Escape");
+  await page.locator(".save-row").filter({ hasText: "Training Grounds" }).press("Enter");
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Delete replay", exact: true }).press("Enter");
   await expect(page.locator(".save-row")).toHaveCount(2);

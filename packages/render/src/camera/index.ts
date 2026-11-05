@@ -10,6 +10,15 @@ export interface CameraBounds {
   maxZ: number;
 }
 
+export interface CameraPose {
+  x: number;
+  y: number;
+  z: number;
+  alpha: number;
+  beta: number;
+  radius: number;
+}
+
 const MIN_DISTANCE = 14;
 const MAX_DISTANCE = 110;
 /** Angle from vertical when fully zoomed in and fully zoomed out. */
@@ -49,6 +58,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
   let selecting = false;
   let enabled = true;
   let blocksPointer: (x: number, y: number) => boolean = () => false;
+  let manualInput: (() => void) | undefined;
   let panSpeed = 1,
     mouseSensitivity = 1,
     invertDragRotate = false,
@@ -57,6 +67,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
 
   // right and forward in metres, relative to the view direction on the ground.
   const pan = (right: number, forward: number) => {
+    manualInput?.();
     const s = Math.sin(camera.alpha);
     const c = Math.cos(camera.alpha);
     target.x = clamp(target.x + s * right - c * forward, bounds.minX, bounds.maxX);
@@ -79,6 +90,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       if (!resolveKey && (e.ctrlKey || e.metaKey || e.altKey)) return;
       if (action === "reset" || (!resolveKey && e.code === "Backspace")) {
         e.preventDefault();
+        manualInput?.();
         camera.alpha = Math.PI / 2;
       }
       const direction = action
@@ -139,6 +151,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
       drag.x = e.clientX;
       drag.y = e.clientY;
       if (drag.button === 1) {
+        manualInput?.();
         camera.alpha -= dx * DRAG_ROTATE * mouseSensitivity * (invertDragRotate ? -1 : 1);
         return;
       }
@@ -168,6 +181,7 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     (e) => {
       if (!enabled || blocksPointer(e.clientX, e.clientY)) return;
       e.preventDefault();
+      manualInput?.();
       goal = clamp(
         goal * Math.exp(e.deltaY * ZOOM_STEP * mouseSensitivity),
         MIN_DISTANCE,
@@ -201,6 +215,29 @@ export function createRtsCamera(scene: Scene, canvas: HTMLCanvasElement, bounds:
     camera.beta = PITCH_NEAR + (PITCH_FAR - PITCH_NEAR) * t;
   });
   return Object.assign(camera, {
+    capturePose(): CameraPose {
+      return {
+        x: target.x,
+        y: target.y,
+        z: target.z,
+        alpha: Math.atan2(Math.sin(camera.alpha), Math.cos(camera.alpha)),
+        beta: camera.beta,
+        radius: camera.radius,
+      };
+    },
+    restorePose(pose: CameraPose) {
+      target.set(
+        clamp(pose.x, bounds.minX, bounds.maxX),
+        pose.y,
+        clamp(pose.z, bounds.minZ, bounds.maxZ),
+      );
+      camera.alpha = pose.alpha;
+      camera.beta = pose.beta;
+      camera.radius = goal = clamp(pose.radius, MIN_DISTANCE, MAX_DISTANCE);
+    },
+    setManualInputHandler(handler: () => void) {
+      manualInput = handler;
+    },
     setPointerBlocker(blocker: (x: number, y: number) => boolean) {
       blocksPointer = blocker;
     },

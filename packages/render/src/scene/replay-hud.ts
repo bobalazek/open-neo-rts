@@ -294,12 +294,17 @@ export function createReplayHud(
       place(node.image, 5 * scale, 4 * scale, 14 * scale, 14 * scale);
     }
     const vision = buttons.get("vision"),
+      camera = buttons.get("camera"),
       exit = buttons.get("exit");
     if (vision) {
-      const w = 166 * scale;
+      const w = (camera ? 126 : 166) * scale;
       place(vision.button, width - 24 - unit - gap - w, 15, w, unit);
       place(vision.image, 6, 7, 22 * scale, 22 * scale);
       place(vision.label, 34 * scale, 0, w - 38 * scale, unit);
+      if (camera) {
+        place(camera.button, width - 24 - unit - gap - w - gap - unit, 15, unit, unit);
+        place(camera.image, 6 * scale, 6 * scale, unit - 12 * scale, unit - 12 * scale);
+      }
     }
     if (exit) {
       place(exit.button, width - 24 - unit, 15, unit, unit);

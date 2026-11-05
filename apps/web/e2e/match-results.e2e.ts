@@ -100,14 +100,17 @@ test("real paid production reaches the frozen final totals on desktop and narrow
   const download = await downloaded;
   const path = info.outputPath("match-replay.json");
   await download.saveAs(path);
-  const record = JSON.parse(readFileSync(path, "utf8")) as MatchRecord;
+  const file = JSON.parse(readFileSync(path, "utf8"));
+  const record = file.record as MatchRecord;
+  expect(file.cameras[0].seat).toBe(1);
+  expect(file.cameras[0].samples[0].tick).toBe(0);
   expect(record.scenario.setup.debug).toBe(false);
   expect(record.scenario.commands.every((command) => command.seat === 1)).toBe(true);
   const verified = execFileSync(
     "bun",
     [
       "-e",
-      'import { verifyMatchRecord } from "./packages/sim/src/index.ts"; const value = await Bun.file(process.argv[1]).json(); console.log(JSON.stringify(verifyMatchRecord(value)));',
+      'import { verifyMatchRecord } from "./packages/sim/src/index.ts"; const value = await Bun.file(process.argv[1]).json(); console.log(JSON.stringify(verifyMatchRecord(value.record)));',
       path,
     ],
     {

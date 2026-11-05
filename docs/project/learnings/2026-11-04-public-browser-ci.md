@@ -170,3 +170,14 @@ reached Paused, after that click had correctly been ignored. A menu's `data-pane
 and painted label establish presentation, not completion of its worker pause.
 Wait for enabled Resume before the desktop and narrow pointer checks; retain
 the actual native click, menu dismissal and advancing-tick assertions.
+
+The [camera candidate](https://github.com/bobalazek/open-neo-rts/actions/runs/41957209568)
+passed WebKit and repository verification; Chrome passed 113 journeys and failed
+the normal-HUD construction payment check. Its pointer reached an armed build,
+the command was accepted, then placement reported `clearance_timeout`. The
+heuristic eastern site overlapped the departing Supply Truck. Exact captured
+setup replay reproduced refusal at the hosted click's tick 7 and success at
+later ticks as the truck moved. The mirrored western site paid immediately at
+all eleven sampled timings. This smoke test targets payment/cancellation, so
+use that empty site and retain its real command, 900-credit charge and full refund
+assertions. Bounded friendly-unit clearance retains its separate behavior/checks.
