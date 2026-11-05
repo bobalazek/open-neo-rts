@@ -63,10 +63,10 @@ fog, hover outlines and combat presentation consume copied replay state.
 
 ## Remaining work
 
-This is functional local playback, not the final portable replay/spectator format.
-Owned one-minute keyframes are rebuilt during verification rather than serialized
-into exported files. Portable validated frames, separate header map identity,
-recorded camera tracks, timeline event markers, analytics overlays and delayed
+This initial slice provided functional local playback. [Portable format 2](./2026-11-05-portable-replay-keyframes.md)
+now serializes one-minute frames and adds explicit map identity while retaining
+full history verification. Originally, owned keyframes were rebuilt rather than serialized
+into exported files. Recorded camera tracks, timeline event markers, analytics overlays and delayed
 network spectating remain 2-35c. Result score/territory still need actual producers.
 No fake players, scores, graphs, mod compatibility or online capabilities are added.
 

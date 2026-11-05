@@ -36,13 +36,14 @@ import { flatMap } from "../testing/maps";
 import { restoreCanonicalState } from "./canonical-state";
 import { prepareCanonicalValidation } from "./canonical-validation";
 import { createMatchKeyframe } from "./keyframe";
-import { createMatchRecord, verifyMatchRecord } from "./match-record";
+import { createMatchRecord } from "./match-record";
 import {
   createMatchSnapshot,
   MAX_SNAPSHOT_TICK,
   parseMatchSnapshot,
   restoreMatchSnapshot,
 } from "./match-snapshot";
+import { verifyMatchRecord } from "./playback";
 
 function fixture(seed = 7) {
   const setup: MatchSetup = {
@@ -136,7 +137,7 @@ test("owned keyframes restore repeatedly without elapsed-tick replay, isolate fu
   const frame = createMatchKeyframe(kernel, setup),
     savedHash = checkpointHash(kernel);
   expect(Object.isFrozen(frame)).toBe(true);
-  expect(Object.keys(frame)).toEqual(["tick", "hash", "restore"]);
+  expect(Object.keys(frame)).toEqual(["tick", "hash", "serialize", "restore"]);
   const first = frame.restore(setup),
     second = frame.restore(setup);
   expect(checkpointHash(first)).toBe(savedHash);

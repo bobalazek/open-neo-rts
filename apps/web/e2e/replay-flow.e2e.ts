@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { verifyMatchRecord } from "../../../packages/sim/src";
 import { clickNativeText, nativeFrame, nativeMapPoint, observeNativePaint } from "./native-paint";
 
 test("finished skirmish opens a native replay, seeks, switches vision and manages verified browser files", async ({
@@ -157,11 +158,27 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await page.getByRole("button", { name: "Export replay", exact: true }).press("Enter");
   const download = await downloaded;
   const file = await readFile((await download.path())!);
+  const portable = JSON.parse(file.toString());
+  expect(portable.format).toBe(2);
+  expect(portable.mapHash).toMatch(/^[a-f0-9]{16}$/);
+  expect(portable.record.format).toBe(2);
+  expect(portable.record.keyframes.map((frame: { tick: number }) => frame.tick)).toEqual([0]);
+  expect(verifyMatchRecord(portable.record).hash).toBe(portable.record.hash);
   await page
     .locator('[type="file"]')
     .setInputFiles({ name: "replay.json", mimeType: "application/json", buffer: file });
   await expect(page.locator(".save-row")).toHaveCount(2, { timeout: 60000 });
-  const legacy = JSON.parse(file.toString()).record;
+  await expect(page.getByRole("button", { name: "Watch replay", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Watch replay", exact: true }).press("Enter");
+  await expect(page.locator("#game")).toHaveAttribute("data-session", "replay", { timeout: 60000 });
+  await page.locator("[data-timeline]").focus();
+  await page.keyboard.press("End");
+  await expect(page.locator("#game")).toHaveAttribute("data-tick", String(portable.record.tick));
+  await page.locator("#game").focus();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".save-row")).toHaveCount(2);
+  const { keyframes: _keyframes, ...legacyRecord } = portable.record;
+  const legacy = { ...legacyRecord, format: 1 };
   await page.locator('[type="file"]').setInputFiles({
     name: "legacy-record.json",
     mimeType: "application/json",
@@ -170,6 +187,14 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await expect(page.locator(".save-row")).toHaveCount(3, { timeout: 60000 });
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Delete replay", exact: true }).press("Enter");
+  await expect(page.locator(".save-row")).toHaveCount(2);
+  const wrongMap = { ...portable, mapHash: "0000000000000000" };
+  await page.locator('[type="file"]').setInputFiles({
+    name: "wrong-map.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(wrongMap)),
+  });
+  await expect(page.getByRole("alert")).toContainText("map hash");
   await expect(page.locator(".save-row")).toHaveCount(2);
   const corrupt = JSON.parse(file.toString());
   corrupt.record.hash = "0000000000000000";
@@ -206,6 +231,12 @@ test("finished skirmish opens a native replay, seeks, switches vision and manage
   await page.getByRole("button", { name: /Future replay/ }).press("Enter");
   await expect(page.locator("[data-save-detail]")).toContainText("Requires simulation 999");
   await expect(page.getByRole("button", { name: "Watch replay", exact: true })).toBeDisabled();
+  const archivedDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export replay", exact: true }).press("Enter");
+  const archived = JSON.parse(await readFile((await (await archivedDownload).path())!, "utf8"));
+  expect(archived.id).toBe("future");
+  expect(archived.record.scenario.simVersion).toBe(999);
+  expect(archived.record.keyframes).toEqual(portable.record.keyframes);
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Delete replay", exact: true }).press("Enter");
   await expect(page.locator(".save-row")).toHaveCount(3);

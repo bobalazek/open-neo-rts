@@ -22,8 +22,8 @@ match path. Its native fields and semantic form share values; the map preview
 uses authored Training Grounds terrain, resources and selected spawn coordinates.
 Online play and the complete three-faction game remain later roadmap phases.
 The first playable local replay viewer supports that Eastern Collective mirror
-on Training Grounds. Portable serialized keyframes, recorded camera tracks,
-timeline event markers, analytics overlays and live network spectating remain
+on Training Grounds, including portable keyframes and explicit map identity.
+Recorded camera tracks, timeline event markers, analytics overlays and live network spectating remain
 deferred; this does not complete the replay/spectator phase.
 See `../../docs/project/roadmap.md` and `../../docs/design/screens/match-hud.md`.
 

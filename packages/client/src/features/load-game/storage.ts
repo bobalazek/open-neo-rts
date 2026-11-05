@@ -34,7 +34,7 @@ const fields = [
   "match",
 ];
 
-export function saveMapHash(match: MatchSnapshot): string {
+export function saveMapHash(match: Pick<MatchSnapshot, "scenario">): string {
   const hash = createHasher();
   addString(hash, serializeMatchMap(match.scenario.setup.map));
   return digest(hash).hex;

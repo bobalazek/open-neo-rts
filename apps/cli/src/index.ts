@@ -13,10 +13,16 @@ import { makePlaceholders } from "./commands/make-placeholders";
 import { run } from "./commands/run";
 import { validateAssets } from "./commands/validate-assets";
 import { validateContent } from "./commands/validate-content";
+import { verifyReplay } from "./commands/verify-replay";
 
 type Command = { summary: string; run: (args: string[]) => Promise<number> };
 
 const commands: Record<string, Command> = {
+  "verify-replay": {
+    summary:
+      "Reproduce a replay's embedded record and keyframes (not installed content/header identity)",
+    run: verifyReplay,
+  },
   "ai-vs-ai": {
     summary:
       "Run real Training Grounds bots twice per seed; preserve evidence in --out <new-directory>",

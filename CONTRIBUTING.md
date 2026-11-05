@@ -28,6 +28,7 @@ Install FFmpeg on `PATH` for audio asset validation and the CLI tests:
 | `bun neo`                                                      | List all CLI commands                                                                                                                              |
 | `bun neo run <scenario> [--seed N] [--ticks T] [--trace file]` | Run a versioned command log twice, print hashes and optionally save a per-tick trace                                                               |
 | `bun neo run --compare <trace-a> <trace-b>`                    | Report the first divergent tick, event logs and canonical state diff                                                                               |
+| `bun neo verify-replay <file>`                                 | Reproduce embedded record history and portable frames; installed content/header compatibility is checked separately by browser import              |
 | `bun neo bench [--workload NAME] [--units N] [--ticks T]`      | `flat`: full-sim/ECS (default 1,000 units); `navigation`: 256×256 compiler/search/scheduler (default 300 unit request slots); 1,000 measured ticks |
 
 The repo layout is described in [docs/engineering/architecture.md](docs/engineering/architecture.md#3-monorepo-layout).

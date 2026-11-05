@@ -93,3 +93,25 @@ test("replay metadata rejects corrupt, excessive and unexpected fields before pe
   ])
     expect(() => parseSavedReplay(input)).toThrow();
 });
+
+test("portable header requires its explicit map identity and matching bounded record version", () => {
+  const legacy = fixture();
+  const portable = {
+    ...legacy,
+    format: 2,
+    mapHash: "abcdef1234567890",
+    record: { ...legacy.record, format: 2, keyframes: [{ tick: 0 }, { tick: 1200 }] },
+  };
+  // Metadata stays cheap; full frame/checksum/history validation belongs to the worker.
+  expect(parseSavedReplay(portable).format).toBe(2);
+  for (const value of [
+    { ...portable, mapHash: undefined },
+    { ...portable, mapHash: "bad" },
+    { ...portable, record: legacy.record },
+    { ...legacy, record: portable.record },
+    { ...legacy, mapHash: portable.mapHash },
+    { ...portable, record: { ...portable.record, keyframes: [] } },
+    { ...portable, record: { ...portable.record, keyframes: Array(122).fill({}) } },
+  ])
+    expect(() => parseSavedReplay(value)).toThrow();
+});

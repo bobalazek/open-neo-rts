@@ -1,5 +1,5 @@
 import type { MatchRecord, MatchSetup, SeatSnapshot } from "@open-neo-rts/sim";
-import { isRecord, isWorkerReply } from "./protocol";
+import { isMatchRecord, isRecord, isWorkerReply } from "./protocol";
 
 export const REPLAY_SPEEDS = [0.5, 1, 2, 4, 8] as const;
 export type ReplayVision = number | "all";
@@ -16,6 +16,7 @@ export interface ReplayState {
 }
 export type ReplayRequest =
   | { type: "init"; record: MatchRecord; setup: MatchSetup }
+  | { type: "export-record" }
   | { type: "seek"; tick: number }
   | { type: "pause"; paused: boolean }
   | { type: "speed"; speed: number }
@@ -24,6 +25,7 @@ export interface ReplayReply {
   id: number;
   error?: string;
   state?: ReplayState;
+  record?: MatchRecord;
 }
 
 export function isReplayReply(value: unknown): value is ReplayReply {
@@ -32,10 +34,12 @@ export function isReplayReply(value: unknown): value is ReplayReply {
     !Number.isSafeInteger(value.id) ||
     Number(value.id) < 0 ||
     Number(value.id) > 0x7fffffff ||
-    Object.keys(value).some((key) => !["id", "error", "state"].includes(key))
+    Object.keys(value).some((key) => !["id", "error", "state", "record"].includes(key))
   )
     return false;
   if (value.error !== undefined && typeof value.error !== "string") return false;
+  if (value.record !== undefined && (!isMatchRecord(value.record) || value.record.format !== 2))
+    return false;
   if (value.state === undefined) return true;
   const state = value.state;
   if (

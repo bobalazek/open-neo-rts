@@ -784,6 +784,9 @@ the text leaves space for that disclosure mark.
   Empty, filtered, damaged and incompatible records retain actual feedback and
   available import/delete actions. Status and alert remain outside the body
   scroll region; narrow layouts scroll through the remaining record actions.
+  Compatible exports verify history and include portable frames/map identity;
+  actual verification progress reuses that status area and disables pending actions.
+  Incompatible entries remain downloadable unchanged for use with their game version.
 - **Replay transport and vision:** original play/pause, rewind, forward, vision
   and exit SVG pictograms reuse graphite controls and warm-metal strokes. Speed
   cycles through 0.5×, 1×, 2×, 4× and 8×; vision cycles through All and recorded

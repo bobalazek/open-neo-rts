@@ -134,8 +134,12 @@ export function isDebugSessionExport(value: unknown): value is DebugSessionExpor
 export function isMatchRecord(value: unknown): value is MatchRecord {
   return (
     isRecord(value) &&
-    value.format === 1 &&
-    Object.keys(value).length === 4 &&
+    (value.format === 1 || value.format === 2) &&
+    Object.keys(value).length === (value.format === 1 ? 4 : 5) &&
+    (value.format === 1 ||
+      (Array.isArray(value.keyframes) &&
+        value.keyframes.length >= 1 &&
+        value.keyframes.length <= 121)) &&
     isDebugSessionExport(value) &&
     value.tick > 0 &&
     value.tick <= 0x80000000 &&

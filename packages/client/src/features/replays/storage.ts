@@ -5,8 +5,7 @@ import { isRecord } from "../../worker/protocol";
 import { type SkirmishSetup, validateSkirmish } from "../skirmish/setup";
 
 export const MAX_REPLAY_BYTES = 64 * 1024 * 1024;
-export interface SavedReplay {
-  format: 1;
+type ReplayMetadata = {
   id: string;
   name: string;
   createdAt: number;
@@ -14,8 +13,12 @@ export interface SavedReplay {
   packs: readonly PackIdentity[];
   cosmeticHash: string;
   winner: number | null;
-  record: MatchRecord;
-}
+};
+export type SavedReplay = ReplayMetadata &
+  (
+    | { format: 1; record: MatchRecord & { format: 1 } }
+    | { format: 2; mapHash: string; record: MatchRecord & { format: 2 } }
+  );
 const fields = [
   "format",
   "id",
@@ -26,14 +29,18 @@ const fields = [
   "cosmeticHash",
   "winner",
   "record",
+  "mapHash",
 ];
 /** Cheap metadata check only; all imported histories must pass the isolated replay worker. */
 export function parseSavedReplay(value: unknown): SavedReplay {
   if (
     !isRecord(value) ||
-    Object.keys(value).length !== fields.length ||
+    Object.keys(value).length !== (value.format === 2 ? fields.length : fields.length - 1) ||
     Object.keys(value).some((key) => !fields.includes(key)) ||
-    value.format !== 1 ||
+    !(value.format === 1 || value.format === 2) ||
+    (value.format === 1
+      ? Object.hasOwn(value, "mapHash")
+      : typeof value.mapHash !== "string" || !/^[a-f0-9]{16}$/.test(value.mapHash)) ||
     typeof value.id !== "string" ||
     !/^[a-zA-Z0-9-]{1,80}$/.test(value.id) ||
     typeof value.name !== "string" ||
@@ -62,7 +69,11 @@ export function parseSavedReplay(value: unknown): SavedReplay {
         typeof pack.cosmeticHash === "string",
     ) ||
     !isRecord(value.record) ||
-    value.record.format !== 1 ||
+    value.record.format !== value.format ||
+    (value.format === 2 &&
+      (!Array.isArray(value.record.keyframes) ||
+        value.record.keyframes.length < 1 ||
+        value.record.keyframes.length > 121)) ||
     !Number.isSafeInteger(value.record.tick) ||
     Number(value.record.tick) < 1 ||
     Number(value.record.tick) > 144000 ||
