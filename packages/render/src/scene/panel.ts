@@ -403,7 +403,9 @@ export async function createPanelScene(
       }
       input.tabIndex = -1;
       for (const control of [input, caption]) {
-        control.onPointerEnterObservable.add(() => describe(field.tooltip, input));
+        control.onPointerEnterObservable.add(() =>
+          describe(content.fields.find((current) => current.id === field.id)?.tooltip, input),
+        );
         control.onPointerOutObservable.add(() => {
           tooltip.isVisible = false;
         });
@@ -738,6 +740,7 @@ export async function createPanelScene(
     for (const widget of widgets) {
       const field = content.fields.find((item) => item.id === widget.field.id);
       if (!field) continue;
+      widget.field = field;
       widget.input.isEnabled = !field.disabled;
       widget.input.alpha = field.disabled ? 0.65 : 1;
       if (widget.input instanceof Slider) {

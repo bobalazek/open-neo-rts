@@ -1,4 +1,5 @@
 // Engine, neutral scene and lighting. Map quality is owned by the renderer.
+/// <reference path="./webgpu-assets.d.ts" />
 
 import {
   type AbstractEngine,
@@ -11,6 +12,10 @@ import {
   Vector3,
   WebGPUEngine,
 } from "@babylonjs/core";
+import glslangJs from "@babylonjs/core/assets/glslang/glslang.js" with { type: "file" };
+import glslangWasm from "@babylonjs/core/assets/glslang/glslang.wasm" with { type: "file" };
+import twgslJs from "@babylonjs/core/assets/twgsl/twgsl.js" with { type: "file" };
+import twgslWasm from "@babylonjs/core/assets/twgsl/twgsl.wasm" with { type: "file" };
 
 // ponytail: imports the whole of @babylonjs/core; switch to deep imports if bundle size matters.
 export async function createEngine(
@@ -25,7 +30,16 @@ export async function createEngine(
     const abort = () => engine.dispose();
     signal?.addEventListener("abort", abort, { once: true });
     try {
-      await engine.initAsync();
+      await engine.initAsync(
+        {
+          jsPath: new URL(glslangJs, import.meta.url).href,
+          wasmPath: new URL(glslangWasm, import.meta.url).href,
+        },
+        {
+          jsPath: new URL(twgslJs, import.meta.url).href,
+          wasmPath: new URL(twgslWasm, import.meta.url).href,
+        },
+      );
       signal?.throwIfAborted();
       return engine;
     } catch {

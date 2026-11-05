@@ -131,6 +131,8 @@ export async function createModelPreview(canvas: HTMLCanvasElement) {
     canFire: () => actions?.canFire ?? false,
     parts: () => actions?.parts ?? [],
     partAngles: (name: string) => actions?.partAngles(name) ?? [0, 0, 0],
+    selectPart: (name: string | undefined, changed?: () => void) =>
+      actions?.selectPart(name, changed),
     posePart: (name: string, axis: number, degrees: number) =>
       actions?.posePart(name, axis, degrees),
     editSockets(specs: readonly SocketNode[], changed: () => void) {

@@ -3,8 +3,10 @@ import {
   Color3,
   MeshBuilder,
   Quaternion,
+  RotationGizmo,
   type Scene,
   StandardMaterial,
+  UtilityLayerRenderer,
   Vector3,
 } from "@babylonjs/core";
 import type { loadModel } from "./model";
@@ -43,6 +45,14 @@ export function createModelActions(
       part.node.rotation.copyFrom(part.rotation);
       part.node.rotationQuaternion = part.quaternion?.clone() ?? null;
     }
+  };
+  let partGizmo: RotationGizmo | undefined;
+  let partLayer: UtilityLayerRenderer | undefined;
+  let selectedPart: (typeof parts)[number] | undefined;
+  let partChanged: (() => void) | undefined;
+  const hidePartGizmo = () => {
+    selectedPart = undefined;
+    if (partGizmo) partGizmo.attachedNode = null;
   };
   const poseParts = () => {
     if (state !== "live") return;
@@ -139,6 +149,41 @@ export function createModelActions(
   }
   return {
     parts: parts.map((part) => part.node.name),
+    selectPart(name: string | undefined, changed?: () => void) {
+      const part = state === "live" && parts.find((part) => part.node.name === name);
+      partChanged = changed;
+      if (!part) {
+        hidePartGizmo();
+        return;
+      }
+      if (!partGizmo) {
+        partLayer = new UtilityLayerRenderer(scene);
+        partGizmo = new RotationGizmo(partLayer);
+        partGizmo.onDragStartObservable.add(() => {
+          clear();
+          live.play("");
+          restoreParts();
+          poseParts();
+        });
+        partGizmo.onDragObservable.add(() => {
+          if (!selectedPart) return;
+          const rotation =
+            selectedPart.node.rotationQuaternion ??
+            Quaternion.FromEulerVector(selectedPart.node.rotation);
+          const angles = selectedPart.rest
+            .conjugate()
+            .multiply(rotation)
+            .normalize()
+            .toEulerAngles();
+          selectedPart.angles = angles.asArray().map((angle) => (angle * 180) / Math.PI);
+          restoreParts();
+          poseParts();
+          partChanged?.();
+        });
+      }
+      selectedPart = part;
+      if (partGizmo.attachedNode !== part.node) partGizmo.attachedNode = part.node;
+    },
     partAngles(name: string) {
       return [...(parts.find((part) => part.node.name === name)?.angles ?? [0, 0, 0])];
     },
@@ -203,6 +248,7 @@ export function createModelActions(
     },
     destroy() {
       if (state !== "live") return;
+      hidePartGizmo();
       clear();
       for (const pose of wreckPose) {
         const source = pose.source;
@@ -225,6 +271,7 @@ export function createModelActions(
       } else scatter();
     },
     reset() {
+      hidePartGizmo();
       clear();
       restoreParts();
       for (const part of parts) part.angles.fill(0);
@@ -264,6 +311,8 @@ export function createModelActions(
       wreck?.setTeamColor(hex);
     },
     dispose() {
+      partGizmo?.dispose();
+      partLayer?.dispose();
       scene.onAfterAnimationsObservable.remove(posing);
       clear();
       material?.dispose();

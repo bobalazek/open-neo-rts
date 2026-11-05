@@ -5,7 +5,8 @@ now supplies native Move/Rotate gizmos, model-local numeric fields and attachmen
 creation. Apply validates/reimports a preview; Cancel restores the original
 nodes, and Download GLB preserves geometry/animation chunks in a separate copy.
 Part controls and [material-slot assignments](../../project/decisions/2026-11-05-model-material-mappings.md)
-are also implemented. Free part gizmos and the remaining asset editor remain work.
+are also implemented. [Part rotation rings](../../project/decisions/2026-11-05-model-part-gizmos.md)
+extend the sliders; the remaining asset editor is still open.
 
 **Route:** `/tools/content` (`/tools/content?model=…` opens the model viewer on its own) · **From:** Map editor menu, Home (developer builds), PR preview links · **Phase:** 2, model viewer first, then definition editing ([roadmap](../../project/roadmap.md#what-each-phase-builds)).
 
@@ -63,7 +64,11 @@ The 3D panel works on its own too: drop any GLB to check it before it has a defi
 The delivered Part controls action reveals local XYZ degree sliders for the
 authored part list (conventional part names for standalone files). Fire uses the
 posed muzzle; Restore model or playing a clip returns to rest. These inspection
-poses do not alter downloaded model bytes. Free part gizmos remain separate work.
+poses do not alter downloaded model bytes. Opening Part controls also attaches
+native rotation rings to the selected pivot. Dragging preserves sub-degree
+precision while the sliders display rounded degrees and provide keyboard access.
+Hiding controls or entering socket mode detaches the rings. Babylon's local
+handles require uniform world scale; numeric sliders remain available otherwise.
 
 Visuals lists imported GLB material names with a native slot selector for each.
 Model default removes an override; conventional slot names remain implicit.

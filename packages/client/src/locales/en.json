@@ -753,7 +753,7 @@
   "ui.parts.x": "Rotation X (°)",
   "ui.parts.y": "Rotation Y (°)",
   "ui.parts.z": "Rotation Z (°)",
-  "ui.parts.help": "Rotate the authored local pivot. Preview only; downloaded GLB stays unchanged.",
+  "ui.parts.help": "Drag a rotation ring on the model or use the degree sliders to check its local pivot. Preview only; downloaded GLB stays unchanged.",
   "ui.sockets.title": "Socket editing",
   "ui.sockets.selected": "Socket",
   "ui.sockets.mode": "Gizmo",

@@ -5,11 +5,12 @@ import { parseGlb } from "../../../packages/content/src/assets/glb";
 import { contentToolsFixture } from "./content-tools-fixture";
 import { nativeFrame } from "./native-paint";
 
-test("native part sliders pose authored pivots without changing the downloadable model", async ({
+test("native part sliders and rotation rings pose authored pivots without changing the downloadable model", async ({
   page,
 }, info) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("https://cdn.babylonjs.com/**", (route) => route.abort());
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/tools/content?model=core.unit:eastern-collective/dragon-tank");
   await expect(page.locator("#game")).toHaveAttribute("data-model", "Dragon Tank", {
@@ -21,6 +22,46 @@ test("native part sliders pose authored pivots without changing the downloadable
   const part = page.getByLabel("Model part", { exact: true });
   const y = page.getByRole("slider", { name: "Rotation Y (°)", exact: true });
   await expect(part).toHaveValue("turret");
+  await nativeFrame(page);
+  const ring = await page.evaluate(
+    () =>
+      new Promise<{ x: number; y: number } | null>((resolve) => {
+        requestAnimationFrame(() => {
+          const world = document.querySelector<HTMLCanvasElement>("#game")!;
+          const canvas = document.createElement("canvas");
+          canvas.width = world.width;
+          canvas.height = world.height;
+          const context = canvas.getContext("2d")!;
+          context.drawImage(world, 0, 0);
+          const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+          const bounds = world.getBoundingClientRect();
+          const limit = document
+            .querySelector(".content-tools-controls")!
+            .getBoundingClientRect().left;
+          for (let row = 0; row < canvas.height; row++)
+            for (let column = 0; column < canvas.width; column++) {
+              const offset = (row * canvas.width + column) * 4;
+              const red = data[offset]!,
+                green = data[offset + 1]!,
+                blue = data[offset + 2]!;
+              const x = bounds.left + (column * bounds.width) / canvas.width;
+              if (x < limit - 12 && green > 70 && green > red * 1.7 && green > blue * 1.7) {
+                resolve({ x, y: bounds.top + (row * bounds.height) / canvas.height });
+                return;
+              }
+            }
+          resolve(null);
+        });
+      }),
+  );
+  expect(ring, "the native green rotation ring is painted over the model").not.toBeNull();
+  await page.mouse.move(ring!.x, ring!.y);
+  await page.mouse.down();
+  await page.mouse.move(ring!.x + 45, ring!.y + 20, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(async () => Math.abs(Number(await y.inputValue()))).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Restore model", exact: true }).press("Enter");
+  await expect(y).toHaveValue("0");
   await part.focus();
   for (const axis of ["X", "Y", "Z"]) {
     await page.keyboard.press("Tab");
@@ -58,10 +99,21 @@ test("native part sliders pose authored pivots without changing the downloadable
     element.dispatchEvent(new Event("input", { bubbles: true }));
   });
   await expect(x).toHaveValue("-15");
+  await page.evaluate(() => Reflect.get(window, "contentToolPaint").clear());
   await x.focus();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...Reflect.get(window, "contentToolPaint").keys()].some((value: string) =>
+          value.startsWith("barrel · Rotation X"),
+        ),
+      ),
+    )
+    .toBe(true);
   await nativeFrame(page);
   await page.screenshot({ path: info.outputPath("parts-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
+  await y.focus();
   await x.focus();
   await nativeFrame(page);
   await page.screenshot({ path: info.outputPath("parts-mobile.png") });
@@ -80,6 +132,19 @@ test("native part sliders pose authored pivots without changing the downloadable
   await part.selectOption("turret");
   await expect(y).toHaveValue("179");
   await page.getByRole("button", { name: "Restore model", exact: true }).press("Enter");
+  await expect(y).toHaveValue("0");
+  await page.getByRole("button", { name: "Hide part controls", exact: true }).press("Enter");
+  await expect(page.locator("[data-part-controls]")).toBeHidden();
+  await button.press("Enter");
+  await expect(y).toHaveValue("0");
+  await page.getByRole("button", { name: "Destroy", exact: true }).press("Enter");
+  await expect(y).toBeDisabled();
+  await page.getByRole("button", { name: "Restore model", exact: true }).press("Enter");
+  await expect(y).toBeEnabled();
+  await page.getByRole("button", { name: "Edit sockets", exact: true }).press("Enter");
+  await expect(page.locator("[data-part-controls]")).toBeHidden();
+  await page.getByRole("button", { name: "Cancel socket edits", exact: true }).press("Enter");
+  await expect(page.locator("[data-part-controls]")).toHaveJSProperty("hidden", false);
   await expect(y).toHaveValue("0");
   await page.locator('input[type="file"]').setInputFiles({
     name: "no-parts.glb",

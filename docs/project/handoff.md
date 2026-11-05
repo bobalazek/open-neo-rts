@@ -1,5 +1,51 @@
 # Handoff
 
+## Day-end snapshot, 2026-11-05
+
+The owner requested wrapping up and pausing for today. This snapshot supersedes
+older delivery status below. All phases remain incomplete; resume from tasks.md.
+Browser support is current Chrome stable and current Playwright WebKit only,
+one standard setup each. Performance acceptance remains deferred.
+
+Public remote main is `6fa2840dfbe35ca5d7ac8e9954ff4f34832c3f24`, SIM60.
+PRs #300 (part sliders), #301 (original announcer) and #302 (native editor audio
+decoding) are merged. PR #303, material mappings, remains open at `a8c91d4`.
+Its CI 41983440639 passed verification/content and all 119 Chrome journeys;
+WebKit passed 94, skipped 24 and failed the announcer's first native start.
+Material authoring passed. The preserved announcer probe decoded the correct
+37.456208-second atlas in 1482ms without an error, but recorded zero starts.
+The cause between decode and start is unproven; do not raise timeouts or claim
+a codec diagnosis. Raw logs and the failure artifact are under
+`/tmp/neo-material-mappings-ci-{chrome,webkit}.log` and
+`/tmp/neo-material-mappings-ci-webkit-artifact`.
+
+`/tmp/neo-model-part-gizmos`, branch `codex/model-part-gizmos`, holds the next
+coherent reviewed task on top of PR #303: actual native rotation rings, precise
+local poses with keyboard sliders, lifecycle cleanup and current part help.
+It also bundles Babylon's existing shader compiler files and fixes root asset
+URLs for direct built-route loads. Native handles require uniform world scale;
+numeric sliders remain available. Final source fix/typecheck/test/build passed,
+ten content-tools journeys passed against static built output, and two final
+tooltip journeys passed after the review correction. Independent technical
+review and both named visual fixes are closed; broader editor/phase acceptance
+and hosted CI for this candidate remain open. Preserve the first failures in
+`/tmp/neo-part-gizmos-*.log`; temporary built-check scripts are copied to
+`/tmp/neo-part-gizmos-{static-check.ts,playwright.config.ts}`.
+
+The SIM60 qualification process remains live (exec session 88433), using the
+frozen root checkout at `b10d0f89436ced48a0cf489f464d852d5d5a8f93`, tree
+`7b18f84529c7d8523845ddc8b528906fbc4c8edb`. Do not advance or edit that checkout
+until the existing process finishes. Preserve
+`/tmp/neo-sim60-qualification-20261105` and its `.log`; seeds 1–17 have completed
+naturally and reproducibly so far. This is incomplete evidence, not a complete
+twenty-seed qualification. Do not cancel, overwrite or restart the batch.
+
+Next: diagnose the announcer start failure, finish PR #303, then rebase/qualify
+the part-gizmo task and merge it. A prepared diagnostic-only test patch and
+configuration are saved at `/tmp/neo-announcer-start-diagnostic.patch` and
+`/tmp/neo-announcer-diagnostic.config.ts`; they typechecked but were not run.
+The `/tmp/neo-announcer-start-recovery` worktree is clean, with no playback fix.
+
 ## SIM59 qualification completed, 2026-11-04
 
 The [twenty-seed result](./learnings/2026-11-04-sim59-complete-matches.md) is now

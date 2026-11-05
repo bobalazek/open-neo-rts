@@ -1,5 +1,7 @@
 # Decisions
 
+- [2026-11-05 — Model part rotation gizmos](./2026-11-05-model-part-gizmos.md) — Native rotation rings share precise local inspection poses with the existing keyboard sliders.
+
 - [2026-11-05 — Model material-slot assignments](./2026-11-05-model-material-mappings.md) — Imported material names, native Visuals choices and shared role-aware model imports, preserving original GLB bytes.
 
 - [2026-11-05 — Model part controls](./2026-11-05-model-part-controls.md) — Native local-pivot rotation sliders, posed firing and unchanged GLB downloads.
