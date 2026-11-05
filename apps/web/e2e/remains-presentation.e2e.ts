@@ -18,19 +18,18 @@ test("actual original combat remains render, pick and disappear with canonical l
     }),
   ) as { terrain: MatchSetup["map"]["terrain"]; snapshots: SeatSnapshot[] };
   const directory = mkdtempSync(resolve(tmpdir(), "neo-remains-proof-"));
-  const output = resolve(directory, "proof.js");
   execFileSync(
     "bun",
     [
       "build",
       "packages/render/src/units/remains-proof.ts",
       "--target=browser",
-      "--outfile",
-      output,
+      "--outdir",
+      directory,
     ],
     { cwd: resolve(import.meta.dirname, "../../..") },
   );
-  const script = readFileSync(output);
+  const script = readFileSync(resolve(directory, "remains-proof.js"));
   await page.route("**/remains-proof", (route) =>
     route.fulfill({
       contentType: "text/html",

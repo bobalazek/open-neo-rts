@@ -30,15 +30,10 @@ export async function createEngine(
     const abort = () => engine.dispose();
     signal?.addEventListener("abort", abort, { once: true });
     try {
+      // Root paths in dev and build (publicPath "/"); dev import.meta.url is file://.
       await engine.initAsync(
-        {
-          jsPath: new URL(glslangJs, import.meta.url).href,
-          wasmPath: new URL(glslangWasm, import.meta.url).href,
-        },
-        {
-          jsPath: new URL(twgslJs, import.meta.url).href,
-          wasmPath: new URL(twgslWasm, import.meta.url).href,
-        },
+        { jsPath: glslangJs, wasmPath: glslangWasm },
+        { jsPath: twgslJs, wasmPath: twgslWasm },
       );
       signal?.throwIfAborted();
       return engine;

@@ -67,6 +67,7 @@ function state(tick: number, entities: PresentedEntity[]): SeatSnapshot {
 }
 function fixture(audible = true) {
   const played: AudioPlayOptions[] = [],
+    preloads: unknown[] = [],
     subtitles: string[] = [],
     notices: string[] = [];
   let stopped = 0,
@@ -94,13 +95,14 @@ function fixture(audible = true) {
     groups: (index) => groups.get(index) ?? [],
     source: "/announcer.ogg",
     lines,
-    mixer: { scope: () => scope },
+    mixer: { scope: () => scope, preload: (source) => preloads.push(source) },
     subtitle: (value) => subtitles.push(value),
     notice: (value) => notices.push(value),
   });
   return {
     owner,
     played,
+    preloads,
     subtitles,
     notices,
     groups,
@@ -118,6 +120,7 @@ test("a cold first decode gets the bounded three-second start window instead of 
     f.played.push(options);
     return decoded.promise;
   };
+  expect(f.preloads).toEqual(["/announcer.ogg"]);
   const hq = entity("hq", base.id);
   f.owner.accept(state(0, [hq]), true, 0);
   const power = { ...state(1, [hq]), power: [{ force: 0, produced: 0, used: 10, brownout: true }] };

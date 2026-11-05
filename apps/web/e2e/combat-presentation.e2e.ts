@@ -158,13 +158,12 @@ test("real projected combat events play original clips and disposable flight, im
   test.setTimeout(60000);
   const directory = mkdtempSync(resolve(tmpdir(), "neo-combat-proof-"));
   try {
-    const output = resolve(directory, "proof.js");
     execFileSync(
       "bun",
-      ["build", "apps/web/e2e/combat-proof.ts", "--target=browser", "--outfile", output],
+      ["build", "apps/web/e2e/combat-proof.ts", "--target=browser", "--outdir", directory],
       { cwd: resolve(import.meta.dirname, "../../..") },
     );
-    const script = readFileSync(output, "utf8");
+    const script = readFileSync(resolve(directory, "combat-proof.js"), "utf8");
     const model = readFileSync(
       resolve(
         import.meta.dirname,

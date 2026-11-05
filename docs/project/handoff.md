@@ -2,49 +2,28 @@
 
 ## Day-end snapshot, 2026-11-05
 
-The owner requested wrapping up and pausing for today. This snapshot supersedes
-older delivery status below. All phases remain incomplete; resume from tasks.md.
+The owner requested wrapping up for today. This snapshot supersedes older
+delivery status below. All phases remain incomplete; resume from tasks.md.
 Browser support is current Chrome stable and current Playwright WebKit only,
 one standard setup each. Performance acceptance remains deferred.
 
-Public remote main is `6fa2840dfbe35ca5d7ac8e9954ff4f34832c3f24`, SIM60.
-PRs #300 (part sliders), #301 (original announcer) and #302 (native editor audio
-decoding) are merged. PR #303, material mappings, remains open at `a8c91d4`.
-Its CI 41983440639 passed verification/content and all 119 Chrome journeys;
-WebKit passed 94, skipped 24 and failed the announcer's first native start.
-Material authoring passed. The preserved announcer probe decoded the correct
-37.456208-second atlas in 1482ms without an error, but recorded zero starts.
-The cause between decode and start is unproven; do not raise timeouts or claim
-a codec diagnosis. Raw logs and the failure artifact are under
-`/tmp/neo-material-mappings-ci-{chrome,webkit}.log` and
-`/tmp/neo-material-mappings-ci-webkit-artifact`.
+PRs #300 to #304 are merged (SIM60). Main CI after #304 failed in both browser
+jobs: renderer proof bundles could not use `--outfile` once the engine shipped
+Babylon's shader compiler files, and the dev server resolved those files to
+`file:` URLs, so the rotation-ring drag raised Bun's error overlay. The
+`codex/main-ci-repair` branch passes the root asset paths unchanged and builds
+those proofs to a directory.
 
-`/tmp/neo-model-part-gizmos`, branch `codex/model-part-gizmos`, holds the next
-coherent reviewed task on top of PR #303: actual native rotation rings, precise
-local poses with keyboard sliders, lifecycle cleanup and current part help.
-It also bundles Babylon's existing shader compiler files and fixes root asset
-URLs for direct built-route loads. Native handles require uniform world scale;
-numeric sliders remain available. Final source fix/typecheck/test/build passed,
-ten content-tools journeys passed against static built output, and two final
-tooltip journeys passed after the review correction. Independent technical
-review and both named visual fixes are closed; broader editor/phase acceptance
-and hosted CI for this candidate remain open. Preserve the first failures in
-`/tmp/neo-part-gizmos-*.log`; temporary built-check scripts are copied to
-`/tmp/neo-part-gizmos-{static-check.ts,playwright.config.ts}`.
+The intermittent WebKit announcer failure was a cold first line: in hosted CI,
+fetching and decoding the 37-second atlas took 2.2 seconds in a passing run and
+longer in the failing one, past the line's 3-second start window, so the line
+was dropped. The mixer now preloads the atlas into its buffer cache when a
+match starts, on an engine a gesture already started, and the journey checks
+the decode happens before the first line. Five WebKit repeats passed locally.
 
-The SIM60 qualification process remains live (exec session 88433), using the
-frozen root checkout at `b10d0f89436ced48a0cf489f464d852d5d5a8f93`, tree
-`7b18f84529c7d8523845ddc8b528906fbc4c8edb`. Do not advance or edit that checkout
-until the existing process finishes. Preserve
-`/tmp/neo-sim60-qualification-20261105` and its `.log`; seeds 1–17 have completed
-naturally and reproducibly so far. This is incomplete evidence, not a complete
-twenty-seed qualification. Do not cancel, overwrite or restart the batch.
-
-Next: diagnose the announcer start failure, finish PR #303, then rebase/qualify
-the part-gizmo task and merge it. A prepared diagnostic-only test patch and
-configuration are saved at `/tmp/neo-announcer-start-diagnostic.patch` and
-`/tmp/neo-announcer-diagnostic.config.ts`; they typechecked but were not run.
-The `/tmp/neo-announcer-start-recovery` worktree is clean, with no playback fix.
+The SIM60 qualification batch in `/tmp/neo-sim60-qualification-20261105`
+finished: all twenty seeds completed naturally and reproducibly below the
+60,000-tick limit (longest 56,772). No learning note records it yet.
 
 ## SIM59 qualification completed, 2026-11-04
 
