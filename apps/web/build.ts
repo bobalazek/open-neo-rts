@@ -9,6 +9,7 @@ const results = await Promise.all([
   Bun.build({
     entrypoints: ["./index.html"],
     outdir: "./dist",
+    publicPath: "/",
     target: "browser",
     minify: true,
     plugins: [catalogPlugin, normalCatalogPlugin],

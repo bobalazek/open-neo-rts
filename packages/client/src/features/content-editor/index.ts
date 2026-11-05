@@ -86,6 +86,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   partsButton.type = "button";
   partsButton.disabled = true;
   partsButton.textContent = text("ui.parts.show");
+  partsButton.title = text("ui.parts.help");
+  partsButton.setAttribute("data-contextual-help", "");
   actions.append(partsButton);
   const partsPanel = document.createElement("div");
   partsPanel.dataset.partControls = "";
@@ -131,11 +133,18 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     part.disabled = partsButton.disabled || !preview?.canDestroy();
     const angles = preview?.partAngles(part.value) ?? [0, 0, 0];
     partAxes.forEach((input, index) => {
+      const degrees = Math.round(angles[index]!);
       input.disabled = part.disabled;
-      input.value = String(angles[index]);
-      input.setAttribute("aria-valuetext", `${angles[index]}°`);
+      input.value = String(degrees);
+      input.title = `${part.value} · ${input.getAttribute("aria-label")}. ${text("ui.parts.help")}`;
+      input.setAttribute("aria-valuetext", `${degrees}°`);
     });
     partsButton.textContent = text(partsPanel.hidden ? "ui.parts.show" : "ui.parts.hide");
+    preview?.selectPart(partsPanel.hidden || part.disabled ? undefined : part.value, () => {
+      clip.value = "";
+      syncParts();
+      panel.update();
+    });
   }
   part.addEventListener("change", syncParts, { signal: events.signal });
   partsButton.addEventListener(

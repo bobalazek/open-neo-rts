@@ -25,8 +25,8 @@ The signature interaction is changing a real model's presentation while reading
 the same project validator used by the CLI. A failed candidate retains the last
 good model and offers retry. Unknown installed links cannot fetch arbitrary
 remote models. Model inspection remains available beside the authoring extension
-below; socket gizmos, part inspection sliders and material assignments are
-implemented, while free part gizmos remain phase-2 work.
+below; socket gizmos, part inspection sliders/native rotation rings and material
+assignments are implemented. Remaining editor scope stays explicit below.
 
 ## Definition authoring extension
 
@@ -87,7 +87,7 @@ export failure preserving the draft for retry. Matrix-specific fixtures were not
 exercised; the strict shared-conformance failure path was source-reviewed.
 The single detector result was empty; it was not rerun. This bounded evidence
 does not qualify physical touch/IME, screen readers or hardware stress, or close
-free part gizmos, 2-38b2 parity, the full editor or the whole phase.
+2-38b2 parity, the full editor or the whole phase.
 
 ## Sibling-definition creation extension
 
@@ -230,7 +230,7 @@ than letting it advance offscreen. Shared no-options preview callers remain
 compatible. No source, save, normal match or simulation state changes.
 
 This records isolated firing/destruction within 2-38c2. Full 2-38b2
-validation/formatter parity, free part gizmos and damage-socket smoke/fire
+validation/formatter parity and damage-socket smoke/fire
 previews remain open; socket editing/GLB copy export is recorded above. Current
 Chrome/WebKit browser checks do not qualify Firefox, physical touch/IME, screen
 readers or hardware FPS. The decision is
@@ -246,7 +246,7 @@ No new identity, tokens, composition, assets or decorative motion are introduced
 Definitions use their authored part names; standalone art uses conventional
 hull/turret/barrel/rotor/legs nodes. Models without parts add no empty form.
 
-Each slider shows the actual current degree value and offsets its node's authored
+Each slider shows the rounded current degree value and offsets its node's authored
 local rest quaternion. Pointer dragging and semantic range input share values.
 Tab reaches the picker and all three axes; arrow keys change degrees with native
 focus mirrored from semantic controls. Explicit `tabIndex=0` retains sequential
@@ -268,11 +268,55 @@ Finish review opened the four fresh captures
 `.impeccable/review/parts-mobile-chromium.png` and
 `.impeccable/review/parts-mobile-webkit.png`, returning SHIP with no fixes.
 The detector and context discovery were not rerun. This bounded evidence does not
-qualify physical touch/IME, screen readers, Firefox or hardware performance. Free
-part gizmos, remaining documented tabs/validation, 2-38b2 parity
-and damage-socket smoke/fire previews remain open; the whole editor and phase are
-not complete. Behavior is recorded in
+qualify physical touch/IME, screen readers, Firefox or hardware performance.
+Remaining documented tabs/validation, 2-38b2 parity and damage-socket smoke/fire
+previews remain open; the whole editor and phase are not complete. Behavior is recorded in
 `../../../../docs/project/decisions/2026-11-05-model-part-controls.md`.
+
+## Part rotation-ring extension
+
+This code-led Operate extension attaches native Babylon rotation rings to the
+selected authored part when Part controls opens. The original model remains the
+subject, left on desktop and above the scrolling pane when narrow. Graphite
+Command Stations, Arial, graphite fields, ivory focus and brass actions remain
+authoritative; no new identity, tokens, composition or artwork accompanies it.
+
+Rings and the existing degree sliders share local offsets from the actual authored
+rest quaternion. Dragging stops clip playback and preserves sub-degree angles;
+slider captions show rounded degrees and semantic range input remains the keyboard
+alternative. Focus help names the current part and axis even when the picker is
+scrolled out of view. Shared native field metadata refreshes with content updates,
+so focus and pointer help use the current identity rather than the initial field.
+
+Closing the disclosure, definition/socket editing, destruction, replacement and
+shared resets detach the rings. Visible controls can reselect on ordinary refresh.
+Each preview owns and disposes its utility layer. Fire retains the posed muzzle;
+restore, clip, health and socket-entry resets retain their established behavior.
+Inspection poses leave source geometry, animation keys, definitions and simulation
+state untouched. Download GLB retains opened bytes apart from separately applied
+socket edits. Babylon's native rings require uniform world scale; existing sliders
+remain available outside that constraint.
+
+The native angle indicator uses four raw compiler JS/WASM assets already shipped
+in pinned Babylon. Their file-loader URLs resolve against the emitted module;
+the HTML build's `publicPath: "/"` matches existing root app routing and direct
+`/tools/content` loads. No new dependency or binary asset enters git. Behavior is
+recorded in `../../../../docs/project/decisions/2026-11-05-model-part-gizmos.md`.
+
+All ten content-tools journeys passed against static built output in
+`/tmp/neo-part-gizmos-route-browser.log`, using current Chrome stable and current
+Playwright WebKit, one standard setup each. The four corrected-tooltip captures
+are `.impeccable/review/gizmos-{desktop,mobile}-{chromium,webkit}.png`.
+Final built-output tooltip journeys passed 2/2 in
+`/tmp/neo-part-gizmos-review-browser.log`. The reviewer opened all four recaptures
+and returned SHIP at the two named-fix scope: help says barrel matching the picker,
+including narrow views, and stale deferred-gizmo wording is resolved. Full
+11-group typecheck, unit tests and build passed in
+`/tmp/neo-part-gizmos-review-{types,tests,build}.log`. Context discovery was not
+rerun; this task's detector ran once and returned `[]` in
+`/tmp/neo-part-gizmos-design-detect.json`. Remaining documented tabs/validation,
+2-38b2 parity and damage-socket smoke/fire previews remain open; this extension
+does not close the whole editor or phase.
 
 ## Material-assignment extension
 
@@ -321,6 +365,6 @@ Actual native keyboard selection, invalid all-neutral refusal, JSON save/default
 clearing, model swap/Discard and external-conflict Reload were exercised.
 Support is scoped to current Chrome stable and current Playwright WebKit, one
 standard setup each. Physical touch, screen readers and hardware performance are
-outside this evidence. Free part gizmos, remaining documented tabs/validation,
+outside this evidence. Remaining documented tabs/validation,
 2-38b2 parity and damage-socket smoke/fire previews remain open; this does not
 close the whole editor or phase.

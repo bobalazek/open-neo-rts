@@ -261,8 +261,10 @@ source.
 - Part controls (2-38d2) disclose native XYZ degree sliders for authored part
   pivots, with sequential keyboard focus and readable values. Fire retains the
   posed muzzle; Restore model, clips, health and socket editing return to rest.
-  These inspection poses never alter downloaded GLB bytes. Free part gizmos
-  and full editor validation remain open. See
+  These inspection poses never alter downloaded GLB bytes. Native rotation rings
+  (2-38d4) now share precise local poses with those sliders; handles detach on
+  closing controls, editing sockets and destruction. Full editor validation
+  remains open. See
   `../../docs/project/decisions/2026-11-05-model-part-controls.md`.
 - Visuals material assignments (2-38d3) list imported GLB names as native slot
   choices. Model default removes a partial override, retaining conventional slot

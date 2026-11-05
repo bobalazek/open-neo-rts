@@ -138,9 +138,10 @@ existing diagnostics. True-peak meter parity, source freshness and exact
 formatter parity remain 2-38b2. Asset editing
 now includes native socket Move/Rotate gizmos, local numeric fields and checked
 GLB copy exports. Native Part controls reveal an authored-part picker and XYZ
-degree sliders for inspection poses around actual local rest pivots. Free part
-gizmos, remaining documented tabs/validation and damage-socket smoke/fire previews
-remain open.
+degree sliders and selected-part native rotation rings for inspection poses
+around actual local rest pivots. Rings preserve sub-degree local offsets while
+sliders show rounded degrees and remain the keyboard alternative. Remaining
+documented tabs/validation and damage-socket smoke/fire previews remain open.
 
 Visuals extends the same framed choices with actual imported GLB material names
 and schema slot assignments. Contextual help begins with the actual material
@@ -206,7 +207,8 @@ Scenario configuration follows
 Isolated model actions use `../render/src/units/preview-actions.ts` and follow
 `../../docs/project/decisions/2026-11-04-model-action-previews.md`.
 Part controls use the same preview actions and shared native panel, following
-`../../docs/project/decisions/2026-11-05-model-part-controls.md`.
+`../../docs/project/decisions/2026-11-05-model-part-controls.md` and
+`../../docs/project/decisions/2026-11-05-model-part-gizmos.md`.
 Material assignments follow
 `../../docs/project/decisions/2026-11-05-model-material-mappings.md`.
 Pending route editing follows the WAYPOINTS EXTENSION in
@@ -689,16 +691,25 @@ the text leaves space for that disclosure mark.
   a separate copy: appended node indices preserve geometry, animations, materials,
   metadata and every following GLB chunk. Original parts and source files remain
   intact; part inspection poses and definition material assignments are separate.
-- **Model part controls:** the native disclosure reveals an authored-part picker
-  and XYZ sliders bounded to −180…180°, with readable current degree captions.
-  Local offsets use each actual node's authored rest pivot. Pointer and semantic
-  range input share values; Tab and arrow keys retain native focus, including
-  explicit sequential range focus in WebKit. Focus scrolling keeps the slider's
-  caption visible. Changing a part stops the clip; Fire retains the pose and
-  samples its actual muzzle. Restore model, clip playback, health changes and
-  socket-entry restore rest. These are inspection poses: Download GLB retains the
-  opened bytes and only separately applied socket edits. Free part gizmos and
-  remaining documented editor tabs/validation stay open.
+- **Model part controls:** the native disclosure reveals an authored-part picker,
+  selected-part rotation rings and XYZ sliders bounded to −180…180°. Rings and
+  sliders share offsets around the actual local authored rest pivot, retaining
+  sub-degree poses while captions show rounded degrees. Tab and arrow keys retain
+  native focus, including explicit sequential range focus in WebKit. Focus
+  scrolling keeps captions visible; help names the current part and axis. Shared
+  native fields refresh metadata so focus help follows the current selection.
+  Changing a part or dragging a ring stops the clip; Fire retains the pose and
+  samples its actual muzzle. Closing the disclosure, definition/socket editing,
+  destruction, resets and replacement detach rings; visible controls may reselect
+  on refresh. Each preview owns and disposes its utility layer. Restore model,
+  clip playback, health changes and socket-entry restore rest. Babylon's native
+  rings require uniform world scale; sliders remain available outside that
+  constraint. Download GLB retains opened bytes and only separately applied
+  socket edits. Remaining documented editor tabs/validation stay open.
+  The indicator uses four raw compiler JS/WASM assets already shipped in pinned
+  Babylon, with module-relative URLs. The HTML build's root public path matches
+  existing app routing and direct `/tools/content` loads. No dependency or binary
+  asset is added to git.
 - **Model material assignments:** Visuals lists imported GLB names with the
   schema's eight slot choices. Each hover/focus explanation begins with the
   actual material caption, retaining identity when help covers its field.
@@ -733,9 +744,9 @@ the text leaves space for that disclosure mark.
   adds decode, silence, finite-sample and sample-level refusals using those same
   diagnostics, without audible output. True-peak meter parity, source freshness
   and exact formatter parity remain 2-38b2;
-  socket editing/GLB copy export, part inspection sliders and material assignments
-  are implemented, while free part gizmos, remaining documented tabs/validation
-  and damage-socket smoke/fire previews remain open.
+  socket editing/GLB copy export, part inspection sliders/native rotation rings
+  and material assignments are implemented, while remaining documented
+  tabs/validation and damage-socket smoke/fire previews remain open.
 - **Sibling-definition creation:** New from selected uses a clean unit, structure
   or prop as an authored template. Two framed fields collect a new display name
   and sibling folder name in the same native pane; the original model and source

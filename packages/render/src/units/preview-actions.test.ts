@@ -1,8 +1,10 @@
 import { expect, test } from "bun:test";
 import {
+  FreeCamera,
   MeshBuilder,
   NullEngine,
   Quaternion,
+  RotationGizmo,
   Scene,
   StandardMaterial,
   TransformNode,
@@ -94,6 +96,75 @@ test("part controls rotate local pivots, retain posed muzzles when firing, and r
     expect(barrel.rotation.x).toBe(0.1);
     expect(turret.rotation.z).toBe(0.2);
   } finally {
+    actions.dispose();
+    f.dispose();
+  }
+});
+
+test("native part rings retain small drags around authored rest and detach across lifecycle changes", () => {
+  const f = fixture();
+  new FreeCamera("preview camera", new Vector3(10, 10, 10), f.scene).setTarget(Vector3.Zero());
+  f.root.rotation.set(0.2, 0.3, 0.4);
+  f.root.scaling.setAll(2);
+  const turret = new TransformNode("turret", f.scene),
+    barrel = new TransformNode("barrel", f.scene);
+  turret.parent = f.root;
+  barrel.parent = turret;
+  const rest = Quaternion.FromEulerAngles(0.3, 0.2, 0.1);
+  turret.rotationQuaternion = rest.clone();
+  f.live.nodes.push(turret, barrel);
+  const actions = createModelActions(f.scene, f.live);
+  const descriptor = Object.getOwnPropertyDescriptor(RotationGizmo.prototype, "attachedNode")!;
+  let native: RotationGizmo | undefined;
+  // Capture the public native setter without adding a production inspection API.
+  Object.defineProperty(RotationGizmo.prototype, "attachedNode", {
+    ...descriptor,
+    set(node) {
+      native = this;
+      descriptor.set!.call(this, node);
+    },
+  });
+  try {
+    let changed = 0;
+    actions.selectPart("turret", () => changed++);
+    Object.defineProperty(RotationGizmo.prototype, "attachedNode", descriptor);
+    f.scene.render();
+    const initial = turret.computeWorldMatrix(true).clone();
+    const point = (angle: number) =>
+      Vector3.TransformCoordinates(new Vector3(0, Math.cos(angle), Math.sin(angle)), initial);
+    const drag = native!.xGizmo.dragBehavior;
+    drag.onDragStartObservable.notifyObservers({ dragPlanePoint: point(0) } as never);
+    for (let step = 1; step <= 100; step++) {
+      turret.computeWorldMatrix(true);
+      drag.onDragObservable.notifyObservers({
+        dragPlanePoint: point((step * 0.2 * Math.PI) / 180),
+      } as never);
+    }
+    expect(actions.partAngles("turret")[0]).toBeCloseTo(20, 3);
+    expect(changed).toBe(100);
+    expect(
+      turret.rotationQuaternion!.equalsWithEpsilon(
+        rest.multiply(Quaternion.FromEulerAngles(Math.PI / 9, 0, 0)),
+        0.00001,
+      ),
+    ).toBe(true);
+    actions.selectPart("barrel");
+    expect(native!.attachedNode).toBe(barrel);
+    actions.selectPart(undefined);
+    expect(native!.attachedNode).toBeNull();
+    actions.selectPart("turret");
+    actions.destroy();
+    expect(native!.attachedNode).toBeNull();
+    actions.reset();
+    expect(actions.partAngles("turret")).toEqual([0, 0, 0]);
+    actions.selectPart("turret");
+    actions.reset();
+    expect(native!.attachedNode).toBeNull();
+    actions.dispose();
+    expect(native!.onDragObservable.hasObservers()).toBe(false);
+    expect(native!.gizmoLayer.utilityLayerScene.isDisposed).toBe(true);
+  } finally {
+    Object.defineProperty(RotationGizmo.prototype, "attachedNode", descriptor);
     actions.dispose();
     f.dispose();
   }
