@@ -102,12 +102,14 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await page.goto("/");
   await page.getByRole("button", { name: "Quick start local match", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-session", "ready", { timeout: 60_000 });
+  await expect(page.locator("[data-save-notice]")).toHaveText("Game saved in this browser.");
   await expect
     .poll(async () => (await saves(page)).filter((save) => save.kind === "auto").length)
     .toBe(1);
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   let menu = page.getByRole("dialog", { name: "Match menu", exact: true });
   await expect(menu.locator("[data-menu-state]")).toHaveText("Paused");
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await menu.getByLabel("Save name", { exact: true }).fill("Before the push");
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
@@ -165,15 +167,21 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     .poll(async () => Number(await page.locator("#game").getAttribute("data-tick")))
     .toBeGreaterThan(manual.match.tick + 3);
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
+  await expect(menu.getByRole("button", { name: "Load game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load game", exact: true }).press("Enter");
   await menu.locator(".save-row").filter({ hasText: "Before the push" }).press("Enter");
   const download = page.waitForEvent("download");
+  await expect(menu.getByRole("button", { name: "Export save", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Export save", exact: true }).press("Enter");
   await (await download).saveAs(info.outputPath("portable-save.json"));
   const previousCanvas = await page.locator("#game").elementHandle();
   const previousTick = await page.locator("#game").getAttribute("data-tick");
   await page.evaluate(() => Reflect.set(window, "holdSavedLoad", true));
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Load without saving", exact: true }),
+  ).toBeEnabled();
   await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })
@@ -215,7 +223,11 @@ test("real match save slots survive failed writes and canceled loads, import/exp
       timeout: 30000,
     })
     .toBe(2);
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Load without saving", exact: true }),
+  ).toBeEnabled();
   await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect(page.locator("#game")).toHaveAttribute("data-tick", String(manual.match.tick), {
     timeout: 60_000,
@@ -226,6 +238,7 @@ test("real match save slots survive failed writes and canceled loads, import/exp
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Match menu", exact: true }).press("Enter");
   menu = page.getByRole("dialog", { name: "Match menu", exact: true });
+  await expect(menu.getByRole("button", { name: "Save game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
   await menu.getByLabel("Save name", { exact: true }).fill("Resumed proof");
   await menu.getByRole("button", { name: "Save game", exact: true }).press("Enter");
@@ -279,7 +292,11 @@ test("real match save slots survive failed writes and canceled loads, import/exp
     Reflect.set(window, "holdSavedLoad", true);
     Reflect.set(window, "savedLoadBlocked", false);
   });
+  await expect(menu.getByRole("button", { name: "Load selected game", exact: true })).toBeEnabled();
   await menu.getByRole("button", { name: "Load selected game", exact: true }).press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Load without saving", exact: true }),
+  ).toBeEnabled();
   await page.getByRole("button", { name: "Load without saving", exact: true }).press("Enter");
   await expect
     .poll(() => page.evaluate(() => !!Reflect.get(window, "savedLoadBlocked")), { timeout: 30_000 })

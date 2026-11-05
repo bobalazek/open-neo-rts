@@ -166,14 +166,3 @@ export const saveStore = {
     }
   },
 };
-
-/** Capture immediately after a render, before the graphics backbuffer is cleared. */
-export function saveThumbnail(canvas: HTMLCanvasElement): string {
-  const thumbnail = document.createElement("canvas");
-  thumbnail.width = 320;
-  thumbnail.height = 180;
-  const context = thumbnail.getContext("2d");
-  if (!context) throw new Error("Save preview unavailable");
-  context.drawImage(canvas, 0, 0, 320, 180);
-  return thumbnail.toDataURL("image/jpeg", 0.75);
-}

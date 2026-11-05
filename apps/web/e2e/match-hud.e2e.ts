@@ -142,6 +142,9 @@ test("normal HUD uses real production receipts, selection groups and cancellable
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath("hud-mobile.png") });
   await page.getByRole("button", { name: "Leave match" }).press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Leave without saving", exact: true }),
+  ).toBeEnabled();
   await page.getByRole("button", { name: "Leave without saving", exact: true }).press("Enter");
   await expect(canvas).not.toHaveAttribute("data-session", "ready");
   await expect(canvas).toHaveAttribute("data-setup", "ready");

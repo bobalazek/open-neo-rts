@@ -1,3 +1,4 @@
+import type { IKeyboardEvent } from "@babylonjs/core/Events/deviceInputEvents";
 import { InputText } from "@babylonjs/gui/2D/controls/inputText";
 
 export interface TextSelection {
@@ -14,6 +15,12 @@ export class NativeTextInput extends InputText {
     super(name, value);
     this.textHighlightColor = "#ddc382";
     this.highlighterOpacity = 0.35;
+  }
+
+  override processKey(keyCode: number, key?: string, event?: IKeyboardEvent) {
+    // An empty field has one caret position; a delayed pointer draw must not reposition new text.
+    if (!this.text) this._clickedCoordinate = null;
+    super.processKey(keyCode, key, event);
   }
 
   mirrorSelection(selection?: TextSelection) {
