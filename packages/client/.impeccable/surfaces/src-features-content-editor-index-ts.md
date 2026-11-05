@@ -25,7 +25,8 @@ The signature interaction is changing a real model's presentation while reading
 the same project validator used by the CLI. A failed candidate retains the last
 good model and offers retry. Unknown installed links cannot fetch arbitrary
 remote models. Model inspection remains available beside the authoring extension
-below; socket gizmos are implemented, while part/material editing remains phase-2 work.
+below; socket gizmos and part inspection sliders are implemented, while free part
+gizmos and material editing remain phase-2 work.
 
 ## Definition authoring extension
 
@@ -85,7 +86,7 @@ export failure preserving the draft for retry. Matrix-specific fixtures were not
 exercised; the strict shared-conformance failure path was source-reviewed.
 The single detector result was empty; it was not rerun. This bounded evidence
 does not qualify physical touch/IME, screen readers or hardware stress, or close
-part/material controls, 2-38b2 parity, the full editor or the whole phase.
+free part gizmos/material editing, 2-38b2 parity, the full editor or the whole phase.
 
 ## Sibling-definition creation extension
 
@@ -228,8 +229,46 @@ than letting it advance offscreen. Shared no-options preview callers remain
 compatible. No source, save, normal match or simulation state changes.
 
 This records isolated firing/destruction within 2-38c2. Full 2-38b2
-validation/formatter parity, 2-38d part controls and damage-socket smoke/fire
+validation/formatter parity, free part gizmos and damage-socket smoke/fire
 previews remain open; socket editing/GLB copy export is recorded above. Current
 Chrome/WebKit browser checks do not qualify Firefox, physical touch/IME, screen
 readers or hardware FPS. The decision is
 `../../../../docs/project/decisions/2026-11-04-model-action-previews.md`.
+
+## Part inspection extension
+
+Part controls extends the same code-led Operate pane with a disclosure, an
+authored-part picker and native XYZ sliders bounded to −180…180°. The original
+model remains dominant on the desktop left and narrow-screen top; the existing
+scrolling pane retains Graphite Command Stations, pinned Arial and brass actions.
+No new identity, tokens, composition, assets or decorative motion are introduced.
+Definitions use their authored part names; standalone art uses conventional
+hull/turret/barrel/rotor/legs nodes. Models without parts add no empty form.
+
+Each slider shows the actual current degree value and offsets its node's authored
+local rest quaternion. Pointer dragging and semantic range input share values.
+Tab reaches the picker and all three axes; arrow keys change degrees with native
+focus mirrored from semantic controls. Explicit `tabIndex=0` retains sequential
+range focus in WebKit. Scrolling a focused slider into view keeps its caption
+visible, including in the narrow pane.
+
+Changing a part stops the clip. Fire preserves the manual pose, samples the
+actual posed muzzle and retains the existing recoil preview. Restore model,
+explicit clip playback, health changes and entering socket mode reset parts to
+rest. Successful replacement replaces controls; failed candidates retain the
+last good model and pose. These inspection poses never change source geometry,
+animation keys, definitions or simulation state. Download GLB retains the opened
+model bytes, including only separately applied socket edits.
+
+All ten content-tools browser journeys passed in current Chromium and WebKit.
+Finish review opened the four fresh captures
+`.impeccable/review/parts-desktop-chromium.png`,
+`.impeccable/review/parts-desktop-webkit.png`,
+`.impeccable/review/parts-mobile-chromium.png` and
+`.impeccable/review/parts-mobile-webkit.png`, returning SHIP with no fixes.
+The detector and context discovery were not rerun. This bounded evidence does not
+qualify physical touch/IME, screen readers, Firefox or hardware performance. Free
+part gizmos, material mappings, remaining documented tabs/validation, 2-38b2 parity
+and damage-socket smoke/fire previews remain open; the whole editor and phase are
+not complete. Behavior is recorded in
+`../../../../docs/project/decisions/2026-11-05-model-part-controls.md`.

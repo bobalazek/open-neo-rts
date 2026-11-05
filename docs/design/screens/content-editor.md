@@ -59,6 +59,11 @@ The 3D panel works on its own too: drop any GLB to check it before it has a defi
 | **Part sliders** | Rotates parts the sim drives (turret, barrel elevation, rotor) to check pivots                                      |
 | **Sockets**      | Add, move or rotate sockets with gizmos; export an updated GLB (empty nodes only, geometry untouched)               |
 
+The delivered Part controls action reveals local XYZ degree sliders for the
+authored part list (conventional part names for standalone files). Fire uses the
+posed muzzle; Restore model or playing a clip returns to rest. These inspection
+poses do not alter downloaded model bytes. Free part gizmos remain separate work.
+
 ## Saving
 
 - **Save** writes the definition JSON, with its English text inline, into the pack, formatted the way Biome formats it, so diffs stay clean.

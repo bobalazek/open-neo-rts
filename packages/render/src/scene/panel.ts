@@ -7,6 +7,7 @@ import { Control } from "@babylonjs/gui/2D/controls/control";
 import { Image } from "@babylonjs/gui/2D/controls/image";
 import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { ScrollViewer } from "@babylonjs/gui/2D/controls/scrollViewers/scrollViewer";
+import { Slider } from "@babylonjs/gui/2D/controls/sliders/slider";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { createEngine, createScene } from ".";
 import { createPanelBlock, type PanelBlock, panelTextHeight } from "./panel-content";
@@ -20,6 +21,7 @@ export interface PanelField {
   value: string | boolean;
   disabled: boolean;
   choices?: readonly { value: string; label: string }[];
+  range?: { min: number; max: number; step: number };
 }
 export interface PanelContent {
   id: string;
@@ -123,7 +125,7 @@ export async function createPanelScene(
     field: PanelField;
     caption: TextBlock;
     help: TextBlock;
-    input: Button | Checkbox | NativeTextInput;
+    input: Button | Checkbox | NativeTextInput | Slider;
     chevron?: Image;
   }[] = [];
   let actions: Button[] = [];
@@ -261,9 +263,27 @@ export async function createPanelScene(
       const caption = label(`${field.id} label`, field.label, 15);
       caption.color = "#eff1e9";
       const help = label(`${field.id} help`, field.help, 13);
-      let input: Button | Checkbox | NativeTextInput;
+      let input: Button | Checkbox | NativeTextInput | Slider;
       let chevron: Image | undefined;
-      if (typeof field.value === "boolean") {
+      if (field.range) {
+        input = new Slider(field.id);
+        input.minimum = field.range.min;
+        input.maximum = field.range.max;
+        input.step = field.range.step;
+        input.background = "#10191e";
+        input.color = "#ddc382";
+        input.borderColor = "#475354";
+        input.barOffset = "16px";
+        input.thumbWidth = "16px";
+        input.onValueChangedObservable.add((value) => {
+          if (!syncing) content.change(field.id, String(value));
+        });
+        input.onPointerDownObservable.add(() => {
+          focused = field.id;
+          reveal(input);
+        });
+        body.addControl(input);
+      } else if (typeof field.value === "boolean") {
         input = new Checkbox(field.id);
         input.background = "#10191e";
         input.color = "#ddc382";
@@ -666,11 +686,14 @@ export async function createPanelScene(
   function highlight(id?: string) {
     focused = id;
     for (const widget of widgets) {
-      widget.input.thickness = widget.field.id === id ? 2 : 1;
+      if (widget.input instanceof Slider)
+        widget.input.borderColor = widget.field.id === id ? "#fff6db" : "#475354";
+      else widget.input.thickness = widget.field.id === id ? 2 : 1;
       if (widget.field.id === id) {
         const span =
           widget.help.topInPixels + widget.help.heightInPixels - widget.input.topInPixels;
         reveal(widget.field.help && span + 12 < scroll.heightInPixels ? widget.help : widget.input);
+        if (widget.input instanceof Slider) reveal(widget.caption);
       }
     }
     for (const control of [...actions, ...tabs]) {
@@ -717,7 +740,10 @@ export async function createPanelScene(
       if (!field) continue;
       widget.input.isEnabled = !field.disabled;
       widget.input.alpha = field.disabled ? 0.65 : 1;
-      if (widget.input instanceof Checkbox) widget.input.isChecked = field.value === true;
+      if (widget.input instanceof Slider) {
+        widget.input.value = Number(field.value);
+        widget.caption.text = `${field.label}: ${field.value}`;
+      } else if (widget.input instanceof Checkbox) widget.input.isChecked = field.value === true;
       else if (widget.input instanceof NativeTextInput) widget.input.text = String(field.value);
       else if (widget.input.textBlock)
         widget.input.textBlock.text =

@@ -143,6 +143,14 @@ export function mountNativePanel(
             ? control.checked
             : control.value,
         disabled: control.disabled,
+        ...(control instanceof HTMLInputElement &&
+          control.type === "range" && {
+            range: {
+              min: Number(control.min || 0),
+              max: Number(control.max || 100),
+              step: Number(control.step || 1),
+            },
+          }),
         ...(control instanceof HTMLSelectElement && {
           choices: [...control.options].map((option) => ({
             value: option.value,
