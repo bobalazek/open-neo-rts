@@ -22,14 +22,15 @@ bot. The game is still being built and is not a finished or balanced release.
   results include per-type totals, controller order APM and economy/army histories.
 - Native Babylon menus and match HUD, contextual commands, a circular minimap,
   keyboard bindings, Field Manual and optional guidance.
-- Initial combat, construction and hauling sounds, with an audio mixer.
+- Combat, movement, construction and hauling sounds, original music and core
+  announcer speech/captions, with an audio mixer.
 - Debug maps, spawning and model inspection, with first-pass original animated
   models for the Alliance of Free Nations, Eastern Collective and Phoenix
   Initiative. Normal skirmishes currently use the Eastern Collective tier-one
   roster.
 
 Online PvP and Shared Command, the full three-faction game, training/campaigns,
-music/announcer coverage and desktop releases are still roadmap work. Balance,
+remaining audio coverage and desktop releases are still roadmap work. Balance,
 visual polish and performance remain unfinished. The SIM59 headless bot run
 [completed all 20 seeds twice](docs/project/learnings/2026-11-04-sim59-complete-matches.md)
 without a crash, cap or divergence; this does not establish human match quality,

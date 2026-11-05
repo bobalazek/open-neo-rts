@@ -51,6 +51,13 @@ The announcer speaks for the player's Force. Every line also appears in the HUD'
 
 **Priority rules:** a higher-priority line interrupts a lower one; same priority waits in a short queue (max 2), and anything older than 3 s is dropped. Critical lines always play.
 
+**First-playable delivery:** the [core announcer](../project/decisions/2026-11-05-first-playable-announcer.md)
+implements the currently supported attack, loss, completion, queue-stall and power
+events, plus canonical victory/defeat/draw. Native captions remain visible with
+muted audio; location-bearing messages share the existing minimap feed. Research,
+capture, superweapon, objective and multiplayer lines arrive with their actual
+systems. The mechanical synthetic voice and full mix remain provisional.
+
 ## Effects
 
 | Group        | Examples                                                                                             |

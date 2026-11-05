@@ -63,6 +63,20 @@ const snapshot = (): SeatSnapshot => ({
   fog: [{ group: 0, width: 8, height: 8, cells: new Uint8Array(64) }],
 });
 
+test("spoken captions replace their matching observed notice without losing alert identity", () => {
+  const notices = createMatchNotices(0, definitions, 8, 8);
+  const own = live("own", unit.id, 0, 2, 3);
+  notices.update({ ...snapshot(), entities: [own] });
+  notices.update({ ...snapshot(), tick: 1, entities: [{ ...own, health: 80 }] });
+  expect(notices.entries()).toHaveLength(1);
+  expect(notices.announce("Group two under attack.", { x: 2, y: 3 }, "under-attack")).toBe(true);
+  expect(notices.entries()).toMatchObject([
+    { kind: "under-attack", entity: "own", label: "Group two under attack." },
+  ]);
+  expect(notices.announce("Invalid", { x: -1, y: 0 })).toBe(false);
+  expect(notices.entries()).toHaveLength(1);
+});
+
 test("Force notices use only observed own damage, actual readiness and permitted deaths", () => {
   const notices = createMatchNotices(0, definitions, 8, 8);
   const first = {
@@ -81,7 +95,13 @@ test("Force notices use only observed own damage, actual readiness and permitted
   expect(notices.entries()).toHaveLength(1);
   const ready = live("ready", unit.id, 0, 1, 1);
   const site = { ...live("site", base.id, 0, 3, 3), constructionSite: true as const };
-  notices.update({ ...snapshot(), tick: 3, entities: [ready, site] });
+  const producer = live("producer", base.id, 0, 0, 0);
+  notices.update({
+    ...snapshot(),
+    tick: 3,
+    entities: [ready, site, producer],
+    productionExits: [producer.handle],
+  });
   expect(notices.entries().map((n) => n.kind)).toEqual(["unit-ready", "under-attack"]);
   notices.update({
     ...snapshot(),

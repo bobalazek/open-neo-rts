@@ -16,6 +16,7 @@ export interface AudioPlayOptions {
   loop?: boolean;
   position?: { x: number; y: number; z: number };
   onEnded?: () => void;
+  clip?: { start: number; duration: number };
 }
 interface Voice {
   source: string | AudioBuffer;
@@ -137,6 +138,14 @@ export function createAudioMixer() {
       return {
         async play(source: string | AudioBuffer, options: AudioPlayOptions): Promise<boolean> {
           if (
+            options.clip &&
+            (!Number.isFinite(options.clip.start) ||
+              options.clip.start < 0 ||
+              !Number.isFinite(options.clip.duration) ||
+              options.clip.duration <= 0)
+          )
+            throw new RangeError("Invalid audio clip range");
+          if (
             closed ||
             disposed ||
             muted ||
@@ -186,6 +195,10 @@ export function createAudioMixer() {
               outBus: buses.get(options.bus)!,
               maxInstances: 1,
               loop: options.loop ?? false,
+              ...(options.clip && {
+                startOffset: options.clip.start,
+                duration: options.clip.duration,
+              }),
               ...(voice.position && {
                 spatialEnabled: true,
                 spatialPosition: new Vector3(voice.position.x, voice.position.y, voice.position.z),

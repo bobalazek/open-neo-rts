@@ -1,0 +1,170 @@
+{
+  "base-attack": {
+    "text": "Base under attack.",
+    "priority": 2,
+    "cooldown": 20,
+    "start": 0,
+    "duration": 1.3183219954648526
+  },
+  "unit-attack": {
+    "text": "Unit under attack.",
+    "priority": 1,
+    "cooldown": 20,
+    "start": 1.4183219954648527,
+    "duration": 1.4124716553287981
+  },
+  "ally-attack": {
+    "text": "Ally under attack.",
+    "priority": 1,
+    "cooldown": 30,
+    "start": 2.930793650793651,
+    "duration": 1.3197732426303854
+  },
+  "harvester-attack": {
+    "text": "Harvester under attack.",
+    "priority": 2,
+    "cooldown": 20,
+    "start": 4.350566893424037,
+    "duration": 1.6734240362811792
+  },
+  "group-0": {
+    "text": "Group zero under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 6.123990929705215,
+    "duration": 1.7286167800453516
+  },
+  "group-1": {
+    "text": "Group one under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 7.952607709750567,
+    "duration": 1.619138321995465
+  },
+  "group-2": {
+    "text": "Group two under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 9.671746031746032,
+    "duration": 1.5960997732426303
+  },
+  "group-3": {
+    "text": "Group three under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 11.367845804988661,
+    "duration": 1.6306122448979592
+  },
+  "group-4": {
+    "text": "Group four under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 13.098458049886622,
+    "duration": 1.6768707482993197
+  },
+  "group-5": {
+    "text": "Group five under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 14.875328798185942,
+    "duration": 1.7071655328798185
+  },
+  "group-6": {
+    "text": "Group six under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 16.682494331065758,
+    "duration": 1.747891156462585
+  },
+  "group-7": {
+    "text": "Group seven under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 18.530385487528346,
+    "duration": 1.7787301587301587
+  },
+  "group-8": {
+    "text": "Group eight under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 20.409115646258503,
+    "duration": 1.550657596371882
+  },
+  "group-9": {
+    "text": "Group nine under attack.",
+    "priority": 1,
+    "cooldown": 15,
+    "start": 22.059773242630385,
+    "duration": 1.6712471655328798
+  },
+  "unit-lost": {
+    "text": "Unit lost.",
+    "priority": 0,
+    "cooldown": 10,
+    "start": 23.831020408163266,
+    "duration": 1.1477097505668934
+  },
+  "structure-lost": {
+    "text": "Structure lost.",
+    "priority": 2,
+    "cooldown": 5,
+    "start": 25.07873015873016,
+    "duration": 1.3561904761904762
+  },
+  "construction-complete": {
+    "text": "Construction complete.",
+    "priority": 1,
+    "cooldown": 0,
+    "start": 26.534920634920635,
+    "duration": 1.7236281179138322
+  },
+  "unit-ready": {
+    "text": "Unit ready.",
+    "priority": 0,
+    "cooldown": 3,
+    "start": 28.358548752834466,
+    "duration": 1.1052607709750566
+  },
+  "funds": {
+    "text": "Insufficient funds.",
+    "priority": 1,
+    "cooldown": 10,
+    "start": 29.563809523809525,
+    "duration": 1.6258956916099774
+  },
+  "power": {
+    "text": "Low power.",
+    "priority": 2,
+    "cooldown": 30,
+    "start": 31.289705215419502,
+    "duration": 0.9751473922902494
+  },
+  "population": {
+    "text": "Population limit reached.",
+    "priority": 1,
+    "cooldown": 30,
+    "start": 32.36485260770975,
+    "duration": 1.906031746031746
+  },
+  "victory": {
+    "text": "Victory.",
+    "priority": 3,
+    "cooldown": 0,
+    "start": 34.370884353741495,
+    "duration": 0.9427664399092971
+  },
+  "defeat": {
+    "text": "Defeat.",
+    "priority": 3,
+    "cooldown": 0,
+    "start": 35.413650793650795,
+    "duration": 0.8124263038548752
+  },
+  "draw": {
+    "text": "It is a draw.",
+    "priority": 3,
+    "cooldown": 0,
+    "start": 36.32607709750567,
+    "duration": 1.0301133786848073
+  }
+}

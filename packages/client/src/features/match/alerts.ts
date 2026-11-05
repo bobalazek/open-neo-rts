@@ -3,12 +3,25 @@ import { type MapPoint, minimapVision } from "./minimap-model";
 
 export const PING_KINDS = ["attack", "defend", "on-my-way", "danger", "help"] as const;
 export type PingKind = (typeof PING_KINDS)[number];
-export type NoticeKind = "under-attack" | "unit-ready" | "structure-ready" | "lost" | PingKind;
+export type NoticeKind =
+  | "under-attack"
+  | "unit-ready"
+  | "structure-ready"
+  | "lost"
+  | "announcement"
+  | PingKind;
 export interface MatchNotice extends MapPoint {
   id: number;
   tick: number;
   kind: NoticeKind;
   entity?: string;
+  label?: string;
+}
+
+export function noticePoint(entity: PresentedEntity, definition?: GameplayDefinition): MapPoint {
+  const [w = 0, h = 0] = definition?.kind === "structure" ? (definition.footprint ?? []) : [];
+  const turned = (((entity.facing >>> 14) + 3) & 1) !== 0;
+  return { x: entity.x / 1024 + (turned ? h : w) / 2, y: entity.y / 1024 + (turned ? w : h) / 2 };
 }
 
 /** Local presentation memory contains only the controlled seat's copied observations. */
@@ -30,7 +43,7 @@ export function createMatchNotices(
     point.y >= 0 &&
     point.x < width &&
     point.y < height;
-  function add(kind: NoticeKind, point: MapPoint, entity?: string) {
+  function add(kind: NoticeKind, point: MapPoint, entity?: string, label?: string) {
     if (!legal(point)) return false;
     // Coalesce repeated fire on one actor for five seconds; retain at most eight notices.
     if (
@@ -40,18 +53,24 @@ export function createMatchNotices(
       return false;
     notices = [
       ...notices.slice(-7),
-      { ...point, id: ++sequence, tick, kind, ...(entity && { entity }) },
+      { ...point, id: ++sequence, tick, kind, ...(entity && { entity }), ...(label && { label }) },
     ];
     cursor = -1;
     return true;
   }
   const point = (entity: PresentedEntity) => {
-    const definition = definitions.get(entity.definition);
-    const [w = 0, h = 0] = definition?.kind === "structure" ? (definition.footprint ?? []) : [];
-    const turned = (((entity.facing >>> 14) + 3) & 1) !== 0;
-    return { x: entity.x / 1024 + (turned ? h : w) / 2, y: entity.y / 1024 + (turned ? w : h) / 2 };
+    return noticePoint(entity, definitions.get(entity.definition));
   };
   return {
+    announce(label: string, point: MapPoint, kind: NoticeKind = "announcement") {
+      if (tick < 0 || !label || !legal(point)) return false;
+      const existing = notices.find(
+        (entry) =>
+          entry.kind === kind && !entry.label && entry.x === point.x && entry.y === point.y,
+      );
+      if (existing) notices = notices.filter((entry) => entry.id !== existing.id);
+      return add(kind, point, existing?.entity, label);
+    },
     update(snapshot: SeatSnapshot) {
       if (snapshot.mode !== "controlled") {
         prior.clear();
@@ -74,14 +93,13 @@ export function createMatchNotices(
         if (
           initialized &&
           entity.health > 0 &&
+          kind === "structure" &&
           !entity.constructionSite &&
-          ((!previous && kind === "unit") || previous?.constructionSite)
+          previous?.constructionSite
         )
-          add(
-            kind === "structure" ? "structure-ready" : "unit-ready",
-            point(entity),
-            entity.handle,
-          );
+          add("structure-ready", point(entity), entity.handle);
+        if (initialized && snapshot.productionExits?.includes(entity.handle))
+          add("unit-ready", point(entity), entity.handle);
       }
       // Disappearance alone may mean a grant change, so only an actual permitted death is a loss.
       for (const event of snapshot.combatEvents ?? []) {
